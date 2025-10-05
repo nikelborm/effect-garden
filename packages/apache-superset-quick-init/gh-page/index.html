@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="logo.svg" />
+    <title>Intermediate Navigation Page</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: url('background_image.webp') no-repeat center center fixed;
+        background-size: cover;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 20px;
+        width: 90%;
+        height: 90%;
+      }
+
+      .box {
+        background-color: rgba(0, 0, 0, 0.75);
+        border: 1.5px solid rgba(0, 0, 0, 0.8);
+        border-radius: 15px;
+        padding: 40px;
+        color: white;
+        backdrop-filter: blur(1.5px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      .box:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+      }
+
+      .box img {
+        border-radius: 50%;
+        width: 100px;
+        height: 100px;
+        margin-bottom: 15px;
+      }
+
+      .clickable {
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+      }
+
+      .clickable:hover {
+        background-color: rgba(0, 0, 0, 0.85);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a class="box clickable" href="https://github.com/nikelborm">
+        <img
+          src="author_image.png"
+          alt="Eva's Avatar: Blonde white girl in a green dress with white bindweed flowers woven into her hair"
+        />
+        <p style="padding-bottom: 20px">Eva</p>
+        <p>Creator of the Project</p>
+      </a>
+      <a
+        class="box clickable"
+        href="https://github.com/nikelborm/apache-superset-quick-init/"
+      >
+        <!-- <img src="logo.svg" alt="Project Logo" /> -->
+        <p style="padding-bottom: 20px">apache-superset-quick-init</p>
+        <p>CLI tool for for bootstrapping Superset in Docker</p>
+      </a>
+      <a class="box clickable" href="coverage/"> Coverage Report </a>
+      <a class="box clickable" href="bundled_deps/"> Bundle Size Report </a>
+    </div>
+  </body>
+</html>

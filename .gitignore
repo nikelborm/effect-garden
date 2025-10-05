@@ -3,6 +3,7 @@ _
 .stryker-tmp
 .turbo
 .vscode/settings.json
+apache-superset-quick-init*.tgz
 backend_secrets.py
 backend-nestjs
 better_auth_secret
@@ -17,14 +18,16 @@ dist-types
 dist2
 docker
 educational-testings
-git-dl*.tgz
 gh-page/bundled_deps
 gh-page/coverage
+git-dl*.tgz
 joiners-*.tgz
 node_modules
 out
 package-lock.json
 reports
+scratchpad.ts
 stats.html
+superset
 temp.json
 tmp

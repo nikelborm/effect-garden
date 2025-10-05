@@ -1,0 +1,141 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Release
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v5
+
+      - name: 'Set up Node.js'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 23
+          registry-url: https://registry.npmjs.org/
+
+      - name: 'Install dependencies'
+        run: npm install
+
+      - name: 'Build, bundle, compress'
+        run: npm exec -c ./scripts/build.sh
+
+      - name: 'Check if code follows JSR rules for packages'
+        run: npx jsr publish --dry-run
+
+      - name: 'Check if code passes tests'
+        run: npm run test-once
+
+      - name: 'Extract package info from package.json'
+        id: package_info
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version' package.json)
+          name=$(jq -r '.name' package.json)
+          expected_package_archive_name=$name.tgz
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "expected_package_archive_name=$expected_package_archive_name" >> $GITHUB_OUTPUT
+          echo "url_of_released_minified_script=https://github.com/nikelborm/$name/releases/download/$version/$name.js" >> $GITHUB_OUTPUT
+
+      - name: 'Create package archive'
+        run: |
+          set -euo pipefail
+          mv ./$(npm pack) ./${{ steps.package_info.outputs.expected_package_archive_name }}
+
+      - name: 'Publish to default NPM registry'
+        run: npm publish ./${{ steps.package_info.outputs.expected_package_archive_name }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - name: 'Prepare deno.json for publishing to JSR'
+        run: |
+          set -euo pipefail
+          jq '.version = "${{ steps.package_info.outputs.version }}"' deno.json > _ && mv _ deno.json
+          npx prettier deno.json --write
+
+      - name: 'Commit updated deno.json after npm install'
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_author: 'nikelborm <evadev@duck.com>'
+          file_pattern: 'deno.json'
+          commit_message: Auto-updated NPM package files
+
+      - name: 'Publish to JSR'
+        run: npx jsr publish
+
+      - name: "Prepare package.json for publishing to GitHub's NPM registry"
+        run: jq '.name = "@nikelborm/" + .name' package.json > _ && mv _ package.json
+
+      - name: "Publish to GitHub's NPM registry"
+        run: |
+          set -euo pipefail
+          sed -i 's/registry.npmjs.org/npm.pkg.github.com/' /home/runner/work/_temp/.npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Upload bundled CLI and NPM package archive as release artifacts'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.package_info.outputs.version }}
+          fail_on_unmatched_files: true
+          files: |
+            ${{ steps.package_info.outputs.expected_package_archive_name }}
+            ./dist/minified/${{ steps.package_info.outputs.name }}.js
+            ./template.env
+          body: |
+            # New release of ${{ steps.package_info.outputs.name }}! Yay! 🎉
+
+            ## Files in this release
+
+            - `${{ steps.package_info.outputs.expected_package_archive_name }}` contains package archive which was published to NPM
+            - `${{ steps.package_info.outputs.name }}.js` contains a light js CLI script with inlined dependencies that allows you to avoid using any package managers
+            - `template.env` has all env variables that are supported by this script
+
+            ## Usage
+
+            ### Invoke immediately
+
+            If you already know the supported arguments (e.g. `--help` to print them all),
+            you can pipe the script to node directly and pass your arguments after `node -`:
+
+            ```bash
+            set -euo pipefail
+            curl -sL ${{ steps.package_info.outputs.url_of_released_minified_script }} | node - --destinationPath superset
+            ```
+
+            The script also supports interactive mode (`--wizard`), where you will be asked to pass arguments sequentially and interactively. Since it requires user input, it can't be piped and needs to be saved to a temporary file:
+
+            ```bash
+            set -euo pipefail
+            tmp_js=$(mktemp --suffix .js)
+            curl -sLo $tmp_js ${{ steps.package_info.outputs.url_of_released_minified_script }}
+            node $tmp_js --wizard
+            rm $tmp_js
+            ```
+
+            ### Install into the system directly
+
+            Running this:
+
+            ```bash
+            set -euo pipefail
+            path_to_the_script=/usr/bin/${{ steps.package_info.outputs.name }}
+            sudo curl -sLo $path_to_the_script ${{ steps.package_info.outputs.url_of_released_minified_script }}
+            sudo chmod +x $path_to_the_script
+            ```
+
+            ...will allow you to use the script like this later:
+
+            ```bash
+            ${{ steps.package_info.outputs.name }} --destinationPath superset
+            ```
