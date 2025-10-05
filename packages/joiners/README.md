@@ -206,13 +206,18 @@ for (const currentMergedTuple of joinOnVennDiagramParts(
 8. remove never used stuff
 9. Recursive `spreadObjectMerger`, which also merges nested objects
 10. Joiner using indices
-11. check how joiner aligns with [edgedb-js](https://github.com/edgedb/edgedb-js)
-12. https://www.geeksforgeeks.org/introduction-of-relational-algebra-in-dbms/
-13. https://github.com/dexie/Dexie.js/
-14. add tests with empty objects to object merger
-15. Make sure that it works the same with or without `exactOptionalPropertyTypes` <!-- https://t.me/Alexandroppolus написал в https://t.me/typescript_bowl/56?comment=244 В типе для мержа надо ещё не забыть проверить флаг exactOptionalPropertyTypes, если он не true, то с необязательных ключей может прилетать undefined: `type IsEOPT = [undefined] extends [1?] ? false : true;` -->
-16. Add builder pattern as done [here](https://discord.com/channels/795981131316985866/1346967319385083968/1347160658105466913)
-17. competitors comparison: [lodash-joins](https://www.npmjs.com/package/lodash-joins), [joiner](https://www.npmjs.com/package/joiner), [object-joiner](https://www.npmjs.com/package/object-joiner), [evologi/join](https://github.com/evologi/join), [joiner](https://github.com/mhkeller/joiner), [fast-cartesian-product](https://www.npmjs.com/package/fast-cartesian-product), [cartesian](https://www.npmjs.com/package/cartesian), [cartesian-product](https://www.npmjs.com/package/cartesian-product), [fast-cartesian](https://www.npmjs.com/package/fast-cartesian), [big-cartesian](https://www.npmjs.com/package/big-cartesian), [@lorefnon/collection-joiner](https://www.npmjs.com/package/@lorefnon/collection-joiner), [array-join](https://www.npmjs.com/package/array-join), [joins](https://www.npmjs.com/package/joins)
+11. Add support for effect. As an example we can join Effect.ts streams, and it can be done pretty easily since I create generator that consumes iterables
+12. Introduce Property based testing https://t.me/khraks_dev/23
+13. use stryker for mutation testing
+14. Compare my type merger with [RebeccaStevens/deepmerge-ts](https://github.com/RebeccaStevens/deepmerge-ts). Bench type instantiations, and ts compile-time performance
+15. procedurally generate tstyche tests (https://github.com/tstyche/tstyche/issues/465)
+16. check how joiner aligns with [edgedb-js](https://github.com/edgedb/edgedb-js)
+17. https://www.geeksforgeeks.org/introduction-of-relational-algebra-in-dbms/
+18. https://github.com/dexie/Dexie.js/
+19. add tests with empty objects to object merger
+20. Make sure that it works the same with or without `exactOptionalPropertyTypes` <!-- https://t.me/Alexandroppolus написал в https://t.me/typescript_bowl/56?comment=244 В типе для мержа надо ещё не забыть проверить флаг exactOptionalPropertyTypes, если он не true, то с необязательных ключей может прилетать undefined: `type IsEOPT = [undefined] extends [1?] ? false : true;` -->
+21. Add builder pattern as done [here](https://discord.com/channels/795981131316985866/1346967319385083968/1347160658105466913)
+22. competitors comparison: [lodash-joins](https://www.npmjs.com/package/lodash-joins), [joiner](https://www.npmjs.com/package/joiner), [object-joiner](https://www.npmjs.com/package/object-joiner), [evologi/join](https://github.com/evologi/join), [joiner](https://github.com/mhkeller/joiner), [fast-cartesian-product](https://www.npmjs.com/package/fast-cartesian-product), [cartesian](https://www.npmjs.com/package/cartesian), [cartesian-product](https://www.npmjs.com/package/cartesian-product), [fast-cartesian](https://www.npmjs.com/package/fast-cartesian), [big-cartesian](https://www.npmjs.com/package/big-cartesian), [@lorefnon/collection-joiner](https://www.npmjs.com/package/@lorefnon/collection-joiner), [array-join](https://www.npmjs.com/package/array-join), [joins](https://www.npmjs.com/package/joins)
 
 This project currently only well tested for the following `"compilerOptions"` in `tsconfig.json`
 

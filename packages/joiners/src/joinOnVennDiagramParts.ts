@@ -28,9 +28,10 @@ export function buildJoinerOnVennDiagramPartsWithCustomDetailingModifier<
   ): Generator<MergedResult> {
     const flags = parseInt(vennDiagramParts, 2);
 
-    // Right is consumed more than once and because it's iterable which has
-    // iterable[Symbol.iterator]() method able to return results in different order
-    // every time it called, we have to make sure order is consistent.
+    // Right is consumed more than once and since it's iterable, which has
+    // iterable[Symbol.iterator]() method, the iterable is able to return
+    // results in different order every time it called and so we have to make
+    // sure order is consistent
     const isOrderStable = () =>
       Array.isArray(_right) ||
       _right instanceof Set ||
@@ -69,8 +70,9 @@ export function buildJoinerOnVennDiagramPartsWithCustomDetailingModifier<
     }
 
     // If there's no Set in a box, it means the ShouldAdd.RightExclusivePart
-    // flag is also not set, and there's no point to yield right exclusive part
-    if (!box.unmatchedRightIndices) return;
+    // flag is also not set, and there's no point to attempt to yield right
+    // exclusive part
+    if (!box.unmatchedRightIndices?.size) return;
 
     let rIndex = 0;
 
