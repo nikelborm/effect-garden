@@ -11,3 +11,6 @@ related to effect.
 3. write auto tool that will scan packages folder, and properly fill
    dependencies of root package json, exposing all the stuff, and then will
    properly set dependencies of playground, and then call `bun install`
+4. write a helper that will look across `package.json`s and find duplicate
+   dependencies to extract into catalogs and also report packages that are
+   `@nikelborm/...`, but have versions not equal to `workspace:*`

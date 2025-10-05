@@ -1,5 +1,5 @@
 {
-  "name": "git-dl",
+  "name": "@nikelborm/git-dl",
   "version": "0.1.28",
   "type": "module",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
@@ -19,13 +19,13 @@
     "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },
   "dependencies": {
-    "@effect/cli": "^0.71.0",
-    "@effect/platform": "^0.92.1",
-    "@effect/platform-node": "^0.98.3",
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
     "@octokit/core": "^7.0.2",
     "@octokit/request-error": "^7.0.0",
-    "effect": "^3.15.1",
-    "effect-errors": "^1.10.11",
+    "effect": "catalog:",
+    "effect-errors": "catalog:",
     "outdent": "^0.8.0",
     "tar-fs": "^3.0.8",
     "tsafe": "^1.8.5",

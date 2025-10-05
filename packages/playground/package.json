@@ -6,19 +6,20 @@
     "@effect/experimental": "catalog:",
     "@effect/opentelemetry": "catalog:",
     "@effect/platform-bun": "catalog:",
+    "@effect/platform-node": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/sql": "catalog:",
-    "effect": "catalog:",
+    "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
-    "@nikelborm/tsconfig": "workspace:*"
+    "@nikelborm/tsconfig": "workspace:*",
+    "effect": "catalog:"
   },
   "dependencies": {
-    "@effect/platform-node": "^0.98.3",
     "tinybench": "^5.0.1"
   }
 }

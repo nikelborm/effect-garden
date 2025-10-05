@@ -12,16 +12,21 @@
     "lint": "turbo run lint"
   },
   "catalog": {
-    "@effect/experimental": "^0.55.0",
-    "@effect/opentelemetry": "^0.57.0",
-    "@effect/platform-bun": "^0.80.0",
-    "@effect/platform": "^0.91.1",
+    "@effect/cli": "^0.71.0",
+    "@effect/experimental": "^0.56.0",
+    "@effect/opentelemetry": "^0.58.0",
+    "@effect/platform-bun": "^0.81.1",
+    "@effect/platform-node": "^0.98.3",
+    "@effect/platform": "^0.92.1",
     "@effect/sql-drizzle": "^0.44.0",
     "@effect/sql-pg": "^0.46.0",
-    "@effect/sql": "^0.45.0",
-    "effect": "3.17.14"
+    "@effect/sql": "^0.46.0",
+    "@effect/vitest": "^0.26.0",
+    "effect-errors": "^1.10.11",
+    "effect": "3.18.2"
   },
   "devDependencies": {
+    "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
