@@ -177,7 +177,7 @@ export const repoOwnerCLIOptionBackedByEnv: Options<string> = pipe(
  *
  * Examples:
  * 1. `superset`
- * 2. `get-git-repo`
+ * 2. `git-dl`
  *
  * Can be passed in two ways:
  * 1. As CLI option `ggr --repoName superset`

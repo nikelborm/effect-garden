@@ -1,22 +1,22 @@
-# <img src="https://nikelborm.github.io/get-git-repo/logo.png" align="right" width="40px" height="40px"/> get-git-repo :lizard:
+# <img src="https://nikelborm.github.io/git-dl/logo.png" align="right" width="40px" height="40px"/> Get git repo contents (git-dl)  :lizard:
 
-[![Open in VS Code](https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20VS%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc)](https://github.dev/nikelborm/get-git-repo)
-[![NPM package version](https://badge.fury.io/js/get-git-repo.svg)](https://www.npmjs.com/package/get-git-repo)
-[![NPM downloads](https://img.shields.io/npm/dm/get-git-repo.svg?style=flat)](https://npmjs.org/package/get-git-repo)
-[![NPM Last Update](https://img.shields.io/npm/last-update/get-git-repo)](https://npmjs.org/package/get-git-repo)
-[![package.json Dependents count](https://badgen.net/npm/dependents/get-git-repo)](https://www.npmjs.com/package/get-git-repo?activeTab=dependents)
-[![JSR package version](https://jsr.io/badges/@nikelborm/get-git-repo)](https://jsr.io/@nikelborm/get-git-repo)
-[![JSR package Score](https://jsr.io/badges/@nikelborm/get-git-repo/score)](https://jsr.io/@nikelborm/get-git-repo)
+[![Open in VS Code](https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20VS%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc)](https://github.dev/nikelborm/git-dl)
+[![NPM package version](https://badge.fury.io/js/git-dl.svg)](https://www.npmjs.com/package/git-dl)
+[![NPM downloads](https://img.shields.io/npm/dm/git-dl.svg?style=flat)](https://npmjs.org/package/git-dl)
+[![NPM Last Update](https://img.shields.io/npm/last-update/git-dl)](https://npmjs.org/package/git-dl)
+[![package.json Dependents count](https://badgen.net/npm/dependents/git-dl)](https://www.npmjs.com/package/git-dl?activeTab=dependents)
+[![JSR package version](https://jsr.io/badges/@nikelborm/git-dl)](https://jsr.io/@nikelborm/git-dl)
+[![JSR package Score](https://jsr.io/badges/@nikelborm/git-dl/score)](https://jsr.io/@nikelborm/git-dl)
 [![JSR package owner](https://jsr.io/badges/@nikelborm)](https://jsr.io/@nikelborm)
-[![GitHub commits per month](https://img.shields.io/github/commit-activity/m/nikelborm/get-git-repo)](https://github.com/nikelborm/get-git-repo/pulse)
-[![GitHub Total commits Count](https://img.shields.io/github/commit-activity/t/nikelborm/get-git-repo)](https://github.com/nikelborm/get-git-repo/graphs/commit-activity)
-[![NPM License](https://img.shields.io/npm/l/get-git-repo)](https://github.com/nikelborm/get-git-repo?tab=MIT-1-ov-file)
-[![Coveralls Coverage Percentage](https://coveralls.io/repos/github/nikelborm/get-git-repo/badge.svg?branch=main&rand=9148876)](https://coveralls.io/github/nikelborm/get-git-repo?branch=main)
-[![CodeFactor Code quality Grade](https://img.shields.io/codefactor/grade/github/nikelborm/get-git-repo?label=codefactor)](https://www.codefactor.io/repository/github/nikelborm/get-git-repo)
-[![Code Climate Technical Debt](https://img.shields.io/codeclimate/tech-debt/nikelborm/get-git-repo)](https://codeclimate.com/github/nikelborm/get-git-repo/issues)
-[![Code Climate Issues](https://img.shields.io/codeclimate/issues/nikelborm/get-git-repo)](https://codeclimate.com/github/nikelborm/get-git-repo/issues)
-[![GitHub Tests Workflow status](https://github.com/nikelborm/get-git-repo/actions/workflows/test.yml/badge.svg)](https://github.com/nikelborm/get-git-repo/actions/workflows/test.yml)
-[![GitHub Release Workflow status](https://github.com/nikelborm/get-git-repo/actions/workflows/release.yml/badge.svg)](https://github.com/nikelborm/get-git-repo/actions/workflows/release.yml)
+[![GitHub commits per month](https://img.shields.io/github/commit-activity/m/nikelborm/git-dl)](https://github.com/nikelborm/git-dl/pulse)
+[![GitHub Total commits Count](https://img.shields.io/github/commit-activity/t/nikelborm/git-dl)](https://github.com/nikelborm/git-dl/graphs/commit-activity)
+[![NPM License](https://img.shields.io/npm/l/git-dl)](https://github.com/nikelborm/git-dl?tab=MIT-1-ov-file)
+[![Coveralls Coverage Percentage](https://coveralls.io/repos/github/nikelborm/git-dl/badge.svg?branch=main&rand=9148876)](https://coveralls.io/github/nikelborm/git-dl?branch=main)
+[![CodeFactor Code quality Grade](https://img.shields.io/codefactor/grade/github/nikelborm/git-dl?label=codefactor)](https://www.codefactor.io/repository/github/nikelborm/git-dl)
+[![Code Climate Technical Debt](https://img.shields.io/codeclimate/tech-debt/nikelborm/git-dl)](https://codeclimate.com/github/nikelborm/git-dl/issues)
+[![Code Climate Issues](https://img.shields.io/codeclimate/issues/nikelborm/git-dl)](https://codeclimate.com/github/nikelborm/git-dl/issues)
+[![GitHub Tests Workflow status](https://github.com/nikelborm/git-dl/actions/workflows/test.yml/badge.svg)](https://github.com/nikelborm/git-dl/actions/workflows/test.yml)
+[![GitHub Release Workflow status](https://github.com/nikelborm/git-dl/actions/workflows/release.yml/badge.svg)](https://github.com/nikelborm/git-dl/actions/workflows/release.yml)
 [![Sonar Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nikelborm_fetch-github-folder&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=nikelborm_fetch-github-folder)
 [![Sonar Bugs Count](https://sonarcloud.io/api/project_badges/measure?project=nikelborm_fetch-github-folder&metric=bugs)](https://sonarcloud.io/summary/new_code?id=nikelborm_fetch-github-folder)
 [![Sonar Code Smells Count](https://sonarcloud.io/api/project_badges/measure?project=nikelborm_fetch-github-folder&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=nikelborm_fetch-github-folder)
@@ -30,11 +30,11 @@
 ![OSS Lifecycle status](https://img.shields.io/osslifecycle?file_url=https%3A%2F%2Fgithub.com%2Fnikelborm%2Ffetch-github-folder%2Fblob%2Fmain%2FOSSMETADATA)
 
 <!-- Commented because there's some bug in effect library or in bundlephobia that prevents proper rendering of this badge -->
-<!-- [![npm minzipped bundle size](https://img.shields.io/bundlephobia/minzip/get-git-repo)](https://bundlephobia.com/package/get-git-repo) -->
-<!-- [![package.json Dependencies count](https://badgen.net/bundlephobia/dependency-count/get-git-repo)](https://www.npmjs.com/package/get-git-repo?activeTab=dependencies) -->
+<!-- [![npm minzipped bundle size](https://img.shields.io/bundlephobia/minzip/git-dl)](https://bundlephobia.com/package/git-dl) -->
+<!-- [![package.json Dependencies count](https://badgen.net/bundlephobia/dependency-count/git-dl)](https://www.npmjs.com/package/git-dl?activeTab=dependencies) -->
 
 <!-- commented because it seems that npms.io was acquired by somebody and is slowly dying -->
-<!-- [![npms.io](https://img.shields.io/npms-io/final-score/get-git-repo)](update_link_later) -->
+<!-- [![npms.io](https://img.shields.io/npms-io/final-score/git-dl)](update_link_later) -->
 
 <!-- commented because I haven't started following it yet -->
 <!-- [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) -->
@@ -64,16 +64,16 @@ CLIs written in JS run faster, I highly recommend adding this line to your `.bas
 export NODE_COMPILE_CACHE=~/.cache/nodejs-compile-cache
 ```
 
-### Install package with CLI and functions from [default NPM registry](https://www.npmjs.com/package/get-git-repo)
+### Install package with CLI and functions from [default NPM registry](https://www.npmjs.com/package/git-dl)
 
 ```bash
-npm i get-git-repo
+npm i git-dl
 ```
 
 <details>
 <summary>
 
-### Install package with only functions from [JSR](https://jsr.io/@nikelborm/get-git-repo)
+### Install package with only functions from [JSR](https://jsr.io/@nikelborm/git-dl)
 
 </summary>
 
@@ -82,14 +82,14 @@ only script library with functions that will allow you to fetch github folder
 from other scripts.
 
 ```bash
-npx jsr add @nikelborm/get-git-repo
+npx jsr add @nikelborm/git-dl
 ```
 
 </details>
 <details>
 <summary>
 
-### Install package with CLI and functions from [GitHub's NPM registry](https://github.com/nikelborm/get-git-repo/pkgs/npm/get-git-repo)
+### Install package with CLI and functions from [GitHub's NPM registry](https://github.com/nikelborm/git-dl/pkgs/npm/git-dl)
 
 </summary>
 
@@ -108,19 +108,19 @@ npx jsr add @nikelborm/get-git-repo
 3. Install the package by executing:
 
    ```bash
-   npm i @nikelborm/get-git-repo
+   npm i @nikelborm/git-dl
    ```
 
 </details>
 <details>
 <summary>
 
-### Install package with CLI and functions from [Github Releases](https://github.com/nikelborm/get-git-repo/releases)
+### Install package with CLI and functions from [Github Releases](https://github.com/nikelborm/git-dl/releases)
 
 </summary>
 
 ```bash
-PACKAGE=get-git-repo
+PACKAGE=git-dl
 
 # Either set specific tag
 TAG=0.1.28 && npm i https://github.com/nikelborm/$PACKAGE/releases/download/$TAG/$PACKAGE.tgz
@@ -132,13 +132,13 @@ npm i https://github.com/nikelborm/$PACKAGE/releases/latest/download/$PACKAGE.tg
 <details open>
 <summary>
 
-### Install only the CLI directly into the system from [Github Releases](https://github.com/nikelborm/get-git-repo/releases)
+### Install only the CLI directly into the system from [Github Releases](https://github.com/nikelborm/git-dl/releases)
 
 </summary>
 
 ```bash
 set -euo pipefail
-PACKAGE=get-git-repo
+PACKAGE=git-dl
 
 path_to_the_script=/usr/bin/$PACKAGE
 
@@ -159,8 +159,8 @@ sudo chmod +x $path_to_the_script
 </summary>
 
 ```bash
-git clone -b main git@github.com:nikelborm/get-git-repo.git
-cd get-git-repo
+git clone -b main git@github.com:nikelborm/git-dl.git
+cd git-dl
 npm install
 cp template.env .env
 read -sp 'Enter github access token: ' gh_token; echo;
@@ -185,8 +185,8 @@ import {
   repoNameCLIOptionBackedByEnv,
   repoOwnerCLIOptionBackedByEnv,
   // etc...
-} from 'get-git-repo';
-// or '@nikelborm/get-git-repo' for non-default installation methods
+} from 'git-dl';
+// or '@nikelborm/git-dl' for non-default installation methods
 ```
 
 ### Execution of CLI installed with NPM
@@ -195,7 +195,7 @@ The **easiest way** to execute the CLI (preliminary installation is not required
 like this:
 
 ```bash
-npx get-git-repo --repoOwner apache --repoName superset
+npx git-dl --repoOwner apache --repoName superset
 ```
 
 Also there's a shorter form available (preliminary installation is required):
@@ -207,7 +207,7 @@ npx ggr --repoOwner apache --repoName superset
 <details>
 <summary>
 
-### Non-interactive CLI execution on the fly from [Github Releases](https://github.com/nikelborm/get-git-repo/releases)
+### Non-interactive CLI execution on the fly from [Github Releases](https://github.com/nikelborm/git-dl/releases)
 
 </summary>
 
@@ -228,7 +228,7 @@ curl -sL https://github.com/nikelborm/$PACKAGE/releases/latest/download/$PACKAGE
 <details>
 <summary>
 
-### Interactive CLI execution from [Github Releases](https://github.com/nikelborm/get-git-repo/releases)
+### Interactive CLI execution from [Github Releases](https://github.com/nikelborm/git-dl/releases)
 
 </summary>
 
@@ -258,7 +258,7 @@ rm $tmp_js
 </summary>
 
 ```bash
-get-git-repo --repoOwner apache --repoName superset
+git-dl --repoOwner apache --repoName superset
 ```
 
 </details>

@@ -1,11 +1,11 @@
 {
-  "name": "get-git-repo",
+  "name": "git-dl",
   "version": "0.1.28",
   "type": "module",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "license": "MIT",
   "scripts": {
-    "start": "node --env-file=.env ./get-git-repo.ts",
+    "start": "node --env-file=.env ./git-dl.ts",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
     "format": "prettier . --write",
@@ -57,17 +57,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/get-git-repo.git"
+    "url": "git+ssh://git@github.com/nikelborm/git-dl.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/dts/index.d.ts",
   "bin": {
-    "get-git-repo": "dist/get-git-repo.js",
-    "ggr": "dist/get-git-repo.js"
+    "git-dl": "dist/git-dl.js",
+    "ggr": "dist/git-dl.js"
   },
   "bugs": {
-    "url": "https://github.com/nikelborm/get-git-repo/issues",
+    "url": "https://github.com/nikelborm/git-dl/issues",
     "email": "evadev@duck.com"
   },
   "files": [
@@ -83,7 +83,7 @@
     "errors.ts",
     "index.ts"
   ],
-  "homepage": "https://github.com/nikelborm/get-git-repo#readme",
+  "homepage": "https://github.com/nikelborm/git-dl#readme",
   "exports": {
     ".": {
       "types": "./dist/dts/index.d.ts",

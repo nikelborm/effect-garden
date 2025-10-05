@@ -6,7 +6,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import type { RollupOptions } from 'rollup';
 
 export default {
-  input: 'dist/get-git-repo.js',
+  input: 'dist/git-dl.js',
   output: {
     dir: 'dist/minified',
     format: 'es',

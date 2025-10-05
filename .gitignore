@@ -17,7 +17,7 @@ dist-types
 dist2
 docker
 educational-testings
-get-git-repo*.tgz
+git-dl*.tgz
 gh-page/bundled_deps
 gh-page/coverage
 joiners-*.tgz

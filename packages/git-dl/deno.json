@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-  "name": "@nikelborm/get-git-repo",
+  "name": "@nikelborm/git-dl",
   "version": "0.1.28",
   "license": "MIT",
   "exports": {
@@ -16,7 +16,7 @@
     "include": [
       ".github/FUNDING.yml",
       "template.env",
-      "get-git-repo.ts",
+      "git-dl.ts",
       "src/**/*.ts",
       "index.ts",
       "errors.ts",
