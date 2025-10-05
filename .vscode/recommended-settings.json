@@ -19,7 +19,9 @@
     "Промпт",
     "промпта",
     "промптами",
-    "Эндпоинт"
+    "Эндпоинт",
+    "VNAs",
+    "Voidify"
   ],
   "typescript.preferences.importModuleSpecifier": "project-relative",
   "javascript.preferences.importModuleSpecifier": "project-relative",

@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Release
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ main ]
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v5
+
+      - name: 'Set up Node.js'
+        uses: actions/setup-node@v5
+        with:
+          node-version: 23
+          registry-url: https://registry.npmjs.org/
+
+      - name: 'Install dependencies'
+        run: npm install
+
+      - name: 'Build, bundle'
+        run: npm exec -c ./scripts/build.sh
+
+      - name: 'Check if code follows JSR rules for packages'
+        run: npx jsr publish --dry-run
+
+      - name: 'Check if code passes tests'
+        run: npm run test-once
+
+      - name: 'Extract package info from package.json'
+        id: package_info
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.version' package.json)
+          name=$(jq -r '.name' package.json)
+          expected_package_archive_name=$name.tgz
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+          echo "expected_package_archive_name=$expected_package_archive_name" >> $GITHUB_OUTPUT
+
+      - name: 'Create package archive'
+        run: |
+          set -euo pipefail
+          mv ./$(npm pack) ./${{ steps.package_info.outputs.expected_package_archive_name }}
+
+      - name: 'Publish to default NPM registry'
+        run: npm publish ./${{ steps.package_info.outputs.expected_package_archive_name }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - name: 'Prepare deno.json for publishing to JSR'
+        run: |
+          set -euo pipefail
+          jq '.version = "${{ steps.package_info.outputs.version }}"' deno.json > _ && mv _ deno.json
+          npx prettier deno.json --write
+
+      - name: 'Commit updated deno.json after npm install'
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_author: 'nikelborm <evadev@duck.com>'
+          file_pattern: 'deno.json'
+          commit_message: Auto-updated NPM package files
+
+      - name: 'Publish to JSR'
+        run: npx jsr publish
+
+      - name: "Prepare package.json for publishing to GitHub's NPM registry"
+        run: jq '.name = "@nikelborm/" + .name' package.json > _ && mv _ package.json
+
+      - name: "Publish to GitHub's NPM registry"
+        run: |
+          set -euo pipefail
+          sed -i 's/registry.npmjs.org/npm.pkg.github.com/' /home/runner/work/_temp/.npmrc
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Upload NPM package archive as release artifacts'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.package_info.outputs.version }}
+          fail_on_unmatched_files: true
+          files: |
+            ${{ steps.package_info.outputs.expected_package_archive_name }}
+          body: |
+            # New release of ${{ steps.package_info.outputs.name }}! Yay! 🎉
+
+            ## Files in this release
+
+            - `${{ steps.package_info.outputs.expected_package_archive_name }}` contains package archive which was published to NPM
