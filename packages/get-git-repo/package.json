@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@effect/language-service": "^0.38.1",
-    "@effect/vitest": "^0.25.0",
+    "@effect/vitest": "^0.26.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
