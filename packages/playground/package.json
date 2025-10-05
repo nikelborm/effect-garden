@@ -9,10 +9,13 @@
     "@effect/platform": "catalog:",
     "@effect/sql": "catalog:",
     "effect": "catalog:",
+    "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
-    "@nikelborm/tsconfig": "workspace:*",
-    "@nikelborm/scripts": "workspace:*"
+    "@nikelborm/git-dl": "workspace:*",
+    "@nikelborm/joiners": "workspace:*",
+    "@nikelborm/scripts": "workspace:*",
+    "@nikelborm/tsconfig": "workspace:*"
   },
   "dependencies": {
     "@effect/platform-node": "^0.98.3",
