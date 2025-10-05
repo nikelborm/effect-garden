@@ -27,7 +27,11 @@ export const getSpreadObjectMerger = <
 ) => {
   const AHasPriority = doesAHavePriority(mergeStrategy)
   type TupleIndex = 0 | 1;
-  const castToObject = (index: TupleIndex) => typeof (tuple[index]) === 'symbol' ? {} : tuple[index];
+  const castToObject = (index: TupleIndex) => {
+    if (typeof (tuple[index]) !== 'object' || tuple[index] === null)
+      throw new Error('getSpreadObjectMerger doesn\'t handle anything except objects ')
+    return tuple[index]
+  };
 
   return {
     ...castToObject(+AHasPriority  as TupleIndex),
