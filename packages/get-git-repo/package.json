@@ -32,7 +32,7 @@
     "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.38.1",
+    "@effect/language-service": "^0.41.1",
     "@effect/vitest": "^0.26.0",
     "@rollup/plugin-commonjs": "^28.0.3",
     "@rollup/plugin-json": "^6.1.0",
