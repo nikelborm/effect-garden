@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": ["package.json", "tsconfig.json"],
+      "outputs": ["tsconfig.json"]
+    }
+  }
+}

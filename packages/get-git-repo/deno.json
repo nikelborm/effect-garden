@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
+  "name": "@nikelborm/get-git-repo",
+  "version": "0.1.28",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.ts",
+    "./index": "./index.ts",
+    "./index.ts": "./index.ts",
+    "./errors": "./errors.ts",
+    "./errors.ts": "./errors.ts",
+    "./cli": "./cli.ts",
+    "./cli.ts": "./cli.ts"
+  },
+  "publish": {
+    "include": [
+      ".github/FUNDING.yml",
+      "template.env",
+      "get-git-repo.ts",
+      "src/**/*.ts",
+      "index.ts",
+      "errors.ts",
+      "cli.ts",
+      "README.md",
+      "LICENSE"
+    ],
+    "exclude": ["**/*.spec.*", "scratchpad.*"]
+  }
+}

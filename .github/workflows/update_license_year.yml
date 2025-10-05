@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: Update copyright year(s) in license file
+
+on:
+  schedule:
+    - cron: '0 3 1 1 *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: FantasticFiasco/action-update-license-year@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --rebase --delete-branch

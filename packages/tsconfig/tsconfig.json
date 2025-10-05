@@ -1,0 +1,85 @@
+{
+  "compilerOptions": {
+    // TODO: change back to opposites, when it's less annoying
+    "allowUnusedLabels": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+
+    "verbatimModuleSyntax": true,
+    "importHelpers": true,
+    "moduleDetection": "force",
+    "useDefineForClassFields": true,
+    "disableSizeLimit": true,
+    "stripInternal": false,
+    "allowImportingTsExtensions": true,
+    "downlevelIteration": true,
+    "resolvePackageJsonExports": true,
+    "isolatedDeclarations": false,
+    "noUncheckedSideEffectImports": true,
+    "noEmitOnError": true,
+    "resolvePackageJsonImports": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "strictBuiltinIteratorReturn": true,
+    "moduleResolution": "bundler",
+    "module": "preserve",
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    // they'll be removed by bundler if needed
+    "removeComments": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "target": "ESNext",
+    "sourceMap": true,
+    "preserveWatchOutput": true,
+    "allowUnreachableCode": false,
+    "incremental": true,
+    "lib": ["ESNext"],
+    "exactOptionalPropertyTypes": true,
+    "allowJs": false,
+    "noErrorTruncation": true,
+    // checks types inside node_modules. Useful for reporting errors to upstream, but not always
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "strictBindCallApply": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "noImplicitUseStrict": false,
+    "suppressExcessPropertyErrors": false,
+    "suppressImplicitAnyIndexErrors": false,
+    "noStrictGenericChecks": false,
+    "plugins": [
+      {
+        "name": "ts-namespace-import",
+        "options": {
+          "capitalizedFilesOnly": true,
+          "nameTransform": "PascalCase"
+        }
+      },
+      {
+        "name": "@effect/language-service",
+        "diagnostics": true,
+        "quickinfo": true,
+        "completions": true,
+        "multipleEffectCheck": true,
+        "transform": "@effect/language-service/transform",
+        "importAliases": { "Array": "EffectArray", "String": "EffectString" }
+      }
+    ]
+  }
+}

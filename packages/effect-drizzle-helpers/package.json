@@ -1,0 +1,32 @@
+{
+  "name": "@nikelborm/effect-drizzle-helpers",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "@nikelborm/tsconfig": "workspace:*"
+  },
+  "files": [
+    "dist",
+    "dist-types",
+    "src",
+    "index.ts",
+    "package.json"
+  ],
+  "dependencies": {
+    "@nevware21/ts-utils": "^0.12.5",
+    "drizzle-orm": "^0.44.2",
+    "effect": "catalog:",
+    "pg": "^8.16.1",
+    "type-fest": "^5.0.1"
+  }
+}

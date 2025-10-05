@@ -1,0 +1,19 @@
+{
+  "name": "@nikelborm/effect-helpers",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "devDependencies": {
+    "@nikelborm/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "effect": "catalog:"
+  }
+}

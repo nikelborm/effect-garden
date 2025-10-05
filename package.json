@@ -1,0 +1,39 @@
+{
+  "name": "@nikelborm/effect-garden",
+  "version": "0.1.0",
+  "packageManager": "bun@1.2.10",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build --continue=dependencies-successful",
+    "cleanup": "bun ./packages/scripts/cleanup.ts ./",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint"
+  },
+  "catalog": {
+    "@effect/experimental": "^0.55.0",
+    "@effect/opentelemetry": "^0.57.0",
+    "@effect/platform-bun": "^0.80.0",
+    "@effect/platform": "^0.91.1",
+    "@effect/sql-drizzle": "^0.44.0",
+    "@effect/sql-pg": "^0.46.0",
+    "@effect/sql": "^0.45.0",
+    "effect": "3.17.14"
+  },
+  "devDependencies": {
+    "@nikelborm/backend-config": "workspace:*",
+    "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "@nikelborm/effect-helpers": "workspace:*",
+    "@nikelborm/playground": "workspace:*",
+    "@nikelborm/scripts": "workspace:*",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/bun": "^1.2.22",
+    "turbo": "^2.5.8"
+  },
+  "patchedDependencies": {
+    "effect@3.17.9": "patches/effect@3.17.9.patch",
+    "effect@3.17.10": "patches/effect@3.17.10.patch",
+    "effect@3.17.13": "patches/effect@3.17.13.patch"
+  }
+}

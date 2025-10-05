@@ -1,0 +1,9 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": ["index.ts", "package.json", "tsconfig.json"],
+      "outputs": ["dist-types/**", "dist/**"]
+    }
+  }
+}

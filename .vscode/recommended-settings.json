@@ -1,0 +1,34 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["*.tsconfig.json"],
+      "url": "https://json.schemastore.org/tsconfig"
+    }
+  ],
+  "cSpell.words": [
+    "addgroup",
+    "Dont",
+    "gefo",
+    "incorr",
+    "ondelete",
+    "valltest",
+    "yandexgpt",
+    "айди",
+    "инстанса",
+    "нейронки",
+    "Промпт",
+    "промпта",
+    "промптами",
+    "Эндпоинт"
+  ],
+  "typescript.preferences.importModuleSpecifier": "project-relative",
+  "javascript.preferences.importModuleSpecifier": "project-relative",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "prettier.jsxSingleQuote": true,
+  "prettier.singleQuote": true,
+  "cmake.ignoreCMakeListsMissing": true,
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@nikelborm/backend-config",
+  "type": "module",
+  "scripts": {
+    "build": "tspc",
+    "dev": "bun --hot --no-clear-screen ./index.ts"
+  },
+  "devDependencies": {
+    "@nikelborm/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@effect/platform": "catalog:",
+    "effect": "catalog:"
+  }
+}

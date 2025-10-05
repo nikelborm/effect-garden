@@ -1,0 +1,11 @@
+{
+  "name": "@nikelborm/scripts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@nikelborm/tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
+}

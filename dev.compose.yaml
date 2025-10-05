@@ -1,0 +1,100 @@
+services:
+  nginx-dev:
+    image: nginx-dev
+    restart: unless-stopped
+    # depends_on:
+    #   - backend-dev
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      target: dev_nginx
+    ports:
+      - ${EXTERNAL_PROXIED_PORT}:80/tcp
+
+  monorepo-ts-dev:
+    image: monorepo-ts-dev
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - EXTERNAL_PROXIED_PORT=${EXTERNAL_PROXIED_PORT}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      target: monorepo_dev
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+
+    # environment:
+    #   - SQLITE_MAIN_DB_FILE_PATH=/database_vault/test.db
+    #   - SQLITE_DEMO_TASKS_DB_FILE_PATH=/database_vault/tasks.db
+    volumes:
+      - ./packages:/app/packages
+      - ./.turbo/cache:/app/.turbo/cache
+
+  ts-dev-script-runner:
+    image: ts-dev-script-runner
+    restart: no
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      target: monorepo_task_runner
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    environment:
+      - TZ=${TZ}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USERNAME=${DATABASE_USERNAME}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - EXTERNAL_PROXIED_PORT=${EXTERNAL_PROXIED_PORT}
+    volumes:
+      - ./packages:/app/packages
+      - ./.turbo/cache:/app/.turbo/cache
+
+  postgres-dev:
+    image: postgres:17-alpine3.21@sha256:aedabd10a05c7304233d006a186a42d7d350b11e702d227dc09a99882dafa142
+    pull_policy: missing
+    hostname: ${DATABASE_HOST}
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -t 5 -p ${DATABASE_PORT} -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    command: -c default_text_search_config=pg_catalog.russian -p ${DATABASE_PORT}
+    environment:
+      - TZ=${TZ}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_DB=${DATABASE_NAME}
+    # In standard dockerfile of postgres there is special instruction that assigns a volume to /var/lib/postgresql/data
+    # The line below makes fresh database every time I container restarted.
+    tmpfs:
+      - /var/lib/postgresql/data
+    ports:
+      - ${DATABASE_PORT_EXPOSED_TO_DEV_LOCALHOST}:${DATABASE_PORT}
+
+  pgcli-dev:
+    image: brawdunoir/pgcli:latest@sha256:24657509b6b83d4745faa47a63193136c37352db8205d9e4fda2e6a53be248f9
+    container_name: pgcli-dev
+    profiles:
+      - use_pgcli
+    command:
+      - postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}

@@ -1,0 +1,19 @@
+[tools]
+bun = "latest"
+node = "24"
+
+[tasks]
+
+[tasks.update_package_deps]
+run = "bun update --latest --interactive -r"
+
+[env]
+COMPOSE_BAKE = "true"
+DOCKER_BUILDKIT = 1
+COMPOSE_DOCKER_CLI_BUILD = 1
+[env.'_']
+path = [
+  './node_modules/.bin',
+  './packages/scripts'
+]
+source = "./packages/scripts/setup_sh_vars.sh"

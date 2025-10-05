@@ -1,0 +1,21 @@
+{
+  "name": "@nikelborm/playground",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@effect/experimental": "catalog:",
+    "@effect/opentelemetry": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/sql": "catalog:",
+    "effect": "catalog:",
+    "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "@nikelborm/effect-helpers": "workspace:*",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@nikelborm/scripts": "workspace:*"
+  },
+  "dependencies": {
+    "@effect/platform-node": "^0.97.1",
+    "tinybench": "^5.0.1"
+  }
+}

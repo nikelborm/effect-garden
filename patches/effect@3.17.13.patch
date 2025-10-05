@@ -1,0 +1,26 @@
+diff --git a/dist/dts/Schema.d.ts b/dist/dts/Schema.d.ts
+index 15d098e7573a5f64135fdde3481fbba286514fb2..753d93b41b09ae09c73aa3e79ae2ee4574d1c741 100644
+--- a/dist/dts/Schema.d.ts
++++ b/dist/dts/Schema.d.ts
+@@ -1591,7 +1591,7 @@ export interface brand<S extends Schema.Any, B extends string | symbol> extends
+  * @category branding
+  * @since 3.10.0
+  */
+-export declare const brand: <S extends Schema.Any, B extends string | symbol>(brand: B, annotations?: Annotations.Schema<Schema.Type<S> & Brand<B>>) => (self: S) => brand<S, B>;
++export declare const brand: <S extends Schema.Any, B extends string | symbol>(brand: B, annotations?: Annotations.Schema<Schema.Type<S> & Brand<B>>) => <SubS extends S>(self: SubS) => brand<SubS, B>;
+ /**
+  * @category combinators
+  * @since 3.10.0
+diff --git a/src/Schema.ts b/src/Schema.ts
+index 80c04e810c48eaecbd2df62b7eb5638088366379..dffcefdecdffcd89043a760b751e89a2c89c9cb3 100644
+--- a/src/Schema.ts
++++ b/src/Schema.ts
+@@ -3405,7 +3405,7 @@ export const brand = <S extends Schema.Any, B extends string | symbol>(
+   brand: B,
+   annotations?: Annotations.Schema<Schema.Type<S> & Brand<B>>
+ ) =>
+-(self: S): brand<S, B> => {
++<SubS extends S>(self: SubS): brand<SubS, B> => {
+   const annotation: AST.BrandAnnotation = option_.match(AST.getBrandAnnotation(self.ast), {
+     onNone: () => [brand],
+     onSome: (brands) => [...brands, brand]

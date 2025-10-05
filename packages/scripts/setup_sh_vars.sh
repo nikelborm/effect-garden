@@ -1,0 +1,1 @@
+export GID=$(id -g)
