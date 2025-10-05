@@ -29,7 +29,7 @@ export const getSpreadObjectMerger = <
   type TupleIndex = 0 | 1;
   const castToObject = (index: TupleIndex) => {
     if (typeof (tuple[index]) !== 'object' || tuple[index] === null)
-      throw new Error('getSpreadObjectMerger doesn\'t handle anything except objects ')
+      throw new Error('getSpreadObjectMerger handles objects exclusively')
     return tuple[index]
   };
 
