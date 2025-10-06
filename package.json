@@ -23,7 +23,7 @@
     "@effect/sql": "^0.46.0",
     "@effect/vitest": "^0.26.0",
     "effect-errors": "^1.10.11",
-    "effect": "3.18.2"
+    "effect": "3.18.3"
   },
   "devDependencies": {
     "@nikelborm/apache-superset-quick-init": "workspace:*",

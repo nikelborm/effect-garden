@@ -20,6 +20,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "effect-octokit-layer": "^1.13.1",
     "tinybench": "^5.0.1"
   }
 }
