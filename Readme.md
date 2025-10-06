@@ -14,3 +14,4 @@ related to effect.
 4. write a helper that will look across `package.json`s and find duplicate
    dependencies to extract into catalogs and also report packages that are
    `@nikelborm/...`, but have versions not equal to `workspace:*`
+5. ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
