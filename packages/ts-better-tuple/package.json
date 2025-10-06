@@ -1,5 +1,5 @@
 {
-  "name": "ts-better-tuple",
+  "name": "@nikelborm/ts-better-tuple",
   "version": "0.1.0",
   "description": "",
   "main": "index.ts",

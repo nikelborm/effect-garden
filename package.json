@@ -31,6 +31,7 @@
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
+    "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/playground": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
