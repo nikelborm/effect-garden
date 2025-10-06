@@ -19,7 +19,8 @@ type TupleOfEntriesWithIndexesMappedToValues<
 type GetUnionOfTuplesHavingValuesAndTheirIndexes<
   SourceTuple extends unknown[],
 > = (SourceTuple extends any
-  ? TupleOfEntriesWithIndexesMappedToValues<SourceTuple> extends infer T extends unknown[]
+  ? TupleOfEntriesWithIndexesMappedToValues<SourceTuple> extends infer T extends
+      unknown[]
     ? T[number]
     : never
   : never) &
@@ -69,8 +70,8 @@ type Join<
         ? [U] extends [never]
           ? ResultString
           : U extends [unknown, 0]
-          ? `${U[0]}`
-          : `${ResultString}${Separator}${U[0]}`
+            ? `${U[0]}`
+            : `${ResultString}${Separator}${U[0]}`
         : never,
       [...ExtendableTupleJustForIteration, 1]
     >;
@@ -99,8 +100,8 @@ type Concat<T extends OneConcatArg[]> = T extends [
       ...([U] extends [unknown[]]
         ? U
         : [U] extends [{ rawTuple: infer K extends unknown[] }]
-        ? K
-        : never),
+          ? K
+          : never),
       ...Concat<Rest>,
     ]
   : [];
@@ -127,21 +128,26 @@ export type Prettify<T> = { [P in keyof T]: T[P] } & {};
 
 class BetterTuple<
   const SourceTuple extends unknown[],
-  UnionOfTuplesHavingValuesAndTheirIndexes extends GetUnionOfTuplesHavingValuesAndTheirIndexes<SourceTuple> = GetUnionOfTuplesHavingValuesAndTheirIndexes<SourceTuple>,
+  UnionOfTuplesHavingValuesAndTheirIndexes extends
+    GetUnionOfTuplesHavingValuesAndTheirIndexes<SourceTuple> = GetUnionOfTuplesHavingValuesAndTheirIndexes<SourceTuple>,
   // Enumeration extends Enumerate<Tuple> = Enumerate<Tuple>
 > {
-  constructor(public readonly rawTuple: SourceTuple) {}
+  constructor(rawTuple: SourceTuple) {
+    this.rawTuple = rawTuple;
+  }
+
+  public readonly rawTuple: SourceTuple;
 
   map<U>(
     callbackfn: (
       valueWithIndex: UnionOfTuplesHavingValuesAndTheirIndexes,
-      array: SourceTuple,
-    ) => U,
+      array: SourceTuple
+    ) => U
   ) {
     const returns = [];
     for (let index = 0; index < this.rawTuple.length; index++) {
       returns.push(
-        callbackfn([this.rawTuple[index], index] as any, this.rawTuple),
+        callbackfn([this.rawTuple[index], index] as any, this.rawTuple)
       );
     }
     return new BetterTuple(returns as BundleBack<U & [unknown, number]>);
@@ -150,8 +156,8 @@ class BetterTuple<
   filter<U extends UnionOfTuplesHavingValuesAndTheirIndexes>(
     predicate: (
       valueWithIndex: UnionOfTuplesHavingValuesAndTheirIndexes,
-      array: SourceTuple,
-    ) => valueWithIndex is U,
+      array: SourceTuple
+    ) => valueWithIndex is U
   ) {
     const returns = [];
     for (let index = 0; index < this.rawTuple.length; index++) {
@@ -172,8 +178,8 @@ class BetterTuple<
   concat<const T extends OneConcatArg[]>(...items: T) {
     return new BetterTuple(
       this.rawTuple.concat(
-        ...items.map(e => (e instanceof BetterTuple ? e.rawTuple : e)),
-      ) as Concat<[SourceTuple, ...T]>,
+        ...items.map((e) => (e instanceof BetterTuple ? e.rawTuple : e))
+      ) as Concat<[SourceTuple, ...T]>
     );
   }
 
@@ -183,9 +189,12 @@ class BetterTuple<
 }
 
 const preserveOnlyNormalFruits = <const T extends [unknown, number]>(
-  v_i: T,
-): v_i is Extract<T, [{ name: string; color: string }, number]> => {
-  const [value] = v_i;
+  tupleOfValueAndIndex: T
+): tupleOfValueAndIndex is Extract<
+  T,
+  [{ name: string; color: string }, number]
+> => {
+  const [value] = tupleOfValueAndIndex;
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -230,7 +239,7 @@ const asd1 = new BetterTuple(fruits).map(
       // roles at the same time. It runs the check AND distributes the type
     ] as T extends [{ name: string; color: string }, number]
       ? [`${Capitalize<T[0]['name']>} has ${T[0]['color']} color`, T[1]]
-      : [`broken object at index ${T[1]}`, T[1]],
+      : [`broken object at index ${T[1]}`, T[1]]
 ).rawTuple;
 // Correctly inferred type (and value) should be
 // const asd1: [
@@ -243,11 +252,11 @@ const asd1 = new BetterTuple(fruits).map(
 
 const asd2 = new BetterTuple(asd1).filter(
   (
-    tuple,
+    tuple
   ): tuple is Exclude<
     typeof tuple,
     [`broken object at index ${string}`, number]
-  > => !tuple[0].startsWith('broken object at index '),
+  > => !tuple[0].startsWith('broken object at index ')
 ).rawTuple;
 // Correctly inferred type (and value) should be
 // const asd2: [
@@ -268,15 +277,15 @@ const asd3 = new BetterTuple(fruits)
         // roles at the same time. It runs the check AND distributes the type
       ] as T extends [{ name: string; color: string }, number]
         ? [`${Capitalize<T[0]['name']>} has ${T[0]['color']} color`, T[1]]
-        : [`broken object at index ${T[1]}`, T[1]],
+        : [`broken object at index ${T[1]}`, T[1]]
   )
   .filter(
     (
-      v_i,
+      v_i
     ): v_i is Exclude<
       typeof v_i,
       [`broken object at index ${string}`, number]
-    > => !v_i[0].startsWith('broken object at index '),
+    > => !v_i[0].startsWith('broken object at index ')
   ).rawTuple;
 
 // Correctly inferred type (and value) should be
@@ -295,12 +304,12 @@ type StringViewOfFruit<V_I> = V_I extends [
   : never;
 
 const asd4 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).map(
-  v_i =>
+  (v_i) =>
     [
       `${capitalize(v_i[0]['name'])} has ${v_i[0]['color']} color`,
       v_i[1],
       // hint to distribute the type is required here
-    ] as StringViewOfFruit<typeof v_i>,
+    ] as StringViewOfFruit<typeof v_i>
 ).rawTuple;
 
 // Correctly inferred type (and value) should be
@@ -315,7 +324,7 @@ const asd5 = new BetterTuple(fruits)
   .map(
     <T extends [{ name: string; color: string }, number]>(v_i: T) =>
       // hint to distribute the type is required here
-      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
+      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never
   )
   .join(', ');
 
@@ -334,12 +343,12 @@ const asd7 = new BetterTuple(fruits)
   .concat(fruits, new BetterTuple(fruits))
   .filter(
     (tuple): tuple is Extract<typeof tuple, [{ name: string }, number]> =>
-      'name' in tuple[0] && typeof tuple[0].name === 'string',
+      'name' in tuple[0] && typeof tuple[0].name === 'string'
   )
   .map(
     <T extends [{ name: string }, number]>(v_i: T) =>
       // hint to distribute the type is required here
-      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
+      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never
   )
   .join(', ');
 
