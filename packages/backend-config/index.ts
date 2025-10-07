@@ -30,17 +30,16 @@ const ifConfigAbsentFallbackTo =
     A,
     E,
     R,
-    Pack extends [ConfigError.ConfigError] extends [E]
-      ? [A2, E2, R2]
-      : [never, never, never],
+    Pack extends ConfigError.ConfigError extends E ? [A2, E2, R2] : never,
+    Res extends Effect.Effect<A | Pack[0], E | Pack[1], R | Pack[2]>,
   >(
     self: Effect.Effect<A, E, R>
-  ) =>
+  ): Res =>
     Effect.catchAll(self, (err) =>
       ConfigError.isConfigError(err) && ConfigError.isMissingDataOnly(err)
-        ? (fallback as Effect.Effect<A | Pack[0], E | Pack[1], R | Pack[2]>)
+        ? (fallback as Res)
         : Effect.fail(err)
-    );
+    ) as Res;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -98,7 +97,7 @@ export class BackendExternallyAvailableAtURL extends Context.Tag(
               ifConfigAbsentFallbackTo(BackendPort),
               Effect.map((port) => new URL(`http://localhost:${port}/`))
             )
-          : Effect.die(err.message)
+          : Effect.fail(err)
       )
     ),
     Effect.orDie,
