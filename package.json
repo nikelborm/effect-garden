@@ -36,6 +36,7 @@
     "@nikelborm/playground": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
+    "@trellisform/database": "workspace:*",
     "@types/bun": "^1.2.22",
     "turbo": "^2.5.8"
   },

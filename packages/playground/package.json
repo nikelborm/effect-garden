@@ -16,6 +16,7 @@
     "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
+    "@trellisform/database": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "effect": "catalog:"
   },
