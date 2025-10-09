@@ -1,4 +1,4 @@
-import { Console, Order, Predicate, SortedSet, Stream } from 'effect';
+import { Order, Predicate, SortedSet, Stream } from 'effect';
 import { dual } from 'effect/Function';
 
 const isStream = (u: unknown): u is Stream.Stream<any> =>
