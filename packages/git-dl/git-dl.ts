@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 
-import { CliConfig, Span } from '@effect/cli';
-import { make, run } from '@effect/cli/Command';
-import { layer as NodeFileSystemLayer } from '@effect/platform-node-shared/NodeFileSystem';
-import { layer as NodePathLayer } from '@effect/platform-node-shared/NodePath';
-import { runMain } from '@effect/platform-node-shared/NodeRuntime';
+import * as CliConfig from '@effect/cli/CliConfig';
+import * as HelpDocSpan from '@effect/cli/HelpDoc/Span';
+import * as CliCommand from '@effect/cli/Command';
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem';
+import * as NodePath from '@effect/platform-node/NodePath';
+import * as NodeRuntime from '@effect/platform-node/NodeRuntime';
+import * as NodeTerminal from '@effect/platform-node/NodeTerminal';
 import { prettyPrint } from 'effect-errors';
-import { layer as NodeTerminalLayer } from '@effect/platform-node-shared/NodeTerminal';
-import { catchAll, fail, provide, sandbox, withSpan } from 'effect/Effect';
+import * as Effect from 'effect/Effect';
 import { pipe } from 'effect/Function';
 import pkg from './package.json' with { type: 'json' };
 import {
@@ -20,7 +21,7 @@ import {
   repoOwnerCLIOptionBackedByEnv,
 } from './src/index.ts';
 
-const appCommand = make(
+const appCommand = CliCommand.make(
   pkg.name,
   {
     repo: {
@@ -32,40 +33,40 @@ const appCommand = make(
       destinationPathCLIOptionBackedByEnv,
     gitRef: gitRefCLIOptionBackedByEnv,
   },
-  downloadEntityFromRepo,
+  downloadEntityFromRepo
 );
 
-const cli = run(appCommand, {
+const cli = CliCommand.run(appCommand, {
   name: pkg.name,
   version: pkg.version,
-  summary: Span.text(pkg.description),
+  summary: HelpDocSpan.text(pkg.description),
 });
 
 pipe(
   process.argv,
   cli,
-  provide(NodeFileSystemLayer),
-  provide(NodePathLayer),
-  provide(NodeTerminalLayer),
-  provide(CliConfig.layer({ showTypes: false })),
-  provide(
+  Effect.provide(NodeFileSystem.layer),
+  Effect.provide(NodePath.layer),
+  Effect.provide(NodeTerminal.layer),
+  Effect.provide(CliConfig.layer({ showTypes: false })),
+  Effect.provide(
     OctokitLayer({
       // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
-    }),
+    })
   ),
-  sandbox,
-  catchAll(e => {
+  Effect.sandbox,
+  Effect.catchAll((e) => {
     console.error(prettyPrint(e));
 
-    return fail(e);
+    return Effect.fail(e);
   }),
-  withSpan('cli', {
+  Effect.withSpan('cli', {
     attributes: {
       name: pkg.name,
       version: pkg.version,
     },
   }),
-  runMain({
+  NodeRuntime.runMain({
     disableErrorReporting: true,
-  }),
+  })
 );
