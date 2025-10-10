@@ -160,6 +160,7 @@
       "name": "@nikelborm/playground",
       "dependencies": {
         "effect-octokit-layer": "^1.13.2",
+        "outdent": "^0.8.0",
         "tinybench": "^5.0.1",
       },
       "devDependencies": {
@@ -193,6 +194,7 @@
     "packages/trellisform-database": {
       "name": "@trellisform/database",
       "dependencies": {
+        "@effect/sql": "catalog:",
         "@effect/sql-drizzle": "catalog:",
         "@effect/sql-pg": "catalog:",
         "@nikelborm/effect-drizzle-helpers": "workspace:*",

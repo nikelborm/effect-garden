@@ -74,11 +74,24 @@
       {
         "name": "@effect/language-service",
         "diagnostics": true,
+        "diagnosticSeverity": {
+          "deterministicKeys": "error"
+        },
         "quickinfo": true,
         "completions": true,
         "multipleEffectCheck": true,
         "transform": "@effect/language-service/transform",
-        "importAliases": { "Array": "EffectArray", "String": "EffectString" }
+        "namespaceImportPackages": ["effect", "@effect/*"],
+        "topLevelNamedReexports": "follow",
+        "quickinfoMaximumLength": 1000,
+        "keyPatterns": [
+          {
+            "target": "service", // what key type to target between service|error
+            "pattern": "package-identifier", // the chosen pattern
+            "skipLeadingPath": [] // other pattern specific configs
+          }
+        ],
+        "importAliases": { "Array": "EArray", "String": "EString" }
       }
     ]
   }
