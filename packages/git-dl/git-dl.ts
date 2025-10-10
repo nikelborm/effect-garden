@@ -20,6 +20,7 @@ import {
   repoNameCLIOptionBackedByEnv,
   repoOwnerCLIOptionBackedByEnv,
 } from './src/index.ts';
+import * as Layer from 'effect/Layer';
 
 const appCommand = CliCommand.make(
   pkg.name,
@@ -42,30 +43,32 @@ const cli = CliCommand.run(appCommand, {
   summary: HelpDocSpan.text(pkg.description),
 });
 
+const AppLayer = Layer.mergeAll(
+  NodeFileSystem.layer,
+  NodePath.layer,
+  NodeTerminal.layer,
+  CliConfig.layer({ showTypes: false }),
+  OctokitLayer({
+    // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
+  })
+);
+
 pipe(
   process.argv,
   cli,
-  Effect.provide(NodeFileSystem.layer),
-  Effect.provide(NodePath.layer),
-  Effect.provide(NodeTerminal.layer),
-  Effect.provide(CliConfig.layer({ showTypes: false })),
-  Effect.provide(
-    OctokitLayer({
-      // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
-    })
-  ),
-  Effect.sandbox,
-  Effect.catchAll((e) => {
-    console.error(prettyPrint(e));
-
-    return Effect.fail(e);
-  }),
   Effect.withSpan('cli', {
     attributes: {
       name: pkg.name,
       version: pkg.version,
     },
   }),
+  Effect.sandbox,
+  Effect.catchAll((e) => {
+    console.error(prettyPrint(e));
+
+    return Effect.fail(e);
+  }),
+  Effect.provide(AppLayer),
   NodeRuntime.runMain({
     disableErrorReporting: true,
   })
