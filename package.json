@@ -22,8 +22,8 @@
     "@effect/sql-pg": "^0.46.0",
     "@effect/sql": "^0.46.0",
     "@effect/vitest": "^0.26.0",
-    "effect-errors": "^1.10.11",
-    "effect": "3.18.3"
+    "effect-errors": "^1.10.17",
+    "effect": "3.18.4"
   },
   "devDependencies": {
     "@nikelborm/apache-superset-quick-init": "workspace:*",

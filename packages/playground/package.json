@@ -21,7 +21,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "effect-octokit-layer": "^1.13.1",
+    "effect-octokit-layer": "^1.13.2",
     "tinybench": "^5.0.1"
   }
 }

@@ -4,7 +4,7 @@
     "default": "./tsconfig.json"
   },
   "devDependencies": {
-    "@effect/language-service": "^0.42.0",
+    "@effect/language-service": "^0.44.0",
     "ts-namespace-import": "nounder/ts-namespace-import",
     "ts-patch": "^3.3.0",
     "typescript": "^5.8.3"
