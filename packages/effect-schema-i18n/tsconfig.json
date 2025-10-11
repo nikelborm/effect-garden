@@ -1,0 +1,19 @@
+{
+  "extends": "@nikelborm/tsconfig",
+  "compilerOptions": {
+    "declarationDir": "./dist-types",
+    "outDir": "./dist",
+    "baseUrl": "./"
+  },
+  "include": ["**/*.ts"],
+  "exclude": [
+    "vite.config.ts",
+    ".turbo",
+    "tmp",
+    "dist",
+    "dist-types",
+    "build",
+    "out",
+    "node_modules"
+  ]
+}

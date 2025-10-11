@@ -1,0 +1,58 @@
+{
+  "name": "@nikelborm/effect-schema-i18n",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Effect schema i18n",
+  "license": "MIT",
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "files": [
+    "dist",
+    "dist-types",
+    "src",
+    "index.ts",
+    "package.json"
+  ],
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@nikelborm/tsconfig": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ]
+}

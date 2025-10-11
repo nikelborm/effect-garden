@@ -7,7 +7,7 @@
   "scripts": {
     "scratchpad": "node --use-strict ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
-    "format": "prettier . --write",
+    "format": "",
     "coverage": "vitest run --coverage",
     "test-once": "vitest --run",
     "test:mutate": "stryker run",
@@ -30,7 +30,6 @@
     "change-case": "^5.4.4",
     "jsr": "^0.13.4",
     "@nikelborm/tsconfig": "workspace:*",
-    "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "ts-patch": "^3.3.0",
     "ts-toolbelt": "^9.6.0",

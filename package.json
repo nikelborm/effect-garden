@@ -13,6 +13,7 @@
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",
+    "@nikelborm/effect-schema-i18n": "workspace:*",
     "@types/bun": "^1.2.22",
     "turbo": "^2.5.8"
   },
