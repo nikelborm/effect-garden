@@ -4,6 +4,6 @@ export {
   pathToEntityInRepoCLIOptionBackedByEnv,
   repoNameCLIOptionBackedByEnv,
   repoOwnerCLIOptionBackedByEnv,
-} from './commandLineParams.ts';
-export { downloadEntityFromRepo } from './downloadEntityFromRepo.ts';
-export { OctokitLayer } from './octokit.ts';
+} from './commandLineParams.ts'
+export { downloadEntityFromRepo } from './downloadEntityFromRepo.ts'
+export { OctokitLayer } from './octokit.ts'

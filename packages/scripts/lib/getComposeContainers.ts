@@ -1,5 +1,5 @@
-import { Either, Schema } from 'effect';
-import { devComposePs } from './composeCommands.ts';
+import { Either, Schema } from 'effect'
+import { devComposePs } from './composeCommands.ts'
 
 const PsCommandOutputSchema = Schema.compose(
   Schema.compose(Schema.Trim, Schema.split('\n')),
@@ -17,31 +17,31 @@ const PsCommandOutputSchema = Schema.compose(
       ),
     }),
   ).pipe(Schema.Array),
-).pipe(Schema.asSchema);
+).pipe(Schema.asSchema)
 
-const decodePsCommandOutput = Schema.decodeEither(PsCommandOutputSchema);
+const decodePsCommandOutput = Schema.decodeEither(PsCommandOutputSchema)
 
 export async function getDevComposeContainers() {
-  const cmd = devComposePs.concat('--format', 'json', '-a');
+  const cmd = devComposePs.concat('--format', 'json', '-a')
 
-  const proc = Bun.spawn({ cmd, stdin: 'ignore' });
+  const proc = Bun.spawn({ cmd, stdin: 'ignore' })
 
   const [exitCode, stdoutText] = await Promise.all([
     proc.exited,
     proc.stdout.text(),
-  ]);
+  ])
 
-  const processFinishedSuccessfully = exitCode === 0;
+  const processFinishedSuccessfully = exitCode === 0
 
   if (!processFinishedSuccessfully)
-    throw new Error(`Failed to run \`${cmd}\` command`);
+    throw new Error(`Failed to run \`${cmd}\` command`)
 
-  const containersEither = decodePsCommandOutput(stdoutText);
+  const containersEither = decodePsCommandOutput(stdoutText)
 
   if (Either.isLeft(containersEither))
     throw new Error(`Failed to parse \`${cmd}\` command output`, {
       cause: containersEither.left,
-    });
+    })
 
-  return containersEither.right;
+  return containersEither.right
 }

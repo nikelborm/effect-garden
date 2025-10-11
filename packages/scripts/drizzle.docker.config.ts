@@ -1,13 +1,13 @@
-import { defineConfig } from 'drizzle-kit';
-import { join } from 'path';
-import { decodeDbConfigSync } from './lib/getDevEnvFromFile.ts';
+import { defineConfig } from 'drizzle-kit'
+import { join } from 'path'
+import { decodeDbConfigSync } from './lib/getDevEnvFromFile.ts'
 import {
   databasePackageDirPath,
   makeRelativeAgainstProjectRoot,
   migrationsDirPath,
-} from './lib/paths.ts';
+} from './lib/paths.ts'
 
-const env = decodeDbConfigSync(import.meta.env);
+const env = decodeDbConfigSync(import.meta.env)
 
 // I had to add makeRelativeAgainstProjectRoot because of bug in drizzle-kit:
 // https://github.com/drizzle-team/drizzle-orm/issues/3217
@@ -27,4 +27,4 @@ export default defineConfig({
     database: env['DATABASE_NAME'],
     // url: 'postgres://usr:pass@localhost:5432/main?sslmode=disable',
   },
-});
+})

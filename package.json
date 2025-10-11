@@ -2,18 +2,19 @@
   "name": "@nikelborm/effect-garden",
   "version": "0.1.0",
   "devDependencies": {
+    "@biomejs/biome": "^2.2.5",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
+    "@nikelborm/effect-schema-i18n": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
-    "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/playground": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
+    "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",
-    "@nikelborm/effect-schema-i18n": "workspace:*",
     "@types/bun": "^1.2.22",
     "turbo": "^2.5.8"
   },
@@ -41,7 +42,7 @@
     "build": "turbo run build --continue=dependencies-successful",
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
-    "lint": "turbo run lint"
+    "lint": "biome check --write"
   },
   "workspaces": [
     "packages/*"

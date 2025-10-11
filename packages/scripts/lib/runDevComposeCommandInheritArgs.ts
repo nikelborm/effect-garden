@@ -1,7 +1,7 @@
-import { devCompose } from './composeCommands.ts';
-import { ensureDevEnvExists } from './ensureDevEnvExists.ts';
-import { ensureGroupIdEnvVariableAvailable } from './ensureGroupIdEnvVariableAvailable.ts';
-import { passthroughSpawnInheritArgs } from './passthroughSpawn.ts';
+import { devCompose } from './composeCommands.ts'
+import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
+import { ensureGroupIdEnvVariableAvailable } from './ensureGroupIdEnvVariableAvailable.ts'
+import { passthroughSpawnInheritArgs } from './passthroughSpawn.ts'
 
 export async function runDevComposeCommandThatInheritsArgs(
   ...devComposeCmdSuffix: string[]
@@ -9,15 +9,15 @@ export async function runDevComposeCommandThatInheritsArgs(
   await runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(
     ...devCompose,
     ...devComposeCmdSuffix,
-  );
+  )
 }
 
 export async function runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(
   ...cmd: string[]
 ) {
-  await ensureDevEnvExists();
+  await ensureDevEnvExists()
 
-  ensureGroupIdEnvVariableAvailable();
+  ensureGroupIdEnvVariableAvailable()
 
-  await passthroughSpawnInheritArgs(...cmd);
+  await passthroughSpawnInheritArgs(...cmd)
 }

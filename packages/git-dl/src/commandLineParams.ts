@@ -4,48 +4,48 @@ import {
   withFallbackConfig,
   withDescription as withOptionDescription,
   withSchema,
-} from '@effect/cli/Options';
-import { Path } from '@effect/platform/Path';
+} from '@effect/cli/Options'
+import { Path } from '@effect/platform/Path'
 import {
   nonEmptyString as nonEmptyStringConfig,
   validate as validateConfig,
   withDefault as withConfigDefault,
   withDescription as withConfigDescription,
-} from 'effect/Config';
-import { flatMap } from 'effect/Effect';
-import { pipe } from 'effect/Function';
-import { Type, fail, succeed } from 'effect/ParseResult';
-import { NonEmptyString, filter, transformOrFail } from 'effect/Schema';
-import { outdent } from 'outdent';
+} from 'effect/Config'
+import { flatMap } from 'effect/Effect'
+import { pipe } from 'effect/Function'
+import { fail, succeed, Type } from 'effect/ParseResult'
+import { filter, NonEmptyString, transformOrFail } from 'effect/Schema'
+import { outdent } from 'outdent'
 
-const isGitHubSlug = (s: string) => !!s.match(/^[a-z0-9.\-_]+$/gi);
+const isGitHubSlug = (s: string) => !!s.match(/^[a-z0-9.\-_]+$/gi)
 
 const invalidGitHubSlugMessage =
-  'GitHub handle should have only ASCII letters, digits, and the characters ".", "-", and "_"';
+  'GitHub handle should have only ASCII letters, digits, and the characters ".", "-", and "_"'
 
 // https://developer.mozilla.org/en-US/docs/Glossary/Slug
 const GitHubSlugStringSchema = NonEmptyString.pipe(
   filter(s => isGitHubSlug(s) || invalidGitHubSlugMessage),
-);
+)
 
 const withGitHubSlugConfigValidation = validateConfig({
   message: invalidGitHubSlugMessage,
   validation: isGitHubSlug,
-});
+})
 
-const pathToEntityInRepoDescription = 'Path to file or directory in repo';
+const pathToEntityInRepoDescription = 'Path to file or directory in repo'
 
 const repoOwnerDescription = outdent`
   This is a username (login handle) of a person owning repo you
   are trying to download from. For example, if the repository's URL is
   \`https://github.com/apache/superset\`, the owner is \`apache\`
-`;
+`
 
 const repoNameDescription = outdent`
   This is the name handle of the repository you are trying to download
   from. For example, if the repository's URL is
   \`https://github.com/apache/superset\`, the name is \`superset\`
-`;
+`
 
 const destinationPathDescription = outdent`
   Local path of the downloaded file or directory. If
@@ -55,43 +55,43 @@ const destinationPathDescription = outdent`
   "pathToEntityInRepo" will be put into a directory with name equal last
   element of destination path. If the directory doesn't exist, it will
   be automatically created.
-`;
+`
 
 const gitRefDescription = outdent`
   This is the commit's SHA hash, branch name, tag name, or any other ref
   you want to download from. If you don't specify it, the default branch
   in the repository will be used.
-`;
+`
 
 const RepoNameConfig = pipe(
   nonEmptyStringConfig('REPO_NAME'),
   withGitHubSlugConfigValidation,
   withConfigDescription(repoNameDescription),
-);
+)
 
 const RepoOwnerConfig = pipe(
   nonEmptyStringConfig('REPO_OWNER'),
   withGitHubSlugConfigValidation,
   withConfigDescription(repoOwnerDescription),
-);
+)
 
 const DestinationPathConfig = pipe(
   nonEmptyStringConfig('DESTINATION_PATH'),
   withConfigDefault('./destination'),
   withConfigDescription(destinationPathDescription),
-);
+)
 
 const PathToEntityInRepoConfig = pipe(
   nonEmptyStringConfig('PATH_TO_ENTITY_IN_REPO'),
   withConfigDefault('.'),
   withConfigDescription(pathToEntityInRepoDescription),
-);
+)
 
 const GitRefConfig = pipe(
   nonEmptyStringConfig('GIT_REF'),
   withConfigDefault('HEAD'),
   withConfigDescription(gitRefDescription),
-);
+)
 
 const CleanRepoEntityPathString = transformOrFail(
   NonEmptyString,
@@ -105,7 +105,7 @@ const CleanRepoEntityPathString = transformOrFail(
         // there, it's very intentional and no other elements in the path exist.
         const cleanPathToEntityInRepo = path
           .join(dirtyPathToEntityInRepo)
-          .replaceAll(/\/?$/g, '');
+          .replaceAll(/\/?$/g, '')
 
         if (cleanPathToEntityInRepo.startsWith('..'))
           return fail(
@@ -114,12 +114,12 @@ const CleanRepoEntityPathString = transformOrFail(
               dirtyPathToEntityInRepo,
               "Can't request contents that lie higher than the root of the repo",
             ),
-          );
-        return succeed(cleanPathToEntityInRepo);
+          )
+        return succeed(cleanPathToEntityInRepo)
       }),
     encode: succeed,
   },
-);
+)
 
 /**
  * Text parameter containing path to a directory or a file inside target repo.
@@ -143,7 +143,7 @@ export const pathToEntityInRepoCLIOptionBackedByEnv: Options<string> = pipe(
   withOptionDescription(pathToEntityInRepoDescription),
   withFallbackConfig(PathToEntityInRepoConfig),
   withSchema(CleanRepoEntityPathString),
-);
+)
 
 /**
  * Text parameter containing URL slug of the user which owns the repo.
@@ -170,7 +170,7 @@ export const repoOwnerCLIOptionBackedByEnv: Options<string> = pipe(
   withOptionDescription(repoOwnerDescription),
   withFallbackConfig(RepoOwnerConfig),
   withSchema(GitHubSlugStringSchema),
-);
+)
 
 /**
  * Text parameter containing URL slug of the repo itself.
@@ -197,7 +197,7 @@ export const repoNameCLIOptionBackedByEnv: Options<string> = pipe(
   withOptionDescription(repoNameDescription),
   withFallbackConfig(RepoNameConfig),
   withSchema(GitHubSlugStringSchema),
-);
+)
 
 /**
  * Text parameter containing path inside your local file system, your new
@@ -225,7 +225,7 @@ export const destinationPathCLIOptionBackedByEnv: Options<string> = pipe(
   text(`destinationPath`),
   withOptionDescription(destinationPathDescription),
   withFallbackConfig(DestinationPathConfig),
-);
+)
 
 /**
  * Text parameter containing commit SHA hash, branch name, or tag name you want
@@ -253,4 +253,4 @@ export const gitRefCLIOptionBackedByEnv: Options<string> = pipe(
   text(`gitRef`),
   withOptionDescription(gitRefDescription),
   withFallbackConfig(GitRefConfig),
-);
+)

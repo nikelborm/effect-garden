@@ -1,6 +1,6 @@
-import { Either, ParseResult, Schema, SchemaAST } from 'effect';
-import { dual } from 'effect/Function';
-import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts';
+import { Either, ParseResult, type Schema, SchemaAST } from 'effect'
+import { dual } from 'effect/Function'
+import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts'
 
 export const withInferredFromTagIdentifierSchemaAnnotationEither: {
   // data-last
@@ -11,7 +11,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
   ) => Either.Either<
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
-  >;
+  >
   // data-first
   <Self extends Schema.Struct<any>>(
     self: Self,
@@ -19,7 +19,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
   ): Either.Either<
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
-  >;
+  >
 } = dual(
   2,
   <Self extends Schema.Struct<any>>(
@@ -29,7 +29,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
   > => {
-    const ast = self.ast;
+    const ast = self.ast
 
     if (!SchemaAST.isTypeLiteral(ast))
       return ParseResult.fail(
@@ -38,11 +38,11 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
           ast._tag,
           'Argument of withInferredFromTagIdentifierSchemaAnnotationEither is not type literal',
         ),
-      );
+      )
 
     const tagPropertySignature = ast.propertySignatures.find(
       s => s.name === '_tag',
-    );
+    )
 
     if (
       !tagPropertySignature ||
@@ -54,17 +54,17 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
           ast._tag,
           `withInferredFromTagIdentifierSchemaAnnotationEither were not able to find tag field in passed struct. Are you sure it's TaggedStruct?`,
         ),
-      );
+      )
 
-    const tag = tagPropertySignature.type.literal;
+    const tag = tagPropertySignature.type.literal
 
     return ParseResult.succeed(
       self.annotations({
         identifier: `${prefix}/${tag}`,
       }) as EnsureTaggedStructWithStringLiteral<Self, never>,
-    );
+    )
   },
-);
+)
 
 export const withInferredFromTagIdentifierSchemaAnnotationSync: {
   // data-last
@@ -72,12 +72,12 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
     prefix: string,
   ): <Self extends Schema.Struct<any>>(
     self: Self,
-  ) => EnsureTaggedStructWithStringLiteral<Self, never>;
+  ) => EnsureTaggedStructWithStringLiteral<Self, never>
   // data-first
   <Self extends Schema.Struct<any>>(
     self: Self,
     prefix: string,
-  ): EnsureTaggedStructWithStringLiteral<Self, never>;
+  ): EnsureTaggedStructWithStringLiteral<Self, never>
 } = dual(
   2,
   <Self extends Schema.Struct<any>>(
@@ -87,13 +87,13 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
     const result = withInferredFromTagIdentifierSchemaAnnotationEither(
       self,
       prefix,
-    );
+    )
 
     if (Either.isLeft(result))
       throw new Error('Failed to infer identifier for OpenApi schema', {
         cause: result.left,
-      });
+      })
 
-    return result.right;
+    return result.right
   },
-);
+)

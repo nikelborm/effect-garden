@@ -1,12 +1,12 @@
 #!/usr/bin/env bun
 
-import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts';
-import { clearScreen } from './lib/clearScreen.ts';
-import { ensurePgDevIsHealthy } from './lib/ensurePgDevIsHealthy.ts';
+import { clearScreen } from './lib/clearScreen.ts'
+import { ensurePgDevIsHealthy } from './lib/ensurePgDevIsHealthy.ts'
+import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts'
 
-await clearScreen();
+await clearScreen()
 
-await ensurePgDevIsHealthy();
+await ensurePgDevIsHealthy()
 
 await runDevComposeCommandThatInheritsArgs(
   '--profile',
@@ -14,4 +14,4 @@ await runDevComposeCommandThatInheritsArgs(
   'run',
   '--remove-orphans',
   'pgcli-dev',
-);
+)

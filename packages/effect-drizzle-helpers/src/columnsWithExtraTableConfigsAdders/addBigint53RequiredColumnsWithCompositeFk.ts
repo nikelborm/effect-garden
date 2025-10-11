@@ -1,11 +1,11 @@
-import type { AnyPgTable } from 'drizzle-orm/pg-core';
+import type { AnyPgTable } from 'drizzle-orm/pg-core'
 import {
   type AllowOnlyNonEmptyObjectsWithActualKeys,
   type FunctionExtendingColumnsMap,
   type NonNullBigint53,
   nonNullBigint53,
-} from '../columnsAdders/index.ts';
-import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts';
+} from '../columnsAdders/index.ts'
+import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts'
 
 export const addBigint53RequiredColumnsWithCompositeFk = <
   const FkConfig extends [FkConfig] extends [infer U]
@@ -22,4 +22,4 @@ export const addBigint53RequiredColumnsWithCompositeFk = <
     getForeignTable,
     nonNullBigint53,
     fkConfig,
-  );
+  )

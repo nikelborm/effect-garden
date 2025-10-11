@@ -1,6 +1,6 @@
-import type { BuildIndexColumn } from 'drizzle-orm';
-import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core';
-import type { GeneralColumnMap } from './columnsAdders/index.ts';
+import type { BuildIndexColumn } from 'drizzle-orm'
+import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core'
+import type { GeneralColumnMap } from './columnsAdders/index.ts'
 
 export type TableFuncArgs<
   TTableName extends string,
@@ -11,10 +11,10 @@ export type TableFuncArgs<
   extraConfig: (
     table: RemapToTableArgumentOfExtraConfigRenderer<TColumnsMap>,
   ) => PgTableExtraConfigValue[],
-];
+]
 
 export type RemapToTableArgumentOfExtraConfigRenderer<
   TColumnsMap extends GeneralColumnMap = GeneralColumnMap,
 > = {
-  [Key in keyof TColumnsMap]: BuildIndexColumn<'pg'>;
-};
+  [Key in keyof TColumnsMap]: BuildIndexColumn<'pg'>
+}

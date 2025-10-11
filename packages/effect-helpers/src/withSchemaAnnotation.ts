@@ -1,5 +1,5 @@
-import { dual, pipe } from 'effect/Function';
-import type { Annotable, Annotations } from 'effect/Schema';
+import { dual, pipe } from 'effect/Function'
+import type { Annotable, Annotations } from 'effect/Schema'
 
 export const withSchemaAnnotation = <const T extends CommonAnnotationMapKeys>(
   annotationField: T,
@@ -16,45 +16,44 @@ export const withSchemaAnnotation = <const T extends CommonAnnotationMapKeys>(
     ) => Annotable.Self<S>
   >(2, (self, annotationValue) =>
     self.annotations({ [annotationField]: annotationValue }),
-  );
+  )
 
-type Is<A, ExtendsB> = [A] extends [ExtendsB] ? true : false;
+type Is<A, ExtendsB> = [A] extends [ExtendsB] ? true : false
 
-export type GeneralAnnotationsMap<T = any> = Annotations.GenericSchema<T>;
+export type GeneralAnnotationsMap<T = any> = Annotations.GenericSchema<T>
 
 export type CommonAnnotationMap<T = any> = {
   [K in keyof GeneralAnnotationsMap<T> as [
     Is<string, K> | Is<number, K> | Is<symbol, K>,
   ] extends [false]
     ? K
-    : never]: GeneralAnnotationsMap<T>[K];
-};
+    : never]: GeneralAnnotationsMap<T>[K]
+}
 
-export type CommonAnnotationMapKeys<T = any> = keyof CommonAnnotationMap<T>;
+export type CommonAnnotationMapKeys<T = any> = keyof CommonAnnotationMap<T>
 
-export const withTitleSchemaAnnotation = withSchemaAnnotation('title');
+export const withTitleSchemaAnnotation = withSchemaAnnotation('title')
 
 export const withDescriptionSchemaAnnotation =
-  withSchemaAnnotation('description');
+  withSchemaAnnotation('description')
 
-export const withIdentifierSchemaAnnotation =
-  withSchemaAnnotation('identifier');
+export const withIdentifierSchemaAnnotation = withSchemaAnnotation('identifier')
 
-export const withSchemaIdSchemaAnnotation = withSchemaAnnotation('schemaId');
+export const withSchemaIdSchemaAnnotation = withSchemaAnnotation('schemaId')
 
 export const withSchemaIdAndIdentifierAnnotations = (prefix: string) => {
   const annotate = (self: any, identifier: string) => {
-    const prefixedId = `${prefix}/${identifier}`;
+    const prefixedId = `${prefix}/${identifier}`
 
     return pipe(
       self,
       withSchemaIdSchemaAnnotation(prefixedId),
       withIdentifierSchemaAnnotation(prefixedId),
-    );
-  };
+    )
+  }
 
-  return function (a: any, b: any) {
-    if (arguments.length >= 2) return annotate(a, b);
-    return (self: any) => annotate(self, a);
-  } as typeof withIdentifierSchemaAnnotation;
-};
+  return ((...args: any[]) => {
+    if (args.length >= 2) return annotate(args[0], args[1])
+    return (self: any) => annotate(self, args[0])
+  }) as typeof withIdentifierSchemaAnnotation
+}

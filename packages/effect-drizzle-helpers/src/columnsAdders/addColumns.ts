@@ -1,5 +1,5 @@
-import type { AllowOnlyValidColumnMaps } from './AllowOnlyValidColumnMaps.ts';
-import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts';
+import type { AllowOnlyValidColumnMaps } from './AllowOnlyValidColumnMaps.ts'
+import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts'
 
 export const addColumns = <
   TAdditionalColumnsMap extends [TAdditionalColumnsMap] extends [infer U]
@@ -15,4 +15,4 @@ export const addColumns = <
       ...(getAdditionalColumnMap() as any),
     },
     table => extraConfig(table),
-  ]) as FunctionExtendingColumnsMap<TAdditionalColumnsMap>;
+  ]) as FunctionExtendingColumnsMap<TAdditionalColumnsMap>

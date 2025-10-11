@@ -1,7 +1,7 @@
-import { Octokit } from '@octokit/core';
-import type { UnknownException } from 'effect/Cause';
-import { type Effect, fail, gen } from 'effect/Effect';
-import type { FailedToCastDataToReadableStreamError } from './castToReadableStream.ts';
+import type { Octokit } from '@octokit/core'
+import type { UnknownException } from 'effect/Cause'
+import { type Effect, fail, gen } from 'effect/Effect'
+import type { FailedToCastDataToReadableStreamError } from './castToReadableStream.ts'
 import type {
   GitHubApiAuthRatelimitedError,
   GitHubApiBadCredentialsError,
@@ -11,34 +11,34 @@ import type {
   GitHubApiRatelimitedError,
   GitHubApiRepoIsEmptyError,
   GitHubApiThingNotExistsOrYouDontHaveAccessError,
-} from './commonErrors.ts';
+} from './commonErrors.ts'
 import {
   provideSingleDownloadTargetConfig,
   type SingleTargetConfig,
-} from './configContext.ts';
+} from './configContext.ts'
 import {
   type FailedToParseResponseFromRepoPathContentsMetaInfoAPIError,
   type InconsistentExpectedAndRealContentSizeError,
   PathContentsMetaInfo,
   RawStreamOfRepoPathContentsFromGitHubAPI,
-} from './getPathContents/index.ts';
-import { getReadableTarGzStreamOfRepoDirectory } from './getReadableTarGzStreamOfRepoDirectory.ts';
+} from './getPathContents/index.ts'
+import { getReadableTarGzStreamOfRepoDirectory } from './getReadableTarGzStreamOfRepoDirectory.ts'
 import {
   type FailedToUnpackRepoFolderTarGzStreamToFsError,
   unpackRepoFolderTarGzStreamToFs,
-} from './unpackRepoFolderTarGzStreamToFs.ts';
+} from './unpackRepoFolderTarGzStreamToFs.ts'
 import {
   type FailedToWriteFileStreamToDestinationPathError,
   writeFileStreamToDestinationPath,
-} from './writeFileStreamToDestinationPath.ts';
+} from './writeFileStreamToDestinationPath.ts'
 
 const downloadEntityFromRepoWithoutContext = gen(function* () {
-  const pathContentsMetaInfo = yield* PathContentsMetaInfo;
+  const pathContentsMetaInfo = yield* PathContentsMetaInfo
 
   if (pathContentsMetaInfo.type === 'dir')
     return yield* unpackRepoFolderTarGzStreamToFs(
       getReadableTarGzStreamOfRepoDirectory(pathContentsMetaInfo.treeSha),
-    );
+    )
 
   if (
     pathContentsMetaInfo.meta ===
@@ -46,15 +46,15 @@ const downloadEntityFromRepoWithoutContext = gen(function* () {
   )
     return yield* writeFileStreamToDestinationPath(
       pathContentsMetaInfo.contentStream,
-    );
+    )
 
   if (pathContentsMetaInfo.meta === 'This file can be downloaded as a blob')
     return yield* writeFileStreamToDestinationPath(
       RawStreamOfRepoPathContentsFromGitHubAPI,
-    );
+    )
 
-  yield* fail(new Error('LFS files are not yet supported'));
-});
+  yield* fail(new Error('LFS files are not yet supported'))
+})
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
@@ -81,4 +81,4 @@ export const downloadEntityFromRepo = (
 > =>
   downloadEntityFromRepoWithoutContext.pipe(
     provideSingleDownloadTargetConfig(target),
-  );
+  )

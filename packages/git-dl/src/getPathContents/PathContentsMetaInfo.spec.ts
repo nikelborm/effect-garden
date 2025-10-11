@@ -1,7 +1,8 @@
-import { describe, it, type TestContext } from '@effect/vitest';
-import { Octokit } from '@octokit/core';
-import { RequestError } from '@octokit/request-error';
-import { UnknownException } from 'effect/Cause';
+import { text } from 'node:stream/consumers'
+import { describe, it, type TestContext } from '@effect/vitest'
+import type { Octokit } from '@octokit/core'
+import { RequestError } from '@octokit/request-error'
+import { UnknownException } from 'effect/Cause'
 import {
   andThen,
   asVoid,
@@ -13,13 +14,12 @@ import {
   map,
   provide,
   succeed,
-} from 'effect/Effect';
-import { isRight } from 'effect/Either';
-import { pipe } from 'effect/Function';
-import { text } from 'node:stream/consumers';
-import { assert, typeGuard } from 'tsafe';
-import { allWithInheritedConcurrencyByDefault } from '../allWithInheritedConcurrency.ts';
-import { FailedToCastDataToReadableStreamError } from '../castToReadableStream.ts';
+} from 'effect/Effect'
+import { isRight } from 'effect/Either'
+import { pipe } from 'effect/Function'
+import { assert, typeGuard } from 'tsafe'
+import { allWithInheritedConcurrencyByDefault } from '../allWithInheritedConcurrency.ts'
+import { FailedToCastDataToReadableStreamError } from '../castToReadableStream.ts'
 import {
   GitHubApiAuthRatelimitedError,
   GitHubApiBadCredentialsError,
@@ -29,17 +29,17 @@ import {
   GitHubApiRatelimitedError,
   GitHubApiRepoIsEmptyError,
   GitHubApiThingNotExistsOrYouDontHaveAccessError,
-} from '../commonErrors.ts';
-import { type InputConfig, provideInputConfig } from '../configContext.ts';
-import { OctokitLayer } from '../octokit.ts';
-import { UnparsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts';
-import { PathContentsMetaInfo } from './PathContentsMetaInfo.ts';
-import { RawStreamOfRepoPathContentsFromGitHubAPI } from './RawStreamOfRepoPathContentsFromGitHubAPI.ts';
+} from '../commonErrors.ts'
+import { type InputConfig, provideInputConfig } from '../configContext.ts'
+import { OctokitLayer } from '../octokit.ts'
+import { UnparsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
+import { PathContentsMetaInfo } from './PathContentsMetaInfo.ts'
+import { RawStreamOfRepoPathContentsFromGitHubAPI } from './RawStreamOfRepoPathContentsFromGitHubAPI.ts'
 
 const defaultRepo = {
   owner: 'fetch-gh-stuff-tests',
   name: 'public-repo',
-};
+}
 
 const UnexpectedErrors = [
   RequestError,
@@ -48,7 +48,7 @@ const UnexpectedErrors = [
   GitHubApiRatelimitedError,
   GitHubApiGeneralServerError,
   FailedToCastDataToReadableStreamError,
-];
+]
 
 type ErrorExpectedToBeThrown = (typeof UnexpectedErrors)[number] extends new (
   ...args: any
@@ -63,12 +63,12 @@ type ErrorExpectedToBeThrown = (typeof UnexpectedErrors)[number] extends new (
         : never,
       UnexpectedErrorInstance
     >
-  : never;
+  : never
 
 const effectsToTestForErrors = {
   RawStreamOfRepoPathContentsFromGitHubAPI,
   UnparsedMetaInfoAboutPathContentsFromGitHubAPI,
-};
+}
 
 const testValidityOfErrorThrownByEffect =
   <const ExpectedErrorClass extends ErrorExpectedToBeThrown>(
@@ -85,15 +85,15 @@ const testValidityOfErrorThrownByEffect =
     effectToTest.pipe(
       asVoid as <E, R>(self: Effect<any, E, R>) => Effect<void, E, R>,
       either,
-      flatMap(function (res) {
+      flatMap(res => {
         if (isRight(res))
           return die({
             message:
               `Effect ${effectDescription} succeeded when expected to fail` as const,
             unexpectedlySuccessfulResult: res.right,
-          });
+          })
 
-        const err = res.left;
+        const err = res.left
 
         ctx
           .expect(
@@ -102,7 +102,7 @@ const testValidityOfErrorThrownByEffect =
               ExpectedErrorClass.name
             }, but it's instance of ${err.constructor.name} instead`,
           )
-          .toBeInstanceOf(ExpectedErrorClass);
+          .toBeInstanceOf(ExpectedErrorClass)
 
         for (const ErrorClassThatShouldNotBeReturned of UnexpectedErrors) {
           ctx
@@ -110,7 +110,7 @@ const testValidityOfErrorThrownByEffect =
               err,
               `Error thrown by ${effectDescription} should not be instance of ${ErrorClassThatShouldNotBeReturned.name}`,
             )
-            .not.toBeInstanceOf(ErrorClassThatShouldNotBeReturned);
+            .not.toBeInstanceOf(ErrorClassThatShouldNotBeReturned)
         }
 
         assert(
@@ -120,11 +120,11 @@ const testValidityOfErrorThrownByEffect =
               InstanceType<(typeof UnexpectedErrors)[number]>
             >
           >(err, true),
-        );
+        )
 
-        return succeed(err);
+        return succeed(err)
       }),
-    );
+    )
 
 const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
   when,
@@ -134,12 +134,12 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
   gitRef = '',
   pathToEntityInRepo,
 }: {
-  when: string;
-  ExpectedErrorClass: new (...args: any) => ExpectedErrorClass;
-  authToken?: string | undefined;
-  repo?: InputConfig['repo'];
-  gitRef?: string | undefined;
-  pathToEntityInRepo: string;
+  when: string
+  ExpectedErrorClass: new (...args: any) => ExpectedErrorClass
+  authToken?: string | undefined
+  repo?: InputConfig['repo']
+  gitRef?: string | undefined
+  pathToEntityInRepo: string
 }) =>
   it.effect(`Should throw ${ExpectedErrorClass.name} when ${when}`, ctx =>
     gen(function* () {
@@ -150,8 +150,8 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
           repo,
           gitRef,
           pathToEntityInRepo,
-        };
-        const newKey = `ExpectedFailureOf${chosenEffectName}` as const;
+        }
+        const newKey = `ExpectedFailureOf${chosenEffectName}` as const
         const newVal = effectsToTestForErrors[chosenEffectName].pipe(
           testValidityOfErrorThrownByEffect(
             ctx,
@@ -160,11 +160,11 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
           ),
           provideInputConfig(inputConfig),
           provide(OctokitLayer({ auth: authToken })),
-        );
+        )
         return { [newKey]: newVal } as {
-          [k in typeof newKey]: typeof newVal;
-        };
-      };
+          [k in typeof newKey]: typeof newVal
+        }
+      }
 
       const {
         ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
@@ -172,15 +172,15 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
       } = yield* allWithInheritedConcurrencyByDefault({
         ...validateErrorOf('RawStreamOfRepoPathContentsFromGitHubAPI'),
         ...validateErrorOf('UnparsedMetaInfoAboutPathContentsFromGitHubAPI'),
-      });
+      })
 
       ctx
         .expect(ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI)
         .toStrictEqual(
           ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
-        );
+        )
     }),
-  );
+  )
 
 const expectNotFail = (
   descriptionOfWhatItShouldReturn: string,
@@ -201,7 +201,7 @@ const expectNotFail = (
       }),
       provide(OctokitLayer(authToken ? { auth: authToken } : void 0)),
     ),
-  );
+  )
 
 describe('PathContentsMetaInfo', { concurrent: true }, () => {
   expectError({
@@ -212,7 +212,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
       owner: 'fetch-gh-stuff-tests',
       name: 'empty-repo',
     },
-  });
+  })
 
   expectError({
     when: 'provided bad auth token and actually existing repo',
@@ -223,7 +223,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
       name: 'real-private-repo',
     },
     authToken: 'bad auth token',
-  });
+  })
 
   expectError({
     when: 'asked for a private repo',
@@ -233,7 +233,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
       owner: 'fetch-gh-stuff-tests',
       name: 'real-private-repo',
     },
-  });
+  })
 
   expectError({
     when: 'asked for nonexistent repo',
@@ -243,7 +243,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
       owner: 'fetch-gh-stuff-tests',
       name: 'llllllllllllllllllllllllllll',
     },
-  });
+  })
 
   expectError({
     when: 'asked for nonexistent owner',
@@ -253,20 +253,20 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
       owner: 'llllllllllllllllllllllllllll',
       name: 'llllllllllllllllllllllllllll',
     },
-  });
+  })
 
   expectError({
     when: 'given broken path',
     ExpectedErrorClass: GitHubApiGeneralUserError,
     pathToEntityInRepo: '///',
-  });
+  })
 
   expectError({
     when: 'given broken git ref',
     ExpectedErrorClass: GitHubApiNoCommitFoundForGitRefError,
     pathToEntityInRepo: '',
     gitRef: '807070987097809870987',
-  });
+  })
 
   expectNotFail(`children of root directory`, '', (ctx, pathContentsMetaInfo) =>
     map(pathContentsMetaInfo, e =>
@@ -343,27 +343,29 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         }
       `),
     ),
-  );
+  )
 
   expectNotFail(
     `little inlined file directly in root directory`,
     'Readme.md',
     (ctx, pathContentsMetaInfo) =>
       gen(function* () {
-        const info = yield* pathContentsMetaInfo;
+        const info = yield* pathContentsMetaInfo
 
         if (
           info.meta !==
           'This file is small enough that GitHub API decided to inline it'
         )
-          throw new Error("File wasn't inlined");
+          throw new Error("File wasn't inlined")
 
-        const { contentStream, ...rest } = info;
+        const { contentStream, ...rest } = info
 
-        ctx.expect({
-          ...rest,
-          content: yield* andThen(contentStream, text),
-        }).toMatchInlineSnapshot(`
+        ctx
+          .expect({
+            ...rest,
+            content: yield* andThen(contentStream, text),
+          })
+          .toMatchInlineSnapshot(`
           {
             "blobSha": "f247396548e37f8f6be1fb71ff2e45fd63abed94",
             "content": "# public-repo
@@ -374,24 +376,24 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
             "size": 14,
             "type": "file",
           }
-        `);
+        `)
       }),
-  );
+  )
 
   expectNotFail(
     `inlined file with size 1 byte less than 1mb placed directly in root directory`,
     '1023kb+1023b_file.txt',
     (ctx, pathContentsMetaInfo) =>
       gen(function* () {
-        const info = yield* pathContentsMetaInfo;
+        const info = yield* pathContentsMetaInfo
 
         if (
           info.meta !==
           'This file is small enough that GitHub API decided to inline it'
         )
-          throw new Error("File wasn't inlined");
+          throw new Error("File wasn't inlined")
 
-        const { contentStream, ...rest } = info;
+        const { contentStream, ...rest } = info
 
         ctx
           .expect({
@@ -406,9 +408,9 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
             blobSha: '4ef7ad24ca43c487151fc6a194eb40fb715bf689',
             meta: 'This file is small enough that GitHub API decided to inline it',
             content: 'a'.repeat(1024 * 1024 - 1),
-          });
+          })
       }),
-  );
+  )
 
   expectNotFail(
     `blob info for file with size exactly 1mb`,
@@ -426,7 +428,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         }
       `),
       ),
-  );
+  )
 
   expectNotFail(
     `Git-LFS info`,
@@ -446,27 +448,29 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
           }
         `),
       ),
-  );
+  )
 
   expectNotFail(
     `little inlined file inside of a nested directory`,
     'parentFolderDirectlyInRoot/childFolder/nestedFile.md',
     (ctx, pathContentsMetaInfo) =>
       gen(function* () {
-        const info = yield* pathContentsMetaInfo;
+        const info = yield* pathContentsMetaInfo
 
         if (
           info.meta !==
           'This file is small enough that GitHub API decided to inline it'
         )
-          throw new Error("File wasn't inlined");
+          throw new Error("File wasn't inlined")
 
-        const { contentStream, ...rest } = info;
+        const { contentStream, ...rest } = info
 
-        ctx.expect({
-          ...rest,
-          content: yield* andThen(contentStream, text),
-        }).toMatchInlineSnapshot(`
+        ctx
+          .expect({
+            ...rest,
+            content: yield* andThen(contentStream, text),
+          })
+          .toMatchInlineSnapshot(`
         {
           "blobSha": "24ebb076f9e46157c4abdc6e7b69a775eb38d6a4",
           "content": "# Nested file
@@ -477,9 +481,9 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
           "size": 14,
           "type": "file",
         }
-      `);
+      `)
       }),
-  );
+  )
 
   expectNotFail(
     `children of nested directory`,
@@ -505,5 +509,5 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         }
       `),
       ),
-  );
-});
+  )
+})

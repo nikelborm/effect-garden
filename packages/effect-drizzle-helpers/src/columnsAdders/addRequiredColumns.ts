@@ -1,8 +1,8 @@
-import type { NotNull } from 'drizzle-orm';
-import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core';
-import { addColumns } from './addColumns.ts';
-import type { AllowOnlyNonEmptyObjectsWithActualKeys } from './AllowOnlyValidColumnMaps.ts';
-import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts';
+import type { NotNull } from 'drizzle-orm'
+import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AllowOnlyNonEmptyObjectsWithActualKeys } from './AllowOnlyValidColumnMaps.ts'
+import { addColumns } from './addColumns.ts'
+import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts'
 
 export const addRequiredColumns = <
   const TAdditionalColumnsMap extends [TAdditionalColumnsMap] extends [infer U]
@@ -24,17 +24,17 @@ export const addRequiredColumns = <
           currentColumnBuilder.notNull(),
         ]),
       ) as any,
-  );
+  )
 
 type BuiltRequiredColumnsAdder<TAdditionalColumnsMap> =
-  FunctionExtendingColumnsMap<MakeColumnsInMapNotNull<TAdditionalColumnsMap>>;
+  FunctionExtendingColumnsMap<MakeColumnsInMapNotNull<TAdditionalColumnsMap>>
 
 type MakeColumnsInMapNotNull<TColumnsMap> = {
   [ColumnName in keyof TColumnsMap]: TColumnsMap[ColumnName] extends PgColumnBuilderBase
     ? NotNull<TColumnsMap[ColumnName]>
-    : never;
-};
+    : never
+}
 
 export type ColumnBuilderWithNotNullMethod = PgColumnBuilderBase & {
-  notNull: () => NotNull<PgColumnBuilderBase>;
-};
+  notNull: () => NotNull<PgColumnBuilderBase>
+}

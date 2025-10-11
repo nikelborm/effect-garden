@@ -1,10 +1,10 @@
 import {
   type FunctionExtendingColumnsMap,
-  nonNullUuid,
   type NonNullUUID,
-} from '../columnsAdders/index.ts';
-import type { ForeignTableColumnGetter } from '../extraTableConfigsAdders/index.ts';
-import { addColumnWithFk } from './addColumnWithFk.ts';
+  nonNullUuid,
+} from '../columnsAdders/index.ts'
+import type { ForeignTableColumnGetter } from '../extraTableConfigsAdders/index.ts'
+import { addColumnWithFk } from './addColumnWithFk.ts'
 
 export const addUuidRequiredColumnWithFk = <
   const NameOfColumnInCurrentTable extends string,
@@ -18,4 +18,4 @@ export const addUuidRequiredColumnWithFk = <
     nameOfColumnInCurrentTable,
     nonNullUuid,
     getColumnOfForeignTable,
-  );
+  )

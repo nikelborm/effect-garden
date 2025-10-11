@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import { mkdir } from 'fs/promises';
-import { devComposeUpDetached } from './lib/composeCommands.ts';
-import { runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId } from './lib/runDevComposeCommandInheritArgs.ts';
-import { projectTurboCacheDirPath } from './lib/paths.ts';
+import { mkdir } from 'fs/promises'
+import { devComposeUpDetached } from './lib/composeCommands.ts'
+import { projectTurboCacheDirPath } from './lib/paths.ts'
+import { runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId } from './lib/runDevComposeCommandInheritArgs.ts'
 
-await mkdir(projectTurboCacheDirPath, { recursive: true });
+await mkdir(projectTurboCacheDirPath, { recursive: true })
 
-await runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(...devComposeUpDetached);
+await runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(...devComposeUpDetached)

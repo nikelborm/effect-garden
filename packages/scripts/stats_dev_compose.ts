@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
 
-import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts';
+import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts'
 
-await runDevComposeCommandThatInheritsArgs('stats', '--no-stream');
+await runDevComposeCommandThatInheritsArgs('stats', '--no-stream')

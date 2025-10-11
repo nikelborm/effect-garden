@@ -1,9 +1,9 @@
-import type { TableFuncArgs } from '../TableFuncArgs.ts';
+import type { TableFuncArgs } from '../TableFuncArgs.ts'
 import type {
   AllowOnlyValidColumnMaps,
   ErrMsg,
   GeneralColumnMap,
-} from './AllowOnlyValidColumnMaps.ts';
+} from './AllowOnlyValidColumnMaps.ts'
 
 export type FunctionExtendingColumnsMap<TAdditionalColumnsMap> =
   SwitchEitherToNeverOrToValueOnError<
@@ -15,10 +15,10 @@ export type FunctionExtendingColumnsMap<TAdditionalColumnsMap> =
       TTableName,
       TColumnsMap
     >) => TableFuncArgs<TTableName, TAdditionalColumnsMap & TColumnsMap>
-  >;
+  >
 
 type SwitchEitherToNeverOrToValueOnError<ValueToValidate, SuccessValue> = [
   ValueToValidate,
 ] extends [ErrMsg<string>]
   ? never
-  : SuccessValue;
+  : SuccessValue

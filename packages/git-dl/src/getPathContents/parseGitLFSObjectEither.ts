@@ -1,29 +1,29 @@
-import { type Either, gen, isRight, left, mapLeft } from 'effect/Either';
-import { ParseError } from 'effect/ParseResult';
+import { type Either, gen, isRight, left, mapLeft } from 'effect/Either'
+import { ParseError } from 'effect/ParseResult'
 import {
   decodeUnknownEither,
   NonEmptyTrimmedString,
   NumberFromString,
   Struct,
-} from 'effect/Schema';
-import { outdent } from 'outdent';
+} from 'effect/Schema'
+import { outdent } from 'outdent'
 import {
-  type TaggedErrorClass,
   buildTaggedErrorClassVerifyingCause,
-} from '../TaggedErrorVerifyingCause.ts';
+  type TaggedErrorClass,
+} from '../TaggedErrorVerifyingCause.ts'
 
 export const parseGitLFSObjectEither = ({
   contentAsBuffer,
   expectedContentSize,
 }: {
-  contentAsBuffer: Buffer<ArrayBuffer>;
-  expectedContentSize: number;
+  contentAsBuffer: Buffer<ArrayBuffer>
+  expectedContentSize: number
 }) =>
   gen(function* () {
     // gitLFS info usually is no longer than MAX_GIT_LFS_INFO_SIZE bytes
     const contentAsString = contentAsBuffer
       .subarray(0, MAX_GIT_LFS_INFO_SIZE)
-      .toString('utf8');
+      .toString('utf8')
 
     const parsingResult = mapLeft(
       decodeGitLFSInfoSchema(contentAsString.match(gitLFSInfoRegexp)?.groups),
@@ -31,25 +31,24 @@ export const parseGitLFSObjectEither = ({
         new FailedToParseGitLFSInfoError(cause, {
           partOfContentThatCouldBeGitLFSInfo: contentAsString,
         }),
-    );
+    )
 
-    const matchedByRegexpAndParsedByEffectSchema = isRight(parsingResult);
+    const matchedByRegexpAndParsedByEffectSchema = isRight(parsingResult)
     const doesSizeFromGitLFSInfoAlignWithExpectedContentSize =
-      isRight(parsingResult) &&
-      parsingResult.right.size === expectedContentSize;
+      isRight(parsingResult) && parsingResult.right.size === expectedContentSize
 
     const shouldFailIfItIsNotGitLFS =
-      contentAsBuffer.byteLength !== expectedContentSize;
+      contentAsBuffer.byteLength !== expectedContentSize
 
     const isThisAGitLFSObject =
       matchedByRegexpAndParsedByEffectSchema &&
-      doesSizeFromGitLFSInfoAlignWithExpectedContentSize;
+      doesSizeFromGitLFSInfoAlignWithExpectedContentSize
 
     if (isThisAGitLFSObject)
       return {
         gitLFSObjectIdSha256: parsingResult.right.oidSha256,
         gitLFSVersion: parsingResult.right.version,
-      } as const;
+      } as const
 
     if (shouldFailIfItIsNotGitLFS)
       return yield* left(
@@ -58,10 +57,10 @@ export const parseGitLFSObjectEither = ({
           expected: expectedContentSize,
           gitLFSInfo: parsingResult,
         }),
-      );
+      )
 
-    return 'This is not a git LFS object' as const;
-  });
+    return 'This is not a git LFS object' as const
+  })
 
 // there are some responses that look like
 // `version https://git-lfs.github.com/spec/v1
@@ -70,60 +69,60 @@ export const parseGitLFSObjectEither = ({
 // `
 // and the only variable thing in it is the size at the end, and I assume
 // that supported file size is not greater than 100 GB
-const MAX_GIT_LFS_INFO_SIZE = 137;
+const MAX_GIT_LFS_INFO_SIZE = 137
 // Don't add regexp /g modifier, it breaks match groups
 const gitLFSInfoRegexp =
-  /^version (?<version>https:\/\/git-lfs\.github\.com\/spec\/v1)\noid sha256:(?<oidSha256>[0-9a-f]{64})\nsize (?<size>[1-9]\d{0,11})\n$/m;
+  /^version (?<version>https:\/\/git-lfs\.github\.com\/spec\/v1)\noid sha256:(?<oidSha256>[0-9a-f]{64})\nsize (?<size>[1-9]\d{0,11})\n$/m
 
 const GitLFSInfoSchema = Struct({
   version: NonEmptyTrimmedString,
   oidSha256: NonEmptyTrimmedString,
   size: NumberFromString,
-});
+})
 
 const decodeGitLFSInfoSchema = decodeUnknownEither(GitLFSInfoSchema, {
   exact: true,
-});
+})
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 export type FailedToParseGitLFSInfoErrorClass = TaggedErrorClass<{
-  ErrorName: 'FailedToParseGitLFSInfoError';
-  ExpectedCauseClass: typeof ParseError;
-  DynamicContext: { partOfContentThatCouldBeGitLFSInfo: string };
-}>;
+  ErrorName: 'FailedToParseGitLFSInfoError'
+  ExpectedCauseClass: typeof ParseError
+  DynamicContext: { partOfContentThatCouldBeGitLFSInfo: string }
+}>
 
 const _1: FailedToParseGitLFSInfoErrorClass =
   buildTaggedErrorClassVerifyingCause<{
-    partOfContentThatCouldBeGitLFSInfo: string;
+    partOfContentThatCouldBeGitLFSInfo: string
   }>()(
     'FailedToParseGitLFSInfoError',
     `Failed to parse git LFS announcement`,
     ParseError,
-  );
+  )
 
 export class FailedToParseGitLFSInfoError extends _1 {}
 
 type InconsistentSizesDynamicContext = {
-  actual: number;
-  expected: number;
+  actual: number
+  expected: number
   gitLFSInfo: Either<
     Readonly<{
-      version: string;
-      oidSha256: string;
-      size: number;
+      version: string
+      oidSha256: string
+      size: number
     }>,
     InstanceType<FailedToParseGitLFSInfoErrorClass>
-  >;
-};
+  >
+}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 
 export const _2: TaggedErrorClass<{
-  ErrorName: 'InconsistentExpectedAndRealContentSizeError';
-  StaticContext: { comment: string };
-  DynamicContext: InconsistentSizesDynamicContext;
+  ErrorName: 'InconsistentExpectedAndRealContentSizeError'
+  StaticContext: { comment: string }
+  DynamicContext: InconsistentSizesDynamicContext
 }> = buildTaggedErrorClassVerifyingCause<InconsistentSizesDynamicContext>()(
   'InconsistentExpectedAndRealContentSizeError',
   ctx =>
@@ -141,6 +140,6 @@ export const _2: TaggedErrorClass<{
       there's no reason to assume it's a Git LFS object.
     `,
   },
-);
+)
 
 export class InconsistentExpectedAndRealContentSizeError extends _2 {}

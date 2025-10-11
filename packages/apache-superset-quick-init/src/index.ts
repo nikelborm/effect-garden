@@ -1,1 +1,1 @@
-export * from './createApacheSupersetFolder.ts';
+export * from './createApacheSupersetFolder.ts'

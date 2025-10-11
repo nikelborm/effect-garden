@@ -1,8 +1,8 @@
 import {
-  defineConfig,
   coverageConfigDefaults,
   defaultExclude,
-} from 'vitest/config';
+  defineConfig,
+} from 'vitest/config'
 
 export default defineConfig({
   test: {
@@ -19,4 +19,4 @@ export default defineConfig({
       ],
     },
   },
-});
+})

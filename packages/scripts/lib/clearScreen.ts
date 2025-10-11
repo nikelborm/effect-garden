@@ -1,13 +1,13 @@
-import { passthroughSpawnIgnoreError } from './passthroughSpawn.ts';
+import { passthroughSpawnIgnoreError } from './passthroughSpawn.ts'
 
 export async function clearScreen() {
-  await passthroughSpawnIgnoreError('tmux', 'clear-history');
+  await passthroughSpawnIgnoreError('tmux', 'clear-history')
 
-  const CLEAR_BUFFER_KITTY = '\x1B[H\x1B[3J';
+  const CLEAR_BUFFER_KITTY = '\x1B[H\x1B[3J'
 
-  console.log(CLEAR_BUFFER_KITTY);
+  console.log(CLEAR_BUFFER_KITTY)
 
-  await passthroughSpawnIgnoreError('/sbin/clear');
+  await passthroughSpawnIgnoreError('/sbin/clear')
 
-  console.clear();
+  console.clear()
 }

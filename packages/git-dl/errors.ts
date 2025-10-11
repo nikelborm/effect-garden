@@ -2,6 +2,7 @@
  * @module
  */
 
+export { FailedToCastDataToReadableStreamError } from './src/castToReadableStream.ts'
 export {
   GitHubApiAuthRatelimitedError,
   GitHubApiBadCredentialsError,
@@ -12,13 +13,12 @@ export {
   GitHubApiRatelimitedError,
   GitHubApiRepoIsEmptyError,
   GitHubApiThingNotExistsOrYouDontHaveAccessError,
-} from './src/commonErrors.ts';
-export * from './src/TaggedErrorVerifyingCause.ts';
-export { FailedToCastDataToReadableStreamError } from './src/castToReadableStream.ts';
+} from './src/commonErrors.ts'
 export {
   FailedToParseGitLFSInfoError,
   FailedToParseResponseFromRepoPathContentsMetaInfoAPIError,
   InconsistentExpectedAndRealContentSizeError,
-} from './src/getPathContents/index.ts';
-export { FailedToUnpackRepoFolderTarGzStreamToFsError } from './src/unpackRepoFolderTarGzStreamToFs.ts';
-export { FailedToWriteFileStreamToDestinationPathError } from './src/writeFileStreamToDestinationPath.ts';
+} from './src/getPathContents/index.ts'
+export * from './src/TaggedErrorVerifyingCause.ts'
+export { FailedToUnpackRepoFolderTarGzStreamToFsError } from './src/unpackRepoFolderTarGzStreamToFs.ts'
+export { FailedToWriteFileStreamToDestinationPathError } from './src/writeFileStreamToDestinationPath.ts'

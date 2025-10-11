@@ -1,12 +1,12 @@
-import { Schema } from 'effect';
-import { dual } from 'effect/Function';
-import type { Struct } from 'effect/Schema';
-import { withInferredFromTagIdentifierSchemaAnnotationSync } from './withInferredFromTagIdentifierSchemaAnnotation.ts';
+import type { Schema } from 'effect'
+import { dual } from 'effect/Function'
+import type { Struct } from 'effect/Schema'
+import { withInferredFromTagIdentifierSchemaAnnotationSync } from './withInferredFromTagIdentifierSchemaAnnotation.ts'
 
-type EveryDebugStatus = 'debug enabled' | 'debug disabled';
+type EveryDebugStatus = 'debug enabled' | 'debug disabled'
 type EverySkipTagValidationStatus =
   | 'yay, everything is secure'
-  | 'typescript is stupid';
+  | 'typescript is stupid'
 
 export type EnsureTaggedStructWithStringLiteral<
   Self,
@@ -58,7 +58,7 @@ export type EnsureTaggedStructWithStringLiteral<
         { self: S },
         DebugStatus
       >
-  : never;
+  : never
 
 type Success<
   FallbackValue,
@@ -71,14 +71,14 @@ type Success<
   DebugInfo & { success: FallbackValue },
   'success',
   DebugStatus
->;
+>
 
 type Failure<
   FallbackValue,
   Message extends string,
   DebugInfo extends object,
   DebugStatus extends EveryDebugStatus = 'debug disabled',
-> = Fallback<FallbackValue, Message, DebugInfo, 'failure', DebugStatus>;
+> = Fallback<FallbackValue, Message, DebugInfo, 'failure', DebugStatus>
 
 type Fallback<
   FallbackValue,
@@ -90,7 +90,7 @@ type Fallback<
   ? [ResultStatus] extends ['failure']
     ? { message: Message; info: DebugInfo }
     : FallbackValue
-  : FallbackValue;
+  : FallbackValue
 
 export type EnsureStruct<
   Self,
@@ -112,38 +112,38 @@ export type EnsureStruct<
         { self: S },
         DebugStatus
       >
-  : never;
+  : never
 
 export const withOpenApiAnnotationsForStructs = (
   prefix: string,
 ): {
   // data-last
   (annotations: {
-    title: string;
-    description: string;
+    title: string
+    description: string
   }): <Self extends Schema.Struct<any>>(
     self: Self,
-  ) => EnsureTaggedStructWithStringLiteral<Self, never>;
+  ) => EnsureTaggedStructWithStringLiteral<Self, never>
   // data-first
   <Self extends Schema.Struct<any>>(
     self: Self,
     annotations: {
-      title: string;
-      description: string;
+      title: string
+      description: string
     },
-  ): EnsureTaggedStructWithStringLiteral<Self, never>;
+  ): EnsureTaggedStructWithStringLiteral<Self, never>
 } =>
   dual(
     2,
     <Self extends Schema.Struct<any>>(
       self: Self,
       annotations: {
-        title: string;
-        description: string;
+        title: string
+        description: string
       },
     ): EnsureTaggedStructWithStringLiteral<Self, never> =>
       withInferredFromTagIdentifierSchemaAnnotationSync(
         self.annotations(annotations) as Self,
         prefix,
       ),
-  );
+  )

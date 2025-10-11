@@ -1,14 +1,14 @@
-import { RequestError } from '@octokit/request-error';
-import { UnknownException } from 'effect/Cause';
-import { gen, map, tryPromise } from 'effect/Effect';
-import { pipe } from 'effect/Function';
-import { CastToReadableStream } from './castToReadableStream.ts';
+import { RequestError } from '@octokit/request-error'
+import { UnknownException } from 'effect/Cause'
+import { gen, map, tryPromise } from 'effect/Effect'
+import { pipe } from 'effect/Function'
+import { CastToReadableStream } from './castToReadableStream.ts'
 import {
   GitHubApiGeneralUserError,
   parseCommonGitHubApiErrors,
-} from './commonErrors.ts';
-import { InputConfigTag } from './configContext.ts';
-import { OctokitTag } from './octokit.ts';
+} from './commonErrors.ts'
+import { InputConfigTag } from './configContext.ts'
+import { OctokitTag } from './octokit.ts'
 
 export const getReadableTarGzStreamOfRepoDirectory = (
   gitRefWhichWillBeUsedToIdentifyGitTree?: string,
@@ -17,17 +17,17 @@ export const getReadableTarGzStreamOfRepoDirectory = (
     requestTarballFromGitHubAPI(gitRefWhichWillBeUsedToIdentifyGitTree),
     map(({ data }) => data),
     CastToReadableStream,
-  );
+  )
 
 const requestTarballFromGitHubAPI = (
   gitRefWhichWillBeUsedToIdentifyGitTree = '',
 ) =>
   gen(function* () {
-    const octokit = yield* OctokitTag;
+    const octokit = yield* OctokitTag
 
     const {
       repo: { owner, name },
-    } = yield* InputConfigTag;
+    } = yield* InputConfigTag
 
     return yield* tryPromise({
       try: signal =>
@@ -48,14 +48,14 @@ const requestTarballFromGitHubAPI = (
           return new UnknownException(
             error,
             'Failed to request .tar.gz file from GitHub API',
-          );
+          )
 
         if (error.status === 400)
           return new GitHubApiGeneralUserError(error, {
             notes: 'Error happened probably because you asked for empty repo',
-          });
+          })
 
-        return parseCommonGitHubApiErrors(error);
+        return parseCommonGitHubApiErrors(error)
       },
-    });
-  });
+    })
+  })

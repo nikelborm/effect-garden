@@ -1,6 +1,6 @@
-import { gen } from 'effect/Effect';
-import { mapLeft } from 'effect/Either';
-import { ParseError } from 'effect/ParseResult';
+import { gen } from 'effect/Effect'
+import { mapLeft } from 'effect/Either'
+import { ParseError } from 'effect/ParseResult'
 import {
   Array as ArraySchema,
   decodeUnknownEither,
@@ -9,18 +9,18 @@ import {
   String as SchemaString,
   Struct,
   Union,
-} from 'effect/Schema';
+} from 'effect/Schema'
 import {
-  type TaggedErrorClass,
   buildTaggedErrorClassVerifyingCause,
-} from '../TaggedErrorVerifyingCause.ts';
-import { RepoPathContentsFromGitHubAPI } from './RepoPathContentsFromGitHubAPI.ts';
+  type TaggedErrorClass,
+} from '../TaggedErrorVerifyingCause.ts'
+import { RepoPathContentsFromGitHubAPI } from './RepoPathContentsFromGitHubAPI.ts'
 
 export const UnparsedMetaInfoAboutPathContentsFromGitHubAPI =
-  RepoPathContentsFromGitHubAPI('object');
+  RepoPathContentsFromGitHubAPI('object')
 
 export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = gen(function* () {
-  const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI;
+  const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
 
   return yield* mapLeft(
     decodeResponse(response.data),
@@ -31,18 +31,18 @@ export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = gen(function* () {
           response,
         },
       ),
-  );
-});
+  )
+})
 
 const GitSomethingFields = {
   size: SchemaNumber,
   name: SchemaString,
   path: SchemaString,
   sha: SchemaString,
-};
+}
 
-const dirLiteral = Literal('dir');
-const nonDirLiterals = Literal('file', 'submodule', 'symlink');
+const dirLiteral = Literal('dir')
+const nonDirLiterals = Literal('file', 'submodule', 'symlink')
 
 export const ResponseSchema = Union(
   Struct({
@@ -59,23 +59,23 @@ export const ResponseSchema = Union(
     content: SchemaString,
     ...GitSomethingFields,
   }),
-);
+)
 
 const decodeResponse = decodeUnknownEither(ResponseSchema, {
   exact: true,
-});
+})
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 
 const _1: TaggedErrorClass<{
-  ErrorName: 'FailedToParseResponseFromRepoPathContentsMetaInfoAPI';
-  ExpectedCauseClass: typeof ParseError;
-  DynamicContext: { response: unknown };
+  ErrorName: 'FailedToParseResponseFromRepoPathContentsMetaInfoAPI'
+  ExpectedCauseClass: typeof ParseError
+  DynamicContext: { response: unknown }
 }> = buildTaggedErrorClassVerifyingCause<{ response: unknown }>()(
   'FailedToParseResponseFromRepoPathContentsMetaInfoAPI',
   `Failed to parse response from repo path contents meta info API`,
   ParseError,
-);
+)
 
 export class FailedToParseResponseFromRepoPathContentsMetaInfoAPIError extends _1 {}

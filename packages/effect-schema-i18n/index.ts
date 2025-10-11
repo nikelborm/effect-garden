@@ -1,6 +1,6 @@
-import * as Effect from 'effect/Effect';
-import * as JSONSchema from 'effect/JSONSchema';
-import * as Schema from 'effect/Schema';
+import * as Effect from 'effect/Effect'
+import * as JSONSchema from 'effect/JSONSchema'
+import * as Schema from 'effect/Schema'
 
 const asd = Schema.Struct({
   asd_property1: Schema.String.annotations({
@@ -39,18 +39,18 @@ const asd = Schema.Struct({
   documentation: 'asd_struct english documentation',
   message: () => 'asd_struct english message',
   parseIssueTitle: () => 'asd_struct english parseIssueTitle',
-});
+})
 
 const asd2 = Schema.transform(asd, asd, {
   strict: true,
   decode(fromA, fromI) {
-    return fromI;
+    return fromI
   },
   encode(toI, toA) {
-    return toA;
+    return toA
   },
-});
+})
 
 // console.log(JSON.stringify(JSONSchema.make(asd), null, 2));
 // console.log(JSONSchema.make(asd2));
-console.log(asd.annotations!.toString());
+console.log(asd.annotations.toString())

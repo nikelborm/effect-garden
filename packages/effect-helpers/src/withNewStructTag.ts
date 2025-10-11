@@ -1,7 +1,7 @@
-import { Schema } from 'effect';
-import { dual } from 'effect/Function';
-import { withNewStructFields, type GetFields } from './withNewStructFields.ts';
-import type { EnsureStruct } from './withOpenApiAnnotations.ts';
+import { Schema } from 'effect'
+import { dual } from 'effect/Function'
+import { type GetFields, withNewStructFields } from './withNewStructFields.ts'
+import type { EnsureStruct } from './withOpenApiAnnotations.ts'
 
 export const withNewStructTag: {
   // data-last
@@ -12,11 +12,11 @@ export const withNewStructTag: {
   ) => EnsureStruct<
     Schema.Struct<
       Omit<GetFields<Self>, '_tag'> & {
-        _tag: Schema.tag<NewTag>;
+        _tag: Schema.tag<NewTag>
       }
     >,
     never
-  >;
+  >
   // data-first
   <Self extends Schema.Struct<any>, const NewTag extends string>(
     self: Self,
@@ -24,13 +24,13 @@ export const withNewStructTag: {
   ): EnsureStruct<
     Schema.Struct<
       Omit<GetFields<Self>, '_tag'> & {
-        _tag: Schema.tag<NewTag>;
+        _tag: Schema.tag<NewTag>
       }
     >,
     never
-  >;
+  >
 } = dual(2, (self, newTag) =>
   withNewStructFields(self, {
     _tag: Schema.tag(newTag),
   }),
-);
+)

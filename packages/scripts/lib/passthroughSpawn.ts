@@ -4,17 +4,17 @@ export async function passthroughSpawnIgnoreError(...cmd: string[]) {
     stdin: 'inherit',
     stdout: 'inherit',
     stderr: 'inherit',
-  });
+  })
 
-  return await proc.exited;
+  return await proc.exited
 }
 
 export async function passthroughSpawn(...cmd: string[]) {
-  const exitCode = await passthroughSpawnIgnoreError(...cmd);
+  const exitCode = await passthroughSpawnIgnoreError(...cmd)
 
-  if (exitCode !== 0) throw new Error('process exited with code: ' + exitCode);
+  if (exitCode !== 0) throw new Error('process exited with code: ' + exitCode)
 }
 
 export async function passthroughSpawnInheritArgs(...cmd: string[]) {
-  return await passthroughSpawn(...cmd, ...Bun.argv.slice(2));
+  return await passthroughSpawn(...cmd, ...Bun.argv.slice(2))
 }

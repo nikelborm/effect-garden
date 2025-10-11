@@ -1,6 +1,6 @@
-import { Effect, Predicate as P } from 'effect';
-import type { NonEmptyReadonlyArray } from 'effect/Array';
-import { dual } from 'effect/Function';
+import { Effect, Predicate as P } from 'effect'
+import type { NonEmptyReadonlyArray } from 'effect/Array'
+import { dual } from 'effect/Function'
 
 /**
  * Passes the errors through unmodified if their tags match any of the whitelisted tags. When
@@ -181,21 +181,21 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
   > => {
     const errorTagsToPassThroughSet = new Set<TagMinimum>(
       errorTagsToPassThrough,
-    );
-    const isTag = P.or(P.isNumber, P.or(P.isString, P.isSymbol));
+    )
+    const isTag = P.or(P.isNumber, P.or(P.isString, P.isSymbol))
 
     const isPossibleToFilterByTag = P.compose(
       P.hasProperty('_tag'),
       (e): e is PassableSelfE => isTag(e['_tag']),
-    );
+    )
 
     const isInPassthroughSet = (err: PassableSelfE) =>
-      errorTagsToPassThroughSet.has(err['_tag']);
+      errorTagsToPassThroughSet.has(err['_tag'])
 
     const willPassThrough = P.compose(
       isPossibleToFilterByTag,
       isInPassthroughSet,
-    );
+    )
 
     const newEffect = Effect.catchIf(
       self,
@@ -204,7 +204,7 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
         GetErrorsThatWillBeRemapped<AllSelfE, ErrorTagsToPassThrough>
       >,
       orElseMapRestOfErrors,
-    );
+    )
 
     // Type assertion is needed because I added a bit smarter mechanism, that
     // will not include UnknownException in the output, if we pass through all
@@ -218,9 +218,9 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
       ElseA,
       ElseE,
       ElseR
-    >;
+    >
   },
-);
+)
 
 type GetFinalEffect<
   ErrorTagsToPassThrough extends TagMinimum,
@@ -239,7 +239,7 @@ type GetFinalEffect<
     ElseE
   >,
   GetFinal<AllSelfE, ErrorTagsToPassThrough, SelfR, ElseR>
->;
+>
 
 type OrElseMapRestOfErrors<
   ErrorTagsToPassThrough extends TagMinimum,
@@ -249,25 +249,24 @@ type OrElseMapRestOfErrors<
   ElseR,
 > = (
   cause: NoInfer<GetErrorsThatWillBeRemapped<AllSelfE, ErrorTagsToPassThrough>>,
-) => Effect.Effect<ElseA, ElseE, ElseR>;
+) => Effect.Effect<ElseA, ElseE, ElseR>
 
 type GetFinal<
   AllSelfE,
   ErrorTagsToPassThrough extends TagMinimum,
   Base,
   OptionalSuffix,
-> =
-  GetErrorsToPassThroughFromAllE<
-    AllSelfE,
-    ErrorTagsToPassThrough
-  > extends infer ErrorsToPassThrough
-    ? Base | ([AllSelfE] extends [ErrorsToPassThrough] ? never : OptionalSuffix)
-    : never;
+> = GetErrorsToPassThroughFromAllE<
+  AllSelfE,
+  ErrorTagsToPassThrough
+> extends infer ErrorsToPassThrough
+  ? Base | ([AllSelfE] extends [ErrorsToPassThrough] ? never : OptionalSuffix)
+  : never
 
 type GetErrorsToPassThroughFromPassableE<
   PassableSelfE extends TaggedMinimum,
   ErrorTagsToPassThrough extends TagMinimum,
-> = Extract<PassableSelfE, { _tag: ErrorTagsToPassThrough }>;
+> = Extract<PassableSelfE, { _tag: ErrorTagsToPassThrough }>
 
 type GetErrorsToPassThroughFromAllE<
   AllSelfE,
@@ -275,9 +274,9 @@ type GetErrorsToPassThroughFromAllE<
 > = GetErrorsToPassThroughFromPassableE<
   GetPassableErrors<AllSelfE>,
   ErrorTagsToPassThrough
->;
+>
 
-type GetPassableErrors<AllSelfE> = Extract<AllSelfE, TaggedMinimum>;
+type GetPassableErrors<AllSelfE> = Extract<AllSelfE, TaggedMinimum>
 
 type GetErrorsThatWillBeRemapped<
   AllSelfE,
@@ -285,7 +284,7 @@ type GetErrorsThatWillBeRemapped<
 > = Exclude<
   AllSelfE,
   GetErrorsToPassThroughFromAllE<AllSelfE, ErrorTagsToPassThrough>
->;
+>
 
-type TaggedMinimum = { _tag: TagMinimum };
-type TagMinimum = string | number | symbol;
+type TaggedMinimum = { _tag: TagMinimum }
+type TagMinimum = string | number | symbol

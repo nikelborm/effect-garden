@@ -1,7 +1,7 @@
-import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core';
-import type { ColumnMap, GeneralColumnMap } from '../columnsAdders/index.ts';
-import type { RemapToTableArgumentOfExtraConfigRenderer } from '../TableFuncArgs.ts';
-import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts';
+import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core'
+import type { ColumnMap, GeneralColumnMap } from '../columnsAdders/index.ts'
+import type { RemapToTableArgumentOfExtraConfigRenderer } from '../TableFuncArgs.ts'
+import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts'
 
 export const addExtraConfig =
   <TRequiredPresenceOfColumnNames extends string = never>(
@@ -13,9 +13,8 @@ export const addExtraConfig =
       >,
     ) => PgTableExtraConfigValue[],
   ): FunctionRequiringColumnsMap<TRequiredPresenceOfColumnNames> =>
-  ([snakeCaseTableName, options, extraConfig]) =>
-    [
-      snakeCaseTableName,
-      options,
-      table => [...extraConfig(table), ...additionalExtraConfig(table)],
-    ];
+  ([snakeCaseTableName, options, extraConfig]) => [
+    snakeCaseTableName,
+    options,
+    table => [...extraConfig(table), ...additionalExtraConfig(table)],
+  ]

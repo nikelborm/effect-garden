@@ -1,9 +1,9 @@
-import type { NotNull } from 'drizzle-orm';
-import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts';
+import type { NotNull } from 'drizzle-orm'
 import {
   addRequiredColumns,
   type ColumnBuilderWithNotNullMethod,
-} from './addRequiredColumns.ts';
+} from './addRequiredColumns.ts'
+import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts'
 
 export const addRequiredColumn = <
   const NameOfColumnInCurrentTable extends string,
@@ -12,8 +12,8 @@ export const addRequiredColumn = <
   nameOfColumnInCurrentTable: NameOfColumnInCurrentTable,
   buildColumn: () => ColumnBuilder,
 ): FunctionExtendingColumnsMap<{
-  [Key in NameOfColumnInCurrentTable]: NotNull<ColumnBuilder>;
+  [Key in NameOfColumnInCurrentTable]: NotNull<ColumnBuilder>
 }> =>
   addRequiredColumns(
-    () => ({ [nameOfColumnInCurrentTable]: buildColumn() } as any),
-  );
+    () => ({ [nameOfColumnInCurrentTable]: buildColumn() }) as any,
+  )

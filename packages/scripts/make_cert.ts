@@ -1,6 +1,6 @@
-import { $ } from 'bun';
+import { $ } from 'bun'
 
-await $`sudo mkdir -p certbot/conf/dhparam certbot/www certbot/logs`;
+await $`sudo mkdir -p certbot/conf/dhparam certbot/www certbot/logs`
 
 await $`sudo docker run -it --rm \
   ${Object.entries({
@@ -12,6 +12,6 @@ await $`sudo docker run -it --rm \
     .join(' ')} \
   -p 80:80 \
   certbot/certbot \
-  certonly --text --non-interactive --standalone --domain 10111897.xyz --webroot-path /var/www/certbot/ --agree-tos --email humped-churn-wipe@duck.com`;
+  certonly --text --non-interactive --standalone --domain 10111897.xyz --webroot-path /var/www/certbot/ --agree-tos --email humped-churn-wipe@duck.com`
 
-await $`sudo openssl dhparam -out ./certbot/conf/dhparam/dhparam.pem 4096`;
+await $`sudo openssl dhparam -out ./certbot/conf/dhparam/dhparam.pem 4096`

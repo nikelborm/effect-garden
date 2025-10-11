@@ -1,19 +1,19 @@
-import { identity, Option, Schema, type SchemaAST } from 'effect';
+import { identity, Option, Schema, type SchemaAST } from 'effect'
 import {
   getDefaultAnnotation,
   getDescriptionAnnotation,
   getExamplesAnnotation,
   getTitleAnnotation,
-} from 'effect/SchemaAST';
+} from 'effect/SchemaAST'
 import type {
   CommonAnnotationMap,
   CommonAnnotationMapKeys,
-} from './withSchemaAnnotation.ts';
+} from './withSchemaAnnotation.ts'
 
 export const changeEncodedTypeToString = <T>(
   TargetFromNumberSchema: Schema.Schema<T, number, never>,
 ): Schema.Schema<T, string, never> => {
-  const copyAnnotation = copyAnnotationFrom(TargetFromNumberSchema.ast);
+  const copyAnnotation = copyAnnotationFrom(TargetFromNumberSchema.ast)
 
   return Schema.String.pipe(
     copyAnnotation(getDescriptionAnnotation, 'description'),
@@ -34,8 +34,8 @@ export const changeEncodedTypeToString = <T>(
     Schema.parseNumber,
     Schema.compose(TargetFromNumberSchema),
     Schema.asSchema,
-  );
-};
+  )
+}
 
 const copyAnnotationFrom =
   (annotated: SchemaAST.Annotated) =>
@@ -56,4 +56,4 @@ const copyAnnotationFrom =
       onSome: val => self =>
         self.annotations({ [keyToSet]: valueTransformer(val) }),
       onNone: () => identity<typeof Schema.String>,
-    });
+    })

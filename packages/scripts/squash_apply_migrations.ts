@@ -1,17 +1,17 @@
 #!/usr/bin/env bun
 
-import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api';
-import { mkdir, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { drizzleKitMigrateDev } from './lib/composeCommands.ts';
-import { ensureDevScriptRunnerIsReady } from './lib/ensureDevScriptRunnerIsReady.ts';
-import { executeSqlInDevPgContainer } from './lib/executeSqlInDevPgContainer.ts';
-import { passthroughSpawn } from './lib/passthroughSpawn.ts';
+import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api'
+import { mkdir, rm, writeFile } from 'fs/promises'
+import { join } from 'path'
+import { drizzleKitMigrateDev } from './lib/composeCommands.ts'
+import { ensureDevScriptRunnerIsReady } from './lib/ensureDevScriptRunnerIsReady.ts'
+import { executeSqlInDevPgContainer } from './lib/executeSqlInDevPgContainer.ts'
+import { passthroughSpawn } from './lib/passthroughSpawn.ts'
 import {
   databasePackageDirPath,
   migrationsDirPath,
   migrationsMetaDirPath,
-} from './lib/paths.ts';
+} from './lib/paths.ts'
 
 const [{ closePsql }] = await Promise.all([
   executeSqlInDevPgContainer(
@@ -19,21 +19,21 @@ const [{ closePsql }] = await Promise.all([
       `\\c postgres\nDROP DATABASE IF EXISTS ${dbName}; CREATE DATABASE ${dbName}; \\c ${dbName}\n DROP SCHEMA public CASCADE; CREATE SCHEMA public; DROP SCHEMA drizzle CASCADE; CREATE SCHEMA drizzle;`,
   ),
   ensureDevScriptRunnerIsReady(),
-]);
+])
 
-const closer = closePsql();
+const closer = closePsql()
 
-await rm(migrationsDirPath, { force: true, recursive: true });
+await rm(migrationsDirPath, { force: true, recursive: true })
 
-const version = '7' as const;
-const dialect = 'postgresql' as const;
-await mkdir(migrationsMetaDirPath, { recursive: true });
+const version = '7' as const
+const dialect = 'postgresql' as const
+await mkdir(migrationsMetaDirPath, { recursive: true })
 
 const schema = await import(
   join(databasePackageDirPath, 'dist', 'src', 'schema.js')
-);
+)
 
-const newSnapshot = generateDrizzleJson(schema, void 0, void 0, 'snake_case');
+const newSnapshot = generateDrizzleJson(schema, void 0, void 0, 'snake_case')
 
 const sqlQueries = await generateMigration(
   {
@@ -54,7 +54,7 @@ const sqlQueries = await generateMigration(
     },
   },
   newSnapshot,
-);
+)
 
 await Promise.all([
   writeFile(
@@ -86,7 +86,7 @@ await Promise.all([
     sqlQueries.map(q => q + '\n--> statement-breakpoint\n').join(''),
   ),
   closer,
-]);
+])
 
-await passthroughSpawn(...drizzleKitMigrateDev);
-console.log();
+await passthroughSpawn(...drizzleKitMigrateDev)
+console.log()

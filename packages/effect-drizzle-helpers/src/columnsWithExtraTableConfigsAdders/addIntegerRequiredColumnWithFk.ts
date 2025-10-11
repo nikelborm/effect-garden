@@ -2,9 +2,9 @@ import {
   type FunctionExtendingColumnsMap,
   type NonNullInteger,
   nonNullInteger,
-} from '../columnsAdders/index.ts';
-import type { ForeignTableColumnGetter } from '../extraTableConfigsAdders/index.ts';
-import { addColumnWithFk } from './addColumnWithFk.ts';
+} from '../columnsAdders/index.ts'
+import type { ForeignTableColumnGetter } from '../extraTableConfigsAdders/index.ts'
+import { addColumnWithFk } from './addColumnWithFk.ts'
 
 export const addIntegerRequiredColumnWithFk = <
   const NameOfColumnInCurrentTable extends string,
@@ -18,4 +18,4 @@ export const addIntegerRequiredColumnWithFk = <
     nameOfColumnInCurrentTable,
     nonNullInteger,
     getColumnOfForeignTable,
-  );
+  )

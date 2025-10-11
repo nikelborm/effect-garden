@@ -1,6 +1,6 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core';
-import type { FunctionExtendingColumnsMap } from '../columnsAdders/index.ts';
-import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts';
+import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { FunctionExtendingColumnsMap } from '../columnsAdders/index.ts'
+import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts'
 
 export const addColumnsOfTheSameTypeWithCompositeFk1to1 = <
   const FkConfig extends readonly [
@@ -19,4 +19,4 @@ export const addColumnsOfTheSameTypeWithCompositeFk1to1 = <
     getForeignTable,
     buildColumn,
     Object.fromEntries(fkConfig.map(column => [column, column])) as any,
-  );
+  )

@@ -1,10 +1,10 @@
-import { devComposeExec } from './composeCommands.ts';
-import { ensureDevComposeServiceIsRunning } from './ensureDevComposeServiceIsRunning.ts';
-import { getDevEnvFromFile } from './getDevEnvFromFile.ts';
+import { devComposeExec } from './composeCommands.ts'
+import { ensureDevComposeServiceIsRunning } from './ensureDevComposeServiceIsRunning.ts'
+import { getDevEnvFromFile } from './getDevEnvFromFile.ts'
 
-const pgService = 'postgres-dev';
+const pgService = 'postgres-dev'
 
-const env = await getDevEnvFromFile();
+const env = await getDevEnvFromFile()
 
 export async function isPgDevHealthy() {
   const pgIsReadyProc = Bun.spawn(
@@ -21,30 +21,29 @@ export async function isPgDevHealthy() {
       '-d',
       env['DATABASE_NAME'],
     ),
-  );
+  )
 
-  const exitCode = await pgIsReadyProc.exited;
+  const exitCode = await pgIsReadyProc.exited
 
-  return exitCode === 0;
+  return exitCode === 0
 }
 
 export async function ensurePgDevIsHealthy() {
-  await ensureDevComposeServiceIsRunning(pgService);
+  await ensureDevComposeServiceIsRunning(pgService)
 
-  const timeoutMs = 15000;
+  const timeoutMs = 15000
 
-  const signal = AbortSignal.timeout(timeoutMs);
+  const signal = AbortSignal.timeout(timeoutMs)
 
-  let isHealthy = await isPgDevHealthy();
+  let isHealthy = await isPgDevHealthy()
 
-  // @ts-ignore
   while (!signal.aborted && !isHealthy) {
-    await Bun.sleep(200);
-    isHealthy = await isPgDevHealthy();
+    await Bun.sleep(200)
+    isHealthy = await isPgDevHealthy()
   }
 
   if (!isHealthy)
     throw new Error(
       `Timed-out waiting for healthy state after ${timeoutMs / 1000} seconds`,
-    );
+    )
 }

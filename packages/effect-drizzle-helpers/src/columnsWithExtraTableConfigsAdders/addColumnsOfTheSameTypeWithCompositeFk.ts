@@ -1,9 +1,9 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core';
-import { addColumnsWithCompositeFk } from './addColumnsWithCompositeFk.ts';
+import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
 import type {
-  FunctionExtendingColumnsMap,
   AllowOnlyNonEmptyObjectsWithActualKeys,
-} from '../columnsAdders/index.ts';
+  FunctionExtendingColumnsMap,
+} from '../columnsAdders/index.ts'
+import { addColumnsWithCompositeFk } from './addColumnsWithCompositeFk.ts'
 
 export const addColumnsOfTheSameTypeWithCompositeFk = <
   const FkConfig extends [FkConfig] extends [infer U]
@@ -32,4 +32,4 @@ export const addColumnsOfTheSameTypeWithCompositeFk = <
           },
         ]),
       ) as any,
-  );
+  )

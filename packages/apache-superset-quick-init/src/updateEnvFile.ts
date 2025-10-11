@@ -1,13 +1,13 @@
-import { FileSystem } from '@effect/platform/FileSystem';
-import { Path } from '@effect/platform/Path';
-import { all, fn } from 'effect/Effect';
-import { generateRandomPassword } from './generateRandomPassword.ts';
-import { allWithInheritedConcurrencyByDefault } from './allWithInheritedConcurrency.ts';
+import { FileSystem } from '@effect/platform/FileSystem'
+import { Path } from '@effect/platform/Path'
+import { all, fn } from 'effect/Effect'
+import { allWithInheritedConcurrencyByDefault } from './allWithInheritedConcurrency.ts'
+import { generateRandomPassword } from './generateRandomPassword.ts'
 
 export const updateEnvFile = fn('updateEnvFile')(function* (basePath: string) {
-  const [fs, path] = yield* all([FileSystem, Path]);
+  const [fs, path] = yield* all([FileSystem, Path])
 
-  const envFilePath = path.join(basePath, 'docker', '.env');
+  const envFilePath = path.join(basePath, 'docker', '.env')
 
   const { dbPass, envFile, examplesPass, supersetSecretKey } =
     yield* allWithInheritedConcurrencyByDefault({
@@ -15,7 +15,7 @@ export const updateEnvFile = fn('updateEnvFile')(function* (basePath: string) {
       dbPass: generateRandomPassword,
       examplesPass: generateRandomPassword,
       supersetSecretKey: generateRandomPassword,
-    });
+    })
 
   const newEnvFile = envFile
     .replaceAll(
@@ -31,7 +31,7 @@ export const updateEnvFile = fn('updateEnvFile')(function* (basePath: string) {
     .replaceAll(
       /# Make sure you set this to a unique secure random value on production\n/g,
       '',
-    );
+    )
 
-  yield* fs.writeFileString(envFilePath, newEnvFile, { mode: 0o600 });
-});
+  yield* fs.writeFileString(envFilePath, newEnvFile, { mode: 0o600 })
+})

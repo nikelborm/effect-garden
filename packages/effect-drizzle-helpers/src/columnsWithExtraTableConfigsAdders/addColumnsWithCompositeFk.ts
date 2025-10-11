@@ -1,11 +1,11 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core';
-import { flow } from 'effect/Function';
+import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import { flow } from 'effect/Function'
 import {
-  addColumns,
   type AllowOnlyNonEmptyObjectsWithActualKeys,
+  addColumns,
   type FunctionExtendingColumnsMap,
-} from '../columnsAdders/index.ts';
-import { addCompositeFk } from '../extraTableConfigsAdders/addCompositeFk.ts';
+} from '../columnsAdders/index.ts'
+import { addCompositeFk } from '../extraTableConfigsAdders/addCompositeFk.ts'
 
 export const addColumnsWithCompositeFk = <
   const FkConfig extends [FkConfig] extends [infer U]
@@ -20,12 +20,12 @@ export const addColumnsWithCompositeFk = <
   fkConfig: () => FkConfig,
 ): FunctionExtendingColumnsMap<{
   [ColumnName in keyof FkConfig]: FkConfig[ColumnName] extends {
-    currentColumnBuilder: infer U;
+    currentColumnBuilder: infer U
   }
     ? U
-    : never;
+    : never
 }> => {
-  type Entry = [string, BatchColumnAdderValueOfRecord<TTable>];
+  type Entry = [string, BatchColumnAdderValueOfRecord<TTable>]
 
   const compositeFkConfig = Object.fromEntries(
     (Object.entries(fkConfig()) as unknown as Entry[]).map(
@@ -34,7 +34,7 @@ export const addColumnsWithCompositeFk = <
         foreignColumnName,
       ],
     ),
-  );
+  )
 
   return flow(
     addColumns(
@@ -49,10 +49,10 @@ export const addColumnsWithCompositeFk = <
         ) as any,
     ),
     addCompositeFk(getForeignTable, compositeFkConfig),
-  ) as any;
-};
+  ) as any
+}
 
 type BatchColumnAdderValueOfRecord<TTable> = {
-  currentColumnBuilder: PgColumnBuilderBase;
-  foreignColumnName: keyof NoInfer<TTable>;
-};
+  currentColumnBuilder: PgColumnBuilderBase
+  foreignColumnName: keyof NoInfer<TTable>
+}

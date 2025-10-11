@@ -1,5 +1,5 @@
-import { ensureDevComposeServiceIsRunning } from './ensureDevComposeServiceIsRunning.ts';
+import { ensureDevComposeServiceIsRunning } from './ensureDevComposeServiceIsRunning.ts'
 
 export async function ensureDevScriptRunnerIsReady() {
-  await ensureDevComposeServiceIsRunning('ts-dev-script-runner');
+  await ensureDevComposeServiceIsRunning('ts-dev-script-runner')
 }

@@ -1,12 +1,12 @@
-import { config } from 'dotenv';
-import { Either, Schema } from 'effect';
-import { ensureDevEnvExists } from './ensureDevEnvExists.ts';
-import { devEnvFilePath } from './paths.ts';
+import { config } from 'dotenv'
+import { Either, Schema } from 'effect'
+import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
+import { devEnvFilePath } from './paths.ts'
 
 const PortSchema = Schema.compose(
   Schema.NumberFromString,
   Schema.Positive.pipe(Schema.lessThanOrEqualTo(65535)),
-);
+)
 
 const DatabaseConfigSchema = Schema.Struct({
   DATABASE_HOST: Schema.NonEmptyTrimmedString,
@@ -14,7 +14,7 @@ const DatabaseConfigSchema = Schema.Struct({
   DATABASE_USERNAME: Schema.NonEmptyTrimmedString,
   DATABASE_NAME: Schema.NonEmptyTrimmedString,
   DATABASE_PORT: PortSchema,
-});
+})
 
 const DevEnvSchema = Schema.Struct({
   COMPOSE_PROJECT_NAME: Schema.NonEmptyTrimmedString,
@@ -25,22 +25,21 @@ const DevEnvSchema = Schema.Struct({
 
   ...DatabaseConfigSchema.fields,
   DATABASE_PORT_EXPOSED_TO_DEV_LOCALHOST: PortSchema,
-});
+})
 
-const decodeDevEnvEither = Schema.decodeUnknownEither(DevEnvSchema);
-export const decodeDbConfigSync =
-  Schema.decodeUnknownSync(DatabaseConfigSchema);
+const decodeDevEnvEither = Schema.decodeUnknownEither(DevEnvSchema)
+export const decodeDbConfigSync = Schema.decodeUnknownSync(DatabaseConfigSchema)
 
 export async function getDevEnvFromFile() {
-  await ensureDevEnvExists();
+  await ensureDevEnvExists()
 
-  const { parsed, error } = config({ path: devEnvFilePath, quiet: true });
+  const { parsed, error } = config({ path: devEnvFilePath, quiet: true })
 
-  if (error) throw error;
+  if (error) throw error
 
-  const envEither = decodeDevEnvEither(parsed);
+  const envEither = decodeDevEnvEither(parsed)
 
-  if (Either.isLeft(envEither)) throw envEither.left;
+  if (Either.isLeft(envEither)) throw envEither.left
 
-  return envEither.right;
+  return envEither.right
 }

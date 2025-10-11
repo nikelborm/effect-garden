@@ -1,9 +1,9 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json';
-import { visualizer } from 'rollup-plugin-visualizer';
-import terser from '@rollup/plugin-terser';
-import commonjs from '@rollup/plugin-commonjs';
-import type { RollupOptions } from 'rollup';
+import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import terser from '@rollup/plugin-terser'
+import type { RollupOptions } from 'rollup'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default {
   input: 'dist/git-dl.js',
@@ -23,4 +23,4 @@ export default {
     }),
     terser(),
   ],
-} satisfies RollupOptions;
+} satisfies RollupOptions

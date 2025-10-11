@@ -1,16 +1,16 @@
-import { gen, succeed } from 'effect/Effect';
-import { CastToReadableStream } from '../castToReadableStream.ts';
+import { gen, succeed } from 'effect/Effect'
+import { CastToReadableStream } from '../castToReadableStream.ts'
 
-import { ParsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts';
-import { parseGitLFSObjectEither } from './parseGitLFSObjectEither.ts';
+import { ParsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
+import { parseGitLFSObjectEither } from './parseGitLFSObjectEither.ts'
 
 export const PathContentsMetaInfo = gen(function* () {
-  const response = yield* ParsedMetaInfoAboutPathContentsFromGitHubAPI;
+  const response = yield* ParsedMetaInfoAboutPathContentsFromGitHubAPI
 
-  const { type, name, path, size } = response;
+  const { type, name, path, size } = response
 
   if (type === 'dir') {
-    const { entries, sha: treeSha } = response;
+    const { entries, sha: treeSha } = response
 
     if (name && path)
       return {
@@ -20,14 +20,14 @@ export const PathContentsMetaInfo = gen(function* () {
         treeSha,
         entries,
         meta: 'This nested directory can be downloaded as a git tree',
-      } as const;
+      } as const
 
     return {
       type,
       treeSha,
       entries,
       meta: 'This root directory of the repo can be downloaded as a git tree',
-    } as const;
+    } as const
   }
 
   // This is quite forgiving implementation. I had the choice to throw
@@ -57,32 +57,32 @@ export const PathContentsMetaInfo = gen(function* () {
 
   // In the end it leads to much lower complexity with a ton of IFs removed
 
-  const { content, encoding, sha: blobSha, ..._ } = response;
-  const base = { ..._, blobSha };
+  const { content, encoding, sha: blobSha, ..._ } = response
+  const base = { ..._, blobSha }
 
   if (encoding === 'none')
     return {
       ...base,
       meta: 'This file can be downloaded as a blob',
-    } as const;
+    } as const
 
-  const contentAsBuffer = Buffer.from(content, encoding);
+  const contentAsBuffer = Buffer.from(content, encoding)
 
   const potentialGitLFSObject = yield* parseGitLFSObjectEither({
     contentAsBuffer,
     expectedContentSize: size,
-  });
+  })
 
   if (typeof potentialGitLFSObject === 'object')
     return {
       ...base,
       ...potentialGitLFSObject,
       meta: 'This file can be downloaded as a git-LFS object',
-    } as const;
+    } as const
 
   return {
     ...base,
     contentStream: CastToReadableStream(succeed(contentAsBuffer)),
     meta: 'This file is small enough that GitHub API decided to inline it',
-  } as const;
-});
+  } as const
+})

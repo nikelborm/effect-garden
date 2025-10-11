@@ -1,5 +1,5 @@
-import { Effect } from 'effect';
-import type { IdType } from './buildEntityParts.ts';
+import { Effect } from 'effect'
+import type { IdType } from './buildEntityParts.ts'
 
 export const ensureReturningOneId =
   <const T extends string>(table: T) =>
@@ -10,4 +10,4 @@ export const ensureReturningOneId =
         : Effect.die(
             'Tried to insert 1 value, but got returned an amount of rows different from 1',
           ),
-    );
+    )

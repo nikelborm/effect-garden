@@ -1,6 +1,6 @@
-import { timestamp } from 'drizzle-orm/pg-core';
-import { flow } from 'effect/Function';
-import { addColumn } from './addColumn.ts';
+import { timestamp } from 'drizzle-orm/pg-core'
+import { flow } from 'effect/Function'
+import { addColumn } from './addColumn.ts'
 
 const addHappenedAtDateColumn = <const TColumnName extends string>(
   name: TColumnName,
@@ -12,11 +12,11 @@ const addHappenedAtDateColumn = <const TColumnName extends string>(
     })
       .defaultNow()
       .notNull(),
-  );
+  )
 
-export const addCreatedAtDateColumn = addHappenedAtDateColumn('createdAt');
+export const addCreatedAtDateColumn = addHappenedAtDateColumn('createdAt')
 
 export const addCreatedAndUpdatedDateColumns = flow(
   addCreatedAtDateColumn,
   addHappenedAtDateColumn('updatedAt'),
-);
+)

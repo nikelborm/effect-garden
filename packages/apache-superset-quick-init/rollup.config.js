@@ -1,8 +1,8 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json';
-import { visualizer } from 'rollup-plugin-visualizer';
-import terser from '@rollup/plugin-terser';
-import commonjs from '@rollup/plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import terser from '@rollup/plugin-terser'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default {
   input: 'dist/apache-superset-quick-init.js',
@@ -22,4 +22,4 @@ export default {
     }),
     terser(),
   ],
-};
+}

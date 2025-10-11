@@ -1,5 +1,5 @@
-import type { ColumnMap } from '../columnsAdders/index.ts';
-import type { TableFuncArgs } from '../TableFuncArgs.ts';
+import type { ColumnMap } from '../columnsAdders/index.ts'
+import type { TableFuncArgs } from '../TableFuncArgs.ts'
 
 export type FunctionRequiringColumnsMap<
   TRequiredPresenceOfColumnNames extends string,
@@ -10,4 +10,4 @@ export type FunctionRequiringColumnsMap<
 >([snakeCaseTableName, options, extraConfig]: TableFuncArgs<
   TTableName,
   TColumnsMap
->) => TableFuncArgs<TTableName, TColumnsMap>;
+>) => TableFuncArgs<TTableName, TColumnsMap>
