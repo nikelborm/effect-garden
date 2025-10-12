@@ -63,7 +63,7 @@
   "types": "./dist/dts/index.d.ts",
   "bin": {
     "git-dl": "dist/git-dl.js",
-    "ggr": "dist/git-dl.js"
+    "gdl": "dist/git-dl.js"
   },
   "bugs": {
     "url": "https://github.com/nikelborm/git-dl/issues",

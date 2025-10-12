@@ -125,8 +125,8 @@ const CleanRepoEntityPathString = transformOrFail(
  * Text parameter containing path to a directory or a file inside target repo.
  *
  * Can be passed in two ways:
- * 1. As CLI option `ggr --pathToEntityInRepo nestedFolder/Readme.md`
- * 2. As env variable `PATH_TO_ENTITY_IN_REPO="nestedFolder/Readme.md" ggr`
+ * 1. As CLI option `gdl --pathToEntityInRepo nestedFolder/Readme.md`
+ * 2. As env variable `PATH_TO_ENTITY_IN_REPO="nestedFolder/Readme.md" gdl`
  *
  * Has default: `.`, which means that if not specified, script will download
  * entire repository (download root directory of the repository)
@@ -153,8 +153,8 @@ export const pathToEntityInRepoCLIOptionBackedByEnv: Options<string> = pipe(
  * 2. `nikelborm`
  *
  * Can be passed in two ways:
- * 1. As CLI option `ggr --repoOwner apache`
- * 2. As env variable `REPO_OWNER="apache" ggr`
+ * 1. As CLI option `gdl --repoOwner apache`
+ * 2. As env variable `REPO_OWNER="apache" gdl`
  *
  * Doesn`t have defaults and will fail if not specified.
  *
@@ -180,8 +180,8 @@ export const repoOwnerCLIOptionBackedByEnv: Options<string> = pipe(
  * 2. `git-dl`
  *
  * Can be passed in two ways:
- * 1. As CLI option `ggr --repoName superset`
- * 2. As env variable `REPO_NAME="superset" ggr`
+ * 1. As CLI option `gdl --repoName superset`
+ * 2. As env variable `REPO_NAME="superset" gdl`
  *
  * Doesn`t have defaults and will fail if not specified.
  *
@@ -209,8 +209,8 @@ export const repoNameCLIOptionBackedByEnv: Options<string> = pipe(
  * 2. `/tmp/Readme.md`
  *
  * Can be passed in two ways:
- * 1. As CLI option `ggr --destinationPath docker`
- * 2. As env variable `DESTINATION_PATH="docker" ggr`
+ * 1. As CLI option `gdl --destinationPath docker`
+ * 2. As env variable `DESTINATION_PATH="docker" gdl`
  *
  * Has default: `./destination`, which means that if not specified, script will
  * either create a file or a directory named `destination` inside your current PWD
@@ -239,8 +239,8 @@ export const destinationPathCLIOptionBackedByEnv: Options<string> = pipe(
  * 5. `dca3efb`
  *
  * Can be passed in two ways:
- * 1. As CLI option `ggr --gitRef 4.1.1`
- * 2. As env variable `GIT_REF="4.1.1" ggr`
+ * 1. As CLI option `gdl --gitRef 4.1.1`
+ * 2. As env variable `GIT_REF="4.1.1" gdl`
  *
  * Has default: `HEAD`, which means that if not specified, the default branch in
  * the repository will be used.

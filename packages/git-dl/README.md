@@ -1,4 +1,4 @@
-# <img src="https://nikelborm.github.io/git-dl/logo.png" align="right" width="40px" height="40px"/> Get git repo contents (git-dl)  :lizard:
+# <img src="https://nikelborm.github.io/git-dl/logo.png" align="right" width="40px" height="40px"/> Get git repo contents (git-dl) :lizard:
 
 [![Open in VS Code](https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20VS%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc)](https://github.dev/nikelborm/git-dl)
 [![NPM package version](https://badge.fury.io/js/git-dl.svg)](https://www.npmjs.com/package/git-dl)
@@ -95,7 +95,6 @@ npx jsr add @nikelborm/git-dl
 
 1. [Generate `Personal access token (classic)` with `read:packages` scope](https://github.com/settings/tokens/new?description=Install%20packages%20from%20GitHub%20NPM%20registry&scopes=read:packages&default_expires_at=none)
 2. Login to Github's NPM registry (yes you need to do it, even if the package is public):
-
    1. Run the following command (Info about `--auth-type=legacy` [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token)):
 
       ```bash
@@ -201,7 +200,7 @@ npx git-dl --repoOwner apache --repoName superset
 Also there's a shorter form available (preliminary installation is required):
 
 ```bash
-npx ggr --repoOwner apache --repoName superset
+npx gdl --repoOwner apache --repoName superset
 ```
 
 <details>
