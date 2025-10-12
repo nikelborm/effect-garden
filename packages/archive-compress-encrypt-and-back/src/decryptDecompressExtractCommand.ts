@@ -10,6 +10,9 @@ import { pipe } from 'effect/Function'
 import { GPG_RECIPIENT } from './gpgRecipientConfig.ts'
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
 
+// TODO: add brands reflecting these are files/directories, they exist/dont,
+// they are readable etc
+
 const sourceFilePathArg = pipe(
   Args.file({ name: 'source file', exists: 'yes' }),
   withResolvedToAbsolutePathArg,
