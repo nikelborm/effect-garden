@@ -19,6 +19,16 @@ import { decryptDecompressExtractCommand } from './src/decryptDecompressExtractC
 // TODO: make sure nounder/fs can properly simulate file permissions
 // TODO: test with nounder/fs
 
+// TODO: make arrows left and right trigger going into, and going out of the
+// shell in wizard mode
+
+// Also make it possible in wizard to enter path interactively in wizard mode,
+// like in case I want to create a new file/folder, and not select existing one
+
+// Fix bug in effect-cli that when I press enter at prompt
+// The selected directory contains files. Would you like to traverse the selected directory? › (Y/n),
+// it just jumps 2 lines above, instead of either confirming or staying
+
 const appCommand = CliCommand.withSubcommands(CliCommand.make('ace'), [
   archiveCompressEncryptCommand,
   decryptDecompressExtractCommand,
