@@ -11,14 +11,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@total-typescript/ts-reset": "^0.6.1",
-    "@types/node": "^24.7.2",
-    "change-case": "^5.4.4",
-    "ts-toolbelt": "^9.6.0",
-    "tsafe": "^1.6.6",
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/node": "catalog:",
+    "change-case": "catalog:",
     "ts-patch": "catalog:",
-    "type-fest": "^5.1.0",
-    "typescript": "^5.4.5",
+    "ts-toolbelt": "catalog:",
+    "tsafe": "catalog:",
+    "type-fest": "catalog:",
+    "typescript": "catalog:",
     "zod": "^4.1.12"
   },
   "devDependencies": {

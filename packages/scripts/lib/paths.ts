@@ -1,11 +1,13 @@
 import { join, relative } from 'path'
 
-export const scriptsPackageDirPath = join(import.meta.dir, '..')
+export const scriptsPackageDirPath = join(import.meta.dirname, '..')
 export const packagesDirPath = join(scriptsPackageDirPath, '..')
 export const projectRootAbsolutePath = join(packagesDirPath, '..')
 
 export const makeRelativeAgainstProjectRoot = (path: string) =>
   relative(projectRootAbsolutePath, path)
+
+export const rootPackageJsonPath = join(projectRootAbsolutePath, 'package.json')
 
 export const dockerizePath = (path: string) =>
   join('/app', makeRelativeAgainstProjectRoot(path))

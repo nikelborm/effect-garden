@@ -2,12 +2,13 @@
   "name": "@nikelborm/playground",
   "type": "module",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "@effect/experimental": "catalog:",
+    "@effect/language-service": "catalog:",
     "@effect/opentelemetry": "catalog:",
+    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/sql": "catalog:",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
@@ -17,13 +18,13 @@
     "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
-    "@trellisform/database": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
-    "effect": "catalog:"
-  },
-  "dependencies": {
-    "effect-octokit-layer": "^1.14.0",
-    "outdent": "^0.8.0",
-    "tinybench": "^5.0.1"
+    "@trellisform/database": "workspace:*",
+    "effect": "catalog:",
+    "effect-octokit-layer": "catalog:",
+    "outdent": "catalog:",
+    "tinybench": "^5.0.1",
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
   }
 }

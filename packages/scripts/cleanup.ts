@@ -40,7 +40,7 @@ const cleanTree = async (dirPath: string): Promise<void> => {
   )
 }
 
-const rootDir = join(import.meta.dir, '..', '..')
+const rootDir = join(import.meta.dirname, '..', '..')
 
 console.log('Project root dir: ', rootDir)
 
@@ -55,7 +55,7 @@ if (!existsSync(join(rootDir, '.git')))
   )
 
 try {
-  await import(join(import.meta.dir, './stop_dev_compose.ts'))
+  await import(join(import.meta.dirname, './stop_dev_compose.ts'))
 } catch (_) {}
 
 await cleanTree(rootDir)

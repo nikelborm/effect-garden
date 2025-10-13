@@ -14,10 +14,11 @@
     "@nikelborm/tsconfig": "workspace:*",
     "ts-patch": "catalog:",
     "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "@effect/platform": "^0.92.1",
+    "@effect/platform": "catalog:",
     "effect": "catalog:"
   }
 }

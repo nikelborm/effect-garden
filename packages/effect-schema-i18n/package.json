@@ -19,10 +19,11 @@
     "effect": "catalog:"
   },
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-patch": "catalog:",
     "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",

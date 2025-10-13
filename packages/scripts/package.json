@@ -4,9 +4,12 @@
   "private": true,
   "devDependencies": {
     "@nikelborm/tsconfig": "workspace:*",
-    "@types/bun": "catalog:"
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "dotenv": "^17.2.1"
+    "@nikelborm/effect-helpers": "workspace:*",
+    "dotenv": "^17.2.1",
+    "effect": "catalog:"
   }
 }

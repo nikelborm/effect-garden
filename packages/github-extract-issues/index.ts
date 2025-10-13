@@ -84,7 +84,7 @@ class MarkdownStdoutPrinter extends Context.Tag(
 }
 
 const AppLayer = pipe(
-  Effect.map(Path.Path, path => path.join(import.meta.dir, '.env')),
+  Effect.map(Path.Path, path => path.join(import.meta.dirname, '.env')),
   Effect.flatMap(e => PlatformConfigProvider.fromDotEnv(e)),
   Effect.map(Layer.setConfigProvider),
   Layer.unwrapEffect,
@@ -184,12 +184,12 @@ const renderIssuesWithCommentsToMd = (issuesWithComments: Issues): string =>
 
 const cachedIssuesJsonFilePath = ({ owner, repo }: RepoArgs) =>
   Effect.map(Path.Path, path =>
-    path.join(import.meta.dir, `${owner}_${repo}_issues_data.json`),
+    path.join(import.meta.dirname, `${owner}_${repo}_issues_data.json`),
   )
 
 const mdFilePath = ({ owner, repo }: RepoArgs) =>
   Effect.map(Path.Path, path =>
-    path.join(import.meta.dir, `${owner}_${repo}_TODO.md`),
+    path.join(import.meta.dirname, `${owner}_${repo}_TODO.md`),
   )
 
 const getIssuesWithCommentsFromLocalJsonFile = Effect.fn(function* (

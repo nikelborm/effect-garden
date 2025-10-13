@@ -12,11 +12,12 @@
     "dev": "tspc --watch"
   },
   "devDependencies": {
-    "@types/pg": "^8.15.4",
-    "ts-patch": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
     "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/pg": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "files": [
     "dist",
@@ -27,9 +28,9 @@
   ],
   "dependencies": {
     "@nevware21/ts-utils": "^0.12.5",
-    "drizzle-orm": "^0.44.2",
+    "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "pg": "^8.16.1",
-    "type-fest": "^5.1.0"
+    "pg": "catalog:",
+    "type-fest": "catalog:"
   }
 }

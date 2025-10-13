@@ -18,27 +18,27 @@
     "watch-docs": "find src/ ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },
   "dependencies": {
-    "outdent": "^0.8.0",
-    "tsafe": "^1.8.5",
-    "tslib": "^2.8.1"
+    "outdent": "catalog:",
+    "tsafe": "catalog:",
+    "tslib": "catalog:"
   },
   "devDependencies": {
-    "@stryker-mutator/vitest-runner": "^9.0.1",
-    "@total-typescript/ts-reset": "^0.6.1",
-    "@types/node": "^24.7.2",
-    "@vitest/coverage-v8": "^3.1.2",
-    "change-case": "^5.4.4",
-    "jsr": "^0.13.4",
-    "@nikelborm/tsconfig": "workspace:*",
-    "rimraf": "^6.0.1",
-    "ts-patch": "^3.3.0",
-    "ts-toolbelt": "^9.6.0",
-    "tstyche": "^4.0.0",
-    "type-fest": "^5.1.0",
-    "typescript": "^5.8.3",
-    "vitest": "^3.1.2",
     "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "@nikelborm/tsconfig": "workspace:*",
+    "@stryker-mutator/vitest-runner": "^9.0.1",
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "change-case": "catalog:",
+    "jsr": "catalog:",
+    "rimraf": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "ts-toolbelt": "catalog:",
+    "tstyche": "^4.0.0",
+    "type-fest": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "publishConfig": {
     "access": "public",

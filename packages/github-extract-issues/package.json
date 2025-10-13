@@ -19,16 +19,17 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@total-typescript/ts-reset": "^0.6.1",
+    "@total-typescript/ts-reset": "catalog:",
     "effect": "catalog:",
     "effect-errors": "catalog:",
-    "effect-octokit-layer": "^1.14.0"
+    "effect-octokit-layer": "catalog:"
   },
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-patch": "catalog:",
     "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",

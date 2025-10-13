@@ -2,5 +2,11 @@
   "name": "@nikelborm/tsconfig",
   "exports": {
     "default": "./tsconfig.json"
+  },
+  "dependencies": {
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   }
 }
