@@ -6,7 +6,10 @@
     "dev": "bun --hot --no-clear-screen ./index.ts"
   },
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*"
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-patch": "catalog:",
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:"
   },
   "dependencies": {
     "@effect/platform": "catalog:",

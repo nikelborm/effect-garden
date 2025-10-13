@@ -13,7 +13,10 @@
   },
   "devDependencies": {
     "@types/pg": "^8.15.4",
-    "@nikelborm/tsconfig": "workspace:*"
+    "ts-patch": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:"
   },
   "files": [
     "dist",
@@ -27,6 +30,6 @@
     "drizzle-orm": "^0.44.2",
     "effect": "catalog:",
     "pg": "^8.16.1",
-    "type-fest": "^5.0.1"
+    "type-fest": "^5.1.0"
   }
 }

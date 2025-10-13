@@ -3,7 +3,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*"
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/bun": "catalog:"
   },
   "dependencies": {
     "dotenv": "^17.2.1"

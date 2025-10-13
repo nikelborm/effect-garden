@@ -56,7 +56,7 @@ if (!existsSync(join(rootDir, '.git')))
 
 try {
   await import(join(import.meta.dir, './stop_dev_compose.ts'))
-} catch (error) {}
+} catch (_) {}
 
 await cleanTree(rootDir)
 

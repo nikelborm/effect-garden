@@ -12,9 +12,7 @@ import {
 
 const ID = Schema.Number.pipe(
   Schema.int(),
-  Schema.positive({
-    examples: [1, 200, 6719],
-  }),
+  Schema.positive({ examples: [1, 200, 6719] }),
   Schema.asSchema,
 )
 

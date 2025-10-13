@@ -11,9 +11,13 @@
     "dev": "tspc --watch"
   },
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*"
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-patch": "catalog:",
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:"
   },
   "dependencies": {
+    "@effect/platform": "^0.92.1",
     "effect": "catalog:"
   }
 }

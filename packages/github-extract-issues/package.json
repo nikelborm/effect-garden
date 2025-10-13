@@ -1,8 +1,8 @@
 {
-  "name": "@nikelborm/effect-schema-i18n",
+  "name": "@nikelborm/github-extract-issues",
   "version": "0.1.0",
   "type": "module",
-  "description": "Effect schema i18n",
+  "description": "Script to extract issues with comments from repo",
   "license": "MIT",
   "scripts": {
     "build": "tspc",
@@ -16,7 +16,13 @@
     "package.json"
   ],
   "dependencies": {
-    "effect": "catalog:"
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "effect": "catalog:",
+    "effect-errors": "catalog:",
+    "effect-octokit-layer": "^1.14.0"
   },
   "devDependencies": {
     "@nikelborm/tsconfig": "workspace:*",

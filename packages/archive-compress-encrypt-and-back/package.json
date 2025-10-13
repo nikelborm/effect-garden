@@ -17,12 +17,16 @@
   ],
   "dependencies": {
     "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:",
     "effect-errors": "catalog:"
   },
   "devDependencies": {
-    "@nikelborm/tsconfig": "workspace:*"
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-patch": "catalog:",
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:"
   },
   "publishConfig": {
     "access": "public",
