@@ -121,6 +121,20 @@
         "typescript": "catalog:",
       },
     },
+    "packages/effect-midi": {
+      "name": "@nikelborm/effect-midi",
+      "version": "0.1.0",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@nikelborm/tsconfig": "workspace:*",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/effect-schema-i18n": {
       "name": "@nikelborm/effect-schema-i18n",
       "version": "0.1.0",
@@ -235,6 +249,7 @@
         "@effect/platform-bun": "catalog:",
         "@effect/platform-node": "catalog:",
         "@effect/sql": "catalog:",
+        "@effect/sql-pg": "catalog:",
         "@nikelborm/apache-superset-quick-init": "workspace:*",
         "@nikelborm/backend-config": "workspace:*",
         "@nikelborm/effect-drizzle-helpers": "workspace:*",
@@ -250,8 +265,6 @@
         "outdent": "catalog:",
         "tinybench": "^5.0.1",
         "ts-namespace-import": "catalog:",
-      },
-      "devDependencies": {
         "typescript": "catalog:",
       },
     },
@@ -614,6 +627,8 @@
     "@nikelborm/effect-drizzle-helpers": ["@nikelborm/effect-drizzle-helpers@workspace:packages/effect-drizzle-helpers"],
 
     "@nikelborm/effect-helpers": ["@nikelborm/effect-helpers@workspace:packages/effect-helpers"],
+
+    "@nikelborm/effect-midi": ["@nikelborm/effect-midi@workspace:packages/effect-midi"],
 
     "@nikelborm/effect-schema-i18n": ["@nikelborm/effect-schema-i18n@workspace:packages/effect-schema-i18n"],
 

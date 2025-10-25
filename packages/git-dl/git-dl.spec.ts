@@ -1,15 +1,14 @@
 import { Command as CliCommand, Span } from '@effect/cli'
 import { Command as PlatformCommand } from '@effect/platform'
+import { NodeContext } from '@effect/platform-node'
 import { CommandExecutor } from '@effect/platform/CommandExecutor'
 import { FileSystem } from '@effect/platform/FileSystem'
 import { Path } from '@effect/platform/Path'
-import { NodeContext } from '@effect/platform-node'
 import { describe, it } from '@effect/vitest'
 import { Stream } from 'effect'
 import { fn, gen, map, provide } from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import { merge } from 'effect/Layer'
-import { decodeText, runFold } from 'effect/Stream'
 import pkg from './package.json' with { type: 'json' }
 import { allWithInheritedConcurrencyByDefault } from './src/allWithInheritedConcurrency.ts'
 import {
@@ -65,11 +64,7 @@ class CommandFinishedWithNonZeroCode extends buildTaggedErrorClassVerifyingCause
 
 const Uint8ArrayStreamToString = <E, R>(
   stream: Stream.Stream<Uint8Array<ArrayBufferLike>, E, R>,
-) =>
-  stream.pipe(
-    Stream.decodeText(),
-    Stream.runFold('', (a, b) => a + b),
-  )
+) => stream.pipe(Stream.decodeText(), Stream.mkString)
 
 const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
   command: PlatformCommand.Command,

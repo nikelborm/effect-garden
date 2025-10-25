@@ -1,5 +1,8 @@
+import * as EArray from 'effect/Array'
+import { pipe } from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
+import * as Struct from 'effect/Struct'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { console } from 'inspector'
 import { join } from 'path'
@@ -42,112 +45,109 @@ const rootPackageJson = Schema.decodeSync(RootPackageJsonSchema)(
   rootPackageJsonString,
 )
 
-const dirNames = await readdir(packagesDirPath)
+const myMonorepoPackagesDirectoryNames = await readdir(packagesDirPath)
 
-const packages = await Promise.all(
-  dirNames.map(dir =>
-    readFile(join(packagesDirPath, dir, 'package.json'), 'utf8')
+const myMonorepoPackages = await Promise.all(
+  myMonorepoPackagesDirectoryNames.map(directoryName =>
+    readFile(join(packagesDirPath, directoryName, 'package.json'), 'utf8')
       .then(Schema.decodeSync(SubPackageJsonSchema))
-      .then(e => ({ ...e, packageDirPath: join(packagesDirPath, dir) })),
+      .then(e => ({
+        ...e,
+        directoryPath: join(packagesDirPath, directoryName),
+      })),
   ),
 )
 
 // ensure dependencies with devDependencies have no intersections
 
-for (const pkg of packages) {
+for (const myMonorepoPackage of myMonorepoPackages) {
   const intersection = Record.intersection(
-    pkg.dependencies ?? {},
-    pkg.devDependencies ?? {},
+    myMonorepoPackage.dependencies ?? {},
+    myMonorepoPackage.devDependencies ?? {},
     (prodVersion, devVersion) => ({ devVersion, prodVersion }),
   )
 
   if (Object.keys(intersection).length > 0)
     throw new Error(
-      `Dev and prod dependencies of ${pkg.name} intersect: ${JSON.stringify(intersection, null, 2)}`,
+      `Dev and prod dependencies of ${myMonorepoPackage.name} intersect: ${JSON.stringify(intersection, null, 2)}`,
     )
 }
 
 // Ensure packages/ dependencies are not duplicated and put into catalog
 
-const temp = Object.create(null) as Record<
-  string,
-  [string, { packageDirPath: string; packageName: string }][]
->
-
-const setOrAdd = (
-  depName: string,
-  depVersion: string,
-  cameFrom: { packageDirPath: string; packageName: string },
-) => {
-  if (temp[depName]) temp[depName].push([depVersion, cameFrom])
-  else temp[depName] = [[depVersion, cameFrom]]
-}
-
-for (const pkg of packages)
-  for (const [depName, depVersion] of Object.entries({
-    ...pkg.dependencies,
-    ...pkg.devDependencies,
-  }))
-    setOrAdd(depName, depVersion, {
-      packageName: pkg.name,
-      packageDirPath: pkg.packageDirPath,
-    })
-
-const badApples = Object.entries(temp)
-  .filter(([, versions]) => versions.length !== 1)
-  .filter(
-    ([, versions]) =>
-      new Set(versions.map(([v]) => v)).difference(new Set(['workspace:*']))
-        .size,
-  )
-  .filter(
-    ([, versions]) =>
-      new Set(versions.map(([v]) => v)).difference(new Set(['catalog:'])).size,
-  )
-  .map(([dep, versions]) => {
-    const versionPresentInCatalog = rootPackageJson.catalog[dep] || null
-    const uniqueVersions = new Set(versions.map(([v]) => v))
-    const uniqueVersionsWithoutCatalog = uniqueVersions.difference(
-      new Set(['catalog:']),
-    )
-    const wouldRequireChoosingVersion =
-      !versionPresentInCatalog && uniqueVersionsWithoutCatalog.size > 1
-
-    return [
-      dep,
+const dependencyNameToItsInstances = pipe(
+  myMonorepoPackages,
+  EArray.flatMap(myMonorepoPackage =>
+    pipe(
       {
-        versionPresentInCatalog,
-        packagesInsideOfWhichCatalogDepsWillBeInstalled: versions
-          .filter(([version]) => version !== 'catalog:')
-          .map(([, cameFrom]) => cameFrom),
-
-        uniqueVersions,
-        wouldRequireChoosingVersion,
+        ...myMonorepoPackage.dependencies,
+        ...myMonorepoPackage.devDependencies,
       },
-    ] as const
-  })
-
-const badApplesRequiringInstallationIntoRootCatalog = badApples.filter(
-  ([, meta]) => !meta.versionPresentInCatalog,
+      Record.map((dependencyVersion, dependencyName) => ({
+        dependency: { name: dependencyName, version: dependencyVersion },
+        myMonorepoPackage: Struct.pick(
+          myMonorepoPackage,
+          'name',
+          'directoryPath',
+        ),
+      })),
+      Record.values,
+    ),
+  ),
+  EArray.groupBy(_ => _.dependency.name),
 )
 
-const installationIntoRootCatalogTasksWithoutHumanInput =
-  badApplesRequiringInstallationIntoRootCatalog
-    .filter(([, meta]) => !meta.wouldRequireChoosingVersion)
-    .map(([dep, meta]) => [dep, [...meta.uniqueVersions][0]!] as const)
+const withoutSetValue = (value: string) => (set: Set<string>) =>
+  set.difference(new Set([value]))
 
-if (installationIntoRootCatalogTasksWithoutHumanInput.length) {
-  console.log('Installation into root catalog tasks without human input')
+const withoutCatalog = withoutSetValue('catalog:')
+const withoutWorkspace = withoutSetValue('workspace:*')
 
-  console.table(
-    Object.fromEntries(installationIntoRootCatalogTasksWithoutHumanInput),
-  )
-}
+const badDeps = pipe(
+  dependencyNameToItsInstances,
+  Record.map(dependencyInstances => ({
+    dependencyInstances,
+    uniqueVersions: new Set(dependencyInstances.map(_ => _.dependency.version)),
+  })),
+  Record.map(_ => ({
+    ..._,
+    uniqueVersionsWithoutCatalog: withoutCatalog(_.uniqueVersions),
+  })),
+  Record.filter(_ => _.dependencyInstances.length > 1),
+  Record.filter(_ => Boolean(withoutWorkspace(_.uniqueVersions).size)),
+  Record.filter(_ => Boolean(_.uniqueVersionsWithoutCatalog.size)),
+  Record.toEntries,
+  EArray.map(([dependencyName, meta]) => {
+    const versionPresentInCatalog =
+      rootPackageJson.catalog[dependencyName] || null
+
+    const wouldRequireChoosingVersion =
+      !versionPresentInCatalog && meta.uniqueVersionsWithoutCatalog.size > 1
+
+    return {
+      dependencyName,
+      versionPresentInCatalog,
+      packagesInsideOfWhichCatalogDepsWillBeInstalled: meta.dependencyInstances
+        .filter(_ => _.dependency.version !== 'catalog:')
+        .map(_ => _.myMonorepoPackage),
+
+      uniqueVersions: meta.uniqueVersions,
+      wouldRequireChoosingVersion,
+    }
+  }),
+)
+
+const badApplesRequiringInstallationIntoRootCatalog = badDeps.filter(
+  _ => !_.versionPresentInCatalog,
+)
 
 const installationIntoRootCatalogTasksWithHumanInput =
   badApplesRequiringInstallationIntoRootCatalog
-    .filter(([, meta]) => meta.wouldRequireChoosingVersion)
-    .map(([dep, meta]) => [dep, [...meta.uniqueVersions]] as const)
+    .filter(_ => _.wouldRequireChoosingVersion)
+    .map(
+      ({ dependencyName, uniqueVersions }) =>
+        [dependencyName, Array.from(uniqueVersions)] as const,
+    )
 
 if (installationIntoRootCatalogTasksWithHumanInput.length) {
   console.log('\nInstallation into root catalog tasks with human input')
@@ -159,40 +159,59 @@ if (installationIntoRootCatalogTasksWithHumanInput.length) {
   )
 }
 
-const flatTasksToInstallCatalogVersionsOfDeps = badApples.flatMap(
-  ([dep, meta]) =>
-    meta.packagesInsideOfWhichCatalogDepsWillBeInstalled.map(
-      myPackage => [myPackage, dep] as const,
-    ),
-)
-
-const tasksToInstallCatalogVersionsOfDeps = Object.entries(
-  Object.groupBy(
-    flatTasksToInstallCatalogVersionsOfDeps,
-    ([{ packageDirPath }]) => packageDirPath,
+const tasksToInstallCatalogVersionsOfDeps = pipe(
+  badDeps,
+  EArray.flatMap(
+    ({ packagesInsideOfWhichCatalogDepsWillBeInstalled, dependencyName }) =>
+      packagesInsideOfWhichCatalogDepsWillBeInstalled.map(
+        myMonorepoPackage => ({ myMonorepoPackage, dependencyName }),
+      ),
   ),
-).map(
-  ([myPackageDirPath, groups]) =>
-    [myPackageDirPath, groups?.map(([, dep]) => dep) || []] as const,
+  EArray.groupBy(_ => _.myMonorepoPackage.directoryPath),
+  Record.map(EArray.map(_ => _.dependencyName)),
+  Record.toEntries,
+  EArray.map(([myPackageDirPath, dependencyNamesToInstall]) => ({
+    myPackageDirPath,
+    dependencyNamesToInstall,
+  })),
 )
 
 if (tasksToInstallCatalogVersionsOfDeps.length) {
   console.log('\nTasks to install catalog versions of deps')
 
   console.table(
-    tasksToInstallCatalogVersionsOfDeps.map(([myPackageDirPath, deps]) => [
-      myPackageDirPath,
-      deps.join(', '),
-    ]),
+    tasksToInstallCatalogVersionsOfDeps.map(
+      ({ myPackageDirPath, dependencyNamesToInstall }) => [
+        myPackageDirPath,
+        dependencyNamesToInstall.join(', '),
+      ],
+    ),
   )
 }
 
-if (installationIntoRootCatalogTasksWithoutHumanInput.length) {
+const additionalCatalogDependencies = pipe(
+  badApplesRequiringInstallationIntoRootCatalog,
+  EArray.flatMapNullable(problematicDependency =>
+    problematicDependency.wouldRequireChoosingVersion
+      ? null
+      : ([
+          problematicDependency.dependencyName,
+          [...problematicDependency.uniqueVersions][0]!,
+        ] as const),
+  ),
+  Record.fromEntries,
+)
+
+if (Record.size(additionalCatalogDependencies)) {
+  console.log('Installation into root catalog tasks without human input')
+
+  console.table(additionalCatalogDependencies)
+
   const tmp = JSON.parse(rootPackageJsonString)
 
   tmp.catalog = {
     ...tmp.catalog,
-    ...Object.fromEntries(installationIntoRootCatalogTasksWithoutHumanInput),
+    ...additionalCatalogDependencies,
   }
 
   await writeFile(rootPackageJsonPath, JSON.stringify(tmp, null, 2) + '\n')
@@ -209,11 +228,18 @@ if (installationIntoRootCatalogTasksWithoutHumanInput.length) {
     throw new Error('Failed to install added to catalog bun deps')
 }
 
-for (const [myPackageDirPath, deps] of tasksToInstallCatalogVersionsOfDeps) {
+for (const {
+  myPackageDirPath,
+  dependencyNamesToInstall,
+} of tasksToInstallCatalogVersionsOfDeps) {
   console.log('Installing deps at ' + myPackageDirPath)
 
   const installationExitCode = await Bun.spawn({
-    cmd: ['bun', 'add', ...deps.map(e => e + '@catalog:')],
+    cmd: [
+      'bun',
+      'add',
+      ...dependencyNamesToInstall.map(name => name + '@catalog:'),
+    ],
     cwd: myPackageDirPath,
     stdin: 'inherit',
     stdout: 'inherit',
