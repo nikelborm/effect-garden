@@ -1,7 +1,10 @@
 import * as EArray from 'effect/Array'
 import { pipe } from 'effect/Function'
+import * as EIterable from 'effect/Iterable'
+import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
+import * as EString from 'effect/String'
 import * as Struct from 'effect/Struct'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { console } from 'inspector'
@@ -15,8 +18,6 @@ import {
   AbsentProperty,
   OptionalProperty,
 } from './node_modules/@nikelborm/effect-helpers/index.ts'
-
-const rootPackageJsonString = await readFile(rootPackageJsonPath, 'utf-8')
 
 const deps = Schema.Record({
   key: Schema.NonEmptyTrimmedString,
@@ -41,24 +42,33 @@ const SubPackageJsonSchema = Schema.parseJson(
   }),
 )
 
-const rootPackageJson = Schema.decodeSync(RootPackageJsonSchema)(
-  rootPackageJsonString,
-)
+const getPackagesInfo = async () => {
+  const rootPackageJsonString = await readFile(rootPackageJsonPath, 'utf-8')
 
-const myMonorepoPackagesDirectoryNames = await readdir(packagesDirPath)
+  const rootPackageJson = Schema.decodeSync(RootPackageJsonSchema)(
+    rootPackageJsonString,
+  )
 
-const myMonorepoPackages = await Promise.all(
-  myMonorepoPackagesDirectoryNames.map(directoryName =>
-    readFile(join(packagesDirPath, directoryName, 'package.json'), 'utf8')
-      .then(Schema.decodeSync(SubPackageJsonSchema))
-      .then(e => ({
-        ...e,
-        directoryPath: join(packagesDirPath, directoryName),
-      })),
-  ),
-)
+  const myMonorepoPackagesDirectoryNames = await readdir(packagesDirPath)
+
+  const myMonorepoPackages = await Promise.all(
+    myMonorepoPackagesDirectoryNames.map(directoryName =>
+      readFile(join(packagesDirPath, directoryName, 'package.json'), 'utf8')
+        .then(Schema.decodeSync(SubPackageJsonSchema))
+        .then(myMonorepoPackage => ({
+          ...myMonorepoPackage,
+          directoryPath: join(packagesDirPath, directoryName),
+        })),
+    ),
+  )
+
+  return { rootPackageJsonString, rootPackageJson, myMonorepoPackages }
+}
 
 // ensure dependencies with devDependencies have no intersections
+
+let { myMonorepoPackages, rootPackageJson, rootPackageJsonString } =
+  await getPackagesInfo()
 
 for (const myMonorepoPackage of myMonorepoPackages) {
   const intersection = Record.intersection(
@@ -116,8 +126,7 @@ const badDeps = pipe(
   Record.filter(_ => _.dependencyInstances.length > 1),
   Record.filter(_ => Boolean(withoutWorkspace(_.uniqueVersions).size)),
   Record.filter(_ => Boolean(_.uniqueVersionsWithoutCatalog.size)),
-  Record.toEntries,
-  EArray.map(([dependencyName, meta]) => {
+  Record.map((meta, dependencyName) => {
     const versionPresentInCatalog =
       rootPackageJson.catalog[dependencyName] || null
 
@@ -125,7 +134,6 @@ const badDeps = pipe(
       !versionPresentInCatalog && meta.uniqueVersionsWithoutCatalog.size > 1
 
     return {
-      dependencyName,
       versionPresentInCatalog,
       packagesInsideOfWhichCatalogDepsWillBeInstalled: meta.dependencyInstances
         .filter(_ => _.dependency.version !== 'catalog:')
@@ -137,23 +145,20 @@ const badDeps = pipe(
   }),
 )
 
-const badApplesRequiringInstallationIntoRootCatalog = badDeps.filter(
+const badApplesRequiringInstallationIntoRootCatalog = Record.filter(
+  badDeps,
   _ => !_.versionPresentInCatalog,
 )
 
-const installationIntoRootCatalogTasksWithHumanInput =
-  badApplesRequiringInstallationIntoRootCatalog
-    .filter(_ => _.wouldRequireChoosingVersion)
-    .map(
-      ({ dependencyName, uniqueVersions }) =>
-        [dependencyName, Array.from(uniqueVersions)] as const,
-    )
+const installationIntoRootCatalogTasksWithHumanInput = pipe(
+  badApplesRequiringInstallationIntoRootCatalog,
+  Record.filter(_ => _.wouldRequireChoosingVersion),
+  Record.map(_ => Array.from(_.uniqueVersions)),
+)
 
-if (installationIntoRootCatalogTasksWithHumanInput.length) {
+if (Record.size(installationIntoRootCatalogTasksWithHumanInput)) {
   console.log('\nInstallation into root catalog tasks with human input')
-  console.table(
-    Object.fromEntries(installationIntoRootCatalogTasksWithHumanInput),
-  )
+  console.table(installationIntoRootCatalogTasksWithHumanInput)
   throw new Error(
     'Intervention required. Select the desired packages versions and put them into catalog manually',
   )
@@ -161,46 +166,59 @@ if (installationIntoRootCatalogTasksWithHumanInput.length) {
 
 const tasksToInstallCatalogVersionsOfDeps = pipe(
   badDeps,
-  EArray.flatMap(
-    ({ packagesInsideOfWhichCatalogDepsWillBeInstalled, dependencyName }) =>
-      packagesInsideOfWhichCatalogDepsWillBeInstalled.map(
-        myMonorepoPackage => ({ myMonorepoPackage, dependencyName }),
-      ),
+  Record.toEntries,
+  EArray.flatMap(([dependencyName, meta]) =>
+    meta.packagesInsideOfWhichCatalogDepsWillBeInstalled.map(
+      myMonorepoPackage => ({ myMonorepoPackage, dependencyName }),
+    ),
   ),
   EArray.groupBy(_ => _.myMonorepoPackage.directoryPath),
   Record.map(EArray.map(_ => _.dependencyName)),
-  Record.toEntries,
-  EArray.map(([myPackageDirPath, dependencyNamesToInstall]) => ({
-    myPackageDirPath,
-    dependencyNamesToInstall,
-  })),
 )
 
-if (tasksToInstallCatalogVersionsOfDeps.length) {
+if (Record.size(tasksToInstallCatalogVersionsOfDeps)) {
   console.log('\nTasks to install catalog versions of deps')
 
   console.table(
-    tasksToInstallCatalogVersionsOfDeps.map(
-      ({ myPackageDirPath, dependencyNamesToInstall }) => [
-        myPackageDirPath,
-        dependencyNamesToInstall.join(', '),
-      ],
+    Record.map(tasksToInstallCatalogVersionsOfDeps, dependencyNamesToInstall =>
+      dependencyNamesToInstall.join(', '),
     ),
   )
 }
 
 const additionalCatalogDependencies = pipe(
   badApplesRequiringInstallationIntoRootCatalog,
-  EArray.flatMapNullable(problematicDependency =>
-    problematicDependency.wouldRequireChoosingVersion
-      ? null
-      : ([
-          problematicDependency.dependencyName,
-          [...problematicDependency.uniqueVersions][0]!,
-        ] as const),
-  ),
-  Record.fromEntries,
+  Record.filter(_ => !_.wouldRequireChoosingVersion),
+  Record.map(_ => Option.getOrThrow(EIterable.head(_.uniqueVersions))),
 )
+
+const transparentSpawn = async ({
+  cmd,
+  cwd,
+  failureMessage,
+}: {
+  cmd: string[]
+  cwd: string
+  failureMessage: string
+}) => {
+  console.log(
+    EString.stripMargin(`
+      |$ cd ${cwd}
+      |$ ${cmd.join(' ')}
+      |
+    `),
+  )
+
+  const installationExitCode = await Bun.spawn({
+    cmd,
+    cwd,
+    stdin: 'inherit',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  }).exited
+
+  if (installationExitCode !== 0) throw new Error(failureMessage)
+}
 
 if (Record.size(additionalCatalogDependencies)) {
   console.log('Installation into root catalog tasks without human input')
@@ -209,50 +227,37 @@ if (Record.size(additionalCatalogDependencies)) {
 
   const tmp = JSON.parse(rootPackageJsonString)
 
-  tmp.catalog = {
-    ...tmp.catalog,
-    ...additionalCatalogDependencies,
-  }
+  tmp.catalog = { ...tmp.catalog, ...additionalCatalogDependencies }
 
   await writeFile(rootPackageJsonPath, JSON.stringify(tmp, null, 2) + '\n')
 
-  const installationExitCode = await Bun.spawn({
+  await transparentSpawn({
     cmd: ['bun', 'install'],
     cwd: projectRootAbsolutePath,
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-  }).exited
-
-  if (installationExitCode !== 0)
-    throw new Error('Failed to install added to catalog bun deps')
+    failureMessage:
+      'Failed to install added to catalog bun deps into root package',
+  })
 }
 
-for (const {
-  myPackageDirPath,
-  dependencyNamesToInstall,
-} of tasksToInstallCatalogVersionsOfDeps) {
-  console.log('Installing deps at ' + myPackageDirPath)
-
-  const installationExitCode = await Bun.spawn({
+for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
+  tasksToInstallCatalogVersionsOfDeps,
+)) {
+  await transparentSpawn({
     cmd: [
       'bun',
       'add',
       ...dependencyNamesToInstall.map(name => name + '@catalog:'),
     ],
-    cwd: myPackageDirPath,
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-  }).exited
-
-  if (installationExitCode !== 0)
-    throw new Error('Failed to install added to catalog bun deps')
+    cwd,
+    failureMessage:
+      'Failed to install added to catalog bun deps into specific package',
+  })
 }
-
 // ensure typescript package is in dev deps of everything that doesn't have it
 // (except in tsconfig package). check the same shit for every deps of tsconfig
 // package, so that I define ts related shit in one place
+
+;({ myMonorepoPackages, rootPackageJson } = await getPackagesInfo())
 
 // ensure all dirs inside packages folder are installed as devDeps of root
 // package, plus playground should be filled with all catalog deps and workspace
