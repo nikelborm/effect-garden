@@ -1,11 +1,13 @@
 import * as EArray from 'effect/Array'
-import { pipe } from 'effect/Function'
+import { pipe, flow } from 'effect/Function'
 import * as EIterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
+import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 import * as EString from 'effect/String'
 import * as Struct from 'effect/Struct'
+import * as Tuple from 'effect/Tuple'
 import { readdir, readFile, writeFile } from 'fs/promises'
 import { console } from 'inspector'
 import { join } from 'path'
@@ -58,6 +60,10 @@ const getPackagesInfo = async () => {
         .then(myMonorepoPackage => ({
           ...myMonorepoPackage,
           directoryPath: join(packagesDirPath, directoryName),
+          allDependencies: {
+            ...myMonorepoPackage.dependencies,
+            ...myMonorepoPackage.devDependencies,
+          },
         })),
     ),
   )
@@ -89,10 +95,7 @@ const dependencyNameToItsInstances = pipe(
   myMonorepoPackages,
   EArray.flatMap(myMonorepoPackage =>
     pipe(
-      {
-        ...myMonorepoPackage.dependencies,
-        ...myMonorepoPackage.devDependencies,
-      },
+      myMonorepoPackage.allDependencies,
       Record.map((dependencyVersion, dependencyName) => ({
         dependency: { name: dependencyName, version: dependencyVersion },
         myMonorepoPackage: Struct.pick(
@@ -113,36 +116,45 @@ const withoutSetValue = (value: string) => (set: Set<string>) =>
 const withoutCatalog = withoutSetValue('catalog:')
 const withoutWorkspace = withoutSetValue('workspace:*')
 
-const badDeps = pipe(
+const badDeps = Record.filterMap(
   dependencyNameToItsInstances,
-  Record.map(dependencyInstances => ({
-    dependencyInstances,
-    uniqueVersions: new Set(dependencyInstances.map(_ => _.dependency.version)),
-  })),
-  Record.map(_ => ({
-    ..._,
-    uniqueVersionsWithoutCatalog: withoutCatalog(_.uniqueVersions),
-  })),
-  Record.filter(_ => _.dependencyInstances.length > 1),
-  Record.filter(_ => Boolean(withoutWorkspace(_.uniqueVersions).size)),
-  Record.filter(_ => Boolean(_.uniqueVersionsWithoutCatalog.size)),
-  Record.map((meta, dependencyName) => {
+  (dependencyInstances, dependencyName) => {
+    if (dependencyInstances.length < 2) return Option.none()
+
+    const uniqueVersions = new Set(
+      dependencyInstances.map(_ => _.dependency.version),
+    )
+
+    const dependencyVersionPointsOnlyAtWorkspace =
+      !withoutWorkspace(uniqueVersions).size
+
+    if (dependencyVersionPointsOnlyAtWorkspace) return Option.none()
+
+    const uniqueVersionsWithoutCatalog = withoutCatalog(uniqueVersions)
+
+    const dependencyVersionPointsOnlyAtCatalog =
+      !uniqueVersionsWithoutCatalog.size
+
+    if (dependencyVersionPointsOnlyAtCatalog) return Option.none()
+
     const versionPresentInCatalog =
       rootPackageJson.catalog[dependencyName] || null
 
-    const wouldRequireChoosingVersion =
-      !versionPresentInCatalog && meta.uniqueVersionsWithoutCatalog.size > 1
+    const wouldRequireChoosingVersionToPutIntoCatalog =
+      !versionPresentInCatalog && uniqueVersionsWithoutCatalog.size > 1
 
-    return {
+    return Option.some({
+      dependencyInstances: dependencyInstances,
+      uniqueVersionsWithoutCatalog: uniqueVersionsWithoutCatalog,
       versionPresentInCatalog,
-      packagesInsideOfWhichCatalogDepsWillBeInstalled: meta.dependencyInstances
+      packagesInsideOfWhichCatalogDepsWillBeInstalled: dependencyInstances
         .filter(_ => _.dependency.version !== 'catalog:')
         .map(_ => _.myMonorepoPackage),
 
-      uniqueVersions: meta.uniqueVersions,
-      wouldRequireChoosingVersion,
-    }
-  }),
+      uniqueVersions: uniqueVersions,
+      wouldRequireChoosingVersionToPutIntoCatalog,
+    })
+  },
 )
 
 const badApplesRequiringInstallationIntoRootCatalog = Record.filter(
@@ -152,7 +164,7 @@ const badApplesRequiringInstallationIntoRootCatalog = Record.filter(
 
 const installationIntoRootCatalogTasksWithHumanInput = pipe(
   badApplesRequiringInstallationIntoRootCatalog,
-  Record.filter(_ => _.wouldRequireChoosingVersion),
+  Record.filter(_ => _.wouldRequireChoosingVersionToPutIntoCatalog),
   Record.map(_ => Array.from(_.uniqueVersions)),
 )
 
@@ -188,8 +200,16 @@ if (Record.size(tasksToInstallCatalogVersionsOfDeps)) {
 
 const additionalCatalogDependencies = pipe(
   badApplesRequiringInstallationIntoRootCatalog,
-  Record.filter(_ => !_.wouldRequireChoosingVersion),
-  Record.map(_ => Option.getOrThrow(EIterable.head(_.uniqueVersions))),
+  Record.filter(_ => !_.wouldRequireChoosingVersionToPutIntoCatalog),
+  Record.map(
+    flow(
+      Struct.get('uniqueVersions'),
+      EArray.fromIterable,
+      Option.liftPredicate(Predicate.isTupleOf(1)),
+      Option.map(Tuple.at(0)),
+      Option.getOrThrow,
+    ),
+  ),
 )
 
 const transparentSpawn = async ({
@@ -259,6 +279,18 @@ for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
 
 ;({ myMonorepoPackages, rootPackageJson } = await getPackagesInfo())
 
+const myMonorepoTsconfigPackage = pipe(
+  myMonorepoPackages,
+  EArray.filter(x => x.name === '@nikelborm/tsconfig'),
+  Option.liftPredicate(Predicate.isTupleOf(1)),
+  Option.map(Tuple.at(0)),
+  Option.getOrThrow,
+)
+
+for (const { devDependencies } of myMonorepoPackages) {
+  // if(!)
+}
+
 // ensure all dirs inside packages folder are installed as devDeps of root
 // package, plus playground should be filled with all catalog deps and workspace
 // deps and a few others
@@ -271,3 +303,5 @@ for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
 // versions not equal to `workspace:*`
 
 // ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
+
+// ensure there are no packages with the same name
