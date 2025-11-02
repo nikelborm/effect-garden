@@ -33,6 +33,14 @@ const withGitHubSlugConfigValidation = validateConfig({
   validation: isGitHubSlug,
 })
 
+// const toDoc = <T extends TemplateStringsArray>(arg: T) => {
+//   const lines = outdent(arg).split('\n')
+
+//   if (!Tuple.isTupleOfAtLeast(1)(lines)) throw new Error('')
+
+//   return HelpDoc.enumeration(EArray.map(lines, HelpDoc.p))
+// }
+
 const pathToEntityInRepoDescription = 'Path to file or directory in repo'
 
 const repoOwnerDescription = outdent`
