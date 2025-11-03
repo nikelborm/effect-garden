@@ -24,7 +24,7 @@
     "@effect/platform-node": "catalog:",
     "@octokit/core": "^7.0.2",
     "@octokit/request-error": "^7.0.0",
-    "@octokit/types": "^15.0.0",
+    "@octokit/types": "^16.0.0",
     "effect": "catalog:",
     "effect-errors": "catalog:",
     "outdent": "catalog:",
