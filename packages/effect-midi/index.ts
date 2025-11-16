@@ -102,12 +102,11 @@ type MidiPortStaticFields = (typeof midiPortStaticFields)[number]
 
 const remapDomExceptionByName =
   <
-    Map extends Record<
-      string,
-      new (arg: {
+    Map extends {
+      [name: string]: new (arg: {
         cause: Schema.Schema.Encoded<typeof DOMExceptionSchema>
       }) => Error
-    >,
+    },
   >(
     map: Map,
     absurdMessage: string,
@@ -121,6 +120,7 @@ const remapDomExceptionByName =
   }
 
 export const requestRawMIDIAccess = (options?: MIDIOptions) =>
+  // TODO: properly handle ReferenceError, and 'not a function eror', etc
   (navigator.requestMIDIAccess
     ? Effect.tryPromise({
         try: () => navigator.requestMIDIAccess(options),
@@ -194,9 +194,11 @@ export interface EffectfulMIDIInputPort extends EffectfulMIDIPort {
    */
   makeMessagesStream: (
     options?: CreateStreamFromEventListenerOptions,
-    // TODO: check why the fuck MIDIMessageEvent has null as the value of data field in typescript
   ) => Stream.Stream<
     {
+      /**
+       * Nullable because of https://github.com/WebAudio/web-midi-api/pull/252
+       */
       data: Uint8Array<ArrayBuffer> | null
       cameFromInputPort: EffectfulMIDIInputPort
     },
@@ -254,53 +256,57 @@ export interface EffectfulMidiAccess
 const getStaticMidiPortInfo = (port: MIDIPort) =>
   Struct.pick(port, ...midiPortStaticFields)
 
-const mapMIDIPortToEffectfulInstanceCommonPart = <
-  RawPort extends MIDIPort,
-  EffectfulPort extends EffectfulMIDIPort,
->(
-  port: RawPort,
-  getMappedPort: () => EffectfulPort,
-) => {
-  const staticMidiPortInfo = getStaticMidiPortInfo(port)
-
-  const callMIDIInputPortMethod = <E = never>(
-    method: 'close' | 'open',
-    mapError: (err: unknown) => E,
+const build =
+  <CompleteEffectfulPort extends EffectfulMIDIPort>() =>
+  <RawPort extends MIDIPort>(
+    makeLeftoverFieldsSpecificToPortType: (
+      rawPort: RawPort,
+      getMappedPort: () => CompleteEffectfulPort,
+    ) => Omit<CompleteEffectfulPort, keyof EffectfulMIDIPort>,
   ) =>
-    pipe(
-      Effect.tryPromise({ try: () => port[method](), catch: mapError }),
-      Effect.map(getMappedPort),
-      Effect.withSpan(`MIDI port method call`, {
-        attributes: { method, port: staticMidiPortInfo },
-      }),
-    )
+  (rawPort: RawPort) => {
+    const staticPortInfo = getStaticMidiPortInfo(rawPort)
 
-  return {
-    ...staticMidiPortInfo,
-    // deviceState and connectionState are effectful, because they can change
-    // over time
-    deviceState: Effect.sync(() => port.state),
-    connectionState: Effect.sync(() => port.connection),
-    open: callMIDIInputPortMethod(
-      'open',
-      remapDomExceptionByName(
-        { InvalidAccessError },
-        'MIDI port open error handling absurd',
+    const callMIDIPortMethod = <E = never>(
+      method: 'close' | 'open',
+      mapError: (err: unknown) => E,
+    ) =>
+      pipe(
+        Effect.tryPromise({ try: () => rawPort[method](), catch: mapError }),
+        Effect.map(() => mappedPort),
+        Effect.withSpan(`MIDI port method call`, {
+          attributes: { method, port: staticPortInfo },
+        }),
+      )
+
+    const mappedPort = {
+      ...staticPortInfo,
+      // deviceState and connectionState are effectful, because they can change
+      // over time
+      deviceState: Effect.sync(() => rawPort.state),
+      connectionState: Effect.sync(() => rawPort.connection),
+      open: callMIDIPortMethod(
+        'open',
+        remapDomExceptionByName(
+          { InvalidAccessError },
+          'MIDI port open error handling absurd',
+        ),
       ),
-    ),
-    close: callMIDIInputPortMethod('close', err => {
-      throw err
-    }),
-    makeConnectionStateChangesStream: createStreamFrom<MIDIPortEventMap>()({
-      event: { target: port, type: 'statechange' },
-      spanAttributes: { spanTargetName: 'MIDI port', port: staticMidiPortInfo },
-    }),
-  }
-}
+      close: callMIDIPortMethod('close', err => {
+        throw err
+      }),
+      makeConnectionStateChangesStream: createStreamFrom<MIDIPortEventMap>()({
+        event: { target: rawPort, type: 'statechange' },
+        spanAttributes: { spanTargetName: 'MIDI port', port: staticPortInfo },
+      }),
+      ...makeLeftoverFieldsSpecificToPortType(rawPort, () => mappedPort),
+    } as CompleteEffectfulPort
 
-const mapMIDIInputPortToEffectfulInstance = (inputPort: MIDIInput) => {
-  const mappedPort: EffectfulMIDIInputPort = {
-    ...mapMIDIPortToEffectfulInstanceCommonPart(inputPort, () => mappedPort),
+    return mappedPort
+  }
+
+const mapMIDIInputPortToEffectfulInstance = build<EffectfulMIDIInputPort>()(
+  (inputPort: MIDIInput, getMappedPort) => ({
     makeMessagesStream: flow(
       createStreamFrom<MIDIInputEventMap>()({
         event: { target: inputPort, type: 'midimessage' },
@@ -309,15 +315,13 @@ const mapMIDIInputPortToEffectfulInstance = (inputPort: MIDIInput) => {
           port: getStaticMidiPortInfo(inputPort),
         },
       }),
-      Stream.map(e => ({ data: e.data, cameFromInputPort: mappedPort })),
+      Stream.map(e => ({ data: e.data, cameFromInputPort: getMappedPort() })),
     ),
-  }
-  return mappedPort
-}
+  }),
+)
 
-const mapMIDIOutputPortToEffectfulInstance = (outputPort: MIDIOutput) => {
-  const mappedPort: EffectfulMIDIOutputPort = {
-    ...mapMIDIPortToEffectfulInstanceCommonPart(outputPort, () => mappedPort),
+const mapMIDIOutputPortToEffectfulInstance = build<EffectfulMIDIOutputPort>()(
+  (outputPort: MIDIOutput) => ({
     // TODO: properly remap errors, add telemetry
     send: (data, timestamp) =>
       Effect.try({
@@ -333,9 +337,8 @@ const mapMIDIOutputPortToEffectfulInstance = (outputPort: MIDIOutput) => {
     // TODO: fix upstream type-signature
     // @ts-ignore
     clear: Effect.sync(() => outputPort.clear()),
-  }
-  return mappedPort
-}
+  }),
+)
 
 const mapMutablePortMap = <
   TSourcePort extends MIDIPort,
@@ -353,12 +356,12 @@ const mapMutablePortMap = <
   )
 
 export const requestEffectfulMIDIAccess = (
-  options?: MIDIOptions,
+  config?: MIDIOptions,
 ): Effect.Effect<
   EffectfulMidiAccess,
   AbortError | InvalidStateError | NotSupportedError | NotAllowedError
 > =>
-  Effect.map(requestRawMIDIAccess(options), access => ({
+  Effect.map(requestRawMIDIAccess(config), access => ({
     // inputs and outputs SortedMaps are effectful, because they can change
     // over time
     inputs: mapMutablePortMap(
@@ -373,7 +376,7 @@ export const requestEffectfulMIDIAccess = (
       event: { target: access, type: 'statechange' },
       spanAttributes: {
         spanTargetName: 'MIDI access handle',
-        port: options,
+        requestedAccessConfig: config,
       },
     }),
     sysexEnabled: access.sysexEnabled,
