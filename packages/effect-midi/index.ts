@@ -264,8 +264,8 @@ const mapMIDIPortToEffectfulInstanceCommonPart = <
 
   return {
     ...staticMidiPortInfo,
-    // TODO: check if state and connection actually can change over time, and
-    // hence had to be left effectful
+    // deviceState and connectionState are effectful, because can they change
+    // over time
     deviceState: Effect.sync(() => port.state),
     connectionState: Effect.sync(() => port.connection),
     open: callMIDIInputPortMethod(
