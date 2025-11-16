@@ -1,6 +1,6 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
-import { pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
 import * as SortedMap from 'effect/SortedMap'
@@ -81,7 +81,7 @@ const createStreamFrom =
     event: { target: TEventTarget; type: SelectedEventType }
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
   }) =>
-  (options: CreateStreamFromEventListenerOptions) =>
+  (options?: CreateStreamFromEventListenerOptions) =>
     pipe(
       Stream.fromEventListener(target, type, options),
       Stream.withSpan('MIDI Web API event stream', {
@@ -101,7 +101,14 @@ const midiPortStaticFields = [
 type MidiPortStaticFields = (typeof midiPortStaticFields)[number]
 
 const remapDomExceptionByName =
-  <Map extends Record<string, new (arg: { cause: DOMException }) => Error>>(
+  <
+    Map extends Record<
+      string,
+      new (arg: {
+        cause: Schema.Schema.Encoded<typeof DOMExceptionSchema>
+      }) => Error
+    >,
+  >(
     map: Map,
     absurdMessage: string,
   ) =>
@@ -117,17 +124,18 @@ export const requestRawMIDIAccess = (options?: MIDIOptions) =>
   (navigator.requestMIDIAccess
     ? Effect.tryPromise({
         try: () => navigator.requestMIDIAccess(options),
-        catch: remapDomExceptionByName(
-          {
-            AbortError,
-            InvalidStateError,
-            NotSupportedError,
-            NotAllowedError,
-            // because of https://github.com/WebAudio/web-midi-api/pull/267
-            SecurityError: NotAllowedError,
-          },
-          'requestRawMIDIAccess error handling absurd',
-        ),
+        catch: cause =>
+          remapDomExceptionByName(
+            {
+              AbortError,
+              InvalidStateError,
+              NotSupportedError,
+              NotAllowedError,
+              // because of https://github.com/WebAudio/web-midi-api/pull/267
+              SecurityError: NotAllowedError,
+            },
+            'requestRawMIDIAccess error handling absurd',
+          )(cause),
       })
     : Effect.fail(
         new NotSupportedError({
@@ -141,8 +149,19 @@ export const requestRawMIDIAccess = (options?: MIDIOptions) =>
     Effect.withSpan('Request raw MIDI access', { attributes: { options } }),
   )
 
+export interface ConnectionStreamMaker {
+  /**
+   * [MIDIConnectionEvent MDN
+   * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
+   */
+  makeConnectionStateChangesStream: (
+    options?: CreateStreamFromEventListenerOptions,
+  ) => Stream.Stream<MIDIConnectionEvent, never, never>
+}
+
 export interface EffectfulMIDIPort
-  extends Pick<MIDIPort, MidiPortStaticFields> {
+  extends Pick<MIDIPort, MidiPortStaticFields>,
+    ConnectionStreamMaker {
   /**
    * Because state can change over time, it's effectful.
    * The **`state`** read-only property of the MIDIPort interface returns the
@@ -166,14 +185,6 @@ export interface EffectfulMIDIPort
   // TODO: documentation
   readonly open: Effect.Effect<this, InvalidAccessError>
   readonly close: Effect.Effect<this>
-
-  /**
-   * [MIDIConnectionEvent MDN
-   * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
-   */
-  makeStateChangesStream: (
-    options: CreateStreamFromEventListenerOptions,
-  ) => Stream.Stream<MIDIConnectionEvent, never, never>
 }
 
 export interface EffectfulMIDIInputPort extends EffectfulMIDIPort {
@@ -182,8 +193,16 @@ export interface EffectfulMIDIInputPort extends EffectfulMIDIPort {
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
    */
   makeMessagesStream: (
-    options: CreateStreamFromEventListenerOptions,
-  ) => Stream.Stream<MIDIMessageEvent, never, never>
+    options?: CreateStreamFromEventListenerOptions,
+    // TODO: check why the fuck MIDIMessageEvent has null as the value of data field in typescript
+  ) => Stream.Stream<
+    {
+      data: Uint8Array<ArrayBuffer> | null
+      cameFromInputPort: EffectfulMIDIInputPort
+    },
+    never,
+    never
+  >
 }
 
 export interface EffectfulMIDIOutputPort extends EffectfulMIDIPort {
@@ -200,7 +219,9 @@ export interface EffectfulMIDIOutputPort extends EffectfulMIDIPort {
   readonly clear: Effect.Effect<void>
 }
 
-export interface EffectfulMidiAccess extends Pick<MIDIAccess, 'sysexEnabled'> {
+export interface EffectfulMidiAccess
+  extends Pick<MIDIAccess, 'sysexEnabled'>,
+    ConnectionStreamMaker {
   /**
    * Because MIDIInputMap can potentially be a mutable object, meaning new
    * devices can be added or removed at runtime, it is effectful.
@@ -238,7 +259,7 @@ const mapMIDIPortToEffectfulInstanceCommonPart = <
   EffectfulPort extends EffectfulMIDIPort,
 >(
   port: RawPort,
-  mapMIDIPortToEffectfulInstance: (port: RawPort) => EffectfulPort,
+  getMappedPort: () => EffectfulPort,
 ) => {
   const staticMidiPortInfo = getStaticMidiPortInfo(port)
 
@@ -247,11 +268,8 @@ const mapMIDIPortToEffectfulInstanceCommonPart = <
     mapError: (err: unknown) => E,
   ) =>
     pipe(
-      Effect.tryPromise({
-        try: () => port[method]() as Promise<RawPort>,
-        catch: mapError,
-      }),
-      Effect.map(mapMIDIPortToEffectfulInstance),
+      Effect.tryPromise({ try: () => port[method](), catch: mapError }),
+      Effect.map(getMappedPort),
       Effect.withSpan(`MIDI port method call`, {
         attributes: { method, port: staticMidiPortInfo },
       }),
@@ -259,7 +277,7 @@ const mapMIDIPortToEffectfulInstanceCommonPart = <
 
   return {
     ...staticMidiPortInfo,
-    // deviceState and connectionState are effectful, because can they change
+    // deviceState and connectionState are effectful, because they can change
     // over time
     deviceState: Effect.sync(() => port.state),
     connectionState: Effect.sync(() => port.connection),
@@ -273,52 +291,51 @@ const mapMIDIPortToEffectfulInstanceCommonPart = <
     close: callMIDIInputPortMethod('close', err => {
       throw err
     }),
-    makeStateChangesStream: createStreamFrom<MIDIPortEventMap>()({
+    makeConnectionStateChangesStream: createStreamFrom<MIDIPortEventMap>()({
       event: { target: port, type: 'statechange' },
       spanAttributes: { spanTargetName: 'MIDI port', port: staticMidiPortInfo },
     }),
   }
 }
 
-const mapMIDIInputPortToEffectfulInstance = (
-  inputPort: MIDIInput,
-): EffectfulMIDIInputPort => ({
-  ...mapMIDIPortToEffectfulInstanceCommonPart(
-    inputPort,
-    mapMIDIInputPortToEffectfulInstance,
-  ),
-  makeMessagesStream: createStreamFrom<MIDIInputEventMap>()({
-    event: { target: inputPort, type: 'midimessage' },
-    spanAttributes: {
-      spanTargetName: 'MIDI port',
-      port: getStaticMidiPortInfo(inputPort),
-    },
-  }),
-})
+const mapMIDIInputPortToEffectfulInstance = (inputPort: MIDIInput) => {
+  const mappedPort: EffectfulMIDIInputPort = {
+    ...mapMIDIPortToEffectfulInstanceCommonPart(inputPort, () => mappedPort),
+    makeMessagesStream: flow(
+      createStreamFrom<MIDIInputEventMap>()({
+        event: { target: inputPort, type: 'midimessage' },
+        spanAttributes: {
+          spanTargetName: 'MIDI port',
+          port: getStaticMidiPortInfo(inputPort),
+        },
+      }),
+      Stream.map(e => ({ data: e.data, cameFromInputPort: mappedPort })),
+    ),
+  }
+  return mappedPort
+}
 
-const mapMIDIOutputPortToEffectfulInstance = (
-  outputPort: MIDIOutput,
-): EffectfulMIDIOutputPort => ({
-  ...mapMIDIPortToEffectfulInstanceCommonPart(
-    outputPort,
-    mapMIDIOutputPortToEffectfulInstance,
-  ),
-  // TODO: properly remap errors, add telemetry
-  send: (data, timestamp) =>
-    Effect.try({
-      try: () => outputPort.send(data, timestamp),
-      catch: cause =>
-        cause instanceof TypeError
-          ? cause
-          : remapDomExceptionByName(
-              { InvalidAccessError, InvalidStateError },
-              'MIDI port open error handling absurd',
-            )(cause),
-    }),
-  // TODO: fix upstream type-signature
-  // @ts-ignore
-  clear: Effect.sync(() => outputPort.clear()),
-})
+const mapMIDIOutputPortToEffectfulInstance = (outputPort: MIDIOutput) => {
+  const mappedPort: EffectfulMIDIOutputPort = {
+    ...mapMIDIPortToEffectfulInstanceCommonPart(outputPort, () => mappedPort),
+    // TODO: properly remap errors, add telemetry
+    send: (data, timestamp) =>
+      Effect.try({
+        try: () => outputPort.send(data, timestamp),
+        catch: cause =>
+          cause instanceof TypeError
+            ? cause
+            : remapDomExceptionByName(
+                { InvalidAccessError, InvalidStateError },
+                'MIDI port open error handling absurd',
+              )(cause),
+      }),
+    // TODO: fix upstream type-signature
+    // @ts-ignore
+    clear: Effect.sync(() => outputPort.clear()),
+  }
+  return mappedPort
+}
 
 const mapMutablePortMap = <
   TSourcePort extends MIDIPort,
@@ -342,8 +359,8 @@ export const requestEffectfulMIDIAccess = (
   AbortError | InvalidStateError | NotSupportedError | NotAllowedError
 > =>
   Effect.map(requestRawMIDIAccess(options), access => ({
-    // TODO: check if inputs and outputs maps can actually change over time, and
-    // hence had to be left effectful
+    // inputs and outputs SortedMaps are effectful, because they can change
+    // over time
     inputs: mapMutablePortMap(
       () => access.inputs,
       mapMIDIInputPortToEffectfulInstance,
@@ -352,7 +369,7 @@ export const requestEffectfulMIDIAccess = (
       () => access.outputs,
       mapMIDIOutputPortToEffectfulInstance,
     ),
-    stateChangesStream: createStreamFrom<MIDIAccessEventMap>()({
+    makeConnectionStateChangesStream: createStreamFrom<MIDIAccessEventMap>()({
       event: { target: access, type: 'statechange' },
       spanAttributes: {
         spanTargetName: 'MIDI access handle',
