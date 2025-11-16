@@ -69,31 +69,26 @@ export type CreateStreamFromEventListenerOptions = Parameters<
 
 export const MidiPortIdentifier = Brand.nominal<MidiPortIdentifier>()
 
-const makeMapWithStringKeysFromIterable = SortedMap.fromIterable(
-  Order.string,
-) as <V>(
-  iterable: Iterable<readonly [string, V]>,
-) => SortedMap.SortedMap<MidiPortIdentifier, V>
-
 const createStreamFrom =
-  <EventMap extends {}>() =>
-  <Target extends EventTarget, K extends Extract<keyof EventMap, string>>({
+  <EventTypeToEventValueMap extends {}>() =>
+  <
+    TEventTarget extends EventTarget,
+    SelectedEventType extends Extract<keyof EventTypeToEventValueMap, string>,
+  >({
     event: { target, type },
     spanAttributes,
   }: {
+    event: { target: TEventTarget; type: SelectedEventType }
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
-    event: { target: Target; type: K }
   }) =>
   (options: CreateStreamFromEventListenerOptions) =>
     pipe(
-      Stream.fromEventListener(target, type, options) as Stream.Stream<
-        EventMap[K]
-      >,
+      Stream.fromEventListener(target, type, options),
       Stream.withSpan('MIDI Web API event stream', {
         kind: 'producer',
         attributes: { eventType: type, ...spanAttributes },
       }),
-    )
+    ) as Stream.Stream<EventTypeToEventValueMap[SelectedEventType]>
 
 const midiPortStaticFields = [
   'id',
@@ -320,7 +315,7 @@ const mapMIDIOutputPortToEffectfulInstance = (
               'MIDI port open error handling absurd',
             )(cause),
     }),
-  // TODO: fix upstream typesg
+  // TODO: fix upstream type-signature
   // @ts-ignore
   clear: Effect.sync(() => outputPort.clear()),
 })
@@ -333,7 +328,11 @@ const mapMutablePortMap = <
   remap: (port: TSourcePort) => TRemappedPort,
 ) =>
   Effect.sync(() =>
-    pipe(getPortMap(), makeMapWithStringKeysFromIterable, SortedMap.map(remap)),
+    pipe(
+      getPortMap() as ReadonlyMap<MidiPortIdentifier, TSourcePort>,
+      SortedMap.fromIterable(Order.string),
+      SortedMap.map(remap),
+    ),
   )
 
 export const requestEffectfulMIDIAccess = (
@@ -343,7 +342,7 @@ export const requestEffectfulMIDIAccess = (
   AbortError | InvalidStateError | NotSupportedError | NotAllowedError
 > =>
   Effect.map(requestRawMIDIAccess(options), access => ({
-    // TODO: check if inputs and outputs maps actually can change over time, and
+    // TODO: check if inputs and outputs maps can actually change over time, and
     // hence had to be left effectful
     inputs: mapMutablePortMap(
       () => access.inputs,
