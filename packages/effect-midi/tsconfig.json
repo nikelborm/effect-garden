@@ -3,8 +3,10 @@
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "lib": ["dom", "dom.iterable", "esnext"]
   },
+
   "include": ["**/*.ts"],
   "exclude": [
     "vite.config.ts",
