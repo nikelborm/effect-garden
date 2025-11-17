@@ -63,24 +63,24 @@ export class NotAllowedError extends Schema.TaggedError<NotAllowedError>(
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
  */
-export type MidiPortId = string & Brand.Brand<'MidiPortId'>
+export type MIDIPortId = string & Brand.Brand<'MIDIPortId'>
 
 export type CreateStreamFromEventListenerOptions = Parameters<
   typeof Stream.fromEventListener
 >[2]
 
-export const MidiPortId = Brand.nominal<MidiPortId>()
+export const MIDIPortId = Brand.nominal<MIDIPortId>()
 
 const createStreamFrom =
-  <EventTypeToEventValueMap extends {}>() =>
+  <TEventTypeToEventValueMap extends {}>() =>
   <
     TEventTarget extends EventTarget,
-    SelectedEventType extends Extract<keyof EventTypeToEventValueMap, string>,
+    TSelectedEventType extends Extract<keyof TEventTypeToEventValueMap, string>,
   >({
     event: { target, type },
     spanAttributes,
   }: {
-    event: { target: TEventTarget; type: SelectedEventType }
+    event: { target: TEventTarget; type: TSelectedEventType }
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
   }) =>
   (options?: CreateStreamFromEventListenerOptions) =>
@@ -90,7 +90,7 @@ const createStreamFrom =
         kind: 'producer',
         attributes: { eventType: type, ...spanAttributes },
       }),
-    ) as Stream.Stream<EventTypeToEventValueMap[SelectedEventType]>
+    ) as Stream.Stream<TEventTypeToEventValueMap[TSelectedEventType]>
 
 const midiPortStaticFields = [
   'id',
@@ -100,25 +100,26 @@ const midiPortStaticFields = [
   'type',
 ] as const
 
-type MidiPortStaticFields = (typeof midiPortStaticFields)[number]
+type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
 const remapDomExceptionByName =
   <
-    Map extends {
+    TDomExceptionNameToErrorWrapperClassMap extends {
       [name: string]: new (arg: {
         cause: Schema.Schema.Encoded<typeof DOMExceptionSchema>
       }) => Error
     },
   >(
-    map: Map,
+    map: TDomExceptionNameToErrorWrapperClassMap,
     absurdMessage: string,
   ) =>
   (cause: unknown) => {
     if (!(cause instanceof DOMException && cause.name in map))
       throw new Error(absurdMessage)
-    type ErrorClassUnion = Map[keyof Map]
-    const Class = map[cause.name] as ErrorClassUnion
-    return new Class({ cause }) as InstanceType<ErrorClassUnion>
+    type TErrorClassUnion =
+      TDomExceptionNameToErrorWrapperClassMap[keyof TDomExceptionNameToErrorWrapperClassMap]
+    const Class = map[cause.name] as TErrorClassUnion
+    return new Class({ cause }) as InstanceType<TErrorClassUnion>
   }
 
 export const requestRawMIDIAccess = (options?: MIDIOptions) =>
@@ -151,7 +152,7 @@ export const requestRawMIDIAccess = (options?: MIDIOptions) =>
     Effect.withSpan('Request raw MIDI access', { attributes: { options } }),
   )
 
-const getStaticMidiPortInfo = (port: MIDIPort) =>
+const getStaticMIDIPortInfo = (port: MIDIPort) =>
   Struct.pick(port, ...midiPortStaticFields)
 
 class RawAccessContainer {
@@ -163,23 +164,23 @@ class RawAccessContainer {
   }
 }
 
-type ReadonlyMapValue<M> = M extends ReadonlyMap<unknown, infer V> ? V : never
+type ReadonlyMapValue<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
-export class EffectfulMidiAccess
+export class EffectfulMIDIAccess
   extends RawAccessContainer
   implements Pick<MIDIAccess, 'sysexEnabled'>
 {
   readonly #mapMutablePortMap = <
-    const Key extends 'inputs' | 'outputs',
-    TSourcePort extends ReadonlyMapValue<MIDIAccess[Key]>,
-    TRemappedPort extends EffectfulMIDIPort<TSourcePort>,
+    const TAccessObjectKey extends 'inputs' | 'outputs',
+    TRawMIDIPort extends ReadonlyMapValue<MIDIAccess[TAccessObjectKey]>,
+    TEffectfulMIDIPort extends EffectfulMIDIPort<TRawMIDIPort>,
   >(
-    key: Key,
-    Class: new (port: TSourcePort) => TRemappedPort,
+    key: TAccessObjectKey,
+    Class: new (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
     Effect.sync(() =>
       pipe(
-        this.rawAccess[key] as ReadonlyMap<MidiPortId, TSourcePort>,
+        this.rawAccess[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
         SortedMap.fromIterable(Order.string),
         SortedMap.map(port => new Class(port)),
       ),
@@ -227,16 +228,16 @@ export class EffectfulMidiAccess
   }
 }
 
-class RawPortContainer<RawPort extends MIDIPort> {
-  protected readonly rawPort: RawPort
-  constructor(rawPort: RawPort) {
+class RawPortContainer<TRawMIDIPort extends MIDIPort> {
+  protected readonly rawPort: TRawMIDIPort
+  constructor(rawPort: TRawMIDIPort) {
     this.rawPort = rawPort
   }
 }
 
-export class EffectfulMIDIPort<RawPort extends MIDIPort>
-  extends RawPortContainer<RawPort>
-  implements Pick<MIDIPort, MidiPortStaticFields>, Equal.Equal
+export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
+  extends RawPortContainer<TRawMIDIPort>
+  implements Pick<MIDIPort, MIDIPortStaticFields>, Equal.Equal
 {
   [Hash.symbol]() {
     return Hash.string(this.id)
@@ -254,7 +255,7 @@ export class EffectfulMIDIPort<RawPort extends MIDIPort>
       event: { target: this.rawPort, type: 'statechange' },
       spanAttributes: {
         spanTargetName: 'MIDI port',
-        port: getStaticMidiPortInfo(this.rawPort),
+        port: getStaticMIDIPortInfo(this.rawPort),
       },
     })
 
@@ -278,18 +279,15 @@ export class EffectfulMIDIPort<RawPort extends MIDIPort>
    */
   readonly connectionState = Effect.sync(() => this.rawPort.connection)
 
-  readonly #callMIDIPortMethod = <E = never>(
+  readonly #callMIDIPortMethod = <TError = never>(
     method: 'close' | 'open',
-    mapError: (err: unknown) => E,
-  ): Effect.Effect<this, E> =>
+    mapError: (err: unknown) => TError,
+  ): Effect.Effect<this, TError> =>
     pipe(
-      Effect.tryPromise({
-        try: () => this.rawPort[method](),
-        catch: mapError,
-      }),
+      Effect.tryPromise({ try: () => this.rawPort[method](), catch: mapError }),
       Effect.map(() => this),
       Effect.withSpan(`MIDI port method call`, {
-        attributes: { method, port: getStaticMidiPortInfo(this.rawPort) },
+        attributes: { method, port: getStaticMIDIPortInfo(this.rawPort) },
       }),
     )
 
@@ -338,7 +336,7 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
       event: { target: this.rawPort, type: 'midimessage' },
       spanAttributes: {
         spanTargetName: 'MIDI port',
-        port: getStaticMidiPortInfo(this.rawPort),
+        port: getStaticMIDIPortInfo(this.rawPort),
       },
     }),
     Stream.map(e => ({
@@ -370,5 +368,5 @@ export class EffectfulMIDIOutputPort extends EffectfulMIDIPort<MIDIOutput> {
 export const requestEffectfulMIDIAccess = (config?: MIDIOptions) =>
   Effect.map(
     requestRawMIDIAccess(config),
-    access => new EffectfulMidiAccess(access, config),
+    access => new EffectfulMIDIAccess(access, config),
   )
