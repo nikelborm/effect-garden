@@ -1,6 +1,8 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
+import * as Equal from 'effect/Equal'
 import { flow, pipe } from 'effect/Function'
+import * as Hash from 'effect/Hash'
 import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
 import * as SortedMap from 'effect/SortedMap'
@@ -167,7 +169,7 @@ export class EffectfulMidiAccess
   extends RawAccessContainer
   implements Pick<MIDIAccess, 'sysexEnabled'>
 {
-  #mapMutablePortMap = <
+  readonly #mapMutablePortMap = <
     const Key extends 'inputs' | 'outputs',
     TSourcePort extends ReadonlyMapValue<MIDIAccess[Key]>,
     TRemappedPort extends EffectfulMIDIPort<TSourcePort>,
@@ -234,8 +236,15 @@ class RawPortContainer<RawPort extends MIDIPort> {
 
 export class EffectfulMIDIPort<RawPort extends MIDIPort>
   extends RawPortContainer<RawPort>
-  implements Pick<MIDIPort, MidiPortStaticFields>
+  implements Pick<MIDIPort, MidiPortStaticFields>, Equal.Equal
 {
+  [Hash.symbol]() {
+    return Hash.string(this.id)
+  }
+  [Equal.symbol](that: Equal.Equal) {
+    return 'id' in that && this.id === that.id
+  }
+
   /**
    * [MIDIConnectionEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
@@ -269,7 +278,7 @@ export class EffectfulMIDIPort<RawPort extends MIDIPort>
    */
   readonly connectionState = Effect.sync(() => this.rawPort.connection)
 
-  #callMIDIPortMethod = <E = never>(
+  readonly #callMIDIPortMethod = <E = never>(
     method: 'close' | 'open',
     mapError: (err: unknown) => E,
   ): Effect.Effect<this, E> =>
