@@ -214,6 +214,9 @@ export class EffectfulMIDIAccess
    * [MIDIConnectionEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
    */
+  // TODO: dynamic null removal based on parameters and type-signature, and make
+  // it removed from typesignature by-default; options: fail, die, skip, pass
+  // TODO: remap stream, extract status fields, and make effectful port field
   readonly makeConnectionStateChangesStream =
     createStreamFrom<MIDIAccessEventMap>()({
       event: { target: this.rawAccess, type: 'statechange' },
@@ -250,6 +253,9 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
    * [MIDIConnectionEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
    */
+  // TODO: dynamic null removal based on parameters and type-signature, and make
+  // it removed from typesignature by-default; options: fail, die, skip, pass
+  // TODO: remap stream, extract status fields, and make effectful port field
   readonly makeConnectionStateChangesStream =
     createStreamFrom<MIDIPortEventMap>()({
       event: { target: this.rawPort, type: 'statechange' },
@@ -331,6 +337,8 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
    * [MIDIMessageEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
    */
+  // TODO: dynamic null removal based on parameters and type-signature, and make
+  // it removed from typesignature by-default; options: fail, die, skip, pass
   readonly makeMessagesStream = flow(
     createStreamFrom<MIDIInputEventMap>()({
       event: { target: this.rawPort, type: 'midimessage' },
