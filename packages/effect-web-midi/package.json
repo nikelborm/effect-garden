@@ -1,5 +1,5 @@
 {
-  "name": "@nikelborm/effect-midi",
+  "name": "@nikelborm/effect-web-midi",
   "version": "0.1.0",
   "type": "module",
   "description": "Effect MIDI",
