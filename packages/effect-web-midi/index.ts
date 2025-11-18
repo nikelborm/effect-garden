@@ -595,14 +595,20 @@ export class EffectfulMIDIOutputPort extends EffectfulMIDIPort<MIDIOutput> {
             )(cause)) as InvalidAccessError | InvalidStateError | TypeError,
     }).pipe(
       Effect.withSpan('EffectfulMIDIOutputPort.send', {
-        attributes: { data, timestamp },
+        attributes: {
+          data,
+          timestamp,
+          port: getStaticMIDIPortInfo(this.rawPort),
+        },
       }),
     )
 
   // TODO: fix upstream type-signature, add documentation
   // @ts-ignore
   readonly clear = Effect.sync(() => this.rawPort.clear()).pipe(
-    Effect.withSpan('EffectfulMIDIOutputPort.clear'),
+    Effect.withSpan('EffectfulMIDIOutputPort.clear', {
+      attributes: { port: getStaticMIDIPortInfo(this.rawPort) },
+    }),
   )
 }
 
