@@ -90,18 +90,22 @@ type StreamMakerOptions<
 
 type OnNullStrategy = 'fail' | 'die' | 'ignore' | 'passthrough' | undefined
 
+const missingDataMessage = 'Property data of MIDIMessageEvent is null'
+
+// It's important to keep StreamValue as a separate generic because typescript
+// is a bit dumb
 type StreamValue<
-  TNullableFieldName extends keyof SelectedEvent,
-  TOnNullStrategy extends OnNullStrategy,
   TCameFrom,
-  SelectedEvent,
+  TNullableFieldName extends Extract<keyof TSelectedEvent, string>,
+  TSelectedEvent,
+  TOnNullStrategy extends OnNullStrategy,
 > = {
   readonly cameFrom: TCameFrom
 } & {
   readonly [k in TNullableFieldName]:
-    | Exclude<SelectedEvent[TNullableFieldName], null | undefined>
+    | Exclude<TSelectedEvent[TNullableFieldName], null | undefined>
     | ([TOnNullStrategy] extends ['passthrough']
-        ? Extract<SelectedEvent[TNullableFieldName], null | undefined>
+        ? Extract<TSelectedEvent[TNullableFieldName], null | undefined>
         : never)
 }
 
@@ -122,6 +126,7 @@ const createStreamMakerFrom =
       string
     >,
     TSelectedEventType extends Extract<keyof TEventTypeToEventValueMap, string>,
+    TSelectedEvent extends TEventTypeToEventValueMap[TSelectedEventType],
     TCameFrom,
   >({
     event: { target, type },
@@ -137,12 +142,7 @@ const createStreamMakerFrom =
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     options?: StreamMakerOptions<TNullableFieldName, TOnNullStrategy>,
   ): Stream.Stream<
-    StreamValue<
-      TNullableFieldName,
-      TOnNullStrategy,
-      TCameFrom,
-      TEventTypeToEventValueMap[TSelectedEventType]
-    >,
+    StreamValue<TCameFrom, TNullableFieldName, TSelectedEvent, TOnNullStrategy>,
     StreamError<TOnNullStrategy>
   > => {
     const onNullStrategy =
@@ -151,19 +151,13 @@ const createStreamMakerFrom =
       ]
     return Stream.fromEventListener(target, type, options).pipe(
       Stream.filter(event => !!event[field] || onNullStrategy !== 'ignore'),
-      Stream.mapEffect(event => {
-        if (event[field] || onNullStrategy === 'passthrough')
-          return Effect.succeed({ [field]: event[field], cameFrom })
-        // validate they are useless, and then remove the comment
-        // target: event.target,
-        // currentTarget: event.currentTarget,
-
-        const missingDataMessage = 'Property data of MIDIMessageEvent is null'
-
-        return onNullStrategy === undefined || onNullStrategy === 'die'
-          ? Effect.dieMessage(missingDataMessage)
-          : new Cause.NoSuchElementException(missingDataMessage)
-      }),
+      Stream.mapEffect(event =>
+        event[field] || onNullStrategy === 'passthrough'
+          ? Effect.succeed({ [field]: event[field], cameFrom })
+          : onNullStrategy === undefined || onNullStrategy === 'die'
+            ? Effect.dieMessage(missingDataMessage)
+            : new Cause.NoSuchElementException(missingDataMessage),
+      ),
       Stream.withSpan('MIDI Web API event stream', {
         kind: 'producer',
         attributes: { eventType: type, ...spanAttributes },
