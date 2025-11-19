@@ -16,10 +16,12 @@ import type * as Types from 'effect/Types'
 // Built with the help of spec from here
 // ! https://www.w3.org/TR/webmidi/
 
-const DOMExceptionSchema = Schema.Struct({
-  name: Schema.NonEmptyString,
-  message: Schema.NonEmptyString,
-  stack: Schema.NonEmptyString.pipe(Schema.optionalWith({ exact: true })),
+const ErrorSchema = Schema.Struct({
+  name: Schema.NonEmptyTrimmedString,
+  message: Schema.NonEmptyTrimmedString,
+  stack: Schema.NonEmptyTrimmedString.pipe(
+    Schema.optionalWith({ exact: true }),
+  ),
   cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
 })
 
@@ -28,7 +30,7 @@ const DOMExceptionSchema = Schema.Struct({
  */
 export class AbortError extends Schema.TaggedError<AbortError>('AbortError')(
   'AbortError',
-  { cause: DOMExceptionSchema },
+  { cause: ErrorSchema },
 ) {}
 
 /**
@@ -36,14 +38,14 @@ export class AbortError extends Schema.TaggedError<AbortError>('AbortError')(
  */
 export class InvalidStateError extends Schema.TaggedError<InvalidStateError>(
   'InvalidStateError',
-)('InvalidStateError', { cause: DOMExceptionSchema }) {}
+)('InvalidStateError', { cause: ErrorSchema }) {}
 
 /**
  * Thrown if the feature or options are not supported by the system.
  */
 export class NotSupportedError extends Schema.TaggedError<NotSupportedError>(
   'NotSupportedError',
-)('NotSupportedError', { cause: DOMExceptionSchema }) {}
+)('NotSupportedError', { cause: ErrorSchema }) {}
 
 /**
  * The object does not support the operation or argument. Thrown if the port is
@@ -51,7 +53,7 @@ export class NotSupportedError extends Schema.TaggedError<NotSupportedError>(
  */
 export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>(
   'InvalidAccessError',
-)('InvalidAccessError', { cause: DOMExceptionSchema }) {}
+)('InvalidAccessError', { cause: ErrorSchema }) {}
 
 /**
  * Thrown if the user or system denies the application from creating a
@@ -63,7 +65,11 @@ export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>(
  */
 export class NotAllowedError extends Schema.TaggedError<NotAllowedError>(
   'NotAllowedError',
-)('NotAllowedError', { cause: DOMExceptionSchema }) {}
+)('NotAllowedError', { cause: ErrorSchema }) {}
+
+export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>(
+  'BadMidiMessageError',
+)('BadMidiMessageError', { cause: ErrorSchema }) {}
 
 /**
  * Unique identifier of the MIDI port.
@@ -129,12 +135,12 @@ const createStreamMakerFrom =
     TSelectedEvent extends TEventTypeToEventValueMap[TSelectedEventType],
     TCameFrom,
   >({
-    event: { target, type },
+    eventListener: { target, type },
     spanAttributes,
     nullableFieldName: field,
     cameFrom,
   }: {
-    event: { target: TEventTarget; type: TSelectedEventType }
+    eventListener: { target: TEventTarget; type: TSelectedEventType }
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
     nullableFieldName: TNullableFieldName
     cameFrom: TCameFrom
@@ -175,11 +181,11 @@ const midiPortStaticFields = [
 
 type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
-const remapDomExceptionByName =
+const remapErrorByName =
   <
     TDomExceptionNameToErrorWrapperClassMap extends {
       [name: string]: new (arg: {
-        cause: Schema.Schema.Encoded<typeof DOMExceptionSchema>
+        cause: Schema.Schema.Encoded<typeof ErrorSchema>
       }) => Error
     },
   >(
@@ -187,7 +193,7 @@ const remapDomExceptionByName =
     absurdMessage: string,
   ) =>
   (cause: unknown) => {
-    if (!(cause instanceof DOMException && cause.name in map))
+    if (!(cause instanceof Error && cause.name in map))
       throw new Error(absurdMessage)
     type TErrorClassUnion =
       TDomExceptionNameToErrorWrapperClassMap[keyof TDomExceptionNameToErrorWrapperClassMap]
@@ -196,32 +202,24 @@ const remapDomExceptionByName =
   }
 
 export const requestRawMIDIAccess = (options?: MIDIOptions) =>
-  // TODO: properly handle ReferenceError, and 'not a function eror', etc
-  (navigator.requestMIDIAccess
-    ? Effect.tryPromise({
-        try: () => navigator.requestMIDIAccess(options),
-        catch: cause =>
-          remapDomExceptionByName(
-            {
-              AbortError,
-              InvalidStateError,
-              NotSupportedError,
-              NotAllowedError,
-              // because of https://github.com/WebAudio/web-midi-api/pull/267
-              SecurityError: NotAllowedError,
-            },
-            'requestRawMIDIAccess error handling absurd',
-          )(cause),
-      })
-    : Effect.fail(
-        new NotSupportedError({
-          cause: new DOMException(
-            'navigator.requestMIDIAccess is not present in the current browser',
-            'NotSupportedError',
-          ),
-        }),
-      )
-  ).pipe(
+  Effect.tryPromise({
+    try: () => navigator.requestMIDIAccess(options),
+    catch: remapErrorByName(
+      {
+        AbortError,
+        InvalidStateError,
+        NotSupportedError,
+        NotAllowedError,
+        // because of https://github.com/WebAudio/web-midi-api/pull/267
+        SecurityError: NotAllowedError,
+        // For case when navigator doesn't exist
+        ReferenceError: NotSupportedError,
+        // For case when navigator.requestMIDIAccess is undefined
+        TypeError: NotSupportedError,
+      },
+      'requestRawMIDIAccess error handling absurd',
+    ),
+  }).pipe(
     Effect.withSpan('Request raw MIDI access', { attributes: { options } }),
   )
 
@@ -269,11 +267,11 @@ type ConnectionStateChangesStream<
 
 const makeConnectionStateChangesStream =
   <TEventTarget extends Stream.EventListener<MIDIConnectionEvent>, TCameFrom>({
-    eventTarget,
+    eventListenerTarget: eventTarget,
     spanAttributes,
     cameFrom,
   }: {
-    eventTarget: TEventTarget
+    eventListenerTarget: TEventTarget
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
     cameFrom: TCameFrom
   }) =>
@@ -283,7 +281,7 @@ const makeConnectionStateChangesStream =
     pipe(
       options,
       createStreamMakerFrom<{ statechange: MIDIConnectionEvent }>()({
-        event: { target: eventTarget, type: 'statechange' },
+        eventListener: { target: eventTarget, type: 'statechange' },
         spanAttributes,
         nullableFieldName: 'port',
         cameFrom,
@@ -359,7 +357,7 @@ export class EffectfulMIDIAccess
    */
   readonly makeConnectionStateChangesStream = makeConnectionStateChangesStream({
     cameFrom: this,
-    eventTarget: this.rawAccess,
+    eventListenerTarget: this.rawAccess,
     spanAttributes: {
       spanTargetName: 'MIDI access handle',
       requestedAccessConfig: this.config,
@@ -465,7 +463,7 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
       options,
       makeConnectionStateChangesStream({
         cameFrom: this,
-        eventTarget: this.rawPort,
+        eventListenerTarget: this.rawPort,
         spanAttributes: {
           spanTargetName: 'MIDI port',
           port: getStaticMIDIPortInfo(this.rawPort),
@@ -514,7 +512,7 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
   // TODO: documentation
   readonly open = this.#callMIDIPortMethod(
     'open',
-    remapDomExceptionByName(
+    remapErrorByName(
       { InvalidAccessError },
       'MIDI port open error handling absurd',
     ),
@@ -556,7 +554,7 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
    * is to die on null.
    */
   readonly makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()({
-    event: { target: this.rawPort, type: 'midimessage' },
+    eventListener: { target: this.rawPort, type: 'midimessage' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
       port: getStaticMIDIPortInfo(this.rawPort),
@@ -567,7 +565,7 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
 }
 
 export class EffectfulMIDIOutputPort extends EffectfulMIDIPort<MIDIOutput> {
-  // TODO: properly remap errors (avoid collapse to TypeError), add documentation
+  // TODO: add documentation
   /**
    * If data is a System Exclusive message, and the MIDIAccess did not enable
    * System Exclusive access, an InvalidAccessError exception will be thrown
@@ -580,13 +578,14 @@ export class EffectfulMIDIOutputPort extends EffectfulMIDIPort<MIDIOutput> {
   readonly send = (data: Iterable<number>, timestamp?: DOMHighResTimeStamp) =>
     Effect.try({
       try: () => this.rawPort.send(data, timestamp),
-      catch: cause =>
-        (cause instanceof TypeError
-          ? cause
-          : remapDomExceptionByName(
-              { InvalidAccessError, InvalidStateError },
-              'MIDI port open error handling absurd',
-            )(cause)) as InvalidAccessError | InvalidStateError | TypeError,
+      catch: remapErrorByName(
+        {
+          InvalidAccessError,
+          InvalidStateError,
+          TypeError: BadMidiMessageError,
+        },
+        'MIDI port open error handling absurd',
+      ),
     }).pipe(
       Effect.withSpan('EffectfulMIDIOutputPort.send', {
         attributes: {
