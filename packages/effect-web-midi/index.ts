@@ -11,7 +11,6 @@ import * as Schema from 'effect/Schema'
 import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
-import type * as Types from 'effect/Types'
 
 // Built with the help of spec from here
 // ! https://www.w3.org/TR/webmidi/
@@ -78,48 +77,44 @@ export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>
  */
 export type MIDIPortId = string & Brand.Brand<'MIDIPortId'>
 
-export type CreateStreamFromEventListenerOptions = Parameters<
-  typeof Stream.fromEventListener
->[2]
-
 export const MIDIPortId = Brand.nominal<MIDIPortId>()
 
-type OnNullConfigField<TNullableFieldName extends string> =
-  `on${Capitalize<TNullableFieldName>}Null`
+export type StreamMakerOptions<TOnNullStrategy extends OnNullStrategy> =
+  | boolean
+  | Readonly<{
+      capture?: boolean
+      passive?: boolean
+      once?: boolean
+      bufferSize?: number | 'unbounded' | undefined
+      onExtremelyRareNullableField?: TOnNullStrategy
+    }>
+  | undefined
 
-type StreamMakerOptions<
-  TNullableFieldName extends string,
-  TOnNullStrategy extends OnNullStrategy,
-> = CreateStreamFromEventListenerOptions & {
-  [k in OnNullConfigField<TNullableFieldName>]?: TOnNullStrategy
-}
+const validOnNullStrategies = new Set([
+  'fail',
+  'die',
+  'ignore',
+  'passthrough',
+] as const)
 
-type OnNullStrategy = 'fail' | 'die' | 'ignore' | 'passthrough' | undefined
+export type OnNullStrategy =
+  | (typeof validOnNullStrategies extends Set<infer U> ? U : never)
+  | undefined
 
-const missingDataMessage = 'Property data of MIDIMessageEvent is null'
-
-// It's important to keep StreamValue as a separate generic because typescript
-// is a bit dumb
-type StreamValue<
+/**
+ * It's important to keep StreamValue as a separate generic because typescript
+ * is a bit dumb, and for some reason starts to complain about usage of `this`
+ * keyword, when passed to `cameFrom` param
+ */
+export type StreamValue<
+  TTag extends string,
   TCameFrom,
-  TNullableFieldName extends Extract<keyof TSelectedEvent, string>,
-  TSelectedEvent,
-  TOnNullStrategy extends OnNullStrategy,
+  Additional extends object,
 > = {
+  readonly _tag: TTag
   readonly cameFrom: TCameFrom
-} & {
-  readonly [k in TNullableFieldName]:
-    | Exclude<TSelectedEvent[TNullableFieldName], null | undefined>
-    | ([TOnNullStrategy] extends ['passthrough']
-        ? Extract<TSelectedEvent[TNullableFieldName], null | undefined>
-        : never)
-}
-
-type StreamError<TOnNullStrategy extends OnNullStrategy> = [
-  TOnNullStrategy,
-] extends ['fail']
-  ? Cause.NoSuchElementException
-  : never
+  readonly capturedAt: Date
+} & Additional
 
 const createStreamMakerFrom =
   <TEventTypeToEventValueMap extends object>() =>
@@ -132,43 +127,69 @@ const createStreamMakerFrom =
       string
     >,
     TSelectedEventType extends Extract<keyof TEventTypeToEventValueMap, string>,
-    TSelectedEvent extends TEventTypeToEventValueMap[TSelectedEventType],
     TCameFrom,
+    const TTag extends string,
+    TContainerWithNullableFields extends object,
   >({
+    tag,
     eventListener: { target, type },
     spanAttributes,
     nullableFieldName: field,
     cameFrom,
+    remapValueToContainer,
   }: {
+    tag: TTag
     eventListener: { target: TEventTarget; type: TSelectedEventType }
     spanAttributes: { spanTargetName: string; [k: string]: unknown }
     nullableFieldName: TNullableFieldName
     cameFrom: TCameFrom
+    remapValueToContainer: (
+      fieldValue: TEventTypeToEventValueMap[TSelectedEventType][TNullableFieldName],
+    ) => TContainerWithNullableFields
   }) =>
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    options?: StreamMakerOptions<TNullableFieldName, TOnNullStrategy>,
-  ): Stream.Stream<
-    StreamValue<TCameFrom, TNullableFieldName, TSelectedEvent, TOnNullStrategy>,
-    StreamError<TOnNullStrategy>
-  > => {
-    const onNullStrategy =
-      options?.[
-        `on${field.charAt(0).toUpperCase() + field.slice(1)}Null` as OnNullConfigField<TNullableFieldName>
-      ]
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ) => {
+    const onNullStrategy = ((options as any)?.onExtremelyRareNullableField ??
+      'die') as Exclude<OnNullStrategy, undefined>
+
+    if (!validOnNullStrategies.has(onNullStrategy))
+      throw new Error(
+        `Invalid strategy to handle nullish values: ${onNullStrategy}`,
+      )
+
+    const missingFieldMessage = `Property ${field} of ${tag} is null`
+    const NullCausedErrorEffect = new Cause.NoSuchElementException(
+      missingFieldMessage,
+    ) as unknown as Effect.Effect<
+      never,
+      [TOnNullStrategy] extends ['fail'] ? Cause.NoSuchElementException : never
+    >
+    type DoubleRemapped = ContainerAllOrNothingNullable<
+      TContainerWithNullableFields,
+      TOnNullStrategy
+    >
+    type StreamSuccess = StreamValue<TTag, TCameFrom, DoubleRemapped>
+
     return Stream.fromEventListener(target, type, options).pipe(
       Stream.filter(event => !!event[field] || onNullStrategy !== 'ignore'),
       Stream.mapEffect(event =>
         event[field] || onNullStrategy === 'passthrough'
-          ? Effect.succeed({ [field]: event[field], cameFrom })
-          : onNullStrategy === undefined || onNullStrategy === 'die'
-            ? Effect.dieMessage(missingDataMessage)
-            : new Cause.NoSuchElementException(missingDataMessage),
+          ? Effect.succeed({
+              _tag: tag,
+              ...(remapValueToContainer(event[field]) as DoubleRemapped),
+              cameFrom,
+              capturedAt: new Date(),
+            } satisfies StreamSuccess as StreamSuccess)
+          : onNullStrategy === 'fail'
+            ? NullCausedErrorEffect
+            : Effect.dieMessage(missingFieldMessage),
       ),
       Stream.withSpan('MIDI Web API event stream', {
         kind: 'producer',
         attributes: { eventType: type, ...spanAttributes },
       }),
-    ) as any
+    )
   }
 
 const midiPortStaticFields = [
@@ -183,20 +204,20 @@ type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
 const remapErrorByName =
   <
-    TDomExceptionNameToErrorWrapperClassMap extends {
+    TErrorNameToTaggedErrorClassMap extends {
       [name: string]: new (arg: {
         cause: Schema.Schema.Encoded<typeof ErrorSchema>
       }) => Error
     },
   >(
-    map: TDomExceptionNameToErrorWrapperClassMap,
+    map: TErrorNameToTaggedErrorClassMap,
     absurdMessage: string,
   ) =>
   (cause: unknown) => {
     if (!(cause instanceof Error && cause.name in map))
       throw new Error(absurdMessage)
     type TErrorClassUnion =
-      TDomExceptionNameToErrorWrapperClassMap[keyof TDomExceptionNameToErrorWrapperClassMap]
+      TErrorNameToTaggedErrorClassMap[keyof TErrorNameToTaggedErrorClassMap]
     const Class = map[cause.name] as TErrorClassUnion
     return new Class({ cause }) as InstanceType<TErrorClassUnion>
   }
@@ -235,85 +256,45 @@ class RawAccessContainer {
   }
 }
 
-type ReadonlyMapValue<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
+type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
-type NewPortState = {
-  ofDevice: MIDIPortDeviceState
-  ofConnection: MIDIPortConnectionState
-}
+/**
+ * A type that represents a deeply readonly object. This is similar to
+ * TypeScript's `Readonly` type, but it recursively applies the `readonly`
+ * modifier to all properties of an object and all elements of arrays.
+ */
+export type DeepReadonly<T> = T extends (infer R)[]
+  ? ReadonlyArray<DeepReadonly<R>>
+  : T extends object
+    ? {
+        readonly [K in keyof T]: DeepReadonly<T[K]>
+      }
+    : T
 
-type ConnectionStateStreamValue<
-  TCameFrom,
+type ContainerAllOrNothingNullable<
+  TContainerWithNullableFields extends object,
   TOnNullStrategy extends OnNullStrategy,
-> = {
-  cameFrom: TCameFrom
-} & (
+> = Readonly<
   | {
-      newState: NewPortState
-      port: EffectfulMIDIInputPort | EffectfulMIDIOutputPort
+      [k in keyof TContainerWithNullableFields]: Exclude<
+        TContainerWithNullableFields[k],
+        null
+      >
     }
   | ([TOnNullStrategy] extends ['passthrough']
-      ? { newState: null; port: null }
+      ? { [k in keyof TContainerWithNullableFields]: null }
       : never)
-)
-
-type ConnectionStateChangesStream<
-  TCameFrom,
-  TOnNullStrategy extends OnNullStrategy,
-> = Stream.Stream<
-  ConnectionStateStreamValue<TCameFrom, TOnNullStrategy>,
-  StreamError<TOnNullStrategy>
 >
-
-const makeConnectionStateChangesStream =
-  <TEventTarget extends Stream.EventListener<MIDIConnectionEvent>, TCameFrom>({
-    eventListenerTarget: eventTarget,
-    spanAttributes,
-    cameFrom,
-  }: {
-    eventListenerTarget: TEventTarget
-    spanAttributes: { spanTargetName: string; [k: string]: unknown }
-    cameFrom: TCameFrom
-  }) =>
-  <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    options?: StreamMakerOptions<'port', TOnNullStrategy>,
-  ): ConnectionStateChangesStream<TCameFrom, TOnNullStrategy> =>
-    pipe(
-      options,
-      createStreamMakerFrom<{ statechange: MIDIConnectionEvent }>()({
-        eventListener: { target: eventTarget, type: 'statechange' },
-        spanAttributes,
-        nullableFieldName: 'port',
-        cameFrom,
-      }),
-      Stream.map(
-        ({ port }) =>
-          ({
-            cameFrom,
-            newState: port && {
-              ofDevice: port.state,
-              ofConnection: port.connection,
-            },
-            port:
-              cameFrom instanceof EffectfulMIDIInputPort ||
-              cameFrom instanceof EffectfulMIDIOutputPort
-                ? cameFrom
-                : port instanceof MIDIInput
-                  ? new EffectfulMIDIInputPort(port)
-                  : port instanceof MIDIOutput
-                    ? new EffectfulMIDIOutputPort(port)
-                    : null,
-          }) as ConnectionStateStreamValue<TCameFrom, TOnNullStrategy>,
-      ),
-    )
 
 export class EffectfulMIDIAccess
   extends RawAccessContainer
   implements Pick<MIDIAccess, 'sysexEnabled'>
 {
+  readonly _tag = 'EffectfulMIDIAccess'
+
   readonly #mapMutablePortMap = <
     const TMIDIAccessObjectKey extends 'inputs' | 'outputs',
-    TRawMIDIPort extends ReadonlyMapValue<MIDIAccess[TMIDIAccessObjectKey]>,
+    TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
     TEffectfulMIDIPort extends EffectfulMIDIPort<TRawMIDIPort>,
   >(
     key: TMIDIAccessObjectKey,
@@ -355,13 +336,28 @@ export class EffectfulMIDIAccess
    * [MIDIConnectionEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
    */
-  readonly makeConnectionStateChangesStream = makeConnectionStateChangesStream({
-    cameFrom: this,
-    eventListenerTarget: this.rawAccess,
+  readonly makeMIDIPortStateChangesStream = createStreamMakerFrom<{
+    statechange: MIDIConnectionEvent
+  }>()({
+    tag: 'MIDIPortStateChange',
+    eventListener: { target: this.rawAccess, type: 'statechange' },
     spanAttributes: {
       spanTargetName: 'MIDI access handle',
       requestedAccessConfig: this.config,
     },
+    nullableFieldName: 'port',
+    cameFrom: this,
+    remapValueToContainer: port => ({
+      newState: port
+        ? ({ ofDevice: port.state, ofConnection: port.connection } as const)
+        : null,
+      port:
+        port instanceof MIDIInput
+          ? new EffectfulMIDIInputPort(port)
+          : port instanceof MIDIOutput
+            ? new EffectfulMIDIOutputPort(port)
+            : null,
+    }),
   })
 
   get sysexEnabled() {
@@ -385,21 +381,27 @@ export class EffectfulMIDIAccess
       | MIDIPortId[],
     ...args: Parameters<EffectfulMIDIOutputPort['send']>
   ) {
-    // TODO: implementation
-    // if (
-    //   target === 'all existing outputs at effect execution' ||
-    //   target === 'all open connections at effect execution'
-    // )
-    //   return yield* Effect.void
-
-    let portsIdsToSend: MIDIPortId[]
-
     const outputs = yield* this.outputs
+    if (target === 'all existing outputs at effect execution')
+      return yield* outputs.pipe(
+        SortedMap.values,
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: Effect's fine
+        Effect.forEach(port => port.send(...args)),
+        Effect.asVoid,
+      )
 
-    if (target === 'all open connections at effect execution') {
-      portsIdsToSend = EArray.ensure(target)
-    } else if (target === 'all existing outputs at effect execution') {
-    } else portsIdsToSend = EArray.ensure(target)
+    if (target === 'all open connections at effect execution')
+      return yield* outputs.pipe(
+        SortedMap.values,
+        Effect.filter(port =>
+          Effect.map(port.connectionState, state => state === 'open'),
+        ),
+        // biome-ignore lint/suspicious/useIterableCallbackReturn: Effect's fine
+        Effect.flatMap(Effect.forEach(port => port.send(...args))),
+        Effect.asVoid,
+      )
+
+    const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
 
     const deviceStatusesEffect = portsIdsToSend.map(id =>
       Option.match(SortedMap.get(outputs, id), {
@@ -443,6 +445,13 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
   extends RawPortContainer<TRawMIDIPort>
   implements Pick<MIDIPort, MIDIPortStaticFields>, Equal.Equal
 {
+  readonly _tag = 'EffectfulMIDIPort'
+
+  constructor(rawPort: TRawMIDIPort) {
+    super(rawPort)
+    this.type = rawPort.type
+  }
+
   [Hash.symbol]() {
     return Hash.string(this.id)
   }
@@ -454,28 +463,23 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
    * [MIDIConnectionEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
    */
-  readonly makeConnectionStateChangesStream = <
-    const TOnNullStrategy extends OnNullStrategy = undefined,
-  >(
-    options?: StreamMakerOptions<'port', TOnNullStrategy>,
-  ) =>
-    pipe(
-      options,
-      makeConnectionStateChangesStream({
-        cameFrom: this,
-        eventListenerTarget: this.rawPort,
-        spanAttributes: {
-          spanTargetName: 'MIDI port',
-          port: getStaticMIDIPortInfo(this.rawPort),
-        },
-      }),
-      Stream.map(
-        ({ port, ...rest }) =>
-          rest as Types.Simplify<
-            Omit<ConnectionStateStreamValue<this, TOnNullStrategy>, 'port'>
-          >,
-      ),
-    )
+  readonly makeMIDIPortStateChangesStream = createStreamMakerFrom<{
+    statechange: MIDIConnectionEvent
+  }>()({
+    tag: 'MIDIPortStateChange',
+    eventListener: { target: this.rawPort, type: 'statechange' },
+    spanAttributes: {
+      spanTargetName: 'MIDI port',
+      port: getStaticMIDIPortInfo(this.rawPort),
+    },
+    nullableFieldName: 'port',
+    cameFrom: this,
+    remapValueToContainer: port => ({
+      newState: port
+        ? { ofDevice: port.state, ofConnection: port.connection }
+        : null,
+    }),
+  })
 
   /**
    * Because device state can change over time, it's effectful.
@@ -496,7 +500,7 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)
    */
   readonly connectionState = Effect.sync(() => this.rawPort.connection)
-
+  // TODO: refactor so its supports `clear` and `send` also
   readonly #callMIDIPortMethod = <TError = never>(
     method: 'close' | 'open',
     mapError: (err: unknown) => TError,
@@ -539,12 +543,20 @@ export class EffectfulMIDIPort<TRawMIDIPort extends MIDIPort>
     return this.rawPort.version
   }
 
-  get type() {
-    return this.rawPort.type
-  }
+  readonly type
 }
 
 export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
+  constructor(rawPort: MIDIInput) {
+    if (rawPort.type !== 'input')
+      throw new Error('EffectfulMIDIInputPort accepts only MIDIInput')
+
+    super(rawPort)
+    this.type = rawPort.type
+  }
+
+  override readonly type
+
   /**
    * [MIDIMessageEvent MDN
    * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
@@ -554,6 +566,7 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
    * is to die on null.
    */
   readonly makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()({
+    tag: 'MIDIMessage',
     eventListener: { target: this.rawPort, type: 'midimessage' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
@@ -561,10 +574,21 @@ export class EffectfulMIDIInputPort extends EffectfulMIDIPort<MIDIInput> {
     },
     cameFrom: this,
     nullableFieldName: 'data',
+    remapValueToContainer: data => ({ data }),
   })
 }
 
 export class EffectfulMIDIOutputPort extends EffectfulMIDIPort<MIDIOutput> {
+  constructor(rawPort: MIDIOutput) {
+    if (rawPort.type !== 'output')
+      throw new Error('EffectfulMIDIOutputPort accepts only MIDIOutput')
+
+    super(rawPort)
+    this.type = rawPort.type
+  }
+
+  override readonly type
+
   // TODO: add documentation
   /**
    * If data is a System Exclusive message, and the MIDIAccess did not enable
