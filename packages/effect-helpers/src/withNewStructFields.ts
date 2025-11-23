@@ -27,3 +27,16 @@ export const withNewStructFields: {
     Struct.omit(SchemaAST.IdentifierAnnotationId)(self.ast.annotations),
   ),
 )
+
+// TODO: add also option to throw on duplicates
+// as there's in effect codebase
+// const extendFields = (a: Struct.Fields, b: Struct.Fields): Struct.Fields => {
+//   const out = { ...a }
+//   for (const key of Reflect.ownKeys(b)) {
+//     if (key in a) {
+//       throw new Error(errors_.getASTDuplicatePropertySignatureErrorMessage(key))
+//     }
+//     out[key] = b[key]
+//   }
+//   return out
+// }
