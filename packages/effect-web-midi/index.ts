@@ -7,6 +7,7 @@ import { pipe } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
+import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
@@ -826,3 +827,40 @@ export const withTouchpadPositionUpdate = <
       ]
     },
   )
+
+export const mapToGlidingStringLogOfLimitedEntriesCount =
+  <A>(windowSize: number, objectify: (current: NoInfer<A>) => object) =>
+  <E, R>(self: Stream.Stream<A, E, R>) =>
+    Stream.mapAccum(
+      self,
+      { text: '', entrySizeLog: [] as number[] },
+      ({ entrySizeLog, text }, current) => {
+        const currMapped = pipe(
+          objectify(current),
+          Record.toEntries,
+          EArray.map(EArray.join(': ')),
+          EArray.join(', '),
+        )
+
+        const newText =
+          currMapped +
+          '\n' +
+          (entrySizeLog.length >= windowSize
+            ? // additional -1 is to account for separator
+              text.slice(0, -entrySizeLog.at(-1)! - 1)
+            : text)
+
+        return [
+          {
+            text: newText,
+            entrySizeLog: [
+              currMapped.length,
+              ...(entrySizeLog.length >= windowSize
+                ? entrySizeLog.slice(0, -1)
+                : entrySizeLog),
+            ],
+          },
+          newText,
+        ]
+      },
+    )
