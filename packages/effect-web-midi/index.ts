@@ -205,7 +205,7 @@ const midiPortStaticFields = [
   'type',
 ] as const
 
-type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
+export type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
 const remapErrorByName =
   <
@@ -276,7 +276,7 @@ export type DeepReadonly<T> = T extends (infer R)[]
       }
     : T
 
-type ContainerAllOrNothingNullable<
+export type ContainerAllOrNothingNullable<
   TContainerWithNullableFields extends object,
   TOnNullStrategy extends OnNullStrategy,
 > = Readonly<
@@ -794,47 +794,49 @@ export const withTouchpadPositionUpdate = <
     { x: 0, y: 0, seenPressedTouchpadEventsInARow: 0 },
     (ctx, current) => {
       const { data, ...rest } = current
-      const select = <T extends any>(c: T, p: T, other: T) =>
+      const select = <T extends any>(control: T, pitch: T, previous: T) =>
         ({
-          'Control Change': c,
-          'Pitch Bend Change': p,
-          'Touchpad Release': 0,
-        })[data._tag as string] ?? other
+          'Control Change': control,
+          'Pitch Bend Change': pitch,
+          'Touchpad Release': 0, // resets everything
+        })[data._tag as string] ?? previous
 
       const position = {
         x: select(ctx.x, (data as PitchBendChange).value, ctx.x),
         y: select((data as ControlChange).value, ctx.y, ctx.y),
-        seenPressedTouchpadEventsInARow: select(
-          ctx.seenPressedTouchpadEventsInARow + 1,
-          ctx.seenPressedTouchpadEventsInARow + 1,
-          ctx.seenPressedTouchpadEventsInARow,
-        ),
       }
 
+      const seenPressedTouchpadEventsInARow = select(
+        ctx.seenPressedTouchpadEventsInARow + 1,
+        ctx.seenPressedTouchpadEventsInARow + 1,
+        ctx.seenPressedTouchpadEventsInARow,
+      )
+
       return [
-        position,
-        position.seenPressedTouchpadEventsInARow > 1 &&
+        { ...position, seenPressedTouchpadEventsInARow },
+        seenPressedTouchpadEventsInARow > 1 &&
         (position.x !== ctx.x || position.y !== ctx.y)
-          ? Stream.make(current as unknown as A, {
+          ? Stream.make(current, {
               ...rest,
-              data: {
-                _tag: 'Touchpad Position Update' as const,
-                x: position.x,
-                y: position.y,
-              },
+              data: { _tag: 'Touchpad Position Update' as const, ...position },
             })
-          : Stream.succeed(current as unknown as A),
+          : Stream.succeed(current),
       ]
     },
   ).pipe(Stream.flatten())
 
 export const mapToGlidingStringLogOfLimitedEntriesCount =
-  <A>(windowSize: number, objectify: (current: NoInfer<A>) => object) =>
-  <E, R>(self: Stream.Stream<A, E, R>) =>
-    Stream.mapAccum(
+  <A>(
+    windowSize: number,
+    showFirst: 'latest' | 'oldest',
+    objectify: (current: NoInfer<A>) => object,
+  ) =>
+  <E, R>(self: Stream.Stream<A, E, R>) => {
+    if (windowSize < 1) throw new Error('Window size should be greater than 0')
+    return Stream.mapAccum(
       self,
       { text: '', entrySizeLog: [] as number[] },
-      ({ entrySizeLog: log, text }, current) => {
+      ({ entrySizeLog: oldLog, text: oldText }, current) => {
         const currMapped = pipe(
           objectify(current),
           Record.toEntries,
@@ -842,21 +844,31 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
           EArray.join(', '),
         )
 
-        const newText =
-          currMapped +
-          '\n' +
-          // additional -1 is to account for '\n' separator
-          (log.length >= windowSize ? text.slice(0, -log.at(-1)! - 1) : text)
+        const potentiallyShiftedLog =
+          oldLog.length >= windowSize
+            ? oldLog.slice(...(showFirst === 'latest' ? [0, -1] : [1]))
+            : oldLog
 
-        return [
-          {
-            text: newText,
-            entrySizeLog: [
-              currMapped.length,
-              ...(log.length >= windowSize ? log.slice(0, -1) : log),
-            ],
-          },
-          newText,
-        ]
+        const potentiallyShiftedText =
+          oldLog.length >= windowSize
+            ? oldText.slice(
+                ...(showFirst === 'latest'
+                  ? [0, -oldLog.at(-1)! - 1]
+                  : [oldLog.at(0)! + 1]),
+              )
+            : oldText
+
+        const text =
+          showFirst === 'latest'
+            ? currMapped + '\n' + potentiallyShiftedText
+            : potentiallyShiftedText + currMapped + '\n'
+
+        const entrySizeLog =
+          showFirst === 'latest'
+            ? [currMapped.length, ...potentiallyShiftedLog]
+            : [...potentiallyShiftedLog, currMapped.length]
+
+        return [{ text, entrySizeLog }, text]
       },
     )
+  }
