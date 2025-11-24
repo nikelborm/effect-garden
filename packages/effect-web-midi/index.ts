@@ -785,7 +785,7 @@ export const withTouchpadPositionUpdate = <
 >(
   self: Stream.Stream<A, E, R>,
 ): Stream.Stream<
-  Stream.Stream<A | (Omit<A, 'data'> & { data: TouchpadPositionUpdate })>,
+  A | (Omit<A, 'data'> & { data: TouchpadPositionUpdate }),
   E,
   R
 > =>
@@ -826,7 +826,7 @@ export const withTouchpadPositionUpdate = <
           : Stream.succeed(current as unknown as A),
       ]
     },
-  )
+  ).pipe(Stream.flatten())
 
 export const mapToGlidingStringLogOfLimitedEntriesCount =
   <A>(windowSize: number, objectify: (current: NoInfer<A>) => object) =>
@@ -834,7 +834,7 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
     Stream.mapAccum(
       self,
       { text: '', entrySizeLog: [] as number[] },
-      ({ entrySizeLog, text }, current) => {
+      ({ entrySizeLog: log, text }, current) => {
         const currMapped = pipe(
           objectify(current),
           Record.toEntries,
@@ -845,19 +845,15 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
         const newText =
           currMapped +
           '\n' +
-          (entrySizeLog.length >= windowSize
-            ? // additional -1 is to account for separator
-              text.slice(0, -entrySizeLog.at(-1)! - 1)
-            : text)
+          // additional -1 is to account for '\n' separator
+          (log.length >= windowSize ? text.slice(0, -log.at(-1)! - 1) : text)
 
         return [
           {
             text: newText,
             entrySizeLog: [
               currMapped.length,
-              ...(entrySizeLog.length >= windowSize
-                ? entrySizeLog.slice(0, -1)
-                : entrySizeLog),
+              ...(log.length >= windowSize ? log.slice(0, -1) : log),
             ],
           },
           newText,
