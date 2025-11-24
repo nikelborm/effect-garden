@@ -27,32 +27,34 @@ const ErrorSchema = Schema.Struct({
 /**
  * Thrown if the document or page is closed due to user navigation.
  */
-export class AbortError extends Schema.TaggedError<AbortError>('AbortError')(
-  'AbortError',
-  { cause: ErrorSchema },
-) {}
+export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
+  cause: ErrorSchema,
+}) {}
 
 /**
  * Thrown if the underlying system raises any errors.
  */
-export class InvalidStateError extends Schema.TaggedError<InvalidStateError>(
+export class InvalidStateError extends Schema.TaggedError<InvalidStateError>()(
   'InvalidStateError',
-)('InvalidStateError', { cause: ErrorSchema }) {}
+  { cause: ErrorSchema },
+) {}
 
 /**
  * Thrown if the feature or options are not supported by the system.
  */
-export class NotSupportedError extends Schema.TaggedError<NotSupportedError>(
+export class NotSupportedError extends Schema.TaggedError<NotSupportedError>()(
   'NotSupportedError',
-)('NotSupportedError', { cause: ErrorSchema }) {}
+  { cause: ErrorSchema },
+) {}
 
 /**
  * The object does not support the operation or argument. Thrown if the port is
  * unavailable.
  */
-export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>(
+export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>()(
   'InvalidAccessError',
-)('InvalidAccessError', { cause: ErrorSchema }) {}
+  { cause: ErrorSchema },
+) {}
 
 /**
  * Thrown if the user or system denies the application from creating a
@@ -62,13 +64,15 @@ export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>(
  *
  * SecurityError in MIDI spec was replaced by NotAllowedError.
  */
-export class NotAllowedError extends Schema.TaggedError<NotAllowedError>(
+export class NotAllowedError extends Schema.TaggedError<NotAllowedError>()(
   'NotAllowedError',
-)('NotAllowedError', { cause: ErrorSchema }) {}
+  { cause: ErrorSchema },
+) {}
 
-export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>(
+export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>()(
   'BadMidiMessageError',
-)('BadMidiMessageError', { cause: ErrorSchema }) {}
+  { cause: ErrorSchema },
+) {}
 
 /**
  * Unique identifier of the MIDI port.
@@ -393,6 +397,7 @@ export class EffectfulMIDIAccess
     if (target === 'all open connections at effect execution')
       return yield* outputs.pipe(
         SortedMap.values,
+        // TODO: maybe also do something about pending?
         Effect.filter(port =>
           Effect.map(port.connectionState, state => state === 'open'),
         ),
@@ -400,6 +405,9 @@ export class EffectfulMIDIAccess
         Effect.flatMap(Effect.forEach(port => port.send(...args))),
         Effect.asVoid,
       )
+
+    // TODO: maybe since deviceState returns always connected devices we can
+    // simplify this check by applying intersections and comparing lenghts
 
     const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
 
@@ -416,6 +424,7 @@ export class EffectfulMIDIAccess
       return yield* new InvalidStateError({
         cause: new DOMException(
           'InvalidStateError',
+          // TODO: imitate
           'TODO: imitate there an error thats thrown when the port is diconnected',
         ),
       })
@@ -633,4 +642,187 @@ export const requestEffectfulMIDIAccess = (config?: MIDIOptions) =>
   Effect.map(
     requestRawMIDIAccess(config),
     access => new EffectfulMIDIAccess(access, config),
+  )
+
+export const withParsedDataField = <
+  A extends { data: Uint8Array<ArrayBuffer> },
+  E,
+  R,
+>(
+  self: Stream.Stream<A, E, R>,
+) => Stream.map(self, Struct.evolve({ data: dataEntryParser }))
+
+// export const withTouchPadPositionUpdates
+
+export type NoteRelease = Readonly<{
+  _tag: 'Note Release'
+  channel: number
+  note: number
+}>
+
+export type NotePress = Readonly<{
+  _tag: 'Note Press'
+  channel: number
+  note: number
+  velocity: number
+}>
+
+export type UnknownReply = Readonly<{
+  _tag: 'Unknown Reply'
+  data: string
+  stack: string
+}>
+
+export type ControlChange = Readonly<{
+  _tag: 'Control Change'
+  channel: number
+  control: number
+  value: number
+}>
+
+export type TouchpadRelease = Readonly<{
+  _tag: 'Touchpad Release'
+  channel: number
+}>
+
+export type PitchBendChange = Readonly<{
+  _tag: 'Pitch Bend Change'
+  channel: number
+  value: number
+}>
+
+export type TouchpadPositionUpdate = Readonly<{
+  _tag: 'Touchpad Position Update'
+  x: number
+  y: number
+}>
+
+function dataEntryParser(
+  data: Uint8Array<ArrayBuffer>,
+):
+  | NoteRelease
+  | NotePress
+  | UnknownReply
+  | ControlChange
+  | TouchpadRelease
+  | PitchBendChange {
+  const unknown = () => {
+    const { stackTraceLimit } = Error
+    Error.stackTraceLimit = 4
+    const stackHolder = {} as { stack: string }
+    Error.captureStackTrace(stackHolder)
+    Error.stackTraceLimit = stackTraceLimit
+    const result = {
+      _tag: 'Unknown Reply' as const,
+      data: data.toString(),
+      stack: stackHolder.stack,
+    }
+    return result
+  }
+  if (data.length !== 3) return unknown()
+  const first = data.at(0)
+  if (first === undefined) return unknown()
+
+  const second = data.at(1)
+  if (second === undefined) return unknown()
+
+  const third = data.at(2)
+  if (third === undefined) return unknown()
+
+  const code = first >> 4
+  const channel = first & 0b1111
+
+  if (code === 0x8) {
+    if (third !== 0x40) return unknown()
+    return {
+      _tag: 'Note Release',
+      channel,
+      note: second,
+    }
+  }
+
+  if (code === 0x9) {
+    if (third === 0) return unknown()
+    return {
+      _tag: 'Note Press',
+      channel,
+      note: second,
+      velocity: third,
+    }
+  }
+
+  if (code === 0xb) {
+    return {
+      _tag: 'Control Change',
+      channel,
+      control: second,
+      value: third,
+    }
+  }
+
+  if (code === 0xe) {
+    if (second === 0 && third === 0x40)
+      return { _tag: 'Touchpad Release', channel }
+
+    if (second === third)
+      return { _tag: 'Pitch Bend Change', channel, value: second }
+    return unknown()
+  }
+  return unknown()
+}
+
+export const withTouchpadPositionUpdate = <
+  A extends {
+    data:
+      | ControlChange
+      | TouchpadRelease
+      | PitchBendChange
+      | { _tag: string & {} }
+  },
+  E,
+  R,
+>(
+  self: Stream.Stream<A, E, R>,
+): Stream.Stream<
+  Stream.Stream<A | (Omit<A, 'data'> & { data: TouchpadPositionUpdate })>,
+  E,
+  R
+> =>
+  Stream.mapAccum(
+    self,
+    { x: 0, y: 0, seenPressedTouchpadEventsInARow: 0 },
+    (ctx, current) => {
+      const { data, ...rest } = current
+      const select = <T extends any>(c: T, p: T, other: T) =>
+        ({
+          'Control Change': c,
+          'Pitch Bend Change': p,
+          'Touchpad Release': 0,
+        })[data._tag as string] ?? other
+
+      const position = {
+        x: select(ctx.x, (data as PitchBendChange).value, ctx.x),
+        y: select((data as ControlChange).value, ctx.y, ctx.y),
+        seenPressedTouchpadEventsInARow: select(
+          ctx.seenPressedTouchpadEventsInARow + 1,
+          ctx.seenPressedTouchpadEventsInARow + 1,
+          ctx.seenPressedTouchpadEventsInARow,
+        ),
+      }
+
+      return [
+        position,
+        position.seenPressedTouchpadEventsInARow > 1 &&
+        (position.x !== ctx.x || position.y !== ctx.y)
+          ? Stream.make(current as unknown as A, {
+              ...rest,
+              data: {
+                _tag: 'Touchpad Position Update' as const,
+                x: position.x,
+                y: position.y,
+              },
+            })
+          : Stream.succeed(current as unknown as A),
+      ]
+    },
   )
