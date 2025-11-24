@@ -828,7 +828,7 @@ export const withTouchpadPositionUpdate = <
 export const mapToGlidingStringLogOfLimitedEntriesCount =
   <A>(
     windowSize: number,
-    showFirst: 'latest' | 'oldest',
+    show: 'latestFirst' | 'oldestFirst',
     objectify: (current: NoInfer<A>) => object,
   ) =>
   <E, R>(self: Stream.Stream<A, E, R>) => {
@@ -846,25 +846,25 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
 
         const potentiallyShiftedLog =
           oldLog.length >= windowSize
-            ? oldLog.slice(...(showFirst === 'latest' ? [0, -1] : [1]))
+            ? oldLog.slice(...(show === 'latestFirst' ? [0, -1] : [1]))
             : oldLog
 
         const potentiallyShiftedText =
           oldLog.length >= windowSize
             ? oldText.slice(
-                ...(showFirst === 'latest'
+                ...(show === 'latestFirst'
                   ? [0, -oldLog.at(-1)! - 1]
                   : [oldLog.at(0)! + 1]),
               )
             : oldText
 
         const text =
-          showFirst === 'latest'
+          show === 'latestFirst'
             ? currMapped + '\n' + potentiallyShiftedText
             : potentiallyShiftedText + currMapped + '\n'
 
         const entrySizeLog =
-          showFirst === 'latest'
+          show === 'latestFirst'
             ? [currMapped.length, ...potentiallyShiftedLog]
             : [...potentiallyShiftedLog, currMapped.length]
 
