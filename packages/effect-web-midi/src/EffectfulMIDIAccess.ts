@@ -1,0 +1,355 @@
+import { Order, pipe, SortedMap } from 'effect'
+import * as EArray from 'effect/Array'
+import * as Effect from 'effect/Effect'
+import * as Equal from 'effect/Equal'
+// import * as Iterable from 'effect/Iterable'
+import { flow } from 'effect/Function'
+import * as Hash from 'effect/Hash'
+import * as Inspectable from 'effect/Inspectable'
+import * as Option from 'effect/Option'
+import * as Pipeable from 'effect/Pipeable'
+import {
+  createStreamMakerFrom,
+  makeStreamFromWrapped,
+} from './createStreamMakerFrom.ts'
+import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
+import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import {
+  AbortError,
+  InvalidStateError,
+  NotAllowedError,
+  NotSupportedError,
+  remapErrorByName,
+} from './errors.ts'
+import type { MIDIPortId } from './util.ts'
+
+/**
+ * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
+ * other objects at both runtime and type-level
+ */
+export const TypeId: unique symbol = Symbol.for(
+  '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
+)
+
+// TODO: implement scoping of midi access that will cleanup all message queues
+// and streams, and remove listeners
+
+// TODO: implement scope inheritance
+
+/**
+ * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
+ * other objects at both runtime and type-level
+ */
+export type TypeId = typeof TypeId
+
+const Proto = {
+  _tag: 'EffectfulMIDIAccess' as const,
+  [TypeId]: TypeId,
+  [Hash.symbol](this: EffectfulMIDIAccessImpl) {
+    return Hash.structure(this._config ?? {})
+  },
+  [Equal.symbol](that: Equal.Equal) {
+    return this === that
+  },
+  pipe() {
+    // biome-ignore lint/complexity/noArguments: Effect's tradition
+    return Pipeable.pipeArguments(this, arguments)
+  },
+  toString(this: EffectfulMIDIAccessImpl) {
+    return Inspectable.format(this.toJSON())
+  },
+  toJSON(this: EffectfulMIDIAccessImpl) {
+    return {
+      _id: 'EffectfulMIDIAccess',
+      config: this._config ?? null,
+    }
+  },
+  // maybe iterate over all ports inputs and outputs?
+  // [Symbol.iterator]<K, V>(this: HashMapImpl<K, V>): Iterator<[K, V]> {
+  //   return new HashMapIterator(this, (k, v) => [k, v])
+  // },
+  [Inspectable.NodeInspectSymbol](this: EffectfulMIDIAccessImpl) {
+    return this.toJSON()
+  },
+}
+
+export interface EffectfulMIDIAccess
+  extends Equal.Equal,
+    Pipeable.Pipeable,
+    Inspectable.Inspectable {
+  readonly [TypeId]: TypeId
+  readonly _tag: 'EffectfulMIDIAccess'
+}
+
+/** @internal */
+export interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
+  readonly _access: MIDIAccess
+  readonly _config: Readonly<MIDIOptions> | undefined
+}
+
+/** @internal */
+const makeImpl = (
+  access: MIDIAccess,
+  config?: Readonly<MIDIOptions>,
+): EffectfulMIDIAccessImpl => {
+  const instance = Object.create(Proto)
+  instance._access = access
+  instance._config = config
+  return instance
+}
+
+const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
+  typeof access === 'object' &&
+  access !== null &&
+  Object.getPrototypeOf(access) === Proto &&
+  TypeId in access &&
+  '_access' in access &&
+  typeof access._access === 'object' &&
+  access._access !== null &&
+  '_config' in access &&
+  ((typeof access._config === 'object' && access._config !== null) ||
+    typeof access._config === 'undefined') &&
+  access._access instanceof MIDIAccess
+
+export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
+
+const asImpl = (access: EffectfulMIDIAccess) => {
+  if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
+  return access
+}
+
+/**
+ * Unsafe because returns object that changes over time
+ */
+const makeSortedMapOfPortsSync =
+  <
+    const TMIDIPortType extends MIDIPortType,
+    const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
+    TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
+    TEffectfulMIDIPort extends
+      EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
+  >(
+    key: TMIDIAccessObjectKey,
+    make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
+  ) =>
+  (self: EffectfulMIDIAccess) =>
+    pipe(
+      asImpl(self)._access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
+      SortedMap.fromIterable(Order.string),
+      SortedMap.map(make),
+    )
+
+const makeSortedMapOfPorts =
+  <
+    const TMIDIPortType extends MIDIPortType,
+    const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
+    TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
+    TEffectfulMIDIPort extends
+      EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
+  >(
+    key: TMIDIAccessObjectKey,
+    make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
+  ) =>
+  (self: EffectfulMIDIAccess) =>
+    Effect.sync(() => makeSortedMapOfPortsSync(key, make)(self))
+
+/**
+ * Because MIDIInputMap can potentially be a mutable object, meaning new
+ * devices can be added or removed at runtime, it is effectful.
+ *
+ * The **`inputs`** read-only property of the MIDIAccess interface provides
+ * access to any available MIDI input ports.
+ *
+ * [MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
+ */
+export const getInputPorts = makeSortedMapOfPorts(
+  'inputs',
+  EffectfulMIDIInputPort.make,
+)
+
+export const getInputPortsFromWrapped = <E, R>(
+  self: Effect.Effect<EffectfulMIDIAccess, E, R>,
+) => Effect.flatMap(self, getInputPorts)
+
+/**
+ * Because MIDIOutputMap can potentially be a mutable object, meaning new
+ * devices can be added or removed at runtime, it is effectful.
+ *
+ * The **`outputs`** read-only property of the MIDIAccess interface provides
+ * access to any available MIDI output ports.
+ *
+ * [MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
+ */
+export const getOutputPorts = makeSortedMapOfPorts(
+  'outputs',
+  EffectfulMIDIOutputPort.make,
+)
+
+export const getOutputPortsFromWrapped = <E, R>(
+  self: Effect.Effect<EffectfulMIDIAccess, E, R>,
+) => Effect.flatMap(self, getOutputPorts)
+
+// TODO: all ports
+// Maybe use Iterable.appendAll
+// export const getPorts =
+
+/**
+ * The **`sysexEnabled`** read-only property of the MIDIAccess interface indicates whether system exclusive support is enabled on the current MIDIAccess instance.
+ *
+ * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/sysexEnabled)
+ */
+export const isSysexEnabled = (self: EffectfulMIDIAccess) =>
+  asImpl(self)._access.sysexEnabled
+
+/**
+ * [MIDIConnectionEvent MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
+ */
+export const makeMIDIPortStateChangesStream =
+  createStreamMakerFrom<MIDIPortEventMap>()(
+    is,
+    self => ({
+      tag: 'MIDIPortStateChange',
+      eventListener: { target: asImpl(self)._access, type: 'statechange' },
+      spanAttributes: {
+        spanTargetName: 'MIDI access handle',
+        requestedAccessConfig: asImpl(self)._config,
+      },
+      nullableFieldName: 'port',
+    }),
+    port => ({
+      newState: port
+        ? ({ ofDevice: port.state, ofConnection: port.connection } as const)
+        : null,
+      port:
+        port instanceof MIDIInput
+          ? EffectfulMIDIInputPort.make(port)
+          : port instanceof MIDIOutput
+            ? EffectfulMIDIOutputPort.make(port)
+            : null,
+    }),
+  )
+
+export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
+  makeMIDIPortStateChangesStream,
+)
+
+// TODO: add a stream to listen for all messages of all currently
+// connected inputs, all present inputs, specific input
+
+// TODO: add sinks that will accepts command streams to redirect midi commands
+// from something into an actual API
+
+/**
+ * beware that it's not possible to ensure the messages will either be all
+ * delivered, or all not delivered, as in ACID transactions. There's not even
+ * a mechanism to remove the message from the sending queue
+ */
+export const send = (self: EffectfulMIDIAccess) =>
+  Effect.fn('EffectfulMIDIAccess.send')(function* (
+    target:
+      | 'all existing outputs at effect execution'
+      | 'all open connections at effect execution'
+      | MIDIPortId
+      | MIDIPortId[],
+    data: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ) {
+    const outputs = yield* getOutputPorts(self)
+    if (target === 'all existing outputs at effect execution')
+      return yield* outputs.pipe(
+        SortedMap.values,
+        Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
+        Effect.asVoid,
+      )
+
+    if (target === 'all open connections at effect execution')
+      return yield* outputs.pipe(
+        SortedMap.values,
+        // TODO: maybe also do something about pending?
+        Effect.filter(
+          flow(
+            EffectfulMIDIPort.getConnectionState,
+            Effect.map(state => state === 'open'),
+          ),
+        ),
+        Effect.flatMap(
+          Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
+        ),
+        Effect.asVoid,
+      )
+
+    // TODO: maybe since deviceState returns always connected devices we can
+    // simplify this check by applying intersections and comparing lenghts
+
+    const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
+
+    const deviceStatusesEffect = portsIdsToSend.map(id =>
+      Option.match(SortedMap.get(outputs, id), {
+        onNone: () => Effect.succeed('disconnected' as const),
+        onSome: EffectfulMIDIPort.getDeviceState,
+      }),
+    )
+
+    const deviceStatuses = yield* Effect.all(deviceStatusesEffect)
+
+    if (deviceStatuses.includes('disconnected'))
+      return yield* new InvalidStateError({
+        cause: new DOMException(
+          'InvalidStateError',
+          // TODO: imitate
+          'TODO: imitate there an error thats thrown when the port is diconnected',
+        ),
+      })
+
+    const sendToSome = (predicate: (id: MIDIPortId) => boolean) =>
+      Effect.all(
+        SortedMap.reduce(
+          outputs,
+          [] as EffectfulMIDIOutputPort.SentMessageEffect[],
+          (acc, port, id) =>
+            predicate(id)
+              ? [...acc, EffectfulMIDIOutputPort.send(port, data, timestamp)]
+              : acc,
+        ),
+      )
+
+    yield* sendToSome(id => portsIdsToSend.includes(id))
+  })
+
+// TODO: sendFromWrapped
+
+type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
+
+export const requestRaw = (options?: MIDIOptions) =>
+  Effect.tryPromise({
+    try: () => navigator.requestMIDIAccess(options),
+    catch: remapErrorByName(
+      {
+        AbortError,
+        InvalidStateError,
+        NotSupportedError,
+        NotAllowedError,
+        // because of https://github.com/WebAudio/web-midi-api/pull/267
+        SecurityError: NotAllowedError,
+        // For case when navigator doesn't exist
+        ReferenceError: NotSupportedError,
+        // For case when navigator.requestMIDIAccess is undefined
+        TypeError: NotSupportedError,
+      },
+      'requestRawMIDIAccess error handling absurd',
+    ),
+  }).pipe(
+    Effect.withSpan('EffectfulMIDIAccess.requestRaw', {
+      attributes: { options },
+    }),
+  )
+
+export const requestEffectful = (config?: MIDIOptions) =>
+  Effect.map(
+    requestRaw(config),
+    access => makeImpl(access, config) as EffectfulMIDIAccess,
+  )
