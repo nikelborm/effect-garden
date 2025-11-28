@@ -1,9 +1,9 @@
-import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
-import { getStaticMIDIPortInfo } from './util.ts'
 import {
   createStreamMakerFrom,
   makeStreamFromWrapped,
 } from './createStreamMakerFrom.ts'
+import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import { getStaticMIDIPortInfo } from './util.ts'
 
 // TODO: implement scoping of midi access that will cleanup all message queues
 // and streams, and remove listeners

@@ -132,7 +132,7 @@ export const sendFromWrapped = dual<
  * Returns the port itself for easier chaining of operations on the same port
  */
 export const clear = (self: EffectfulMIDIOutputPort) =>
-  // @ts-expect-error upstream bug that .clear is missing, because it's definetely in spec
+  // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
   Effect.sync(() => asImpl(self)._port.clear()).pipe(
     Effect.as(self),
     Effect.withSpan('EffectfulMIDIOutputPort.clear', {

@@ -25,7 +25,7 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
-    "@stryker-mutator/vitest-runner": "^9.0.1",
+    "@stryker-mutator/vitest-runner": "^9.4.0",
     "@total-typescript/ts-reset": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
@@ -35,7 +35,7 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "ts-toolbelt": "catalog:",
-    "tstyche": "^5.0.0",
+    "tstyche": "^5.0.1",
     "type-fest": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

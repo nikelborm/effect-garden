@@ -42,7 +42,7 @@ export const withTouchpadPositionUpdates = <
       //   'Pitch Bend Change': () => 'pitch',
       //   'Touchpad Release': () => 0, // resets everything
       // })
-      const select = <T extends any>(control: T, pitch: T, previous: T) =>
+      const select = <T>(control: T, pitch: T, previous: T) =>
         ({
           'Control Change': control,
           'Pitch Bend Change': pitch,

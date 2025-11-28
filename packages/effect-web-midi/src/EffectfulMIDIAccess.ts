@@ -283,7 +283,7 @@ export const send = (self: EffectfulMIDIAccess) =>
       )
 
     // TODO: maybe since deviceState returns always connected devices we can
-    // simplify this check by applying intersections and comparing lenghts
+    // simplify this check by applying intersections and comparing lengths
 
     const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
 
@@ -301,7 +301,7 @@ export const send = (self: EffectfulMIDIAccess) =>
         cause: new DOMException(
           'InvalidStateError',
           // TODO: imitate
-          'TODO: imitate there an error thats thrown when the port is diconnected',
+          'TODO: imitate there an error thats thrown when the port is disconnected',
         ),
       })
 
