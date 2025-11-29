@@ -16,7 +16,7 @@ export type MIDIPortId = string & Brand.Brand<'MIDIPortId'>
 
 export const MIDIPortId = Brand.nominal<MIDIPortId>()
 
-const midiPortStaticFields = [
+export const midiPortStaticFields = [
   'id',
   'name',
   'manufacturer',
@@ -26,6 +26,7 @@ const midiPortStaticFields = [
 
 export type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
+// TODO: call toJSON instead?
 export const getStaticMIDIPortInfo = (port: MIDIPort) =>
   Struct.pick(port, ...midiPortStaticFields)
 

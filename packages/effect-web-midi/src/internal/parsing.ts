@@ -9,7 +9,7 @@ export const withParsedDataField = <
   self: Stream.Stream<A, E, R>,
 ) =>
   Stream.map(self, Struct.evolve({ data: dataEntryParser })) as Stream.Stream<
-    Omit<A, 'data'> & { readonly data: ParsedMidiDataMessages },
+    Omit<A, 'data'> & { readonly data: ParsedMIDIMessages },
     E,
     R
   >
@@ -76,7 +76,7 @@ export const withTouchpadPositionUpdates = <
     },
   ).pipe(Stream.flatten())
 
-export type ParsedMidiDataMessages =
+export type ParsedMIDIMessages =
   | NoteRelease
   | NotePress
   | UnknownReply
@@ -84,9 +84,7 @@ export type ParsedMidiDataMessages =
   | TouchpadRelease
   | PitchBendChange
 
-function dataEntryParser(
-  data: Uint8Array<ArrayBuffer>,
-): ParsedMidiDataMessages {
+function dataEntryParser(data: Uint8Array<ArrayBuffer>): ParsedMIDIMessages {
   const unknown = () => {
     const { stackTraceLimit } = Error
     Error.stackTraceLimit = 4

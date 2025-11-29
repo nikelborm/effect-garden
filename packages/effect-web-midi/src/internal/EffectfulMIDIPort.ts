@@ -14,10 +14,9 @@ import { InvalidAccessError, remapErrorByName } from './errors.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
 
 /**
- * Unique symbol used for distinguishing EffectfulMIDIPort instances from other
- * objects at both runtime and type-level
+ * @internal
  */
-export const TypeId: unique symbol = Symbol.for(
+const TypeId: unique symbol = Symbol.for(
   '@nikelborm/effect-web-midi/EffectfulMIDIPort',
 )
 
@@ -123,6 +122,13 @@ export const makeImpl = <Port extends MIDIPort, Type extends MIDIPortType>(
 }
 
 /** @internal */
+const asImpl = (port: EffectfulMIDIPort<MIDIPortType>) => {
+  if (!isGeneralImpl(port))
+    throw new Error('Failed to cast to EffectfulMIDIPort<MIDIPortType>')
+  return port
+}
+
+/** @internal */
 const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
   typeof port === 'object' &&
   port !== null &&
@@ -148,18 +154,6 @@ export const isImplOfSpecificType =
     port.type === type &&
     port._port instanceof ClassToAssertInheritance
 
-export const isOfSpecificType: <const Type extends MIDIPortType>(
-  type: Type,
-  ClassToAssertInheritance: new (...args: unknown[]) => MIDIPort,
-) => (port: unknown) => port is EffectfulMIDIPort<Type> = isImplOfSpecificType
-
-/** @internal */
-const asImpl = (port: EffectfulMIDIPort<MIDIPortType>) => {
-  if (!isGeneralImpl(port))
-    throw new Error('Failed to cast to EffectfulMIDIPort<MIDIPortType>')
-  return port
-}
-
 // TODO: maybe open issue in upstream spec about why they are sync, while other are async
 /** @internal */
 const callMIDIPortMethod =
@@ -178,7 +172,6 @@ const callMIDIPortMethod =
       Effect.withSpan(`MIDI port method call`, {
         attributes: {
           method,
-          // call toJSON instead?
           port: getStaticMIDIPortInfo(asImpl(self)._port),
         },
       }),

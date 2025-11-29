@@ -25,10 +25,9 @@ import {
 import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
 
 /**
- * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
- * other objects at both runtime and type-level
+ * @internal
  */
-export const TypeId: unique symbol = Symbol.for(
+const TypeId: unique symbol = Symbol.for(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
 )
 
@@ -43,6 +42,7 @@ export const TypeId: unique symbol = Symbol.for(
  */
 export type TypeId = typeof TypeId
 
+/** @internal */
 const Proto = {
   _tag: 'EffectfulMIDIAccess' as const,
   [TypeId]: TypeId,
@@ -72,18 +72,23 @@ const Proto = {
   [Inspectable.NodeInspectSymbol](this: EffectfulMIDIAccessImpl) {
     return this.toJSON()
   },
-}
+
+  get sysexEnabled() {
+    return (this as EffectfulMIDIAccessImpl)._access.sysexEnabled
+  },
+} satisfies EffectfulMIDIAccess
 
 export interface EffectfulMIDIAccess
   extends Equal.Equal,
     Pipeable.Pipeable,
-    Inspectable.Inspectable {
+    Inspectable.Inspectable,
+    Pick<MIDIAccess, 'sysexEnabled'> {
   readonly [TypeId]: TypeId
   readonly _tag: 'EffectfulMIDIAccess'
 }
 
 /** @internal */
-export interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
+interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
   readonly _access: MIDIAccess
   readonly _config: Readonly<MIDIOptions> | undefined
 }
@@ -99,7 +104,8 @@ const makeImpl = (
   return instance
 }
 
-export const make: (
+/** @internal */
+const make: (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
 ) => EffectfulMIDIAccess = makeImpl
@@ -204,14 +210,6 @@ export const getOutputPortsFromWrapped = <E, R>(
 // TODO: all ports
 // Maybe use Iterable.appendAll
 // export const getPorts =
-
-/**
- * The **`sysexEnabled`** read-only property of the MIDIAccess interface indicates whether system exclusive support is enabled on the current MIDIAccess instance.
- *
- * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/sysexEnabled)
- */
-export const isSysexEnabled = (self: EffectfulMIDIAccess) =>
-  asImpl(self)._access.sysexEnabled
 
 /**
  * [MIDIConnectionEvent MDN
@@ -396,30 +394,29 @@ export const sendFromWrapped = dual<
 
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
-export const requestRaw = Effect.fn('EffectfulMIDIAccess.requestRaw')(
-  function* (options?: MIDIOptions) {
-    yield* Effect.annotateCurrentSpan({ options })
+export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
+  options?: MIDIOptions,
+) {
+  yield* Effect.annotateCurrentSpan({ options })
 
-    return yield* Effect.tryPromise({
-      try: () => navigator.requestMIDIAccess(options),
-      catch: remapErrorByName(
-        {
-          AbortError,
-          InvalidStateError,
-          NotSupportedError,
-          NotAllowedError,
-          // because of https://github.com/WebAudio/web-midi-api/pull/267
-          SecurityError: NotAllowedError,
-          // For case when navigator doesn't exist
-          ReferenceError: NotSupportedError,
-          // For case when navigator.requestMIDIAccess is undefined
-          TypeError: NotSupportedError,
-        },
-        'EffectfulMIDIAccess.requestRaw error handling absurd',
-      ),
-    })
-  },
-)
+  const rawMIDIAccess = yield* Effect.tryPromise({
+    try: () => navigator.requestMIDIAccess(options),
+    catch: remapErrorByName(
+      {
+        AbortError,
+        InvalidStateError,
+        NotSupportedError,
+        NotAllowedError,
+        // because of https://github.com/WebAudio/web-midi-api/pull/267
+        SecurityError: NotAllowedError,
+        // For case when navigator doesn't exist
+        ReferenceError: NotSupportedError,
+        // For case when navigator.requestMIDIAccess is undefined
+        TypeError: NotSupportedError,
+      },
+      'EffectfulMIDIAccess.request error handling absurd',
+    ),
+  })
 
-export const requestEffectful = (config?: MIDIOptions) =>
-  Effect.map(requestRaw(config), access => make(access, config))
+  return make(rawMIDIAccess, options)
+})

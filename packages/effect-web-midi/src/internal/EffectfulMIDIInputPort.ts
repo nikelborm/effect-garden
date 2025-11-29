@@ -10,28 +10,30 @@ import { getStaticMIDIPortInfo } from './util.ts'
 
 // TODO: implement scope inheritance
 
+/** @internal */
 const makeImpl = (port: MIDIInput): EffectfulMIDIInputPortImpl =>
   EffectfulMIDIPort.makeImpl(port, 'input', MIDIInput)
 
+/** @internal */
 const asImpl = (port: EffectfulMIDIInputPort) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIInputPortImpl')
   return port
 }
 
+/** @internal */
 export const make: (port: MIDIInput) => EffectfulMIDIInputPort = makeImpl
 
+/** @internal */
 const isImpl = EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
 
-export const is: (
-  port: unknown,
-) => port is EffectfulMIDIPort.EffectfulMIDIPort<'input'> = isImpl
+export const is: (port: unknown) => port is EffectfulMIDIInputPort = isImpl
 
 export interface EffectfulMIDIInputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
 
 /** @internal */
-export interface EffectfulMIDIInputPortImpl
+interface EffectfulMIDIInputPortImpl
   extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIInput, 'input'> {}
 
 export const makeStateChangesStream =

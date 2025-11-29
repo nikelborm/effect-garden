@@ -9,6 +9,7 @@ import {
 } from './errors.ts'
 import { getStaticMIDIPortInfo, type SentMessageEffectFrom } from './util.ts'
 
+/** @internal */
 const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
   EffectfulMIDIPort.makeImpl(port, 'output', MIDIOutput)
 
@@ -19,6 +20,7 @@ const asImpl = (port: EffectfulMIDIOutputPort) => {
   return port
 }
 
+/** @internal */
 export const make: (port: MIDIOutput) => EffectfulMIDIOutputPort = makeImpl
 
 /** @internal */
@@ -30,7 +32,7 @@ export interface EffectfulMIDIOutputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
 
 /** @internal */
-export interface EffectfulMIDIOutputPortImpl
+interface EffectfulMIDIOutputPortImpl
   extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIOutput, 'output'> {}
 
 export const makeStateChangesStream =
@@ -38,9 +40,6 @@ export const makeStateChangesStream =
 
 export const makeStateChangesStreamFromWrapped =
   EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'output'>
-
-export interface SentMessageEffect<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
 
 // TODO: add documentation
 /**
@@ -117,6 +116,9 @@ export const sendFromWrapped = dual<
     timestamp?: DOMHighResTimeStamp,
   ) => Effect.flatMap(self, send(data, timestamp)),
 )
+
+export interface SentMessageEffect<E = never, R = never>
+  extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
 
 // TODO: add documentation
 // TODO: fix upstream type-signature
