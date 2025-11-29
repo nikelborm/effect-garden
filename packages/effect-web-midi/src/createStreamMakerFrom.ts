@@ -3,6 +3,9 @@ import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
+/**
+ * @internal
+ */
 const validOnNullStrategies = new Set([
   'fail',
   'die',
@@ -10,6 +13,9 @@ const validOnNullStrategies = new Set([
   'passthrough',
 ] as const)
 
+/**
+ * @internal
+ */
 export const createStreamMakerFrom =
   <TEventTypeToEventValueMap extends object>() =>
   <
@@ -88,6 +94,9 @@ export const createStreamMakerFrom =
       },
     )
 
+/**
+ * @internal
+ */
 export const makeStreamFromWrapped = <
   TCameFrom,
   TTag extends string,
@@ -96,12 +105,7 @@ export const makeStreamFromWrapped = <
   makeStream: StreamMaker<TCameFrom, TTag, TContainerWithNullableFields>,
 ): StreamMakerFromWrapped<TCameFrom, TTag, TContainerWithNullableFields> =>
   dual(Effect.isEffect, (self, options) =>
-    self.pipe(
-      Effect.map((selfUnwrapped: TCameFrom) =>
-        makeStream(selfUnwrapped, options),
-      ),
-      Stream.unwrap,
-    ),
+    self.pipe(Effect.map(makeStream(options)), Stream.unwrap),
   )
 
 export type StreamMakerOptions<TOnNullStrategy extends OnNullStrategy> =
@@ -146,85 +150,67 @@ export type StreamError<TOnNullStrategy extends OnNullStrategy, TE> =
   | TE
   | ([TOnNullStrategy] extends ['fail'] ? Cause.NoSuchElementException : never)
 
-export type BuiltStream<
+export interface BuiltStream<
   TTag extends string,
   TCameFrom,
   TContainerWithNullableFields extends object,
   TOnNullStrategy extends OnNullStrategy,
   TE = never,
   TR = never,
-> = Stream.Stream<
-  StreamValue<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>,
-  StreamError<TOnNullStrategy, TE>,
-  TR
->
+> extends Stream.Stream<
+    StreamValue<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>,
+    StreamError<TOnNullStrategy, TE>,
+    TR
+  > {}
 
-export type StreamMakerDataLast<
+export interface StreamMaker<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
-> = <const TOnNullStrategy extends OnNullStrategy = undefined>(
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => (
-  self: TCameFrom,
-) => BuiltStream<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>
+> {
+  <const TOnNullStrategy extends OnNullStrategy = undefined>(
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ): (
+    self: TCameFrom,
+  ) => BuiltStream<
+    TTag,
+    TCameFrom,
+    TContainerWithNullableFields,
+    TOnNullStrategy
+  >
+  <const TOnNullStrategy extends OnNullStrategy = undefined>(
+    self: TCameFrom,
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ): BuiltStream<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>
+}
 
-export type StreamMakerDataFirst<
+export interface StreamMakerFromWrapped<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
-> = <const TOnNullStrategy extends OnNullStrategy = undefined>(
-  self: TCameFrom,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => BuiltStream<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>
+> {
+  <const TOnNullStrategy extends OnNullStrategy = undefined>(
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ): <E, R>(
+    self: Effect.Effect<TCameFrom, E, R>,
+  ) => BuiltStream<
+    TTag,
+    TCameFrom,
+    TContainerWithNullableFields,
+    TOnNullStrategy,
+    E,
+    R
+  >
 
-export type StreamMaker<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> = StreamMakerDataLast<TCameFrom, TTag, TContainerWithNullableFields> &
-  StreamMakerDataFirst<TCameFrom, TTag, TContainerWithNullableFields>
-
-export type StreamMakerFromWrappedDataLast<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> = <const TOnNullStrategy extends OnNullStrategy = undefined>(
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => <E, R>(
-  self: Effect.Effect<TCameFrom, E, R>,
-) => BuiltStream<
-  TTag,
-  TCameFrom,
-  TContainerWithNullableFields,
-  TOnNullStrategy,
-  E,
-  R
->
-
-export type StreamMakerFromWrappedDataFirst<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> = <E, R, const TOnNullStrategy extends OnNullStrategy = undefined>(
-  self: Effect.Effect<TCameFrom, E, R>,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => BuiltStream<
-  TTag,
-  TCameFrom,
-  TContainerWithNullableFields,
-  TOnNullStrategy,
-  E,
-  R
->
-
-export type StreamMakerFromWrapped<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> = StreamMakerFromWrappedDataLast<
-  TCameFrom,
-  TTag,
-  TContainerWithNullableFields
-> &
-  StreamMakerFromWrappedDataFirst<TCameFrom, TTag, TContainerWithNullableFields>
+  <E, R, const TOnNullStrategy extends OnNullStrategy = undefined>(
+    self: Effect.Effect<TCameFrom, E, R>,
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ): BuiltStream<
+    TTag,
+    TCameFrom,
+    TContainerWithNullableFields,
+    TOnNullStrategy,
+    E,
+    R
+  >
+}

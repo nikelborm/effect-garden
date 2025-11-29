@@ -12,4 +12,4 @@ export {
 } from './errors.ts'
 export * from './parsing.ts'
 export * from './rendering.ts'
-export { MIDIPortId, type MIDIPortStaticFields } from './util.ts'
+export * from './util.ts'

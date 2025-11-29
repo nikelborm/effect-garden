@@ -3,6 +3,8 @@ import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import { BunContext } from '@effect/platform-bun'
 import '@total-typescript/ts-reset'
+import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
+import { Order } from 'effect'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
@@ -18,8 +20,6 @@ import {
   OctokitLayerLive,
   type RepoArgs,
 } from 'effect-octokit-layer'
-import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
-import { Order } from 'effect'
 
 // TODO: test how the handle per character streaming: who waits to buffer
 // everything, and who waits for newline
@@ -94,28 +94,23 @@ const AppLayer = pipe(
   ),
 )
 
-const saveIssuesWithCommentsToLocalMdFile =
-  (repo: RepoArgs) =>
-  <A extends Issues, E, R>(self: Effect.Effect<A, E, R>) =>
-    Effect.flatMap(
-      self,
-      Effect.fn('saveIssuesWithCommentsToLocalMdFile')(
-        function* (issueWithComments) {
-          const fs = yield* FileSystem.FileSystem
-          const path = yield* cachedIssuesJsonFilePath(repo)
-          yield* Effect.annotateCurrentSpan({
-            cachedIssuesJsonFilePath: path,
-            issueWithCommentsSize: issueWithComments.length,
-            ...repo,
-          })
-          yield* fs.writeFileString(
-            path,
-            JSON.stringify(issueWithComments, null, 2),
-          )
-          return issueWithComments
-        },
-      ),
-    )
+const saveIssuesWithCommentsToLocalMdFile = (repo: RepoArgs) =>
+  Effect.fn('saveIssuesWithCommentsToLocalMdFile')(function* <
+    A extends Issues,
+    E,
+    R,
+  >(self: Effect.Effect<A, E, R>) {
+    const issueWithComments = yield* self
+    const fs = yield* FileSystem.FileSystem
+    const path = yield* cachedIssuesJsonFilePath(repo)
+    yield* Effect.annotateCurrentSpan({
+      cachedIssuesJsonFilePath: path,
+      issueWithCommentsSize: issueWithComments.length,
+      ...repo,
+    })
+    yield* fs.writeFileString(path, JSON.stringify(issueWithComments, null, 2))
+    return issueWithComments
+  })
 
 const getIssuesWithCommentsFromAPI = (repo: RepoArgs) =>
   Effect.flatMap(
@@ -192,9 +187,9 @@ const mdFilePath = ({ owner, repo }: RepoArgs) =>
     path.join(import.meta.dirname, `${owner}_${repo}_TODO.md`),
   )
 
-const getIssuesWithCommentsFromLocalJsonFile = Effect.fn(function* (
-  repo: RepoArgs,
-) {
+const getIssuesWithCommentsFromLocalJsonFile = Effect.fn(
+  'getIssuesWithCommentsFromLocalJsonFile',
+)(function* (repo: RepoArgs) {
   const fs = yield* FileSystem.FileSystem
   const path = yield* cachedIssuesJsonFilePath(repo)
   const issues = yield* fs.readFileString(path)
@@ -208,11 +203,13 @@ type Issue = Issues[number]
 type IssueLabel = Issue['labels'][number]
 type IssueComment = Issue['comments'][number]
 
-export const getMdFromLocalMdFile = Effect.fn(function* (repo: RepoArgs) {
-  const fs = yield* FileSystem.FileSystem
-  const path = yield* mdFilePath(repo)
-  return yield* fs.readFileString(path)
-})
+export const getMdFromLocalMdFile = Effect.fn('getMdFromLocalMdFile')(
+  function* (repo: RepoArgs) {
+    const fs = yield* FileSystem.FileSystem
+    const path = yield* mdFilePath(repo)
+    return yield* fs.readFileString(path)
+  },
+)
 
 export const getMdBasedOnLocalJsonFile = (repo: RepoArgs) =>
   Effect.map(
@@ -228,7 +225,7 @@ const getMdBasedOnRemoteAPI = (repo: RepoArgs) =>
     renderIssuesWithCommentsToMd,
   )
 
-export const writeToMdFile = Effect.fn(function* (
+export const writeToMdFile = Effect.fn('writeToMdFile')(function* (
   repo: RepoArgs,
   mdContent: string,
 ) {

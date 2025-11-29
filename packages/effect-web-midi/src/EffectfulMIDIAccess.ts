@@ -3,7 +3,7 @@ import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 // import * as Iterable from 'effect/Iterable'
-import { flow } from 'effect/Function'
+import { dual, flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Option from 'effect/Option'
@@ -22,7 +22,7 @@ import {
   NotSupportedError,
   remapErrorByName,
 } from './errors.ts'
-import type { MIDIPortId } from './util.ts'
+import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
 
 /**
  * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
@@ -99,6 +99,12 @@ const makeImpl = (
   return instance
 }
 
+export const make: (
+  access: MIDIAccess,
+  config?: Readonly<MIDIOptions>,
+) => EffectfulMIDIAccess = makeImpl
+
+/** @internal */
 const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
   typeof access === 'object' &&
   access !== null &&
@@ -114,6 +120,7 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
 
 export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
 
+/** @internal */
 const asImpl = (access: EffectfulMIDIAccess) => {
   if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
   return access
@@ -121,8 +128,9 @@ const asImpl = (access: EffectfulMIDIAccess) => {
 
 /**
  * Unsafe because returns object that changes over time
+ * @internal
  */
-const makeSortedMapOfPortsSync =
+const makeSortedMapOfPortsUnsafe =
   <
     const TMIDIPortType extends MIDIPortType,
     const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
@@ -140,6 +148,7 @@ const makeSortedMapOfPortsSync =
       SortedMap.map(make),
     )
 
+/** @internal */
 const makeSortedMapOfPorts =
   <
     const TMIDIPortType extends MIDIPortType,
@@ -152,7 +161,7 @@ const makeSortedMapOfPorts =
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
   (self: EffectfulMIDIAccess) =>
-    Effect.sync(() => makeSortedMapOfPortsSync(key, make)(self))
+    Effect.sync(() => makeSortedMapOfPortsUnsafe(key, make)(self))
 
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
@@ -243,13 +252,16 @@ export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
 // TODO: add sinks that will accepts command streams to redirect midi commands
 // from something into an actual API
 
+export interface SentMessageEffect<E = never, R = never>
+  extends SentMessageEffectFrom<EffectfulMIDIAccess, E, R> {}
+
 /**
  * beware that it's not possible to ensure the messages will either be all
  * delivered, or all not delivered, as in ACID transactions. There's not even
  * a mechanism to remove the message from the sending queue
  */
-export const send = (self: EffectfulMIDIAccess) =>
-  Effect.fn('EffectfulMIDIAccess.send')(function* (
+export const send = dual<
+  (
     target:
       | 'all existing outputs at effect execution'
       | 'all open connections at effect execution'
@@ -257,99 +269,157 @@ export const send = (self: EffectfulMIDIAccess) =>
       | MIDIPortId[],
     data: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) {
-    const outputs = yield* getOutputPorts(self)
-    if (target === 'all existing outputs at effect execution')
-      return yield* outputs.pipe(
-        SortedMap.values,
-        Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
-        Effect.asVoid,
-      )
-
-    if (target === 'all open connections at effect execution')
-      return yield* outputs.pipe(
-        SortedMap.values,
-        // TODO: maybe also do something about pending?
-        Effect.filter(
-          flow(
-            EffectfulMIDIPort.getConnectionState,
-            Effect.map(state => state === 'open'),
-          ),
-        ),
-        Effect.flatMap(
+  ) => (self: EffectfulMIDIAccess) => SentMessageEffect,
+  (
+    self: EffectfulMIDIAccess,
+    target:
+      | 'all existing outputs at effect execution'
+      | 'all open connections at effect execution'
+      | MIDIPortId
+      | MIDIPortId[],
+    data: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ) => SentMessageEffect
+>(
+  is,
+  Effect.fn('EffectfulMIDIAccess.send')(
+    function* (
+      self: EffectfulMIDIAccess,
+      target:
+        | 'all existing outputs at effect execution'
+        | 'all open connections at effect execution'
+        | MIDIPortId
+        | MIDIPortId[],
+      data: Iterable<number>,
+      timestamp?: DOMHighResTimeStamp,
+    ) {
+      const outputs = yield* getOutputPorts(self)
+      if (target === 'all existing outputs at effect execution')
+        return yield* outputs.pipe(
+          SortedMap.values,
           Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
-        ),
-        Effect.asVoid,
+          Effect.asVoid,
+        )
+
+      if (target === 'all open connections at effect execution')
+        return yield* outputs.pipe(
+          SortedMap.values,
+          // TODO: maybe also do something about pending?
+          Effect.filter(
+            flow(
+              EffectfulMIDIPort.getConnectionState,
+              Effect.map(state => state === 'open'),
+            ),
+          ),
+          Effect.flatMap(
+            Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
+          ),
+          Effect.asVoid,
+        )
+
+      // TODO: maybe since deviceState returns always connected devices we can
+      // simplify this check by applying intersections and comparing lengths
+
+      const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
+
+      const deviceStatusesEffect = portsIdsToSend.map(id =>
+        Option.match(SortedMap.get(outputs, id), {
+          onNone: () => Effect.succeed('disconnected' as const),
+          onSome: EffectfulMIDIPort.getDeviceState,
+        }),
       )
 
-    // TODO: maybe since deviceState returns always connected devices we can
-    // simplify this check by applying intersections and comparing lengths
+      const deviceStatuses = yield* Effect.all(deviceStatusesEffect)
 
-    const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
+      if (deviceStatuses.includes('disconnected'))
+        return yield* new InvalidStateError({
+          cause: new DOMException(
+            'InvalidStateError',
+            // TODO: imitate
+            'TODO: imitate there an error thats thrown when the port is disconnected',
+          ),
+        })
 
-    const deviceStatusesEffect = portsIdsToSend.map(id =>
-      Option.match(SortedMap.get(outputs, id), {
-        onNone: () => Effect.succeed('disconnected' as const),
-        onSome: EffectfulMIDIPort.getDeviceState,
-      }),
-    )
+      const sendToSome = (predicate: (id: MIDIPortId) => boolean) =>
+        Effect.all(
+          SortedMap.reduce(
+            outputs,
+            [] as EffectfulMIDIOutputPort.SentMessageEffect[],
+            (acc, port, id) =>
+              predicate(id)
+                ? [...acc, EffectfulMIDIOutputPort.send(port, data, timestamp)]
+                : acc,
+          ),
+        )
 
-    const deviceStatuses = yield* Effect.all(deviceStatusesEffect)
+      yield* sendToSome(id => portsIdsToSend.includes(id))
+    },
+    (self, access) => Effect.as(self, access),
+  ),
+)
 
-    if (deviceStatuses.includes('disconnected'))
-      return yield* new InvalidStateError({
-        cause: new DOMException(
-          'InvalidStateError',
-          // TODO: imitate
-          'TODO: imitate there an error thats thrown when the port is disconnected',
-        ),
-      })
-
-    const sendToSome = (predicate: (id: MIDIPortId) => boolean) =>
-      Effect.all(
-        SortedMap.reduce(
-          outputs,
-          [] as EffectfulMIDIOutputPort.SentMessageEffect[],
-          (acc, port, id) =>
-            predicate(id)
-              ? [...acc, EffectfulMIDIOutputPort.send(port, data, timestamp)]
-              : acc,
-        ),
-      )
-
-    yield* sendToSome(id => portsIdsToSend.includes(id))
-  })
-
-// TODO: sendFromWrapped
+export const sendFromWrapped = dual<
+  (
+    target:
+      | 'all existing outputs at effect execution'
+      | 'all open connections at effect execution'
+      | MIDIPortId
+      | MIDIPortId[],
+    data: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ) => <E, R>(
+    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
+  ) => SentMessageEffect<E, R>,
+  <E, R>(
+    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
+    target:
+      | 'all existing outputs at effect execution'
+      | 'all open connections at effect execution'
+      | MIDIPortId
+      | MIDIPortId[],
+    data: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ) => SentMessageEffect<E, R>
+>(
+  Effect.isEffect,
+  <E, R>(
+    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
+    target:
+      | 'all existing outputs at effect execution'
+      | 'all open connections at effect execution'
+      | MIDIPortId
+      | MIDIPortId[],
+    data: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ) => Effect.flatMap(self, send(target, data, timestamp)),
+)
 
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
-export const requestRaw = (options?: MIDIOptions) =>
-  Effect.tryPromise({
-    try: () => navigator.requestMIDIAccess(options),
-    catch: remapErrorByName(
-      {
-        AbortError,
-        InvalidStateError,
-        NotSupportedError,
-        NotAllowedError,
-        // because of https://github.com/WebAudio/web-midi-api/pull/267
-        SecurityError: NotAllowedError,
-        // For case when navigator doesn't exist
-        ReferenceError: NotSupportedError,
-        // For case when navigator.requestMIDIAccess is undefined
-        TypeError: NotSupportedError,
-      },
-      'requestRawMIDIAccess error handling absurd',
-    ),
-  }).pipe(
-    Effect.withSpan('EffectfulMIDIAccess.requestRaw', {
-      attributes: { options },
-    }),
-  )
+export const requestRaw = Effect.fn('EffectfulMIDIAccess.requestRaw')(
+  function* (options?: MIDIOptions) {
+    yield* Effect.annotateCurrentSpan({ options })
+
+    return yield* Effect.tryPromise({
+      try: () => navigator.requestMIDIAccess(options),
+      catch: remapErrorByName(
+        {
+          AbortError,
+          InvalidStateError,
+          NotSupportedError,
+          NotAllowedError,
+          // because of https://github.com/WebAudio/web-midi-api/pull/267
+          SecurityError: NotAllowedError,
+          // For case when navigator doesn't exist
+          ReferenceError: NotSupportedError,
+          // For case when navigator.requestMIDIAccess is undefined
+          TypeError: NotSupportedError,
+        },
+        'EffectfulMIDIAccess.requestRaw error handling absurd',
+      ),
+    })
+  },
+)
 
 export const requestEffectful = (config?: MIDIOptions) =>
-  Effect.map(
-    requestRaw(config),
-    access => makeImpl(access, config) as EffectfulMIDIAccess,
-  )
+  Effect.map(requestRaw(config), access => make(access, config))

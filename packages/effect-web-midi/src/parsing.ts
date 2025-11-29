@@ -152,45 +152,45 @@ function dataEntryParser(
   return unknown()
 }
 
-export type NoteRelease = Readonly<{
-  _tag: 'Note Release'
-  channel: number
-  note: number
-}>
+export interface NoteRelease
+  extends Readonly<{ _tag: 'Note Release'; channel: number; note: number }> {}
 
-export type NotePress = Readonly<{
-  _tag: 'Note Press'
-  channel: number
-  note: number
-  velocity: number
-}>
+export interface NotePress
+  extends Readonly<{
+    _tag: 'Note Press'
+    channel: number
+    note: number
+    velocity: number
+  }> {}
 
-export type UnknownReply = Readonly<{
-  _tag: 'Unknown Reply'
-  data: string
-  stack: string
-}>
+export interface UnknownReply
+  extends Readonly<{
+    _tag: 'Unknown Reply'
+    data: string
+    stack: string
+  }> {}
 
-export type ControlChange = Readonly<{
-  _tag: 'Control Change'
-  channel: number
-  control: number
-  value: number
-}>
+export interface ControlChange
+  extends Readonly<{
+    _tag: 'Control Change'
+    channel: number
+    control: number
+    value: number
+  }> {}
 
-export type TouchpadRelease = Readonly<{
-  _tag: 'Touchpad Release'
-  channel: number
-}>
+export interface TouchpadRelease
+  extends Readonly<{ _tag: 'Touchpad Release'; channel: number }> {}
 
-export type PitchBendChange = Readonly<{
-  _tag: 'Pitch Bend Change'
-  channel: number
-  value: number
-}>
+export interface PitchBendChange
+  extends Readonly<{
+    _tag: 'Pitch Bend Change'
+    channel: number
+    value: number
+  }> {}
 
-export type TouchpadPositionUpdate = Readonly<{
-  _tag: 'Touchpad Position Update'
-  x: number
-  y: number
-}>
+export interface TouchpadPositionUpdate
+  extends Readonly<{
+    _tag: 'Touchpad Position Update'
+    x: number
+    y: number
+  }> {}
