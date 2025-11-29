@@ -1,0 +1,15 @@
+export {
+  type EffectfulMIDIAccess,
+  getInputPorts,
+  getInputPortsFromWrapped,
+  getOutputPorts,
+  getOutputPortsFromWrapped,
+  is,
+  makeMIDIPortStateChangesStream,
+  makeMIDIPortStateChangesStreamFromWrapped,
+  request,
+  type SentMessageEffect,
+  send,
+  sendFromWrapped,
+  type TypeId,
+} from './internal/EffectfulMIDIAccess.ts'
