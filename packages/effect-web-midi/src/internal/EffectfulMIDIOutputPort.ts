@@ -153,22 +153,38 @@ export interface SentMessageEffect<E = never, R = never>
 // TODO: fix upstream type-signature of clear method
 
 /**
+ * Clears any enqueued send data that has not yet been sent from the
+ * `MIDIOutput`'s queue. The browser will ensure the MIDI stream is left in a
+ * good state, and if the output port is in the middle of a sysex message, a
+ * sysex termination byte (`0xf7`) will be sent.
+ *
+ * @param outputPort An effectful output port
+ *
  * @returns An effect with the same port for easier chaining of operations
  */
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* (
   outputPort: EffectfulMIDIOutputPort,
 ) {
+  const rawPort = asImpl(outputPort)._port
+
   yield* Effect.annotateCurrentSpan({
-    port: getStaticMIDIPortInfo(asImpl(outputPort)._port),
+    port: getStaticMIDIPortInfo(rawPort),
   })
 
   // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
-  yield* Effect.sync(() => asImpl(outputPort)._port.clear())
+  yield* Effect.sync(() => rawPort.clear())
 
   return outputPort
 })
 
 /**
+ * Clears any enqueued send data that has not yet been sent from the
+ * `MIDIOutput`'s queue. The browser will ensure the MIDI stream is left in a
+ * good state, and if the output port is in the middle of a sysex message, a
+ * sysex termination byte (`0xf7`) will be sent.
+ *
+ * @param outputPortWrapped An effect with effectful output port in the success
+ * channel
  * @returns An effect with the same port for easier chaining of operations
  */
 export const clearFromWrapped = <E, R>(

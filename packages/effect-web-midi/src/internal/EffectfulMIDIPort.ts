@@ -4,8 +4,8 @@ import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
 import {
-  createStreamMakerFrom,
   type BuiltStream,
+  createStreamMakerFrom,
   makeStreamFromWrapped,
   type OnNullStrategy,
   type StreamMakerOptions,
@@ -273,7 +273,7 @@ export const makeStateChangesStreamFromWrapped = makeStreamFromWrapped(
   _makeStateChangesStream,
 ) as DualStateChangesStreamMakerFromWrapped
 
-export const getDeviceStateUnsafe = (port: EffectfulMIDIPort<MIDIPortType>) =>
+const getDeviceStateUnconventional = (port: EffectfulMIDIPort<MIDIPortType>) =>
   (port as EffectfulMIDIPortImpl)._port.state
 
 /**
@@ -283,13 +283,13 @@ export const getDeviceStateUnsafe = (port: EffectfulMIDIPort<MIDIPortType>) =>
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)
  */
 export const getDeviceState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getDeviceStateUnsafe(port))
+  Effect.sync(() => getDeviceStateUnconventional(port))
 
 export const getDeviceStateFromWrapped = <E, R>(
   wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, getDeviceStateUnsafe)
+) => Effect.map(wrappedPort, getDeviceStateUnconventional)
 
-export const getConnectionStateUnsafe = (
+const getConnectionStateUnconventional = (
   port: EffectfulMIDIPort<MIDIPortType>,
 ) => (port as EffectfulMIDIPortImpl)._port.connection
 
@@ -301,11 +301,11 @@ export const getConnectionStateUnsafe = (
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)
  */
 export const getConnectionState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getConnectionStateUnsafe(port))
+  Effect.sync(() => getConnectionStateUnconventional(port))
 
 export const getConnectionStateFromWrapped = <E, R>(
   wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, getConnectionStateUnsafe)
+) => Effect.map(wrappedPort, getConnectionStateUnconventional)
 
 export interface StateChangeStream<
   TOnNullStrategy extends OnNullStrategy,

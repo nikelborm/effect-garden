@@ -60,6 +60,7 @@ export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>
 ) {}
 
 /**
+ *
  * @internal
  */
 export const remapErrorByName =

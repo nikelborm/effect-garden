@@ -84,9 +84,9 @@ export const makeStateChangesStreamFromWrapped =
  * [MIDIMessageEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
  *
- * MIDI spec says that synthetically built messages can have `data` field
- * equal to null, but in all other normal cases it's not. The default behavior
- * is to die on null.
+ * MIDI spec says that synthetically built `MIDIMessageEvent`s can have `data`
+ * field equal to `null`, but when coming from the browser, the won't be. The
+ * default behavior is to defect on `null`.
  */
 export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   is,

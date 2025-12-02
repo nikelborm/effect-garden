@@ -35,26 +35,26 @@ const validOnNullStrategies = new Set([
  * Helper utility to turn MIDI event listeners into effect's Streams.
  *
  * The signature is split into 2 calls, so that you are able at first call pass
- * into generic an interface with `addEventListener` types of the original web
- * MIDI objects as keys and according event structures as values.
+ * into generic an interface with `addEventListener` types of the raw web MIDI
+ * objects as keys and according event structures as values.
  *
  * **Second call arguments**
  *
  * - `isSelf` - Function determining if the maker was called as an overload with
- *   all parameters passed all at once, or with them spread by 2 calls.
+ *   all parameters passed all at once, or with them spread by 2 calls. `self`
+ *   will be later assigned to a `cameFrom` property of the object in the
+ *   success channel of the stream
  *
  * - `buildConfig` - Function that makes config out of an effectful version
  *   (e.g. {@linkcode EffectfulMIDIAccess}, {@linkcode EffectfulMIDIInputPort},
- *   {@linkcode EffectfulMIDIOutputPort}) of a MIDI object, that will also be
- *   later attached as a `cameFrom` property to the object passed in the success
- *   channel of the stream
+ *   {@linkcode EffectfulMIDIOutputPort}) of a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
  *   selected field to an extension of the object inside streams's success
  *   channel. All fields of the returned object must always be present and
  *   should be consistently nullable, when the incoming event's field is null.
  *
- * @template TEventTypeToEventValueMap An interface with event types of original
+ * @template TEventTypeToEventValueMap An interface with event types of raw
  * Web MIDI objects as keys and according event structures as values. e.g.
  * `MIDIAccessEventMap`, `MIDIPortEventMap`, `MIDIInputEventMap`
  *
@@ -65,12 +65,12 @@ export const createStreamMakerFrom =
   /**
    * @param isSelf Function determining if the maker was called as an overload
    * with all parameters passed all at once, or with them spread by 2 calls.
+   * `self` will be later assigned to a `cameFrom` property of the object in the
+   * success channel of the stream
    *
    * @param buildConfig Function that makes config out of an effectful version
    * (e.g. {@linkcode EffectfulMIDIAccess}, {@linkcode EffectfulMIDIInputPort},
-   * {@linkcode EffectfulMIDIOutputPort}) of a MIDI object, that will also be
-   * later attached as a `cameFrom` property to the object passed in the success
-   * channel of the stream
+   * {@linkcode EffectfulMIDIOutputPort}) of a MIDI object.
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
    * event's selected field (`nullableFieldName`) to an extension of the object
@@ -310,7 +310,7 @@ export type StreamValue<
 > = {
   readonly _tag: TTag
   /**
-   * An effectful entity that wraps the original MIDI object, which triggered an
+   * An effectful MIDI entity that wraps the raw MIDI object, which triggered an
    * event
    */
   readonly cameFrom: TCameFrom
@@ -359,11 +359,12 @@ export interface StreamMakerDataFirst<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param eventTarget An effectful entity that wraps the original MIDI object,
-   * which triggered an event
+   * @param eventTarget An effectful entity that wraps the raw MIDI object,
+   * which triggered an event. Will be assigned to the `cameFrom` property of
+   * the stream's success channel object
    *
-   * @param {} [options] Passing a boolean is equivalent to setting
-   * `options.capture` property
+   * @param options Passing a boolean is equivalent to setting `options.capture`
+   * property
    */
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     eventTarget: TCameFrom,
@@ -377,20 +378,22 @@ export interface StreamMakerDataLast<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param {} [options] Passing a boolean is equivalent to setting
-   * `options.capture` property
+   * @param options Passing a boolean is equivalent to setting `options.capture`
+   * property
    *
    * **Second call argument**
    *
-   * - `eventTarget` An effectful entity that wraps the original MIDI object,
-   *   which triggered an event
+   * - `eventTarget` An effectful entity that wraps the raw MIDI object,
+   *   which triggered an event. Will be assigned to the `cameFrom` property of
+   *   the stream's success channel object
    */
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
-     * @param eventTarget An effectful entity that wraps the original MIDI
-     * object, which triggered an event
+     * @param eventTarget An effectful entity that wraps the raw MIDI
+     * object, which triggered an event. Will be assigned to the `cameFrom`
+     * property of the stream's success channel object
      */
     (
       eventTarget: TCameFrom,
@@ -424,20 +427,20 @@ export interface StreamMakerFromWrappedDataLast<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param {} [options] Passing a boolean is equivalent to setting
-   * `options.capture` property
+   * @param options Passing a boolean is equivalent to setting `options.capture`
+   * property
    *
    * **Second call argument**
    *
    * - `wrappedEventTarget` An effect, that in success channel has entity that
-   *   wraps the original MIDI object, which triggered an event
+   *   wraps the raw MIDI object, which triggered an event
    */
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
      * @param wrappedEventTarget An effect, that in success channel has entity
-     * that wraps the original MIDI object, which triggered an event
+     * that wraps the raw MIDI object, which triggered an event
      */
     <E, R>(
       wrappedEventTarget: Effect.Effect<TCameFrom, E, R>,
@@ -459,10 +462,10 @@ export interface StreamMakerFromWrappedDataFirst<
 > {
   /**
    * @param wrappedEventTarget An effect, that in success channel has entity
-   * that wraps the original MIDI object, which triggered an event
+   * that wraps the raw MIDI object, which triggered an event
    *
-   * @param {} [options] Passing a boolean is equivalent to setting
-   * `options.capture` property
+   * @param options Passing a boolean is equivalent to setting `options.capture`
+   * property
    */
   <E, R, const TOnNullStrategy extends OnNullStrategy = undefined>(
     wrappedEventTarget: Effect.Effect<TCameFrom, E, R>,

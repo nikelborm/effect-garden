@@ -91,13 +91,21 @@ export interface EffectfulMIDIAccess
   readonly _tag: 'EffectfulMIDIAccess'
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
   readonly _access: MIDIAccess
   readonly _config: Readonly<MIDIOptions> | undefined
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const makeImpl = (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
@@ -108,13 +116,21 @@ const makeImpl = (
   return instance
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const make: (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
 ) => EffectfulMIDIAccess = makeImpl
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
   typeof access === 'object' &&
   access !== null &&
@@ -130,17 +146,21 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
 
 export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const asImpl = (access: EffectfulMIDIAccess) => {
   if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
   return access
 }
 
 /**
- * Unsafe because returns object that changes over time
+ * Unconventional because returns object that changes over time
  * @internal
  */
-const makeSortedMapOfPortsUnsafe =
+const makeSortedMapOfPortsUnconventional =
   <
     const TMIDIPortType extends MIDIPortType,
     const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
@@ -158,7 +178,11 @@ const makeSortedMapOfPortsUnsafe =
       SortedMap.map(make),
     )
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const makeSortedMapOfPorts =
   <
     const TMIDIPortType extends MIDIPortType,
@@ -171,7 +195,9 @@ const makeSortedMapOfPorts =
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
   (access: EffectfulMIDIAccess) =>
-    Effect.sync(() => makeSortedMapOfPortsUnsafe(key, make)(access))
+    Effect.sync(() => makeSortedMapOfPortsUnconventional(key, make)(access))
+
+type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
@@ -264,7 +290,7 @@ type TargetPortSelector =
   | MIDIPortId
   | MIDIPortId[]
 
-export interface selfFirstSend {
+export interface MIDIMessageSenderDataFirst {
   (
     access: EffectfulMIDIAccess,
     targetPortSelector: TargetPortSelector,
@@ -273,7 +299,7 @@ export interface selfFirstSend {
   ): SentMessageEffect
 }
 
-export interface selfLastSend {
+export interface MIDIMessageSenderDataLast {
   (
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
@@ -281,23 +307,21 @@ export interface selfLastSend {
   ): (access: EffectfulMIDIAccess) => SentMessageEffect
 }
 
-export interface sendFn extends selfFirstSend, selfLastSend {}
+export interface DualMIDIMessageSender
+  extends MIDIMessageSenderDataFirst,
+    MIDIMessageSenderDataLast {}
 
 /**
  * beware that it's not possible to ensure the messages will either be all
- * delivered, or all not delivered, as in ACID transactions. There's not even
- * a mechanism to remove the message from the sending queue
+ * delivered, or all not delivered, as in ACID transactions. There's not even a
+ * mechanism to remove a specific message (not all) from the sending queue
  */
-export const send = dual<selfLastSend, selfFirstSend>(
+export const send = dual<MIDIMessageSenderDataLast, MIDIMessageSenderDataFirst>(
   is,
-  Effect.fn('EffectfulMIDIAccess.send')(((
-    access,
-    target,
-    midiMessage,
-    timestamp,
-  ) =>
-    Effect.gen(function* () {
+  Effect.fn('EffectfulMIDIAccess.send')(
+    function* (access, target, midiMessage, timestamp) {
       const outputs = yield* getOutputPorts(access)
+
       if (target === 'all existing outputs at effect execution')
         return yield* outputs.pipe(
           SortedMap.values,
@@ -362,10 +386,12 @@ export const send = dual<selfLastSend, selfFirstSend>(
         )
 
       yield* sendToSome(id => portsIdsToSend.includes(id))
-    }).pipe(Effect.as(access))) satisfies selfFirstSend),
+    },
+    (self, access) => Effect.as(self, access),
+  ),
 )
 
-export interface selfFirstSendWrapped {
+export interface MIDIMessageSenderFromWrappedDataFirst {
   <E, R>(
     accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
     targetPortSelector: TargetPortSelector,
@@ -374,24 +400,27 @@ export interface selfFirstSendWrapped {
   ): SentMessageEffect<E, R>
 }
 
-export interface selfLastSendWrapped {
+export interface MIDIMessageSenderFromWrappedDataLast {
   (
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ): <E, R>(
-    accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
-  ) => SentMessageEffect<E, R>
+  ): {
+    <E, R>(
+      accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
+    ): SentMessageEffect<E, R>
+  }
 }
 
-export const sendFromWrapped = dual<selfLastSendWrapped, selfFirstSendWrapped>(
-  Effect.isEffect,
-  ((access, ...args) =>
-    Effect.flatMap(access, send(...args))) satisfies selfFirstSendWrapped,
-)
+export const sendFromWrapped = dual<
+  MIDIMessageSenderFromWrappedDataLast,
+  MIDIMessageSenderFromWrappedDataFirst
+>(Effect.isEffect, (access, ...args) => Effect.flatMap(access, send(...args)))
 
-type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
-
+/**
+ * @returns An Effect representing a request for access to MIDI devices on a
+ * user's system. Available only in secure contexts.
+ */
 export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
   options?: MIDIOptions,
 ) {
