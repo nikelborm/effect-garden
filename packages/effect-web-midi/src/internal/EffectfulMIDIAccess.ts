@@ -151,9 +151,9 @@ const makeSortedMapOfPortsUnsafe =
     key: TMIDIAccessObjectKey,
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
-  (self: EffectfulMIDIAccess) =>
+  (access: EffectfulMIDIAccess) =>
     pipe(
-      asImpl(self)._access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
+      asImpl(access)._access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
       SortedMap.fromIterable(Order.string),
       SortedMap.map(make),
     )
@@ -170,8 +170,8 @@ const makeSortedMapOfPorts =
     key: TMIDIAccessObjectKey,
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
-  (self: EffectfulMIDIAccess) =>
-    Effect.sync(() => makeSortedMapOfPortsUnsafe(key, make)(self))
+  (access: EffectfulMIDIAccess) =>
+    Effect.sync(() => makeSortedMapOfPortsUnsafe(key, make)(access))
 
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
@@ -189,8 +189,8 @@ export const getInputPorts = makeSortedMapOfPorts(
 )
 
 export const getInputPortsFromWrapped = <E, R>(
-  self: Effect.Effect<EffectfulMIDIAccess, E, R>,
-) => Effect.flatMap(self, getInputPorts)
+  accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
+) => Effect.flatMap(accessWrapped, getInputPorts)
 
 /**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
@@ -208,8 +208,8 @@ export const getOutputPorts = makeSortedMapOfPorts(
 )
 
 export const getOutputPortsFromWrapped = <E, R>(
-  self: Effect.Effect<EffectfulMIDIAccess, E, R>,
-) => Effect.flatMap(self, getOutputPorts)
+  accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
+) => Effect.flatMap(accessWrapped, getOutputPorts)
 
 // TODO: all ports
 // Maybe use Iterable.appendAll
@@ -222,12 +222,12 @@ export const getOutputPortsFromWrapped = <E, R>(
 export const makeMIDIPortStateChangesStream =
   createStreamMakerFrom<MIDIPortEventMap>()(
     is,
-    self => ({
+    access => ({
       tag: 'MIDIPortStateChange',
-      eventListener: { target: asImpl(self)._access, type: 'statechange' },
+      eventListener: { target: asImpl(access)._access, type: 'statechange' },
       spanAttributes: {
         spanTargetName: 'MIDI access handle',
-        requestedAccessConfig: asImpl(self)._config,
+        requestedAccessConfig: asImpl(access)._config,
       },
       nullableFieldName: 'port',
     }),
@@ -362,7 +362,7 @@ export const send = dual<selfLastSend, selfFirstSend>(
         )
 
       yield* sendToSome(id => portsIdsToSend.includes(id))
-    }).pipe(self => Effect.as(self, access))) satisfies selfFirstSend),
+    }).pipe(Effect.as(access))) satisfies selfFirstSend),
 )
 
 export interface selfFirstSendWrapped {

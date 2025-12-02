@@ -90,12 +90,12 @@ export const makeStateChangesStreamFromWrapped =
  */
 export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   is,
-  self => ({
+  inputPort => ({
     tag: 'MIDIMessage',
-    eventListener: { target: asImpl(self)._port, type: 'midimessage' },
+    eventListener: { target: asImpl(inputPort)._port, type: 'midimessage' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
-      port: getStaticMIDIPortInfo(asImpl(self)._port),
+      port: getStaticMIDIPortInfo(asImpl(inputPort)._port),
     },
     nullableFieldName: 'data',
   }),

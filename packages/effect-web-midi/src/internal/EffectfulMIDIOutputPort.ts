@@ -83,27 +83,29 @@ export const send = dual<
   (
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) => (self: EffectfulMIDIOutputPort) => SentMessageEffect,
+  ) => (outputPort: EffectfulMIDIOutputPort) => SentMessageEffect,
   (
-    self: EffectfulMIDIOutputPort,
+    outputPort: EffectfulMIDIOutputPort,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => SentMessageEffect
 >(
   is,
   Effect.fn('EffectfulMIDIOutputPort.send')(function* (
-    self: EffectfulMIDIOutputPort,
+    outputPort: EffectfulMIDIOutputPort,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) {
+    const rawPort = asImpl(outputPort)._port
+
     yield* Effect.annotateCurrentSpan({
       midiMessage,
       timestamp,
-      port: getStaticMIDIPortInfo(asImpl(self)._port),
+      port: getStaticMIDIPortInfo(rawPort),
     })
 
     yield* Effect.try({
-      try: () => asImpl(self)._port.send(midiMessage, timestamp),
+      try: () => rawPort.send(midiMessage, timestamp),
       catch: remapErrorByName(
         {
           InvalidAccessError,
@@ -114,7 +116,7 @@ export const send = dual<
       ),
     })
 
-    return self
+    return outputPort
   }),
 )
 
@@ -126,20 +128,20 @@ export const sendFromWrapped = dual<
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => <E, R>(
-    self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
   ) => SentMessageEffect<E, R>,
   <E, R>(
-    self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => SentMessageEffect<E, R>
 >(
   Effect.isEffect,
   <E, R>(
-    self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) => Effect.flatMap(self, send(midiMessage, timestamp)),
+  ) => Effect.flatMap(wrappedOutputPort, send(midiMessage, timestamp)),
 )
 
 /**

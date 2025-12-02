@@ -31,7 +31,8 @@ export const getStaticMIDIPortInfo = (port: MIDIPort) =>
   Struct.pick(port, ...midiPortStaticFields)
 
 /**
- * Returns self for easier chaining of operations on the same entity
+ * Puts Self into success channel for easier chaining of operations on the same
+ * entity
  */
 export interface SentMessageEffectFrom<Self, E = never, R = never>
   extends Effect.Effect<

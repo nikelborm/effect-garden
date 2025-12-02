@@ -8,8 +8,6 @@ import type { EffectfulMIDIAccess } from './EffectfulMIDIAccess.ts'
 import type { EffectfulMIDIInputPort } from './EffectfulMIDIInputPort.ts'
 import type { EffectfulMIDIOutputPort } from './EffectfulMIDIOutputPort.ts'
 
-// TODO: give to all self variables semantically valuable names
-
 /**
  * Set of possible ways to react when the MIDI-related event will have relevant
  * field be null. Although there should be no sane scenario where it would be
@@ -178,8 +176,8 @@ export const makeStreamFromWrapped = <
 >(
   makeStream: StreamMaker<TCameFrom, TTag, TContainerWithNullableFields>,
 ): DualStreamMakerFromWrapped<TCameFrom, TTag, TContainerWithNullableFields> =>
-  dual(Effect.isEffect, ((self, options) =>
-    self.pipe(
+  dual(Effect.isEffect, ((wrappedSelf, options) =>
+    wrappedSelf.pipe(
       Effect.map(makeStream(options)),
       Stream.unwrap,
     )) satisfies StreamMakerFromWrappedDataFirst<

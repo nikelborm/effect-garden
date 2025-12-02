@@ -246,12 +246,12 @@ export const closeConnectionFromWrapped = <TType extends MIDIPortType, E, R>(
  */
 const _makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
   is,
-  self => ({
+  port => ({
     tag: 'MIDIPortStateChange',
-    eventListener: { target: asImpl(self)._port, type: 'statechange' },
+    eventListener: { target: asImpl(port)._port, type: 'statechange' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
-      port: getStaticMIDIPortInfo(asImpl(self)._port),
+      port: getStaticMIDIPortInfo(asImpl(port)._port),
     },
     nullableFieldName: 'port',
   }),
@@ -336,14 +336,14 @@ export interface DualStateChangesStreamMaker<
      */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): <TType extends THighLevelTypeRestriction>(
-    self: EffectfulMIDIPort<TType>,
+    port: EffectfulMIDIPort<TType>,
   ) => StateChangeStream<TOnNullStrategy, TType>
 
   <
     TType extends THighLevelTypeRestriction,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
-    self: EffectfulMIDIPort<TType>,
+    port: EffectfulMIDIPort<TType>,
     /**
      * boolean value is responsible for `capture` property and is present for
      * backward compatibility
@@ -362,7 +362,7 @@ export interface DualStateChangesStreamMakerFromWrapped<
      */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): <TType extends THighLevelTypeRestriction, E, R>(
-    self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
+    wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
   ) => StateChangeStream<TOnNullStrategy, TType, E, R>
   <
     TType extends THighLevelTypeRestriction,
@@ -370,7 +370,7 @@ export interface DualStateChangesStreamMakerFromWrapped<
     R,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
-    self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
+    wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
     /**
      * boolean value is responsible for `capture` property and is present for
      * backward compatibility
