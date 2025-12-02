@@ -46,7 +46,11 @@ const TypeId: unique symbol = Symbol.for(
  */
 export type TypeId = typeof TypeId
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const Proto = {
   _tag: 'EffectfulMIDIAccess' as const,
   [TypeId]: TypeId,
@@ -144,6 +148,10 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
     typeof access._config === 'undefined') &&
   access._access instanceof MIDIAccess
 
+/**
+ *
+ *
+ */
 export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
 
 /**
@@ -214,6 +222,10 @@ export const getInputPorts = makeSortedMapOfPorts(
   EffectfulMIDIInputPort.make,
 )
 
+/**
+ *
+ *
+ */
 export const getInputPortsFromWrapped = <E, R>(
   accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
 ) => Effect.flatMap(accessWrapped, getInputPorts)
@@ -233,6 +245,10 @@ export const getOutputPorts = makeSortedMapOfPorts(
   EffectfulMIDIOutputPort.make,
 )
 
+/**
+ *
+ *
+ */
 export const getOutputPortsFromWrapped = <E, R>(
   accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
 ) => Effect.flatMap(accessWrapped, getOutputPorts)
@@ -271,6 +287,10 @@ export const makeMIDIPortStateChangesStream =
       }) as const,
   )
 
+/**
+ *
+ *
+ */
 export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
   makeMIDIPortStateChangesStream,
 )
@@ -290,7 +310,11 @@ type TargetPortSelector =
   | MIDIPortId
   | MIDIPortId[]
 
-export interface MIDIMessageSenderDataFirst {
+export interface MIDIMessageSenderFromAccessDataFirst {
+  /**
+   *
+   *
+   */
   (
     access: EffectfulMIDIAccess,
     targetPortSelector: TargetPortSelector,
@@ -299,7 +323,11 @@ export interface MIDIMessageSenderDataFirst {
   ): SentMessageEffect
 }
 
-export interface MIDIMessageSenderDataLast {
+export interface MIDIMessageSenderFromAccessDataLast {
+  /**
+   *
+   *
+   */
   (
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
@@ -307,16 +335,15 @@ export interface MIDIMessageSenderDataLast {
   ): (access: EffectfulMIDIAccess) => SentMessageEffect
 }
 
-export interface DualMIDIMessageSender
-  extends MIDIMessageSenderDataFirst,
-    MIDIMessageSenderDataLast {}
-
 /**
  * beware that it's not possible to ensure the messages will either be all
  * delivered, or all not delivered, as in ACID transactions. There's not even a
  * mechanism to remove a specific message (not all) from the sending queue
  */
-export const send = dual<MIDIMessageSenderDataLast, MIDIMessageSenderDataFirst>(
+export const send = dual<
+  MIDIMessageSenderFromAccessDataLast,
+  MIDIMessageSenderFromAccessDataFirst
+>(
   is,
   Effect.fn('EffectfulMIDIAccess.send')(
     function* (access, target, midiMessage, timestamp) {
@@ -391,7 +418,20 @@ export const send = dual<MIDIMessageSenderDataLast, MIDIMessageSenderDataFirst>(
   ),
 )
 
-export interface MIDIMessageSenderFromWrappedDataFirst {
+/**
+ *
+ *
+ */
+export const sendFromWrapped = dual<
+  MIDIMessageSenderFromWrappedAccessDataLast,
+  MIDIMessageSenderFromWrappedAccessDataFirst
+>(Effect.isEffect, (access, ...args) => Effect.flatMap(access, send(...args)))
+
+export interface MIDIMessageSenderFromWrappedAccessDataFirst {
+  /**
+   *
+   *
+   */
   <E, R>(
     accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
     targetPortSelector: TargetPortSelector,
@@ -400,24 +440,29 @@ export interface MIDIMessageSenderFromWrappedDataFirst {
   ): SentMessageEffect<E, R>
 }
 
-export interface MIDIMessageSenderFromWrappedDataLast {
+export interface MIDIMessageSenderFromWrappedAccessDataLast {
+  /**
+   *
+   *
+   */
   (
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ): {
+    /**
+     *
+     *
+     */
     <E, R>(
       accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
     ): SentMessageEffect<E, R>
   }
 }
 
-export const sendFromWrapped = dual<
-  MIDIMessageSenderFromWrappedDataLast,
-  MIDIMessageSenderFromWrappedDataFirst
->(Effect.isEffect, (access, ...args) => Effect.flatMap(access, send(...args)))
-
 /**
+ * @param options
+ *
  * @returns An Effect representing a request for access to MIDI devices on a
  * user's system. Available only in secure contexts.
  */
