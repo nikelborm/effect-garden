@@ -1,3 +1,4 @@
 {
-  "cSpell.words": ["midimessage", "TMIDI"]
+  "cSpell.words": ["midimessage", "TMIDI"],
+  "git.openRepositoryInParentFolders": "always"
 }

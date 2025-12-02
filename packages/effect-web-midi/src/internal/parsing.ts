@@ -1,22 +1,26 @@
 import * as Stream from 'effect/Stream'
-import * as Struct from 'effect/Struct'
+
+// TODO: split parsed and raw midiMessage?
 
 export const withParsedDataField = <
-  A extends { data: Uint8Array<ArrayBuffer> },
+  A extends { readonly midiMessage: Uint8Array<ArrayBuffer> },
   E,
   R,
 >(
   self: Stream.Stream<A, E, R>,
 ) =>
-  Stream.map(self, Struct.evolve({ data: dataEntryParser })) as Stream.Stream<
-    Omit<A, 'data'> & { readonly data: ParsedMIDIMessages },
+  Stream.map(self, ({ midiMessage, ...obj }) => ({
+    ...obj,
+    midiMessage: dataEntryParser(midiMessage),
+  })) as Stream.Stream<
+    Omit<A, 'midiMessage'> & { readonly midiMessage: ParsedMIDIMessages },
     E,
     R
   >
 
 export const withTouchpadPositionUpdates = <
   A extends {
-    data:
+    midiMessage:
       | ControlChange
       | TouchpadRelease
       | PitchBendChange
@@ -27,7 +31,8 @@ export const withTouchpadPositionUpdates = <
 >(
   self: Stream.Stream<A, E, R>,
 ): Stream.Stream<
-  A | (Omit<A, 'data'> & { readonly data: TouchpadPositionUpdate }),
+  | A
+  | (Omit<A, 'midiMessage'> & { readonly midiMessage: TouchpadPositionUpdate }),
   E,
   R
 > =>
@@ -35,9 +40,9 @@ export const withTouchpadPositionUpdates = <
     self,
     { x: 0, y: 0, seenPressedTouchpadEventsInARow: 0 },
     (ctx, current) => {
-      const { data, ...rest } = current
+      const { midiMessage, ...rest } = current
       // TODO: use Match.valueTags?
-      // Match.valueTags(data, {
+      // Match.valueTags(midiMessage, {
       //   'Control Change': e => 'control',
       //   'Pitch Bend Change': () => 'pitch',
       //   'Touchpad Release': () => 0, // resets everything
@@ -47,11 +52,11 @@ export const withTouchpadPositionUpdates = <
           'Control Change': control,
           'Pitch Bend Change': pitch,
           'Touchpad Release': 0, // resets everything
-        })[data._tag as string] ?? previous
+        })[midiMessage._tag as string] ?? previous
 
       const position = {
-        x: select(ctx.x, (data as PitchBendChange).value, ctx.x),
-        y: select((data as ControlChange).value, ctx.y, ctx.y),
+        x: select(ctx.x, (midiMessage as PitchBendChange).value, ctx.x),
+        y: select((midiMessage as ControlChange).value, ctx.y, ctx.y),
       }
 
       const seenPressedTouchpadEventsInARow = select(
@@ -66,7 +71,7 @@ export const withTouchpadPositionUpdates = <
         (position.x !== ctx.x || position.y !== ctx.y)
           ? Stream.make(current, {
               ...rest,
-              data: {
+              midiMessage: {
                 _tag: 'Touchpad Position Update' as const,
                 ...position,
               } satisfies TouchpadPositionUpdate,
@@ -84,7 +89,9 @@ export type ParsedMIDIMessages =
   | TouchpadRelease
   | PitchBendChange
 
-function dataEntryParser(data: Uint8Array<ArrayBuffer>): ParsedMIDIMessages {
+function dataEntryParser(
+  midiMessage: Uint8Array<ArrayBuffer>,
+): ParsedMIDIMessages {
   const unknown = () => {
     const { stackTraceLimit } = Error
     Error.stackTraceLimit = 4
@@ -93,19 +100,19 @@ function dataEntryParser(data: Uint8Array<ArrayBuffer>): ParsedMIDIMessages {
     Error.stackTraceLimit = stackTraceLimit
     const result = {
       _tag: 'Unknown Reply' as const,
-      data: data.toString(),
+      unexpectedData: midiMessage.toString(),
       stack: stackHolder.stack,
     }
     return result
   }
-  if (data.length !== 3) return unknown()
-  const first = data.at(0)
+  if (midiMessage.length !== 3) return unknown()
+  const first = midiMessage.at(0)
   if (first === undefined) return unknown()
 
-  const second = data.at(1)
+  const second = midiMessage.at(1)
   if (second === undefined) return unknown()
 
-  const third = data.at(2)
+  const third = midiMessage.at(2)
   if (third === undefined) return unknown()
 
   const code = first >> 4
@@ -164,7 +171,7 @@ export interface NotePress
 export interface UnknownReply
   extends Readonly<{
     _tag: 'Unknown Reply'
-    data: string
+    unexpectedData: string
     stack: string
   }> {}
 

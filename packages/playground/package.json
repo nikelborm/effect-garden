@@ -11,6 +11,8 @@
     "@effect/platform-node": "catalog:",
     "@effect/sql": "catalog:",
     "@effect/sql-pg": "catalog:",
+    "@effect/typeclass": "^0.38.0",
+    "@effect/vitest": "^0.27.0",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",

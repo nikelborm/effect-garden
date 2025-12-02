@@ -9,41 +9,67 @@ import {
 } from './errors.ts'
 import { getStaticMIDIPortInfo, type SentMessageEffectFrom } from './util.ts'
 
-/** @internal */
+/**
+ *
+ * @internal
+ */
 const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
   EffectfulMIDIPort.makeImpl(port, 'output', MIDIOutput)
 
-/** @internal */
+/**
+ *
+ * @internal
+ */
 const asImpl = (port: EffectfulMIDIOutputPort) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIOutputPortImpl')
   return port
 }
 
-/** @internal */
+/**
+ *
+ * @internal
+ */
 export const make: (port: MIDIOutput) => EffectfulMIDIOutputPort = makeImpl
 
-/** @internal */
+/**
+ *
+ * @internal
+ */
 const isImpl = EffectfulMIDIPort.isImplOfSpecificType('output', MIDIOutput)
 
+/**
+ *
+ */
 export const is: (port: unknown) => port is EffectfulMIDIOutputPort = isImpl
 
+/**
+ *
+ */
 export interface EffectfulMIDIOutputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
 
-/** @internal */
+/**
+ *
+ * @internal
+ */
 interface EffectfulMIDIOutputPortImpl
   extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIOutput, 'output'> {}
 
+/**
+ *
+ */
 export const makeStateChangesStream =
   EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualStateChangesStreamMaker<'output'>
 
+/**
+ *
+ */
 export const makeStateChangesStreamFromWrapped =
   EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'output'>
 
-// TODO: add documentation
 /**
- * If data is a System Exclusive message, and the MIDIAccess did not enable
+ * If midiMessage is a System Exclusive message, and the MIDIAccess did not enable
  * System Exclusive access, an InvalidAccessError exception will be thrown
  *
  * If the port is "connected" but the connection is "closed", asynchronously
@@ -51,33 +77,33 @@ export const makeStateChangesStreamFromWrapped =
  * `open` call would result in an InvalidAccessError error coming from the
  * send method itself.
  *
- * Returns the port itself for easier chaining of operations on the same port
+ * @returns An effect with the same port for easier chaining of operations
  */
 export const send = dual<
   (
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => (self: EffectfulMIDIOutputPort) => SentMessageEffect,
   (
     self: EffectfulMIDIOutputPort,
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => SentMessageEffect
 >(
   is,
   Effect.fn('EffectfulMIDIOutputPort.send')(function* (
     self: EffectfulMIDIOutputPort,
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) {
     yield* Effect.annotateCurrentSpan({
-      data,
+      midiMessage,
       timestamp,
       port: getStaticMIDIPortInfo(asImpl(self)._port),
     })
 
     yield* Effect.try({
-      try: () => asImpl(self)._port.send(data, timestamp),
+      try: () => asImpl(self)._port.send(midiMessage, timestamp),
       catch: remapErrorByName(
         {
           InvalidAccessError,
@@ -92,56 +118,57 @@ export const send = dual<
   }),
 )
 
-// TODO: add documentation
 /**
- * Returns the port itself for easier chaining of operations on the same port
+ * @returns An effect with the same port for easier chaining of operations
  */
 export const sendFromWrapped = dual<
   (
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => <E, R>(
     self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
   ) => SentMessageEffect<E, R>,
   <E, R>(
     self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => SentMessageEffect<E, R>
 >(
   Effect.isEffect,
   <E, R>(
     self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-    data: Iterable<number>,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) => Effect.flatMap(self, send(data, timestamp)),
+  ) => Effect.flatMap(self, send(midiMessage, timestamp)),
 )
 
+/**
+ *
+ */
 export interface SentMessageEffect<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
 
-// TODO: add documentation
-// TODO: fix upstream type-signature
+// TODO: fix upstream type-signature of clear method
+
 /**
- * Returns the port itself for easier chaining of operations on the same port
+ * @returns An effect with the same port for easier chaining of operations
  */
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* (
-  self: EffectfulMIDIOutputPort,
+  outputPort: EffectfulMIDIOutputPort,
 ) {
   yield* Effect.annotateCurrentSpan({
-    port: getStaticMIDIPortInfo(asImpl(self)._port),
+    port: getStaticMIDIPortInfo(asImpl(outputPort)._port),
   })
 
   // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
-  yield* Effect.sync(() => asImpl(self)._port.clear())
+  yield* Effect.sync(() => asImpl(outputPort)._port.clear())
 
-  return self
+  return outputPort
 })
 
-// TODO: add documentation
 /**
- * Returns the port itself for easier chaining of operations on the same port
+ * @returns An effect with the same port for easier chaining of operations
  */
 export const clearFromWrapped = <E, R>(
-  self: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-) => Effect.flatMap(self, clear)
+  outputPortWrapped: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+) => Effect.flatMap(outputPortWrapped, clear)

@@ -4,8 +4,8 @@ import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
 import {
-  type BuiltStream,
   createStreamMakerFrom,
+  type BuiltStream,
   makeStreamFromWrapped,
   type OnNullStrategy,
   type StreamMakerOptions,
@@ -28,6 +28,7 @@ export type TypeId = typeof TypeId
 
 /**
  * Prototype of all EffectfulMIDIPort instances
+ *
  * @internal
  */
 export const CommonProto = {
@@ -99,7 +100,11 @@ export interface EffectfulMIDIPort<Type extends MIDIPortType>
   readonly type: Type
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 export interface EffectfulMIDIPortImpl<
   Port extends MIDIPort = MIDIPort,
   Type extends MIDIPortType = MIDIPortType,
@@ -107,7 +112,11 @@ export interface EffectfulMIDIPortImpl<
   readonly _port: Port
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 export const makeImpl = <Port extends MIDIPort, Type extends MIDIPortType>(
   port: NoInfer<Port>,
   type: Type,
@@ -121,14 +130,22 @@ export const makeImpl = <Port extends MIDIPort, Type extends MIDIPortType>(
   return instance
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const asImpl = (port: EffectfulMIDIPort<MIDIPortType>) => {
   if (!isGeneralImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIPort<MIDIPortType>')
   return port
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
   typeof port === 'object' &&
   port !== null &&
@@ -143,7 +160,11 @@ const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
 export const is: (port: unknown) => port is EffectfulMIDIPort<MIDIPortType> =
   isGeneralImpl
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 export const isImplOfSpecificType =
   <const Type extends MIDIPortType, Port extends MIDIPort>(
     type: Type,
@@ -155,34 +176,41 @@ export const isImplOfSpecificType =
     port._port instanceof ClassToAssertInheritance
 
 // TODO: maybe open issue in upstream spec about why they are sync, while other are async
-/** @internal */
+/**
+ * @internal
+ * @returns An effect with the same port for easier chaining of operations
+ */
 const callMIDIPortMethod =
   <TError = never>(
     method: 'close' | 'open',
     mapError: (err: unknown) => TError,
   ) =>
   <TType extends MIDIPortType>(
-    self: EffectfulMIDIPort<TType>,
+    port: EffectfulMIDIPort<TType>,
   ): Effect.Effect<EffectfulMIDIPort<TType>, TError> =>
     Effect.tryPromise({
-      try: () => asImpl(self)._port[method](),
+      try: () => asImpl(port)._port[method](),
       catch: mapError,
     }).pipe(
-      Effect.as(self),
+      Effect.as(port),
       Effect.withSpan(`MIDI port method call`, {
         attributes: {
           method,
-          port: getStaticMIDIPortInfo(asImpl(self)._port),
+          port: getStaticMIDIPortInfo(asImpl(port)._port),
         },
       }),
     )
 
-// TODO: documentation
+/**
+ * @returns An effect with the same port for easier chaining of operations
+ */
 export const acquireReleaseConnection = <TType extends MIDIPortType>(
-  self: EffectfulMIDIPort<TType>,
-) => Effect.acquireRelease(openConnection(self), closeConnection)
+  port: EffectfulMIDIPort<TType>,
+) => Effect.acquireRelease(openConnection(port), closeConnection)
 
-// TODO: documentation
+/**
+ * @returns An effect with the same port for easier chaining of operations
+ */
 export const openConnection = callMIDIPortMethod(
   'open',
   remapErrorByName(
@@ -191,27 +219,32 @@ export const openConnection = callMIDIPortMethod(
   ),
 )
 
-// TODO: documentation
+/**
+ * @returns An effect with the same port for easier chaining of operations
+ */
 export const openConnectionFromWrapped = <TType extends MIDIPortType, E, R>(
-  self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-) => Effect.flatMap(self, openConnection)
+  wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
+) => Effect.flatMap(wrappedPort, openConnection)
 
-// TODO: documentation
+/**
+ * @returns An effect with the same port for easier chaining of operations
+ */
 export const closeConnection = callMIDIPortMethod('close', err => {
   throw err
 })
 
-// TODO: documentation
+/**
+ * @returns An effect with the same port for easier chaining of operations
+ */
 export const closeConnectionFromWrapped = <TType extends MIDIPortType, E, R>(
-  self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-) => Effect.flatMap(self, closeConnection)
+  wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
+) => Effect.flatMap(wrappedPort, closeConnection)
 
 /**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-// TODO: documentation
-export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
+const _makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
   is,
   self => ({
     tag: 'MIDIPortStateChange',
@@ -222,58 +255,57 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
     },
     nullableFieldName: 'port',
   }),
-  rawPort => ({
-    newState: rawPort
-      ? ({ ofDevice: rawPort.state, ofConnection: rawPort.connection } as const)
-      : null,
-  }),
-) as DualStateChangesStreamMaker
+  rawPort =>
+    ({
+      newState: rawPort
+        ? ({
+            ofDevice: rawPort.state,
+            ofConnection: rawPort.connection,
+          } as const)
+        : null,
+    }) as const,
+)
 
-// TODO: documentation
+export const makeStateChangesStream =
+  _makeStateChangesStream as DualStateChangesStreamMaker
+
 export const makeStateChangesStreamFromWrapped = makeStreamFromWrapped(
-  makeStateChangesStream,
-) as unknown as DualStateChangesStreamMakerFromWrapped
+  _makeStateChangesStream,
+) as DualStateChangesStreamMakerFromWrapped
 
-// TODO: documentation
-export const getDeviceStateUnsafe = (self: EffectfulMIDIPort<MIDIPortType>) =>
-  (self as EffectfulMIDIPortImpl)._port.state
+export const getDeviceStateUnsafe = (port: EffectfulMIDIPort<MIDIPortType>) =>
+  (port as EffectfulMIDIPortImpl)._port.state
 
 /**
- * Because device state can change over time, it's effectful.
- * The **`state`** read-only property of the MIDIPort interface returns the
- * state of the port.
+ * Because device state can change over time, it's effectful. It's taken from
+ * the **`state`** read-only property of the `MIDIPort` interface
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)
  */
-export const getDeviceState = (self: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getDeviceStateUnsafe(self))
+export const getDeviceState = (port: EffectfulMIDIPort<MIDIPortType>) =>
+  Effect.sync(() => getDeviceStateUnsafe(port))
 
-// TODO: documentation
 export const getDeviceStateFromWrapped = <E, R>(
-  self: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(self, getDeviceStateUnsafe)
+  wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
+) => Effect.map(wrappedPort, getDeviceStateUnsafe)
 
-// TODO: documentation
 export const getConnectionStateUnsafe = (
-  self: EffectfulMIDIPort<MIDIPortType>,
-) => (self as EffectfulMIDIPortImpl)._port.connection
+  port: EffectfulMIDIPort<MIDIPortType>,
+) => (port as EffectfulMIDIPortImpl)._port.connection
 
 /**
- * Because connection state can change over time, it's effectful.
- *
- * The **`connection`** read-only property of the MIDIPort interface returns
- * the connection state of the port.
+ * Because connection state can change over time, it's effectful. It's taken
+ * from the **`connection`** read-only property of the `MIDIPort` interface
  *
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)
  */
-export const getConnectionState = (self: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getConnectionStateUnsafe(self))
+export const getConnectionState = (port: EffectfulMIDIPort<MIDIPortType>) =>
+  Effect.sync(() => getConnectionStateUnsafe(port))
 
-// TODO: documentation
 export const getConnectionStateFromWrapped = <E, R>(
-  self: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(self, getConnectionStateUnsafe)
+  wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
+) => Effect.map(wrappedPort, getConnectionStateUnsafe)
 
 export interface StateChangeStream<
   TOnNullStrategy extends OnNullStrategy,
@@ -284,7 +316,7 @@ export interface StateChangeStream<
     'MIDIPortStateChange',
     EffectfulMIDIPort<TType>,
     {
-      newState: {
+      readonly newState: {
         readonly ofDevice: MIDIPortDeviceState
         readonly ofConnection: MIDIPortConnectionState
       } | null
@@ -298,15 +330,24 @@ export interface DualStateChangesStreamMaker<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
+    /**
+     * boolean value is responsible for `capture` property and is present for
+     * backward compatibility
+     */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): <TType extends THighLevelTypeRestriction>(
     self: EffectfulMIDIPort<TType>,
   ) => StateChangeStream<TOnNullStrategy, TType>
+
   <
     TType extends THighLevelTypeRestriction,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
     self: EffectfulMIDIPort<TType>,
+    /**
+     * boolean value is responsible for `capture` property and is present for
+     * backward compatibility
+     */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): StateChangeStream<TOnNullStrategy, TType>
 }
@@ -315,6 +356,10 @@ export interface DualStateChangesStreamMakerFromWrapped<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
+    /**
+     * boolean value is responsible for `capture` property and is present for
+     * backward compatibility
+     */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): <TType extends THighLevelTypeRestriction, E, R>(
     self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
@@ -326,6 +371,10 @@ export interface DualStateChangesStreamMakerFromWrapped<
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
     self: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
+    /**
+     * boolean value is responsible for `capture` property and is present for
+     * backward compatibility
+     */
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): StateChangeStream<TOnNullStrategy, TType, E, R>
 }

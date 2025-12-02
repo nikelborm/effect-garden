@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
+ * preserve JSDoc comments attached to the function signature */
 import { Order, pipe, SortedMap } from 'effect'
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
@@ -23,6 +25,8 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
+
+// TODO: add stream of messages sent from this device to target midi device
 
 /**
  * @internal
@@ -227,17 +231,18 @@ export const makeMIDIPortStateChangesStream =
       },
       nullableFieldName: 'port',
     }),
-    port => ({
-      newState: port
-        ? ({ ofDevice: port.state, ofConnection: port.connection } as const)
-        : null,
-      port:
-        port instanceof MIDIInput
-          ? EffectfulMIDIInputPort.make(port)
-          : port instanceof MIDIOutput
-            ? EffectfulMIDIOutputPort.make(port)
-            : null,
-    }),
+    port =>
+      ({
+        newState: port
+          ? ({ ofDevice: port.state, ofConnection: port.connection } as const)
+          : null,
+        port:
+          port instanceof MIDIInput
+            ? EffectfulMIDIInputPort.make(port)
+            : port instanceof MIDIOutput
+              ? EffectfulMIDIOutputPort.make(port)
+              : null,
+      }) as const,
   )
 
 export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
@@ -253,49 +258,50 @@ export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
 export interface SentMessageEffect<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIAccess, E, R> {}
 
+type TargetPortSelector =
+  | 'all existing outputs at effect execution'
+  | 'all open connections at effect execution'
+  | MIDIPortId
+  | MIDIPortId[]
+
+export interface selfFirstSend {
+  (
+    access: EffectfulMIDIAccess,
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): SentMessageEffect
+}
+
+export interface selfLastSend {
+  (
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): (access: EffectfulMIDIAccess) => SentMessageEffect
+}
+
+export interface sendFn extends selfFirstSend, selfLastSend {}
+
 /**
  * beware that it's not possible to ensure the messages will either be all
  * delivered, or all not delivered, as in ACID transactions. There's not even
  * a mechanism to remove the message from the sending queue
  */
-export const send = dual<
-  (
-    target:
-      | 'all existing outputs at effect execution'
-      | 'all open connections at effect execution'
-      | MIDIPortId
-      | MIDIPortId[],
-    data: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => (self: EffectfulMIDIAccess) => SentMessageEffect,
-  (
-    self: EffectfulMIDIAccess,
-    target:
-      | 'all existing outputs at effect execution'
-      | 'all open connections at effect execution'
-      | MIDIPortId
-      | MIDIPortId[],
-    data: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => SentMessageEffect
->(
+export const send = dual<selfLastSend, selfFirstSend>(
   is,
-  Effect.fn('EffectfulMIDIAccess.send')(
-    function* (
-      self: EffectfulMIDIAccess,
-      target:
-        | 'all existing outputs at effect execution'
-        | 'all open connections at effect execution'
-        | MIDIPortId
-        | MIDIPortId[],
-      data: Iterable<number>,
-      timestamp?: DOMHighResTimeStamp,
-    ) {
-      const outputs = yield* getOutputPorts(self)
+  Effect.fn('EffectfulMIDIAccess.send')(((
+    access,
+    target,
+    midiMessage,
+    timestamp,
+  ) =>
+    Effect.gen(function* () {
+      const outputs = yield* getOutputPorts(access)
       if (target === 'all existing outputs at effect execution')
         return yield* outputs.pipe(
           SortedMap.values,
-          Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
+          Effect.forEach(EffectfulMIDIOutputPort.send(midiMessage, timestamp)),
           Effect.asVoid,
         )
 
@@ -310,7 +316,9 @@ export const send = dual<
             ),
           ),
           Effect.flatMap(
-            Effect.forEach(EffectfulMIDIOutputPort.send(data, timestamp)),
+            Effect.forEach(
+              EffectfulMIDIOutputPort.send(midiMessage, timestamp),
+            ),
           ),
           Effect.asVoid,
         )
@@ -345,51 +353,41 @@ export const send = dual<
             [] as EffectfulMIDIOutputPort.SentMessageEffect[],
             (acc, port, id) =>
               predicate(id)
-                ? [...acc, EffectfulMIDIOutputPort.send(port, data, timestamp)]
+                ? [
+                    ...acc,
+                    EffectfulMIDIOutputPort.send(port, midiMessage, timestamp),
+                  ]
                 : acc,
           ),
         )
 
       yield* sendToSome(id => portsIdsToSend.includes(id))
-    },
-    (self, access) => Effect.as(self, access),
-  ),
+    }).pipe(self => Effect.as(self, access))) satisfies selfFirstSend),
 )
 
-export const sendFromWrapped = dual<
+export interface selfFirstSendWrapped {
+  <E, R>(
+    accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): SentMessageEffect<E, R>
+}
+
+export interface selfLastSendWrapped {
   (
-    target:
-      | 'all existing outputs at effect execution'
-      | 'all open connections at effect execution'
-      | MIDIPortId
-      | MIDIPortId[],
-    data: Iterable<number>,
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) => <E, R>(
-    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
-  ) => SentMessageEffect<E, R>,
-  <E, R>(
-    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
-    target:
-      | 'all existing outputs at effect execution'
-      | 'all open connections at effect execution'
-      | MIDIPortId
-      | MIDIPortId[],
-    data: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
+  ): <E, R>(
+    accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
   ) => SentMessageEffect<E, R>
->(
+}
+
+export const sendFromWrapped = dual<selfLastSendWrapped, selfFirstSendWrapped>(
   Effect.isEffect,
-  <E, R>(
-    self: Effect.Effect<EffectfulMIDIAccess, E, R>,
-    target:
-      | 'all existing outputs at effect execution'
-      | 'all open connections at effect execution'
-      | MIDIPortId
-      | MIDIPortId[],
-    data: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => Effect.flatMap(self, send(target, data, timestamp)),
+  ((access, ...args) =>
+    Effect.flatMap(access, send(...args))) satisfies selfFirstSendWrapped,
 )
 
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never

@@ -10,35 +10,73 @@ import { getStaticMIDIPortInfo } from './util.ts'
 
 // TODO: implement scope inheritance
 
-/** @internal */
+/**
+ * Validates the raw MIDI input port, and puts it into a field hidden from the
+ * client's code
+ *
+ * @internal
+ */
 const makeImpl = (port: MIDIInput): EffectfulMIDIInputPortImpl =>
   EffectfulMIDIPort.makeImpl(port, 'input', MIDIInput)
 
-/** @internal */
+/**
+ * Asserts an object to be valid EffectfulMIDIInputPort and casts it to internal
+ * implementation type
+ *
+ * @internal
+ */
 const asImpl = (port: EffectfulMIDIInputPort) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIInputPortImpl')
   return port
 }
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 export const make: (port: MIDIInput) => EffectfulMIDIInputPort = makeImpl
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 const isImpl = EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
 
+/**
+ *
+ *
+ */
 export const is: (port: unknown) => port is EffectfulMIDIInputPort = isImpl
 
+/**
+ *
+ *
+ */
 export interface EffectfulMIDIInputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
 
-/** @internal */
+/**
+ *
+ *
+ * @internal
+ */
 interface EffectfulMIDIInputPortImpl
   extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIInput, 'input'> {}
 
+/**
+ *
+ *
+ */
 export const makeStateChangesStream =
   EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualStateChangesStreamMaker<'input'>
 
+/**
+ *
+ *
+ */
 export const makeStateChangesStreamFromWrapped =
   EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'input'>
 
@@ -59,11 +97,14 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
       spanTargetName: 'MIDI port',
       port: getStaticMIDIPortInfo(asImpl(self)._port),
     },
-    cameFrom: self,
     nullableFieldName: 'data',
   }),
-  data => ({ data }),
+  midiMessage => ({ midiMessage }),
 )
 
+/**
+ *
+ *
+ */
 export const makeMessagesStreamFromWrapped =
   makeStreamFromWrapped(makeMessagesStream)
