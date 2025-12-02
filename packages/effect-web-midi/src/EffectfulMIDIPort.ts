@@ -14,6 +14,8 @@ export {
   makeStateChangesStreamFromWrapped,
   openConnection,
   openConnectionFromWrapped,
-  type StateChangeStream,
+  type StateChangesStream,
+  type StateChangesStreamMakerPortFirst,
+  type StateChangesStreamMakerPortLast,
   type TypeId,
 } from './internal/EffectfulMIDIPort.ts'

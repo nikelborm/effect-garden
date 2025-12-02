@@ -156,15 +156,7 @@ const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
   'type' in port &&
   '_port' in port &&
   typeof port._port === 'object' &&
-  port._port !== null &&
   port._port instanceof MIDIPort
-
-/**
- *
- *
- */
-export const is: (port: unknown) => port is EffectfulMIDIPort<MIDIPortType> =
-  isGeneralImpl
 
 /**
  *
@@ -180,6 +172,13 @@ export const isImplOfSpecificType =
     isGeneralImpl(port) &&
     port.type === type &&
     port._port instanceof ClassToAssertInheritance
+
+/**
+ *
+ *
+ */
+export const is: (port: unknown) => port is EffectfulMIDIPort<MIDIPortType> =
+  isGeneralImpl
 
 // TODO: maybe open issue in upstream spec about why they are sync, while other are async
 /**
@@ -288,16 +287,6 @@ export const makeStateChangesStreamFromWrapped = makeStreamFromWrapped(
 ) as DualStateChangesStreamMakerFromWrapped
 
 /**
- * @returns A state of connection between the OS and the device. It's
- * unconventional to return mutable references in Effect. It's taken from the
- * {@linkcode MIDIPort.state|state} read-only property of the
- * {@linkcode MIDIPort} interface ([MDN
- * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)).
- */
-const getDeviceStateUnconventional = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  asImpl(port)._port.state
-
-/**
  * @returns A state of connection between the OS and the device. Because it can
  * change over time, it's wrapped in effect. It's taken from the
  * {@linkcode MIDIPort.state|state} read-only property of the
@@ -305,7 +294,7 @@ const getDeviceStateUnconventional = (port: EffectfulMIDIPort<MIDIPortType>) =>
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)).
  */
 export const getDeviceState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getDeviceStateUnconventional(port))
+  Effect.sync(() => asImpl(port)._port.state)
 
 /**
  *
@@ -313,15 +302,7 @@ export const getDeviceState = (port: EffectfulMIDIPort<MIDIPortType>) =>
  */
 export const getDeviceStateFromWrapped = <E, R>(
   wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, getDeviceStateUnconventional)
-
-/**
- *
- *
- */
-const getConnectionStateUnconventional = (
-  port: EffectfulMIDIPort<MIDIPortType>,
-) => asImpl(port)._port.connection
+) => Effect.map(wrappedPort, port => asImpl(port)._port.state)
 
 /**
  * Because connection state can change over time, it's effectful. It's taken
@@ -331,7 +312,7 @@ const getConnectionStateUnconventional = (
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)
  */
 export const getConnectionState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => getConnectionStateUnconventional(port))
+  Effect.sync(() => asImpl(port)._port.connection)
 
 /**
  *
@@ -339,9 +320,9 @@ export const getConnectionState = (port: EffectfulMIDIPort<MIDIPortType>) =>
  */
 export const getConnectionStateFromWrapped = <E, R>(
   wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, getConnectionStateUnconventional)
+) => Effect.map(wrappedPort, port => asImpl(port)._port.connection)
 
-export interface StateChangeStream<
+export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,
   TType extends MIDIPortType,
   TE = never,
@@ -362,6 +343,27 @@ export interface StateChangeStream<
 
 export interface DualStateChangesStreamMaker<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
+> extends StateChangesStreamMakerPortFirst<THighLevelTypeRestriction>,
+    StateChangesStreamMakerPortLast<THighLevelTypeRestriction> {}
+
+export interface StateChangesStreamMakerPortFirst<
+  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
+> {
+  /**
+   * @param options Passing a boolean is equivalent to setting `options.capture`
+   * property
+   */
+  <
+    TType extends THighLevelTypeRestriction,
+    const TOnNullStrategy extends OnNullStrategy = undefined,
+  >(
+    port: EffectfulMIDIPort<TType>,
+    options?: StreamMakerOptions<TOnNullStrategy>,
+  ): StateChangesStream<TOnNullStrategy, TType>
+}
+
+export interface StateChangesStreamMakerPortLast<
+  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
   /**
    * @param options Passing a boolean is equivalent to setting `options.capture`
@@ -376,20 +378,8 @@ export interface DualStateChangesStreamMaker<
      */
     <TType extends THighLevelTypeRestriction>(
       port: EffectfulMIDIPort<TType>,
-    ): StateChangeStream<TOnNullStrategy, TType>
+    ): StateChangesStream<TOnNullStrategy, TType>
   }
-
-  /**
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
-   */
-  <
-    TType extends THighLevelTypeRestriction,
-    const TOnNullStrategy extends OnNullStrategy = undefined,
-  >(
-    port: EffectfulMIDIPort<TType>,
-    options?: StreamMakerOptions<TOnNullStrategy>,
-  ): StateChangeStream<TOnNullStrategy, TType>
 }
 
 export interface DualStateChangesStreamMakerFromWrapped<
@@ -408,7 +398,7 @@ export interface DualStateChangesStreamMakerFromWrapped<
      */
     <TType extends THighLevelTypeRestriction, E, R>(
       wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-    ): StateChangeStream<TOnNullStrategy, TType, E, R>
+    ): StateChangesStream<TOnNullStrategy, TType, E, R>
   }
 
   /**
@@ -423,5 +413,5 @@ export interface DualStateChangesStreamMakerFromWrapped<
   >(
     wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
-  ): StateChangeStream<TOnNullStrategy, TType, E, R>
+  ): StateChangesStream<TOnNullStrategy, TType, E, R>
 }

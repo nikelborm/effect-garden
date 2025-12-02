@@ -107,7 +107,7 @@ export const createStreamMakerFrom =
     remapValueToContainer: (
       fieldValue: TEventTypeToEventValueMap[TSelectedEventType][TNullableFieldName],
     ) => TContainerWithNullableFields,
-  ): StreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
+  ): DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
     dual(
       isSelf,
       (cameFrom: TCameFrom, options?: StreamMakerOptions<OnNullStrategy>) => {
@@ -174,17 +174,22 @@ export const makeStreamFromWrapped = <
   TTag extends string,
   TContainerWithNullableFields extends object,
 >(
-  makeStream: StreamMaker<TCameFrom, TTag, TContainerWithNullableFields>,
-): DualStreamMakerFromWrapped<TCameFrom, TTag, TContainerWithNullableFields> =>
-  dual(Effect.isEffect, ((wrappedSelf, options) =>
-    wrappedSelf.pipe(
-      Effect.map(makeStream(options)),
-      Stream.unwrap,
-    )) satisfies StreamMakerFromWrappedDataFirst<
-    TCameFrom,
-    TTag,
-    TContainerWithNullableFields
-  >)
+  makeStream: DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields>,
+) =>
+  dual<
+    StreamMakerFromEffectTargetLast<
+      TCameFrom,
+      TTag,
+      TContainerWithNullableFields
+    >,
+    StreamMakerFromEffectTargetFirst<
+      TCameFrom,
+      TTag,
+      TContainerWithNullableFields
+    >
+  >(Effect.isEffect, (wrappedSelf, options) =>
+    wrappedSelf.pipe(Effect.map(makeStream(options)), Stream.unwrap),
+  )
 
 export interface StreamConfig<
   TTag,
@@ -346,14 +351,14 @@ export interface BuiltStream<
     TR
   > {}
 
-export interface StreamMaker<
+export interface DualStreamMaker<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
-> extends StreamMakerDataFirst<TCameFrom, TTag, TContainerWithNullableFields>,
-    StreamMakerDataLast<TCameFrom, TTag, TContainerWithNullableFields> {}
+> extends StreamMakerTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>,
+    StreamMakerTargetLast<TCameFrom, TTag, TContainerWithNullableFields> {}
 
-export interface StreamMakerDataFirst<
+export interface StreamMakerTargetFirst<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
@@ -372,7 +377,7 @@ export interface StreamMakerDataFirst<
   ): BuiltStream<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>
 }
 
-export interface StreamMakerDataLast<
+export interface StreamMakerTargetLast<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
@@ -406,22 +411,22 @@ export interface StreamMakerDataLast<
   }
 }
 
-export interface DualStreamMakerFromWrapped<
+export interface DualStreamMakerFromEffect<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
-> extends StreamMakerFromWrappedDataLast<
+> extends StreamMakerFromEffectTargetLast<
       TCameFrom,
       TTag,
       TContainerWithNullableFields
     >,
-    StreamMakerFromWrappedDataFirst<
+    StreamMakerFromEffectTargetFirst<
       TCameFrom,
       TTag,
       TContainerWithNullableFields
     > {}
 
-export interface StreamMakerFromWrappedDataLast<
+export interface StreamMakerFromEffectTargetLast<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
@@ -455,7 +460,7 @@ export interface StreamMakerFromWrappedDataLast<
   }
 }
 
-export interface StreamMakerFromWrappedDataFirst<
+export interface StreamMakerFromEffectTargetFirst<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,

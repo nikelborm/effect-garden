@@ -11,6 +11,20 @@ import { getStaticMIDIPortInfo } from './util.ts'
 // TODO: implement scope inheritance
 
 /**
+ * Wrapper around {@linkcode MIDIInput} instances
+ */
+export interface EffectfulMIDIInputPort
+  extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
+
+/**
+ *
+ *
+ * @internal
+ */
+interface EffectfulMIDIInputPortImpl
+  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIInput, 'input'> {}
+
+/**
  * Validates the raw MIDI input port, and puts it into a field hidden from the
  * client's code
  *
@@ -50,21 +64,6 @@ const isImpl = EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
  *
  */
 export const is: (port: unknown) => port is EffectfulMIDIInputPort = isImpl
-
-/**
- *
- *
- */
-export interface EffectfulMIDIInputPort
-  extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
-
-/**
- *
- *
- * @internal
- */
-interface EffectfulMIDIInputPortImpl
-  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIInput, 'input'> {}
 
 /**
  *

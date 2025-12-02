@@ -82,10 +82,13 @@ const Proto = {
   },
 
   get sysexEnabled() {
-    return (this as EffectfulMIDIAccessImpl)._access.sysexEnabled
+    return asImpl(this)._access.sysexEnabled
   },
 } satisfies EffectfulMIDIAccess
 
+/**
+ * Wrapper around {@linkcode MIDIAccess} instances
+ */
 export interface EffectfulMIDIAccess
   extends Equal.Equal,
     Pipeable.Pipeable,
@@ -125,6 +128,16 @@ const makeImpl = (
  *
  * @internal
  */
+const asImpl = (access: EffectfulMIDIAccess) => {
+  if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
+  return access
+}
+
+/**
+ *
+ *
+ * @internal
+ */
 const make: (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
@@ -142,7 +155,6 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
   TypeId in access &&
   '_access' in access &&
   typeof access._access === 'object' &&
-  access._access !== null &&
   '_config' in access &&
   ((typeof access._config === 'object' && access._config !== null) ||
     typeof access._config === 'undefined') &&
@@ -153,16 +165,6 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
  *
  */
 export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
-
-/**
- *
- *
- * @internal
- */
-const asImpl = (access: EffectfulMIDIAccess) => {
-  if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
-  return access
-}
 
 /**
  * Unconventional because returns object that changes over time

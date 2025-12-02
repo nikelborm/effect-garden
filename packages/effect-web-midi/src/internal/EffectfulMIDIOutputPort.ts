@@ -10,6 +10,21 @@ import {
 import { getStaticMIDIPortInfo, type SentMessageEffectFrom } from './util.ts'
 
 /**
+ * Wrapper around {@linkcode MIDIOutput} instances
+ */
+export interface EffectfulMIDIOutputPort
+  extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
+
+/**
+ *
+ * @internal
+ */
+interface EffectfulMIDIOutputPortImpl
+  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIOutput, 'output'> {}
+
+/**
+ * Validates the raw MIDI output port, and puts it into a field hidden from the
+ * client's code
  *
  * @internal
  */
@@ -17,6 +32,8 @@ const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
   EffectfulMIDIPort.makeImpl(port, 'output', MIDIOutput)
 
 /**
+ * Asserts an object to be valid EffectfulMIDIOutputPort and casts it to
+ * internal implementation type
  *
  * @internal
  */
@@ -42,19 +59,6 @@ const isImpl = EffectfulMIDIPort.isImplOfSpecificType('output', MIDIOutput)
  *
  */
 export const is: (port: unknown) => port is EffectfulMIDIOutputPort = isImpl
-
-/**
- *
- */
-export interface EffectfulMIDIOutputPort
-  extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
-
-/**
- *
- * @internal
- */
-interface EffectfulMIDIOutputPortImpl
-  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIOutput, 'output'> {}
 
 /**
  *
