@@ -4,7 +4,9 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
+import * as Match from 'effect/Match'
 import * as Pipeable from 'effect/Pipeable'
+import * as Record from 'effect/Record'
 import {
   type BuiltStream,
   createStreamMakerFrom,
@@ -14,8 +16,6 @@ import {
 } from './createStreamMakerFrom.ts'
 import { InvalidAccessError, remapErrorByName } from './errors.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
-import * as Match from 'effect/Match'
-import * as Record from 'effect/Record'
 
 // TODO: device and connection state Match-ers
 
