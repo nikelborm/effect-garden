@@ -2,15 +2,16 @@
  * preserve JSDoc comments attached to the function signature */
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import { flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Match from 'effect/Match'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
+import type * as Types from 'effect/Types'
 import {
   type BuiltStream,
   createStreamMakerFrom,
-  makeStreamFromWrapped,
   type OnNullStrategy,
   type StreamMakerOptions,
 } from './createStreamMakerFrom.ts'
@@ -91,14 +92,15 @@ export const CommonProto = {
   },
 } satisfies EffectfulMIDIPort
 
-export interface EffectfulMIDIPort<Type extends MIDIPortType = MIDIPortType>
-  extends Equal.Equal,
+export interface EffectfulMIDIPort<
+  TMIDIPortType extends MIDIPortType = MIDIPortType,
+> extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable,
     Pick<MIDIPort, 'version' | 'name' | 'id' | 'manufacturer'> {
   readonly [TypeId]: TypeId
   readonly _tag: 'EffectfulMIDIPort'
-  readonly type: Type
+  readonly type: TMIDIPortType
 }
 
 /**
@@ -226,29 +228,15 @@ export const openConnection = callMIDIPortMethod(
 /**
  * @returns An effect with the same port for easier chaining of operations
  */
-export const openConnectionFromWrapped = <TType extends MIDIPortType, E, R>(
-  wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-) => Effect.flatMap(wrappedPort, openConnection)
-
-/**
- * @returns An effect with the same port for easier chaining of operations
- */
 export const closeConnection = callMIDIPortMethod('close', err => {
   throw err
 })
 
 /**
- * @returns An effect with the same port for easier chaining of operations
- */
-export const closeConnectionFromWrapped = <TType extends MIDIPortType, E, R>(
-  wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-) => Effect.flatMap(wrappedPort, closeConnection)
-
-/**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-const _makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
+export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
   is,
   port => ({
     tag: 'MIDIPortStateChange',
@@ -268,22 +256,7 @@ const _makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
           } as const)
         : null,
     }) as const,
-)
-
-/**
- *
- *
- */
-export const makeStateChangesStream =
-  _makeStateChangesStream as DualStateChangesStreamMaker
-
-/**
- *
- *
- */
-export const makeStateChangesStreamFromWrapped = makeStreamFromWrapped(
-  _makeStateChangesStream,
-) as DualStateChangesStreamMakerFromWrapped
+) as DualStateChangesStreamMaker
 
 const getMutableProperty =
   <const T extends 'state' | 'connection'>(property: T) =>
@@ -315,6 +288,46 @@ export const getDeviceState = getMutableProperty('state')
  */
 export const getConnectionState = getMutableProperty('connection')
 
+/**
+ *
+ */
+export const isDeviceConnected = flow(
+  getDeviceState,
+  Effect.map(e => e === 'connected'),
+)
+
+/**
+ *
+ */
+export const isDeviceDisconnected = flow(
+  getDeviceState,
+  Effect.map(e => e === 'disconnected'),
+)
+
+/**
+ *
+ */
+export const isConnectionOpen = flow(
+  getConnectionState,
+  Effect.map(e => e === 'open'),
+)
+
+/**
+ *
+ */
+export const isConnectionPending = flow(
+  getConnectionState,
+  Effect.map(e => e === 'pending'),
+)
+
+/**
+ *
+ */
+export const isConnectionClosed = flow(
+  getConnectionState,
+  Effect.map(e => e === 'closed'),
+)
+
 // TODO: dual
 /**
  * @internal
@@ -323,11 +336,11 @@ export const matchMutableMIDIPortProperty =
   <const T extends 'state' | 'connection'>(property: T) =>
   <TMIDIPortTypeHighLevelRestriction extends MIDIPortType>() =>
   <
-    Config extends MatchMutablePropertyConfig<
+    WellDocumentedConfig extends GoodConfig<
       T,
-      TMIDIPortTypeHighLevelRestriction,
-      Config
+      TMIDIPortTypeHighLevelRestriction
     >,
+    Config extends MatchMutablePropertyConfig<T, WellDocumentedConfig, Config>,
   >(
     config: Config,
   ) =>
@@ -362,20 +375,29 @@ export const matchConnectionState = matchMutableMIDIPortProperty('connection')()
  */
 export const matchDeviceState = matchMutableMIDIPortProperty('state')()
 
+export type GoodConfig<
+  TMIDIPortProperty extends 'state' | 'connection',
+  TMIDIPortType extends MIDIPortType = MIDIPortType,
+> = {
+  readonly [StateCase in MIDIPort[TMIDIPortProperty]]: (
+    port: EffectfulMIDIPort<TMIDIPortType>,
+  ) => any
+}
+
 export type MatchMutablePropertyConfig<
   TMIDIPortProperty extends 'state' | 'connection',
-  TMIDIPortType extends MIDIPortType,
+  // needed so that we can pass interface name which will hold JSDoc
+  // documentation attached. otherwise TS will erase this info at any moment
+  WellDocumentedConfig extends GoodConfig<TMIDIPortProperty>,
   ConfigItself,
-> = {
-  readonly [StateCase in MIDIPort[TMIDIPortProperty] & string]: (
-    _: EffectfulMIDIPort<TMIDIPortType>,
-  ) => any
-} & {
-  readonly [RedundantValueCaseHandling in Exclude<
-    keyof ConfigItself,
-    MIDIPort[TMIDIPortProperty]
-  >]: never
-}
+> = Types.Equals<keyof WellDocumentedConfig, keyof ConfigItself> extends true
+  ? WellDocumentedConfig
+  : GoodConfig<TMIDIPortProperty> & {
+      readonly [RedundantValueCaseHandling in Exclude<
+        keyof ConfigItself,
+        MIDIPort[TMIDIPortProperty]
+      >]: never
+    }
 
 export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,
@@ -435,38 +457,4 @@ export interface StateChangesStreamMakerPortLast<
       port: EffectfulMIDIPort<TType>,
     ): StateChangesStream<TOnNullStrategy, TType>
   }
-}
-
-export interface DualStateChangesStreamMakerFromWrapped<
-  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
-> {
-  /**
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
-   */
-  <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    options?: StreamMakerOptions<TOnNullStrategy>,
-  ): {
-    /**
-     *
-     *
-     */
-    <TType extends THighLevelTypeRestriction, E, R>(
-      wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-    ): StateChangesStream<TOnNullStrategy, TType, E, R>
-  }
-
-  /**
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
-   */
-  <
-    TType extends THighLevelTypeRestriction,
-    E,
-    R,
-    const TOnNullStrategy extends OnNullStrategy = undefined,
-  >(
-    wrappedPort: Effect.Effect<EffectfulMIDIPort<TType>, E, R>,
-    options?: StreamMakerOptions<TOnNullStrategy>,
-  ): StateChangesStream<TOnNullStrategy, TType, E, R>
 }

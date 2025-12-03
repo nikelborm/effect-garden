@@ -2,7 +2,7 @@ export {
   type EffectfulMIDIInputPort,
   is,
   makeMessagesStream,
-  makeMessagesStreamFromWrapped,
   makeStateChangesStream,
-  makeStateChangesStreamFromWrapped,
+  matchConnectionState,
+  matchDeviceState,
 } from './internal/EffectfulMIDIInputPort.ts'

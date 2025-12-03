@@ -69,12 +69,6 @@ export const makeStateChangesStream =
 /**
  *
  */
-export const makeStateChangesStreamFromWrapped =
-  EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'output'>
-
-/**
- *
- */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
 
@@ -99,65 +93,47 @@ export const send = dual<
   (
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ) => (outputPort: EffectfulMIDIOutputPort) => SentMessageEffect,
-  (
-    outputPort: EffectfulMIDIOutputPort,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => SentMessageEffect
->(
-  is,
-  Effect.fn('EffectfulMIDIOutputPort.send')(function* (
-    outputPort: EffectfulMIDIOutputPort,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) {
-    const rawPort = asImpl(outputPort)._port
-
-    yield* Effect.annotateCurrentSpan({
-      midiMessage,
-      timestamp,
-      port: getStaticMIDIPortInfo(rawPort),
-    })
-
-    yield* Effect.try({
-      try: () => rawPort.send(midiMessage, timestamp),
-      catch: remapErrorByName(
-        {
-          InvalidAccessError,
-          InvalidStateError,
-          TypeError: BadMidiMessageError,
-        },
-        'EffectfulMIDIOutputPort.send error handling absurd',
-      ),
-    })
-
-    return outputPort
-  }),
-)
-
-/**
- * @returns An effect with the same port for easier chaining of operations
- */
-export const sendFromWrapped = dual<
-  (
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
   ) => <E, R>(
-    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    outputPort:
+      | EffectfulMIDIOutputPort
+      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
   ) => SentMessageEffect<E, R>,
   <E, R>(
-    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    outputPort:
+      | EffectfulMIDIOutputPort
+      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ) => SentMessageEffect<E, R>
 >(
-  Effect.isEffect,
-  <E, R>(
-    wrappedOutputPort: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => Effect.flatMap(wrappedOutputPort, send(midiMessage, timestamp)),
+  arg => Effect.isEffect(arg) || is(arg),
+  Effect.fn('EffectfulMIDIOutputPort.send')(
+    function* (outputPort, midiMessage, timestamp) {
+      const impl = asImpl(
+        Effect.isEffect(outputPort) ? yield* outputPort : outputPort,
+      )
+
+      yield* Effect.annotateCurrentSpan({
+        midiMessage,
+        timestamp,
+        port: getStaticMIDIPortInfo(impl._port),
+      })
+
+      yield* Effect.try({
+        try: () => impl._port.send(midiMessage, timestamp),
+        catch: remapErrorByName(
+          {
+            InvalidAccessError,
+            InvalidStateError,
+            TypeError: BadMidiMessageError,
+          },
+          'EffectfulMIDIOutputPort.send error handling absurd',
+        ),
+      })
+
+      return outputPort as EffectfulMIDIOutputPort
+    },
+  ),
 )
 
 /**
@@ -178,31 +154,24 @@ export interface SentMessageEffect<E = never, R = never>
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* (
-  outputPort: EffectfulMIDIOutputPort,
+export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
+  E,
+  R,
+>(
+  outputPort:
+    | EffectfulMIDIOutputPort
+    | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
 ) {
-  const rawPort = asImpl(outputPort)._port
+  const impl = asImpl(
+    Effect.isEffect(outputPort) ? yield* outputPort : outputPort,
+  )
 
   yield* Effect.annotateCurrentSpan({
-    port: getStaticMIDIPortInfo(rawPort),
+    port: getStaticMIDIPortInfo(impl._port),
   })
 
   // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
-  yield* Effect.sync(() => rawPort.clear())
+  yield* Effect.sync(() => impl._port.clear())
 
-  return outputPort
+  return impl as EffectfulMIDIOutputPort
 })
-
-/**
- * Clears any enqueued send data that has not yet been sent from the
- * `MIDIOutput`'s queue. The browser will ensure the MIDI stream is left in a
- * good state, and if the output port is in the middle of a sysex message, a
- * sysex termination byte (`0xf7`) will be sent.
- *
- * @param outputPortWrapped An effect with effectful output port in the success
- * channel
- * @returns An effect with the same port for easier chaining of operations
- */
-export const clearFromWrapped = <E, R>(
-  outputPortWrapped: Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-) => Effect.flatMap(outputPortWrapped, clear)

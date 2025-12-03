@@ -1,7 +1,4 @@
-import {
-  createStreamMakerFrom,
-  makeStreamFromWrapped,
-} from './createStreamMakerFrom.ts'
+import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
 
@@ -74,13 +71,6 @@ export const makeStateChangesStream =
 
 /**
  *
- *
- */
-export const makeStateChangesStreamFromWrapped =
-  EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'input'>
-
-/**
- *
  */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
@@ -112,10 +102,3 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   }),
   midiMessage => ({ midiMessage }),
 )
-
-/**
- *
- *
- */
-export const makeMessagesStreamFromWrapped =
-  makeStreamFromWrapped(makeMessagesStream)

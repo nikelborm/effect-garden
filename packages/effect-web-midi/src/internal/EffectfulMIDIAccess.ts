@@ -2,18 +2,17 @@
  * preserve JSDoc comments attached to the function signature */
 import { Order, pipe, SortedMap } from 'effect'
 import * as EArray from 'effect/Array'
+// import * as Iterable from 'effect/Iterable'
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-// import * as Iterable from 'effect/Iterable'
 import { dual, flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Pipeable from 'effect/Pipeable'
-import {
-  createStreamMakerFrom,
-  makeStreamFromWrapped,
-} from './createStreamMakerFrom.ts'
+import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
@@ -25,8 +24,6 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
-import * as Context from 'effect/Context'
-import * as Layer from 'effect/Layer'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -63,19 +60,19 @@ export const layer = (config?: MIDIOptions) =>
  *
  * @returns
  */
-export const LiveWithSysex = layer({ sysex: true })
+export const layerSystemExclusiveSupported = layer({ sysex: true })
 
 /**
  *
  * @returns
  */
-export const LiveWithSoftwareSynth = layer({ software: true })
+export const layerSoftwareSynthSupported = layer({ software: true })
 
 /**
  *
  * @returns
  */
-export const LiveWithSysexAndSoftwareSynth = layer({
+export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
   software: true,
   sysex: true,
 })
@@ -266,14 +263,6 @@ export const getInputPorts = makeSortedMapOfPorts(
 )
 
 /**
- *
- *
- */
-export const getInputPortsFromWrapped = <E, R>(
-  accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
-) => Effect.flatMap(accessWrapped, getInputPorts)
-
-/**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
  *
@@ -287,14 +276,6 @@ export const getOutputPorts = makeSortedMapOfPorts(
   'outputs',
   EffectfulMIDIOutputPort.make,
 )
-
-/**
- *
- *
- */
-export const getOutputPortsFromWrapped = <E, R>(
-  accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
-) => Effect.flatMap(accessWrapped, getOutputPorts)
 
 // TODO: all ports
 // Maybe use Iterable.appendAll
@@ -329,14 +310,6 @@ export const makeMIDIPortStateChangesStream =
               : null,
       }) as const,
   )
-
-/**
- *
- *
- */
-export const makeMIDIPortStateChangesStreamFromWrapped = makeStreamFromWrapped(
-  makeMIDIPortStateChangesStream,
-)
 
 // TODO: add a stream to listen for all messages of all currently
 // connected inputs, all present inputs, specific input
@@ -460,48 +433,6 @@ export const send = dual<
     (self, access) => Effect.as(self, access),
   ),
 )
-
-/**
- *
- *
- */
-export const sendFromWrapped = dual<
-  MIDIMessageSenderFromWrappedAccessDataLast,
-  MIDIMessageSenderFromWrappedAccessDataFirst
->(Effect.isEffect, (access, ...args) => Effect.flatMap(access, send(...args)))
-
-export interface MIDIMessageSenderFromWrappedAccessDataFirst {
-  /**
-   *
-   *
-   */
-  <E, R>(
-    accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ): SentMessageEffect<E, R>
-}
-
-export interface MIDIMessageSenderFromWrappedAccessDataLast {
-  /**
-   *
-   *
-   */
-  (
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ): {
-    /**
-     *
-     *
-     */
-    <E, R>(
-      accessWrapped: Effect.Effect<EffectfulMIDIAccess, E, R>,
-    ): SentMessageEffect<E, R>
-  }
-}
 
 /**
  * @param options

@@ -162,14 +162,7 @@ export const createStreamMakerFrom =
       },
     )
 
-/**
- * Wraps functions that accept preconfigured stream makers by
- * {@linkcode createStreamMakerFrom} and instead of taking the usual MIDI
- * objects makes them take as arguments effects wrapping the objects.
- *
- * @internal
- */
-export const makeStreamFromWrapped = <
+const _makeStreamFromWrapped = <
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,

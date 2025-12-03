@@ -1,11 +1,10 @@
 export {
   clear,
-  clearFromWrapped,
   type EffectfulMIDIOutputPort,
   is,
   makeStateChangesStream,
-  makeStateChangesStreamFromWrapped,
+  matchConnectionState,
+  matchDeviceState,
   type SentMessageEffect,
   send,
-  sendFromWrapped,
 } from './internal/EffectfulMIDIOutputPort.ts'
