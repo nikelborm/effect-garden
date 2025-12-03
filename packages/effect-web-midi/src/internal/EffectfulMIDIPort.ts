@@ -333,14 +333,16 @@ export const isConnectionClosed = flow(
  * @internal
  */
 export const matchMutableMIDIPortProperty =
-  <const T extends 'state' | 'connection'>(property: T) =>
+  <const TMIDIPortProperty extends 'state' | 'connection'>(
+    property: TMIDIPortProperty,
+  ) =>
   <TMIDIPortTypeHighLevelRestriction extends MIDIPortType>() =>
   <
-    WellDocumentedConfig extends GoodConfig<
-      T,
-      TMIDIPortTypeHighLevelRestriction
+    Config extends MatchMutablePropertyConfig<
+      TMIDIPortProperty,
+      GoodConfig<TMIDIPortProperty, TMIDIPortTypeHighLevelRestriction>,
+      Config
     >,
-    Config extends MatchMutablePropertyConfig<T, WellDocumentedConfig, Config>,
   >(
     config: Config,
   ) =>
@@ -358,7 +360,7 @@ export const matchMutableMIDIPortProperty =
       Match.exhaustive(
         Record.reduce(
           config,
-          Match.type<MIDIPort[T]>() as any,
+          Match.type<MIDIPort[TMIDIPortProperty]>() as any,
           (matcher, stateCallback: Function, stateCase) =>
             Match.when(stateCase, () => stateCallback(port))(matcher),
         ),

@@ -8,6 +8,8 @@ import type { EffectfulMIDIAccess } from './EffectfulMIDIAccess.ts'
 import type { EffectfulMIDIInputPort } from './EffectfulMIDIInputPort.ts'
 import type { EffectfulMIDIOutputPort } from './EffectfulMIDIOutputPort.ts'
 
+// TODO: make stream maker isomorphic
+
 /**
  * Set of possible ways to react when the MIDI-related event will have relevant
  * field be null. Although there should be no sane scenario where it would be

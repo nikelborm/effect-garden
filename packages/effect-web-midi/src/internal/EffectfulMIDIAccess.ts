@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
-import { Order, pipe, SortedMap } from 'effect'
+import { Order, pipe, SortedMap, type Tuple } from 'effect'
 import * as EArray from 'effect/Array'
-// import * as Iterable from 'effect/Iterable'
+import * as Iterable from 'effect/Iterable'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
@@ -24,6 +24,9 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
+import * as Record from 'effect/Record'
+import * as Types from 'effect/Types'
+import * as Unify from 'effect/Unify'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -204,11 +207,13 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
  */
 export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
 
+type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
+
 /**
- * Unconventional because returns object that changes over time
- * @internal
+ *
+ *
  */
-const makeSortedMapOfPortsUnconventional =
+const getPortEntries =
   <
     const TMIDIPortType extends MIDIPortType,
     const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
@@ -219,34 +224,49 @@ const makeSortedMapOfPortsUnconventional =
     key: TMIDIAccessObjectKey,
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
-  (access: EffectfulMIDIAccess) =>
-    pipe(
-      asImpl(access)._access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
-      SortedMap.fromIterable(Order.string),
-      SortedMap.map(make),
+  (access: MIDIAccess) =>
+    Iterable.map(
+      access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
+      ([id, raw]) =>
+        [id as MIDIPortId, make(raw)] satisfies Types.TupleOf<2, any>,
     )
 
 /**
  *
  *
- * @internal
  */
-const makeSortedMapOfPorts =
-  <
-    const TMIDIPortType extends MIDIPortType,
-    const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
-    TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
-    TEffectfulMIDIPort extends
-      EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
-  >(
-    key: TMIDIAccessObjectKey,
-    make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
-  ) =>
-  (access: EffectfulMIDIAccess) =>
-    Effect.sync(() => makeSortedMapOfPortsUnconventional(key, make)(access))
+const getInputPortEntries = getPortEntries(
+  'inputs',
+  EffectfulMIDIInputPort.make,
+)
 
-type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
+/**
+ *
+ *
+ */
+const getOutputPortEntries = getPortEntries(
+  'outputs',
+  EffectfulMIDIOutputPort.make,
+)
 
+/**
+ *
+ *
+ */
+const getAllPortsEntries = (
+  access: MIDIAccess,
+): Iterable<
+  [
+    MIDIPortId,
+    (
+      | EffectfulMIDIInputPort.EffectfulMIDIInputPort
+      | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort
+    ),
+  ]
+> =>
+  Iterable.appendAll(getInputPortEntries(access), getOutputPortEntries(access))
+
+// TODO: isomorphic
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
@@ -257,11 +277,9 @@ type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
-export const getInputPorts = makeSortedMapOfPorts(
-  'inputs',
-  EffectfulMIDIInputPort.make,
-)
+export const getInputPorts = flow(getInputPortEntries, Record.fromEntries)
 
+// TODO: isomorphic
 /**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
@@ -272,14 +290,13 @@ export const getInputPorts = makeSortedMapOfPorts(
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
-export const getOutputPorts = makeSortedMapOfPorts(
-  'outputs',
-  EffectfulMIDIOutputPort.make,
-)
+export const getOutputPorts = flow(getOutputPortEntries, Record.fromEntries)
 
-// TODO: all ports
-// Maybe use Iterable.appendAll
-// export const getPorts =
+/**
+ *
+ *
+ */
+export const getAllPorts = flow(getAllPortsEntries, Record.fromEntries)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -332,8 +349,8 @@ type TargetPortSelector =
  * mechanism to remove a specific message (not all) from the sending queue
  */
 export const send = dual<
-  MIDIMessageSenderFromAccessDataLast,
-  MIDIMessageSenderFromAccessDataFirst
+  MIDIMessageSenderAccessLast,
+  MIDIMessageSenderAccessFirst
 >(
   args => Effect.isEffect(args[0]) || is(args[0]),
   Effect.fn('EffectfulMIDIAccess.send')(
@@ -405,7 +422,7 @@ export const send = dual<
   ),
 )
 
-export interface MIDIMessageSenderFromAccessDataFirst {
+export interface MIDIMessageSenderAccessFirst {
   /**
    *
    *
@@ -418,7 +435,7 @@ export interface MIDIMessageSenderFromAccessDataFirst {
   ): SentMessageEffect
 }
 
-export interface MIDIMessageSenderFromAccessDataLast {
+export interface MIDIMessageSenderAccessLast {
   /**
    *
    *

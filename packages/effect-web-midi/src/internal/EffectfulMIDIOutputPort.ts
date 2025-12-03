@@ -92,7 +92,7 @@ export const matchDeviceState =
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const send = dual<MessageSenderPortLast, MessageSenderPortFirst>(
+export const send = dual<MIDIMessageSenderPortLast, MIDIMessageSenderPortFirst>(
   args => Effect.isEffect(args[0]) || is(args[0]),
   Effect.fn('EffectfulMIDIOutputPort.send')(
     function* (outputPortIsomorphic, midiMessage, timestamp) {
@@ -125,7 +125,7 @@ export const send = dual<MessageSenderPortLast, MessageSenderPortFirst>(
   ),
 )
 
-export interface MessageSenderPortLast {
+export interface MIDIMessageSenderPortLast {
   /**
    *
    */
@@ -144,7 +144,7 @@ export interface MessageSenderPortLast {
   }
 }
 
-export interface MessageSenderPortFirst {
+export interface MIDIMessageSenderPortFirst {
   /**
    *
    */
