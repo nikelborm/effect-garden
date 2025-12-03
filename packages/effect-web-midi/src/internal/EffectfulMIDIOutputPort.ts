@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
+ * preserve JSDoc comments attached to the function signature */
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
@@ -79,48 +81,35 @@ export const matchDeviceState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('state')<'input'>()
 
 /**
- * If midiMessage is a System Exclusive message, and the MIDIAccess did not enable
- * System Exclusive access, an InvalidAccessError exception will be thrown
+ * If midiMessage is a System Exclusive message, and the MIDIAccess did not
+ * enable System Exclusive access, an InvalidAccessError exception will be
+ * thrown
  *
  * If the port is "connected" but the connection is "closed", asynchronously
- * tries to open the port. It's unclear in the spec if potential error of
- * `open` call would result in an InvalidAccessError error coming from the
- * send method itself.
+ * tries to open the port. It's unclear in the spec if potential error of `open`
+ * call would result in an InvalidAccessError error coming from the send method
+ * itself.
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const send = dual<
-  (
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => <E, R>(
-    outputPort:
-      | EffectfulMIDIOutputPort
-      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-  ) => SentMessageEffect<E, R>,
-  <E, R>(
-    outputPort:
-      | EffectfulMIDIOutputPort
-      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ) => SentMessageEffect<E, R>
->(
-  arg => Effect.isEffect(arg) || is(arg),
+export const send = dual<MessageSenderPortLast, MessageSenderPortFirst>(
+  args => Effect.isEffect(args[0]) || is(args[0]),
   Effect.fn('EffectfulMIDIOutputPort.send')(
-    function* (outputPort, midiMessage, timestamp) {
-      const impl = asImpl(
-        Effect.isEffect(outputPort) ? yield* outputPort : outputPort,
-      )
+    function* (outputPortIsomorphic, midiMessage, timestamp) {
+      const outputPort = Effect.isEffect(outputPortIsomorphic)
+        ? yield* outputPortIsomorphic
+        : outputPortIsomorphic
+
+      const rawPort = asImpl(outputPort)._port
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
         timestamp,
-        port: getStaticMIDIPortInfo(impl._port),
+        port: getStaticMIDIPortInfo(rawPort),
       })
 
       yield* Effect.try({
-        try: () => impl._port.send(midiMessage, timestamp),
+        try: () => rawPort.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
             InvalidAccessError,
@@ -135,6 +124,38 @@ export const send = dual<
     },
   ),
 )
+
+export interface MessageSenderPortLast {
+  /**
+   *
+   */
+  (
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): {
+    /**
+     *
+     */
+    <E, R>(
+      outputPort:
+        | EffectfulMIDIOutputPort
+        | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    ): SentMessageEffect<E, R>
+  }
+}
+
+export interface MessageSenderPortFirst {
+  /**
+   *
+   */
+  <E, R>(
+    outputPort:
+      | EffectfulMIDIOutputPort
+      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): SentMessageEffect<E, R>
+}
 
 /**
  *
@@ -158,20 +179,20 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
   E,
   R,
 >(
-  outputPort:
+  outputPortIsomorphic:
     | EffectfulMIDIOutputPort
     | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
 ) {
-  const impl = asImpl(
-    Effect.isEffect(outputPort) ? yield* outputPort : outputPort,
-  )
+  const outputPort = Effect.isEffect(outputPortIsomorphic)
+    ? yield* outputPortIsomorphic
+    : outputPortIsomorphic
 
-  yield* Effect.annotateCurrentSpan({
-    port: getStaticMIDIPortInfo(impl._port),
-  })
+  const rawPort = asImpl(outputPort)._port
+
+  yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(rawPort) })
 
   // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
-  yield* Effect.sync(() => impl._port.clear())
+  yield* Effect.sync(() => rawPort.clear())
 
-  return impl as EffectfulMIDIOutputPort
+  return outputPort
 })

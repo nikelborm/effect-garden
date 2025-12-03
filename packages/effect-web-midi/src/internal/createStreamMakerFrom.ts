@@ -109,7 +109,7 @@ export const createStreamMakerFrom =
     ) => TContainerWithNullableFields,
   ): DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
     dual(
-      isSelf,
+      args => Effect.isEffect(args[0]) || isSelf(args[0]),
       (cameFrom: TCameFrom, options?: StreamMakerOptions<OnNullStrategy>) => {
         const {
           tag,
@@ -180,8 +180,10 @@ const _makeStreamFromWrapped = <
       TTag,
       TContainerWithNullableFields
     >
-  >(Effect.isEffect, (wrappedSelf, options) =>
-    wrappedSelf.pipe(Effect.map(makeStream(options)), Stream.unwrap),
+  >(
+    args => Effect.isEffect(args[0]),
+    (wrappedSelf, options) =>
+      wrappedSelf.pipe(Effect.map(makeStream(options)), Stream.unwrap),
   )
 
 export interface StreamConfig<

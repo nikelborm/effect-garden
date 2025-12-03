@@ -326,31 +326,6 @@ type TargetPortSelector =
   | MIDIPortId
   | MIDIPortId[]
 
-export interface MIDIMessageSenderFromAccessDataFirst {
-  /**
-   *
-   *
-   */
-  (
-    access: EffectfulMIDIAccess,
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ): SentMessageEffect
-}
-
-export interface MIDIMessageSenderFromAccessDataLast {
-  /**
-   *
-   *
-   */
-  (
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
-  ): (access: EffectfulMIDIAccess) => SentMessageEffect
-}
-
 /**
  * beware that it's not possible to ensure the messages will either be all
  * delivered, or all not delivered, as in ACID transactions. There's not even a
@@ -360,7 +335,7 @@ export const send = dual<
   MIDIMessageSenderFromAccessDataLast,
   MIDIMessageSenderFromAccessDataFirst
 >(
-  is,
+  args => Effect.isEffect(args[0]) || is(args[0]),
   Effect.fn('EffectfulMIDIAccess.send')(
     function* (access, target, midiMessage, timestamp) {
       const outputs = yield* getOutputPorts(access)
@@ -376,12 +351,7 @@ export const send = dual<
         return yield* outputs.pipe(
           SortedMap.values,
           // TODO: maybe also do something about pending?
-          Effect.filter(
-            flow(
-              EffectfulMIDIPort.getConnectionState,
-              Effect.map(state => state === 'open'),
-            ),
-          ),
+          Effect.filter(EffectfulMIDIPort.isConnectionOpen),
           Effect.flatMap(
             Effect.forEach(
               EffectfulMIDIOutputPort.send(midiMessage, timestamp),
@@ -429,10 +399,36 @@ export const send = dual<
         )
 
       yield* sendToSome(id => portsIdsToSend.includes(id))
+
+      return access
     },
-    (self, access) => Effect.as(self, access),
   ),
 )
+
+export interface MIDIMessageSenderFromAccessDataFirst {
+  /**
+   *
+   *
+   */
+  (
+    access: EffectfulMIDIAccess,
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): SentMessageEffect
+}
+
+export interface MIDIMessageSenderFromAccessDataLast {
+  /**
+   *
+   *
+   */
+  (
+    targetPortSelector: TargetPortSelector,
+    midiMessage: Iterable<number>,
+    timestamp?: DOMHighResTimeStamp,
+  ): (access: EffectfulMIDIAccess) => SentMessageEffect
+}
 
 /**
  * @param options
