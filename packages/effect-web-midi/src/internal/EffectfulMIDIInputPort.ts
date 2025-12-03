@@ -80,6 +80,18 @@ export const makeStateChangesStreamFromWrapped =
   EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'input'>
 
 /**
+ *
+ */
+export const matchConnectionState =
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
+
+/**
+ *
+ */
+export const matchDeviceState =
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('state')<'input'>()
+
+/**
  * [MIDIMessageEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
  *

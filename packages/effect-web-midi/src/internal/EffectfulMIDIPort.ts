@@ -14,6 +14,10 @@ import {
 } from './createStreamMakerFrom.ts'
 import { InvalidAccessError, remapErrorByName } from './errors.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
+import * as Match from 'effect/Match'
+import * as Record from 'effect/Record'
+
+// TODO: device and connection state Match-ers
 
 /**
  * @internal
@@ -55,9 +59,7 @@ export const CommonProto = {
     return Inspectable.format(this.toJSON())
   },
 
-  toJSON<Port extends MIDIPort, Type extends MIDIPortType>(
-    this: EffectfulMIDIPortImpl<Port, Type>,
-  ) {
+  toJSON(this: EffectfulMIDIPortImpl) {
     return {
       _id: 'EffectfulMIDIPort',
       id: this.id,
@@ -68,10 +70,7 @@ export const CommonProto = {
     }
   },
 
-  [Inspectable.NodeInspectSymbol]<
-    Port extends MIDIPort,
-    Type extends MIDIPortType,
-  >(this: EffectfulMIDIPortImpl<Port, Type>) {
+  [Inspectable.NodeInspectSymbol](this: EffectfulMIDIPortImpl) {
     return this.toJSON()
   },
 
@@ -90,9 +89,9 @@ export const CommonProto = {
   get type() {
     return asImpl(this)._port.type
   },
-} satisfies EffectfulMIDIPort<MIDIPortType>
+} satisfies EffectfulMIDIPort
 
-export interface EffectfulMIDIPort<Type extends MIDIPortType>
+export interface EffectfulMIDIPort<Type extends MIDIPortType = MIDIPortType>
   extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable,
@@ -133,13 +132,14 @@ export const makeImpl = <Port extends MIDIPort, Type extends MIDIPortType>(
 }
 
 /**
- *
+ * Asserts an object to be valid EffectfulMIDIPort and casts it to internal
+ * implementation type
  *
  * @internal
  */
-const asImpl = (port: EffectfulMIDIPort<MIDIPortType>) => {
+const asImpl = (port: EffectfulMIDIPort) => {
   if (!isGeneralImpl(port))
-    throw new Error('Failed to cast to EffectfulMIDIPort<MIDIPortType>')
+    throw new Error('Failed to cast to EffectfulMIDIPort')
   return port
 }
 
@@ -177,8 +177,7 @@ export const isImplOfSpecificType =
  *
  *
  */
-export const is: (port: unknown) => port is EffectfulMIDIPort<MIDIPortType> =
-  isGeneralImpl
+export const is: (port: unknown) => port is EffectfulMIDIPort = isGeneralImpl
 
 // TODO: maybe open issue in upstream spec about why they are sync, while other are async
 /**
@@ -286,41 +285,97 @@ export const makeStateChangesStreamFromWrapped = makeStreamFromWrapped(
   _makeStateChangesStream,
 ) as DualStateChangesStreamMakerFromWrapped
 
+const getMutableProperty =
+  <const T extends 'state' | 'connection'>(property: T) =>
+  <E = never, R = never>(
+    port: EffectfulMIDIPort | Effect.Effect<EffectfulMIDIPort, E, R>,
+  ): Effect.Effect<MIDIPort[T], E, R> => {
+    const get = (port: EffectfulMIDIPort) => asImpl(port)._port[property]
+
+    if (Effect.isEffect(port)) return Effect.map(port, get)
+    return Effect.sync(() => get(port))
+  }
+
 /**
- * @returns A state of connection between the OS and the device. Because it can
- * change over time, it's wrapped in effect. It's taken from the
- * {@linkcode MIDIPort.state|state} read-only property of the
- * {@linkcode MIDIPort} interface ([MDN
+ * @returns A state of the hardware connection between the OS and the device
+ * ({@linkcode MIDIPortDeviceState}). Because it can change over time, it's
+ * wrapped in effect. It's taken from the {@linkcode MIDIPort.state|state}
+ * read-only property of the {@linkcode MIDIPort} interface ([MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)).
  */
-export const getDeviceState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => asImpl(port)._port.state)
+export const getDeviceState = getMutableProperty('state')
+
+/**
+ * @returns A state of the connection between the browser's tab and OS
+ * abstraction of the device ({@linkcode MIDIPortConnectionState}). Because it
+ * can change over time, it's wrapped in effect. It's taken from the
+ * {@linkcode MIDIPort.connection|connection} read-only property of the
+ * {@linkcode MIDIPort} interface ([MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)).
+ */
+export const getConnectionState = getMutableProperty('connection')
+
+// TODO: dual
+/**
+ * @internal
+ */
+export const matchMutableMIDIPortProperty =
+  <const T extends 'state' | 'connection'>(property: T) =>
+  <TMIDIPortTypeHighLevelRestriction extends MIDIPortType>() =>
+  <
+    Config extends MatchMutablePropertyConfig<
+      T,
+      TMIDIPortTypeHighLevelRestriction,
+      Config
+    >,
+  >(
+    config: Config,
+  ) =>
+  <
+    TMIDIPortType extends TMIDIPortTypeHighLevelRestriction,
+    E = never,
+    R = never,
+  >(
+    port:
+      | EffectfulMIDIPort<TMIDIPortType>
+      | Effect.Effect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+  ): Effect.Effect<ReturnType<Config[keyof Config]>, E, R> =>
+    Effect.map(
+      getMutableProperty(property)(port),
+      Match.exhaustive(
+        Record.reduce(
+          config,
+          Match.type<MIDIPort[T]>() as any,
+          (matcher, stateCallback: Function, stateCase) =>
+            Match.when(stateCase, () => stateCallback(port))(matcher),
+        ),
+      ) as any,
+    )
 
 /**
  *
- *
  */
-export const getDeviceStateFromWrapped = <E, R>(
-  wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, port => asImpl(port)._port.state)
-
-/**
- * Because connection state can change over time, it's effectful. It's taken
- * from the **`connection`** read-only property of the `MIDIPort` interface
- *
- * [MDN
- * Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)
- */
-export const getConnectionState = (port: EffectfulMIDIPort<MIDIPortType>) =>
-  Effect.sync(() => asImpl(port)._port.connection)
+export const matchConnectionState = matchMutableMIDIPortProperty('connection')()
 
 /**
  *
- *
  */
-export const getConnectionStateFromWrapped = <E, R>(
-  wrappedPort: Effect.Effect<EffectfulMIDIPort<MIDIPortType>, E, R>,
-) => Effect.map(wrappedPort, port => asImpl(port)._port.connection)
+export const matchDeviceState = matchMutableMIDIPortProperty('state')()
+
+export type MatchMutablePropertyConfig<
+  TMIDIPortProperty extends 'state' | 'connection',
+  TMIDIPortType extends MIDIPortType,
+  ConfigItself,
+> = {
+  readonly [StateCase in MIDIPort[TMIDIPortProperty] & string]: (
+    _: EffectfulMIDIPort<TMIDIPortType>,
+  ) => any
+} & {
+  readonly [RedundantValueCaseHandling in Exclude<
+    keyof ConfigItself,
+    MIDIPort[TMIDIPortProperty]
+  >]: never
+}
 
 export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,

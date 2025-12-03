@@ -25,6 +25,8 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
+import * as Context from 'effect/Context'
+import * as Layer from 'effect/Layer'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -39,6 +41,44 @@ const TypeId: unique symbol = Symbol.for(
 // and streams, and remove listeners
 
 // TODO: implement scope inheritance
+
+// TODO: services for access, input ports map, output ports map, etc
+
+/**
+ *
+ */
+export class Tag extends Context.Tag(
+  '@nikelborm/effect-web-midi/EffectfulMIDIAccess/Tag',
+)<Tag, EffectfulMIDIAccess>() {}
+
+/**
+ *
+ * @param config
+ * @returns
+ */
+export const layer = (config?: MIDIOptions) =>
+  Layer.effect(Tag, request(config))
+
+/**
+ *
+ * @returns
+ */
+export const LiveWithSysex = layer({ sysex: true })
+
+/**
+ *
+ * @returns
+ */
+export const LiveWithSoftwareSynth = layer({ software: true })
+
+/**
+ *
+ * @returns
+ */
+export const LiveWithSysexAndSoftwareSynth = layer({
+  software: true,
+  sysex: true,
+})
 
 /**
  * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
@@ -124,7 +164,8 @@ const makeImpl = (
 }
 
 /**
- *
+ * Asserts an object to be valid EffectfulMIDIAccess and casts it to internal
+ * implementation type
  *
  * @internal
  */

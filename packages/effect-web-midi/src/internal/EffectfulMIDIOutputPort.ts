@@ -73,6 +73,18 @@ export const makeStateChangesStreamFromWrapped =
   EffectfulMIDIPort.makeStateChangesStreamFromWrapped as EffectfulMIDIPort.DualStateChangesStreamMakerFromWrapped<'output'>
 
 /**
+ *
+ */
+export const matchConnectionState =
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
+
+/**
+ *
+ */
+export const matchDeviceState =
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('state')<'input'>()
+
+/**
  * If midiMessage is a System Exclusive message, and the MIDIAccess did not enable
  * System Exclusive access, an InvalidAccessError exception will be thrown
  *
