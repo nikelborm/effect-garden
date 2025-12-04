@@ -5,6 +5,7 @@ export type {
   StreamError,
   StreamMakerOptions,
   StreamMakerOptionsObject,
+  StreamMakerOptionsWellknown,
   StreamMakerTargetFirst,
   StreamMakerTargetLast,
   StreamValue,

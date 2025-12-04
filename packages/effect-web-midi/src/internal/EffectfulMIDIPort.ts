@@ -21,9 +21,9 @@ import {
   isomorphicCheckInDual,
 } from './util.ts'
 
-// TODO: device and connection state Match-ers
-
 /**
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIPort} instances
+ * from other objects at both runtime and type-level
  * @internal
  */
 const TypeId: unique symbol = Symbol.for(
@@ -31,14 +31,13 @@ const TypeId: unique symbol = Symbol.for(
 )
 
 /**
- * Unique symbol used for distinguishing EffectfulMIDIPort instances from other
- * objects at both runtime and type-level
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIPort} instances
+ * from other objects at both runtime and type-level
  */
 export type TypeId = typeof TypeId
 
 /**
- * Prototype of all EffectfulMIDIPort instances
- *
+ * Prototype of all {@linkcode EffectfulMIDIPort} instances
  * @internal
  */
 const CommonProto = {
@@ -95,6 +94,10 @@ const CommonProto = {
   },
 } satisfies EffectfulMIDIPort
 
+/**
+ * Thin wrapper around {@linkcode MIDIPort} instance. Will be seen in all of
+ * the external code.
+ */
 export interface EffectfulMIDIPort<
   TMIDIPortType extends MIDIPortType = MIDIPortType,
 > extends Equal.Equal,
@@ -107,8 +110,8 @@ export interface EffectfulMIDIPort<
 }
 
 /**
- *
- *
+ * Thin wrapper around {@linkcode MIDIPort} instance giving access to the
+ * actual field storing it.
  * @internal
  */
 export interface EffectfulMIDIPortImpl<
@@ -189,33 +192,29 @@ export const is: (port: unknown) => port is EffectfulMIDIPort = isGeneralImpl
  * @internal
  * @returns An effect with the same port for easier chaining of operations
  */
-const callMIDIPortMethod =
-  <TError = never>(
-    method: 'close' | 'open',
-    mapError: (err: unknown) => TError,
-  ) =>
-  <TType extends MIDIPortType>(
-    port: EffectfulMIDIPort<TType>,
-  ): Effect.Effect<EffectfulMIDIPort<TType>, TError> =>
-    Effect.tryPromise({
+const callMIDIPortMethod = <TError = never>(
+  method: 'close' | 'open',
+  mapError: (err: unknown) => TError,
+) =>
+  Effect.fn(`EffectfulMIDIPort.${method}`)(function* <
+    TType extends MIDIPortType,
+    E = never,
+    R = never,
+  >(isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>) {
+    const port = yield* fromIsomorphic(isomorphicPort, is)
+
+    yield* Effect.annotateCurrentSpan({
+      method,
+      port: getStaticMIDIPortInfo(asImpl(port)._port),
+    })
+
+    yield* Effect.tryPromise({
       try: () => asImpl(port)._port[method](),
       catch: mapError,
-    }).pipe(
-      Effect.as(port),
-      Effect.withSpan(`MIDI port method call`, {
-        attributes: {
-          method,
-          port: getStaticMIDIPortInfo(asImpl(port)._port),
-        },
-      }),
-    )
+    })
 
-/**
- * @returns An effect with the same port for easier chaining of operations
- */
-export const acquireReleaseConnection = <TType extends MIDIPortType>(
-  port: EffectfulMIDIPort<TType>,
-) => Effect.acquireRelease(openConnection(port), closeConnection)
+    return port
+  })
 
 /**
  * @returns An effect with the same port for easier chaining of operations
@@ -236,7 +235,16 @@ export const closeConnection = callMIDIPortMethod('close', err => {
 })
 
 /**
- * [MIDIConnectionEvent MDN
+ * @returns An effect with the same port for easier chaining of operations
+ */
+export const acquireReleaseConnection = <TType extends MIDIPortType>(
+  port: EffectfulMIDIPort<TType>,
+) => Effect.acquireRelease(openConnection(port), closeConnection)
+
+/**
+ * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
+ *
+ * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
@@ -260,6 +268,9 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
         : null,
     }) as const,
 ) as DualStateChangesStreamMaker
+
+// const asd = makeStateChangesStream({} as any, {})
+// asd
 
 const getValueInRawPortFieldUnsafe =
   <const TPortMutableProperty extends 'state' | 'connection'>(
@@ -360,7 +371,8 @@ export const matchMutableMIDIPortProperty = <
         const state = getValueInRawPortFieldUnsafe(property)(port)
 
         for (const [stateCase, stateCallback] of Record.toEntries(config))
-          if (state === stateCase) return (stateCallback as Function)(port)
+          if (state === stateCase)
+            return (stateCallback as PortStateHandler)(port)
 
         throw new Error(
           `AssertionFailed: Missing handler for "${state}" state inside "${property}" property`,
@@ -369,10 +381,9 @@ export const matchMutableMIDIPortProperty = <
     ),
   )
 
-export type MatcherConfigPlain = Record<
-  string,
-  (port: EffectfulMIDIPort) => any
->
+// biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
+export type PortStateHandler = (port: EffectfulMIDIPort) => any
+export type MatcherConfigPlain = Record<string, PortStateHandler>
 
 export interface MatchResult<ActualConf extends MatcherConfigPlain, E, R>
   extends Effect.Effect<ReturnType<ActualConf[keyof ActualConf]>, E, R> {}
@@ -458,6 +469,7 @@ export type GoodConfig<
 > = {
   readonly [StateCase in MIDIPort[TMIDIPortProperty]]: (
     port: EffectfulMIDIPort<TMIDIPortType>,
+    // biome-ignore lint/suspicious/noExplicitAny: <There's no preciser type>
   ) => any
 } & {
   readonly [RedundantValueCaseHandling in Exclude<
@@ -466,6 +478,10 @@ export type GoodConfig<
   >]: never
 }
 
+/**
+ * A custom type is needed because the port type will be generic, but this is
+ * not possible if using just {@linkcode createStreamMakerFrom}
+ */
 export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,
   TType extends MIDIPortType,
@@ -485,11 +501,19 @@ export interface StateChangesStream<
     TR
   > {}
 
+/**
+ * A custom type is needed because the port type will be generic, but this is
+ * not possible if using just {@linkcode createStreamMakerFrom}
+ */
 export interface DualStateChangesStreamMaker<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > extends StateChangesStreamMakerPortFirst<THighLevelTypeRestriction>,
     StateChangesStreamMakerPortLast<THighLevelTypeRestriction> {}
 
+/**
+ * A custom type is needed because the port type will be generic, but this is
+ * not possible if using just {@linkcode createStreamMakerFrom}
+ */
 export interface StateChangesStreamMakerPortFirst<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
@@ -508,6 +532,10 @@ export interface StateChangesStreamMakerPortFirst<
   ): StateChangesStream<TOnNullStrategy, TType, TE, TR>
 }
 
+/**
+ * A custom type is needed because the port type will be generic, but this is
+ * not possible if using just {@linkcode createStreamMakerFrom}
+ */
 export interface StateChangesStreamMakerPortLast<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {

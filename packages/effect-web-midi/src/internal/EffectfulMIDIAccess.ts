@@ -34,12 +34,23 @@ import {
 
 // TODO: add stream of messages sent from this device to target midi device
 
+// TODO: fat service APIs, where all the methods are attached to instance and
+// you don't have to constantly write the prefix
+
 /**
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccess}
+ * instances from other objects at both runtime and type-level
  * @internal
  */
 const TypeId: unique symbol = Symbol.for(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
 )
+
+/**
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccess}
+ * instances from other objects at both runtime and type-level
+ */
+export type TypeId = typeof TypeId
 
 // TODO: implement scoping of midi access that will cleanup all message queues
 // and streams, and remove listeners
@@ -65,19 +76,21 @@ export const layer = (config?: MIDIOptions) =>
 
 /**
  *
- * @returns
+ */
+export const layerDefault = layer()
+
+/**
+ *
  */
 export const layerSystemExclusiveSupported = layer({ sysex: true })
 
 /**
  *
- * @returns
  */
 export const layerSoftwareSynthSupported = layer({ software: true })
 
 /**
  *
- * @returns
  */
 export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
   software: true,
@@ -85,14 +98,7 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
 })
 
 /**
- * Unique symbol used for distinguishing EffectfulMIDIAccess instances from
- * other objects at both runtime and type-level
- */
-export type TypeId = typeof TypeId
-
-/**
- *
- *
+ * Prototype of all {@linkcode EffectfulMIDIAccess} instances
  * @internal
  */
 const Proto = {
@@ -117,10 +123,6 @@ const Proto = {
       config: this._config ?? null,
     }
   },
-  // maybe iterate over all ports inputs and outputs?
-  // [Symbol.iterator]<K, V>(this: HashMapImpl<K, V>): Iterator<[K, V]> {
-  //   return new HashMapIterator(this, (k, v) => [k, v])
-  // },
   [Inspectable.NodeInspectSymbol](this: EffectfulMIDIAccessImpl) {
     return this.toJSON()
   },
@@ -131,7 +133,8 @@ const Proto = {
 } satisfies EffectfulMIDIAccess
 
 /**
- * Wrapper around {@linkcode MIDIAccess} instances
+ * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all of
+ * the external code.
  */
 export interface EffectfulMIDIAccess
   extends Equal.Equal,
@@ -143,8 +146,8 @@ export interface EffectfulMIDIAccess
 }
 
 /**
- *
- *
+ * Thin wrapper around {@linkcode MIDIAccess} instance giving access to the
+ * actual field storing it.
  * @internal
  */
 interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
@@ -232,7 +235,7 @@ const getPortEntriesFromRawAccess =
     Iterable.map(
       access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
       ([id, raw]) =>
-        [id as MIDIPortId, make(raw)] satisfies Types.TupleOf<2, any>,
+        [id as MIDIPortId, make(raw)] satisfies Types.TupleOf<2, unknown>,
     )
 
 /**
@@ -279,7 +282,7 @@ const getAllPortsEntriesFromRaw = (
  * @returns
  * @internal
  */
-const adasd =
+const decorateToTakeIsomorphicAccessAndReturnRecord =
   <T>(accessor: (access: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
   <E = never, R = never>(
     accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
@@ -299,7 +302,8 @@ const adasd =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
-export const getInputPortsRecord = adasd(getInputPortEntriesFromRaw)
+export const getInputPortsRecord =
+  decorateToTakeIsomorphicAccessAndReturnRecord(getInputPortEntriesFromRaw)
 
 /**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
@@ -311,13 +315,16 @@ export const getInputPortsRecord = adasd(getInputPortEntriesFromRaw)
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
-export const getOutputPortsRecord = adasd(getOutputPortEntriesFromRaw)
+export const getOutputPortsRecord =
+  decorateToTakeIsomorphicAccessAndReturnRecord(getOutputPortEntriesFromRaw)
 
 /**
  *
  *
  */
-export const getAllPortsRecord = adasd(getAllPortsEntriesFromRaw)
+export const getAllPortsRecord = decorateToTakeIsomorphicAccessAndReturnRecord(
+  getAllPortsEntriesFromRaw,
+)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -427,17 +434,24 @@ export const send = dual<
         Effect.all(
           Record.reduce(
             outputs,
-            [] as EffectfulMIDIOutputPort.SentMessageEffectFromPort[],
-            // TODO: investigate what the fuck is going on, why the fuck can't I make it a simple expression
-            (acc, port, id) => {
-              const newAcc = predicate(id)
+            [] as EffectfulMIDIOutputPort.SentMessageEffectFromPort<
+              never,
+              never
+            >[],
+            // TODO: investigate what the fuck is going on, why the fuck can't I
+            // make it a simple expression without either nesting it in
+            // curly-braced function body or adding manual type-annotation
+            (acc, port, id) =>
+              predicate(id)
                 ? [
                     ...acc,
-                    EffectfulMIDIOutputPort.send(port, midiMessage, timestamp),
+                    EffectfulMIDIOutputPort.send(
+                      port,
+                      midiMessage,
+                      timestamp,
+                    ) as EffectfulMIDIOutputPort.SentMessageEffectFromPort,
                   ]
-                : acc
-              return newAcc
-            },
+                : acc,
           ),
         )
 

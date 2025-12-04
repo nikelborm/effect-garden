@@ -13,8 +13,6 @@ import {
   isomorphicCheckInDual,
 } from './util.ts'
 
-// TODO: make stream maker isomorphic
-
 /**
  * Set of possible ways to react when the MIDI-related event will have relevant
  * field be null. Although there should be no sane scenario where it would be
@@ -169,6 +167,7 @@ export const createStreamMakerFrom =
               attributes: { eventType: type, ...spanAttributes },
             }),
           )
+          // biome-ignore lint/suspicious/noExplicitAny: <I don't care>
         }).pipe(Stream.unwrap) as any,
     )
 
@@ -223,21 +222,20 @@ interface StreamConfig<
   readonly nullableFieldName: TNullableFieldName
 }
 
-export interface StreamMakerOptionsObject<
-  TOnNullStrategy extends OnNullStrategy,
-> {
+export interface StreamMakerOptionsWellknown {
   /**
-   * A boolean value indicating that events of this type will be dispatched
-   * to the registered `listener` before being dispatched to any
-   * `EventTarget` beneath it in the DOM tree. If not specified, defaults to
-   * `false`.
+   * A boolean value indicating that events of this type will be dispatched to
+   * the registered `listener` before being dispatched to any `EventTarget`
+   * beneath it in the DOM tree.
+   * @default false
    */
   readonly capture?: boolean
 
   /**
    * A boolean value indicating that the `listener` should be invoked at most
    * once after being added. If `true`, the `listener` would be automatically
-   * removed when invoked. If not specified, defaults to `false`.
+   * removed when invoked.
+   * @default false
    */
   readonly passive?: boolean
 
@@ -245,17 +243,22 @@ export interface StreamMakerOptionsObject<
    * A boolean value that, if true, indicates that the function specified by
    * listener will never call preventDefault(). If a passive listener calls
    * preventDefault(), nothing will happen and a console warning may be
-   * generated. If this option is not specified it defaults to false
+   * generated.
+   * @default false
    */
   readonly once?: boolean
 
   /**
    * How many elements sent by event target to buffer while waiting for the
-   * moment they are consumed. By default it uses an "unbounded" buffer size.
-   * Can be limited to a certain number
+   * moment they are consumed. Can be limited to a certain number
+   * @default "unbounded"
    */
   readonly bufferSize?: number | 'unbounded' | undefined
+}
 
+export interface StreamMakerOptionsObject<
+  TOnNullStrategy extends OnNullStrategy,
+> extends StreamMakerOptionsWellknown {
   /**
    * A strategy to react when the MIDI-related event will have relevant field be
    * null. Although there should be no sane scenario where it would be the case,

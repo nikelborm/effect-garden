@@ -8,14 +8,15 @@ import { getStaticMIDIPortInfo } from './util.ts'
 // TODO: implement scope inheritance
 
 /**
- * Wrapper around {@linkcode MIDIInput} instances
+ * Thin wrapper around {@linkcode MIDIInput} instance. Will be seen in all of
+ * the external code.
  */
 export interface EffectfulMIDIInputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
 
 /**
- *
- *
+ * Thin wrapper around {@linkcode MIDIInput} instance giving access to the
+ * actual field storing it.
  * @internal
  */
 interface EffectfulMIDIInputPortImpl

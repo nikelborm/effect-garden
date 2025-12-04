@@ -5,6 +5,7 @@ export {
   getOutputPortsRecord,
   is,
   layer,
+  layerDefault,
   layerSoftwareSynthSupported,
   layerSystemExclusiveAndSoftwareSynthSupported,
   layerSystemExclusiveSupported,
@@ -15,5 +16,6 @@ export {
   type SentMessageEffectFromAccess,
   send,
   Tag,
+  type TargetPortSelector,
   type TypeId,
 } from './internal/EffectfulMIDIAccess.ts'

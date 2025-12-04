@@ -18,13 +18,15 @@ import {
 } from './util.ts'
 
 /**
- * Wrapper around {@linkcode MIDIOutput} instances
+ * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all of
+ * the external code.
  */
 export interface EffectfulMIDIOutputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
 
 /**
- *
+ * Thin wrapper around {@linkcode MIDIOutput} instance giving access to the
+ * actual field storing it.
  * @internal
  */
 interface EffectfulMIDIOutputPortImpl

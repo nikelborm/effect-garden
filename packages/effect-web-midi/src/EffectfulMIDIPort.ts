@@ -20,6 +20,7 @@ export {
   matchConnectionState,
   matchDeviceState,
   openConnection,
+  type PortStateHandler,
   type StateChangesStream,
   type StateChangesStreamMakerPortFirst,
   type StateChangesStreamMakerPortLast,
