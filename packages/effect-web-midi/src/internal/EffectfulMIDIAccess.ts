@@ -43,7 +43,7 @@ import {
  * @internal
  */
 const TypeId: unique symbol = Symbol.for(
-  '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
+  '@nikelborm/effect-web-midi/EffectfulMIDIAccessInstance',
 )
 
 /**
