@@ -145,7 +145,7 @@ export interface MIDIMessageSenderPortLast {
      *
      */
     <E = never, R = never>(
-      outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
+      isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
     ): SentMessageEffectFromPort<E, R>
   }
 }
@@ -155,7 +155,7 @@ export interface MIDIMessageSenderPortFirst {
    *
    */
   <E = never, R = never>(
-    outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
+    isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ): SentMessageEffectFromPort<E, R>
@@ -184,8 +184,8 @@ export type SentMessageEffectFromPort<
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
   E = never,
   R = never,
->(outputPortIsomorphic: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>) {
-  const outputPort = yield* fromIsomorphic(outputPortIsomorphic, is)
+>(isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>) {
+  const outputPort = yield* fromIsomorphic(isomorphicOutputPort, is)
 
   const rawPort = asImpl(outputPort)._port
 

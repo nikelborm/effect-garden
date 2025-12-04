@@ -283,10 +283,14 @@ const getMutableProperty =
   <const TPortMutableProperty extends 'state' | 'connection'>(
     property: TPortMutableProperty,
   ) =>
-  <E = never, R = never>(port: IsomorphicEffect<EffectfulMIDIPort, E, R>) =>
-    Effect.isEffect(port)
-      ? Effect.map(port, getValueInRawPortFieldUnsafe(property))
-      : Effect.sync(() => getValueInRawPortFieldUnsafe(property)(port))
+  <E = never, R = never>(
+    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort, E, R>,
+  ) =>
+    Effect.isEffect(isomorphicPort)
+      ? Effect.map(isomorphicPort, getValueInRawPortFieldUnsafe(property))
+      : Effect.sync(() =>
+          getValueInRawPortFieldUnsafe(property)(isomorphicPort),
+        )
 
 /**
  * @returns A state of the hardware connection between the OS and the device
@@ -395,7 +399,7 @@ export interface MatchPortFirst<
   /**
    * Description placeholder
    *
-   * @param port
+   * @param isomorphicPort
    * @param config
    * @returns
    */
@@ -409,7 +413,7 @@ export interface MatchPortFirst<
     E = never,
     R = never,
   >(
-    port: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
     config: ActualConf,
   ): MatchResult<ActualConf, E, R>
 }
@@ -436,7 +440,7 @@ export interface MatchPortLast<
     /**
      * Description placeholder
      *
-     * @param port
+     * @param isomorphicPort
      * @returns
      */
     <
@@ -444,7 +448,7 @@ export interface MatchPortLast<
       E = never,
       R = never,
     >(
-      port: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+      isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
     ): MatchResult<ActualConf, E, R>
   }
 }
