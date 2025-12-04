@@ -115,10 +115,10 @@ export interface EffectfulMIDIPort<
  * @internal
  */
 export interface EffectfulMIDIPortImpl<
-  Port extends MIDIPort = MIDIPort,
-  Type extends MIDIPortType = MIDIPortType,
-> extends EffectfulMIDIPort<Type> {
-  readonly _port: Port
+  TPort extends MIDIPort = MIDIPort,
+  TType extends MIDIPortType = MIDIPortType,
+> extends EffectfulMIDIPort<TType> {
+  readonly _port: TPort
 }
 
 /**
@@ -126,11 +126,11 @@ export interface EffectfulMIDIPortImpl<
  *
  * @internal
  */
-export const makeImpl = <Port extends MIDIPort, Type extends MIDIPortType>(
-  port: NoInfer<Port>,
-  type: Type,
-  ClassToAssertInheritance: new (...args: unknown[]) => Port,
-): EffectfulMIDIPortImpl<Port, Type> => {
+export const makeImpl = <TPort extends MIDIPort, TType extends MIDIPortType>(
+  port: NoInfer<TPort>,
+  type: TType,
+  ClassToAssertInheritance: new (...args: unknown[]) => TPort,
+): EffectfulMIDIPortImpl<TPort, TType> => {
   if (port.type !== type || !(port instanceof ClassToAssertInheritance))
     throw new Error(`EffectfulMIDIPort constructor accepts only ${type} ports`)
 
@@ -172,11 +172,11 @@ const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
  * @internal
  */
 export const isImplOfSpecificType =
-  <const Type extends MIDIPortType, Port extends MIDIPort>(
-    type: Type,
-    ClassToAssertInheritance: new (...args: unknown[]) => Port,
+  <const TType extends MIDIPortType, TPort extends MIDIPort>(
+    type: TType,
+    ClassToAssertInheritance: new (...args: unknown[]) => TPort,
   ) =>
-  (port: unknown): port is EffectfulMIDIPortImpl<Port, Type> =>
+  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TType> =>
     isGeneralImpl(port) &&
     port.type === type &&
     port._port instanceof ClassToAssertInheritance
@@ -273,15 +273,15 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
 // asd
 
 const getValueInRawPortFieldUnsafe =
-  <const TPortMutableProperty extends 'state' | 'connection'>(
-    property: TPortMutableProperty,
+  <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
+    property: TMIDIPortMutableProperty,
   ) =>
   (port: EffectfulMIDIPort) =>
     asImpl(port)._port[property]
 
 const getMutableProperty =
-  <const TPortMutableProperty extends 'state' | 'connection'>(
-    property: TPortMutableProperty,
+  <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
+    property: TMIDIPortMutableProperty,
   ) =>
   <E = never, R = never>(
     isomorphicPort: IsomorphicEffect<EffectfulMIDIPort, E, R>,
@@ -355,14 +355,14 @@ export const isConnectionClosed = flow(
  * @internal
  */
 export const matchMutableMIDIPortProperty = <
-  const TMIDIPortProperty extends 'state' | 'connection',
+  const TMIDIPortProperty extends MIDIPortMutableProperty,
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
 >(
   property: TMIDIPortProperty,
   is: (
     port: unknown,
   ) => port is EffectfulMIDIPort<TMIDIPortTypeHighLevelRestriction>,
-) =>
+): DualMatchPort<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> =>
   dual<
     MatchPortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
     MatchPortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>
@@ -389,12 +389,12 @@ export const matchMutableMIDIPortProperty = <
 export type PortStateHandler = (port: EffectfulMIDIPort) => any
 export type MatcherConfigPlain = Record<string, PortStateHandler>
 
-export interface MatchResult<ActualConf extends MatcherConfigPlain, E, R>
-  extends Effect.Effect<ReturnType<ActualConf[keyof ActualConf]>, E, R> {}
+export interface MatchResult<TActualConf extends MatcherConfigPlain, E, R>
+  extends Effect.Effect<ReturnType<TActualConf[keyof TActualConf]>, E, R> {}
 
 export interface MatchPortFirst<
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
-  TMIDIPortProperty extends 'state' | 'connection',
+  TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
   /**
    * Description placeholder
@@ -404,23 +404,29 @@ export interface MatchPortFirst<
    * @returns
    */
   <
-    ActualConf extends GoodConfig<
+    TActualConf extends GoodConfig<
       TMIDIPortProperty,
       TMIDIPortTypeHighLevelRestriction,
-      ActualConf
+      TActualConf
     >,
     TMIDIPortType extends TMIDIPortTypeHighLevelRestriction,
     E = never,
     R = never,
   >(
     isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
-    config: ActualConf,
-  ): MatchResult<ActualConf, E, R>
+    config: TActualConf,
+  ): MatchResult<TActualConf, E, R>
 }
+
+export interface DualMatchPort<
+  TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+  TMIDIPortProperty extends MIDIPortMutableProperty,
+> extends MatchPortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
+    MatchPortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> {}
 
 export interface MatchPortLast<
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
-  TMIDIPortProperty extends 'state' | 'connection',
+  TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
   /**
    * Description placeholder
@@ -429,13 +435,13 @@ export interface MatchPortLast<
    * @returns
    */
   <
-    ActualConf extends GoodConfig<
+    TActualConf extends GoodConfig<
       TMIDIPortProperty,
       TMIDIPortTypeHighLevelRestriction,
-      ActualConf
+      TActualConf
     >,
   >(
-    config: ActualConf,
+    config: TActualConf,
   ): {
     /**
      * Description placeholder
@@ -449,7 +455,7 @@ export interface MatchPortLast<
       R = never,
     >(
       isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
-    ): MatchResult<ActualConf, E, R>
+    ): MatchResult<TActualConf, E, R>
   }
 }
 
@@ -467,7 +473,7 @@ export const matchConnectionState = matchMutableMIDIPortProperty(
 export const matchDeviceState = matchMutableMIDIPortProperty('state', is)
 
 export type GoodConfig<
-  TMIDIPortProperty extends 'state' | 'connection',
+  TMIDIPortProperty extends MIDIPortMutableProperty,
   TMIDIPortType extends MIDIPortType,
   TConfigSelf,
 > = {
@@ -489,8 +495,8 @@ export type GoodConfig<
 export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,
   TType extends MIDIPortType,
-  TE = never,
-  TR = never,
+  E = never,
+  R = never,
 > extends BuiltStream<
     'MIDIPortStateChange',
     EffectfulMIDIPort<TType>,
@@ -501,8 +507,8 @@ export interface StateChangesStream<
       } | null
     },
     TOnNullStrategy,
-    TE,
-    TR
+    E,
+    R
   > {}
 
 /**
@@ -528,12 +534,12 @@ export interface StateChangesStreamMakerPortFirst<
   <
     TType extends THighLevelTypeRestriction,
     const TOnNullStrategy extends OnNullStrategy = undefined,
-    TE = never,
-    TR = never,
+    E = never,
+    R = never,
   >(
-    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, TE, TR>,
+    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
-  ): StateChangesStream<TOnNullStrategy, TType, TE, TR>
+  ): StateChangesStream<TOnNullStrategy, TType, E, R>
 }
 
 /**
@@ -554,8 +560,10 @@ export interface StateChangesStreamMakerPortLast<
      *
      *
      */
-    <TType extends THighLevelTypeRestriction, TE = never, TR = never>(
-      isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, TE, TR>,
-    ): StateChangesStream<TOnNullStrategy, TType, TE, TR>
+    <TType extends THighLevelTypeRestriction, E = never, R = never>(
+      isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>,
+    ): StateChangesStream<TOnNullStrategy, TType, E, R>
   }
 }
+
+type MIDIPortMutableProperty = 'state' | 'connection'

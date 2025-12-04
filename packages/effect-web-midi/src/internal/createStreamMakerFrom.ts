@@ -306,20 +306,20 @@ export type StreamValue<
   readonly capturedAt: Date
 } & (
   | {
-      readonly [k in keyof TContainerWithNullableFields]: Exclude<
-        TContainerWithNullableFields[k],
+      readonly [NullableField in keyof TContainerWithNullableFields]: Exclude<
+        TContainerWithNullableFields[NullableField],
         null
       >
     }
   | ([TOnNullStrategy] extends ['passthrough']
       ? {
-          readonly [k in keyof TContainerWithNullableFields]: null
+          readonly [NullableField in keyof TContainerWithNullableFields]: null
         }
       : never)
 )
 
-export type StreamError<TOnNullStrategy extends OnNullStrategy, TE> =
-  | TE
+export type StreamError<TOnNullStrategy extends OnNullStrategy, E> =
+  | E
   | ([TOnNullStrategy] extends ['fail'] ? Cause.NoSuchElementException : never)
 
 export interface BuiltStream<
@@ -327,12 +327,12 @@ export interface BuiltStream<
   TCameFrom,
   TContainerWithNullableFields extends object,
   TOnNullStrategy extends OnNullStrategy,
-  TE = never,
-  TR = never,
+  E = never,
+  R = never,
 > extends Stream.Stream<
     StreamValue<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>,
-    StreamError<TOnNullStrategy, TE>,
-    TR
+    StreamError<TOnNullStrategy, E>,
+    R
   > {}
 
 export interface DualStreamMaker<
