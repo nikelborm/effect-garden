@@ -358,6 +358,29 @@ export const AllPortsRecord = Effect.flatMap(
 )
 
 /**
+ *
+ *
+ */
+export const getPortDeviceState = (key: MIDIPortId) =>
+  pipe(
+    AllPortsRecord,
+    Effect.flatMap(Record.get(key)),
+    EffectfulMIDIPort.getDeviceState,
+    Effect.orElseSucceed(() => 'disconnected' as const),
+  )
+
+/**
+ *
+ *
+ */
+export const getPortConnectionState = (key: MIDIPortId) =>
+  pipe(
+    AllPortsRecord,
+    Effect.flatMap(Record.get(key)),
+    EffectfulMIDIPort.getConnectionState,
+  )
+
+/**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
