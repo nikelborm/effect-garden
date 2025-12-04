@@ -1,6 +1,7 @@
 export {
   acquireReleaseConnection,
   closeConnection,
+  type DualMatchPort,
   type DualStateChangesStreamMaker,
   type EffectfulMIDIPort,
   type GoodConfig,
