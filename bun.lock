@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "@nikelborm/effect-garden",
@@ -10,6 +11,7 @@
         "@nikelborm/effect-drizzle-helpers": "workspace:*",
         "@nikelborm/effect-helpers": "workspace:*",
         "@nikelborm/effect-schema-i18n": "workspace:*",
+        "@nikelborm/effect-web-midi": "workspace:*",
         "@nikelborm/git-dl": "workspace:*",
         "@nikelborm/github-extract-issues": "workspace:*",
         "@nikelborm/joiners": "workspace:*",
@@ -257,6 +259,7 @@
         "@nikelborm/effect-drizzle-helpers": "workspace:*",
         "@nikelborm/effect-helpers": "workspace:*",
         "@nikelborm/effect-schema-i18n": "workspace:*",
+        "@nikelborm/effect-web-midi": "workspace:*",
         "@nikelborm/git-dl": "workspace:*",
         "@nikelborm/joiners": "workspace:*",
         "@nikelborm/scripts": "workspace:*",

@@ -14,6 +14,7 @@
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/github-extract-issues": "workspace:*",
+    "@nikelborm/effect-web-midi": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",
     "turbo": "^2.6.2"

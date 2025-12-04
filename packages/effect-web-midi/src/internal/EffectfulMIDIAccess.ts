@@ -58,24 +58,87 @@ export type TypeId = typeof TypeId
 // TODO: implement scope inheritance
 
 /**
+ * A tag that allows to provide
+ * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
+ * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc and reuse
+ * it anywhere, instead of repeatedly {@linkcode request}ing it. The downside to
+ * using DI might be that in different places of the app there would be harder
+ * to maintain tight MIDI permission scopes
  *
+ * @example
+ * ```ts
+ * import { EffectfulMIDIAccess } from '@nikelborm/effect-web-midi'
+ * import * as Effect from 'effect/Effect'
+ *
+ * const program = Effect.gen(function* () {
+ *   //  ^ Effect.Effect<
+ *   //      void,
+ *   //      AbortError | InvalidStateError | NotSupportedError | NotAllowedError,
+ *   //      never
+ *   //    >
+ *
+ *   const access = yield* EffectfulMIDIAccess.EffectfulMIDIAccess
+ *   //    ^ EffectfulMIDIAccessInstance
+ *
+ *   console.log(access.sysexEnabled)
+ *   //                 ^ true
+ * }).pipe(Effect.provide(EffectfulMIDIAccess.layerSystemExclusiveSupported))
+ * ```
  */
 export class EffectfulMIDIAccess extends Context.Tag(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
 )<EffectfulMIDIAccess, EffectfulMIDIAccessInstance>() {}
+
+interface RequestMIDIAccessOptions {
+  /**
+   * This field informs the system whether the ability to send and receive
+   * `System Exclusive` messages is requested or allowed on a given
+   * {@linkcode EffectfulMIDIAccessInstance} object. If this field is set to
+   * `true`, but `System Exclusive` support is denied (either by policy or by
+   * user action), the access request will fail with a
+   * {@linkcode NotAllowedError} error. If this support is not requested (and
+   * allowed), the system will throw exceptions if the user tries to send
+   * `System Exclusive` messages, and will silently mask out any `System
+   * Exclusive` messages received on the port.
+   *
+   * @default false
+   */
+  readonly software?: boolean
+
+  /**
+   * This field informs the system whether the ability to utilize any software
+   * synthesizers installed in the host system is requested or allowed on a
+   * given {@linkcode EffectfulMIDIAccessInstance} object.
+   *
+   * If this field is set to `true`, but software synthesizer support is denied
+   * (either by policy or by user action), the access request will fail with a
+   * {@linkcode NotAllowedError} error.
+   *
+   * If this support is not requested, {@linkcode AllPortsRecord},
+   * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc would
+   * not include any software synthesizers.
+   *
+   * Note that may result in a two-step request procedure if software
+   * synthesizer support is desired but not required - software synthesizers may
+   * be disabled when MIDI hardware device access is allowed.
+   *
+   * @default false
+   */
+  readonly sysex?: boolean
+}
 
 /**
  *
  * @param config
  * @returns
  */
-export const layer = (config?: MIDIOptions) =>
+export const layer = (config?: RequestMIDIAccessOptions) =>
   Layer.effect(EffectfulMIDIAccess, request(config))
 
 /**
  *
  */
-export const layerDefault = layer()
+export const layerMostRestricted = layer()
 
 /**
  *
@@ -103,7 +166,7 @@ const Proto = {
   _tag: 'EffectfulMIDIAccess' as const,
   [TypeId]: TypeId,
   [Hash.symbol](this: EffectfulMIDIAccessImplementationInstance) {
-    return Hash.structure(this._config ?? {})
+    return Hash.structure(this._config)
   },
   [Equal.symbol](that: Equal.Equal) {
     return this === that
@@ -116,10 +179,7 @@ const Proto = {
     return Inspectable.format(this.toJSON())
   },
   toJSON(this: EffectfulMIDIAccessImplementationInstance) {
-    return {
-      _id: 'EffectfulMIDIAccess',
-      config: this._config ?? null,
-    }
+    return { _id: 'EffectfulMIDIAccess', config: this._config }
   },
   [Inspectable.NodeInspectSymbol](
     this: EffectfulMIDIAccessImplementationInstance,
@@ -153,7 +213,7 @@ export interface EffectfulMIDIAccessInstance
 interface EffectfulMIDIAccessImplementationInstance
   extends EffectfulMIDIAccessInstance {
   readonly _access: MIDIAccess
-  readonly _config: Readonly<MIDIOptions> | undefined
+  readonly _config: Readonly<RequestMIDIAccessOptions>
 }
 
 /**
@@ -163,11 +223,11 @@ interface EffectfulMIDIAccessImplementationInstance
  */
 const makeImpl = (
   access: MIDIAccess,
-  config?: Readonly<MIDIOptions>,
+  config?: Readonly<RequestMIDIAccessOptions>,
 ): EffectfulMIDIAccessImplementationInstance => {
   const instance = Object.create(Proto)
   instance._access = access
-  instance._config = config
+  instance._config = config ?? {}
   return instance
 }
 
@@ -189,7 +249,7 @@ const asImpl = (access: EffectfulMIDIAccessInstance) => {
  */
 const make: (
   access: MIDIAccess,
-  config?: Readonly<MIDIOptions>,
+  config?: Readonly<RequestMIDIAccessOptions>,
 ) => EffectfulMIDIAccessInstance = makeImpl
 
 /**
@@ -207,8 +267,8 @@ const isImpl = (
   '_access' in access &&
   typeof access._access === 'object' &&
   '_config' in access &&
-  ((typeof access._config === 'object' && access._config !== null) ||
-    typeof access._config === 'undefined') &&
+  typeof access._config === 'object' &&
+  access._config !== null &&
   access._access instanceof MIDIAccess
 
 /**
@@ -354,6 +414,8 @@ export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
  */
 export const getPortDeviceState = (key: MIDIPortId) =>
   pipe(
+    // TODO: Check if software synth devices access is present. Having desired
+    // port absent in the record doesn't guarantee it's disconnected
     AllPortsRecord,
     Effect.flatMap(Record.get(key)),
     EffectfulMIDIPort.getDeviceState,
@@ -549,7 +611,7 @@ export interface SendMIDIMessageAccessLast {
  * user's system. Available only in secure contexts.
  */
 export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
-  options?: MIDIOptions,
+  options?: RequestMIDIAccessOptions,
 ) {
   yield* Effect.annotateCurrentSpan({ options })
 

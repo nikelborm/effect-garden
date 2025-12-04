@@ -11,7 +11,7 @@ export {
   InputPortsRecord,
   is,
   layer,
-  layerDefault,
+  layerMostRestricted,
   layerSoftwareSynthSupported,
   layerSystemExclusiveAndSoftwareSynthSupported,
   layerSystemExclusiveSupported,
