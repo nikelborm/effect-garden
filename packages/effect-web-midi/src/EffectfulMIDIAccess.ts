@@ -5,6 +5,8 @@ export {
   getAllPortsRecord,
   getInputPortsRecord,
   getOutputPortsRecord,
+  getPortConnectionState,
+  getPortDeviceState,
   InputPortsRecord,
   is,
   layer,
