@@ -38,7 +38,7 @@ import {
 // you don't have to constantly write the prefix
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccess}
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
  * @internal
  */
@@ -47,7 +47,7 @@ const TypeId: unique symbol = Symbol.for(
 )
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccess}
+ * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
  */
 export type TypeId = typeof TypeId
@@ -57,14 +57,12 @@ export type TypeId = typeof TypeId
 
 // TODO: implement scope inheritance
 
-// TODO: services for access, input ports map, output ports map, etc
-
 /**
  *
  */
-export class Tag extends Context.Tag(
-  '@nikelborm/effect-web-midi/EffectfulMIDIAccess/Tag',
-)<Tag, EffectfulMIDIAccess>() {}
+export class EffectfulMIDIAccess extends Context.Tag(
+  '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
+)<EffectfulMIDIAccess, EffectfulMIDIAccessInstance>() {}
 
 /**
  *
@@ -72,7 +70,7 @@ export class Tag extends Context.Tag(
  * @returns
  */
 export const layer = (config?: MIDIOptions) =>
-  Layer.effect(Tag, request(config))
+  Layer.effect(EffectfulMIDIAccess, request(config))
 
 /**
  *
@@ -98,13 +96,13 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
 })
 
 /**
- * Prototype of all {@linkcode EffectfulMIDIAccess} instances
+ * Prototype of all {@linkcode EffectfulMIDIAccessInstance} instances
  * @internal
  */
 const Proto = {
   _tag: 'EffectfulMIDIAccess' as const,
   [TypeId]: TypeId,
-  [Hash.symbol](this: EffectfulMIDIAccessImpl) {
+  [Hash.symbol](this: EffectfulMIDIAccessImplementationInstance) {
     return Hash.structure(this._config ?? {})
   },
   [Equal.symbol](that: Equal.Equal) {
@@ -114,29 +112,31 @@ const Proto = {
     // biome-ignore lint/complexity/noArguments: Effect's tradition
     return Pipeable.pipeArguments(this, arguments)
   },
-  toString(this: EffectfulMIDIAccessImpl) {
+  toString(this: EffectfulMIDIAccessImplementationInstance) {
     return Inspectable.format(this.toJSON())
   },
-  toJSON(this: EffectfulMIDIAccessImpl) {
+  toJSON(this: EffectfulMIDIAccessImplementationInstance) {
     return {
       _id: 'EffectfulMIDIAccess',
       config: this._config ?? null,
     }
   },
-  [Inspectable.NodeInspectSymbol](this: EffectfulMIDIAccessImpl) {
+  [Inspectable.NodeInspectSymbol](
+    this: EffectfulMIDIAccessImplementationInstance,
+  ) {
     return this.toJSON()
   },
 
   get sysexEnabled() {
     return asImpl(this)._access.sysexEnabled
   },
-} satisfies EffectfulMIDIAccess
+} satisfies EffectfulMIDIAccessInstance
 
 /**
  * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all of
  * the external code.
  */
-export interface EffectfulMIDIAccess
+export interface EffectfulMIDIAccessInstance
   extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable,
@@ -150,7 +150,8 @@ export interface EffectfulMIDIAccess
  * actual field storing it.
  * @internal
  */
-interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
+interface EffectfulMIDIAccessImplementationInstance
+  extends EffectfulMIDIAccessInstance {
   readonly _access: MIDIAccess
   readonly _config: Readonly<MIDIOptions> | undefined
 }
@@ -163,7 +164,7 @@ interface EffectfulMIDIAccessImpl extends EffectfulMIDIAccess {
 const makeImpl = (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
-): EffectfulMIDIAccessImpl => {
+): EffectfulMIDIAccessImplementationInstance => {
   const instance = Object.create(Proto)
   instance._access = access
   instance._config = config
@@ -176,7 +177,7 @@ const makeImpl = (
  *
  * @internal
  */
-const asImpl = (access: EffectfulMIDIAccess) => {
+const asImpl = (access: EffectfulMIDIAccessInstance) => {
   if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
   return access
 }
@@ -189,14 +190,16 @@ const asImpl = (access: EffectfulMIDIAccess) => {
 const make: (
   access: MIDIAccess,
   config?: Readonly<MIDIOptions>,
-) => EffectfulMIDIAccess = makeImpl
+) => EffectfulMIDIAccessInstance = makeImpl
 
 /**
  *
  *
  * @internal
  */
-const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
+const isImpl = (
+  access: unknown,
+): access is EffectfulMIDIAccessImplementationInstance =>
   typeof access === 'object' &&
   access !== null &&
   Object.getPrototypeOf(access) === Proto &&
@@ -212,7 +215,8 @@ const isImpl = (access: unknown): access is EffectfulMIDIAccessImpl =>
  *
  *
  */
-export const is: (access: unknown) => access is EffectfulMIDIAccess = isImpl
+export const is: (access: unknown) => access is EffectfulMIDIAccessInstance =
+  isImpl
 
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
@@ -285,7 +289,7 @@ const getAllPortsEntriesFromRaw = (
 const decorateToTakeIsomorphicAccessAndReturnRecord =
   <T>(accessor: (access: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
   <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) =>
     Effect.map(
       fromIsomorphic(accessIsomorphic, is),
@@ -327,6 +331,33 @@ export const getAllPortsRecord = decorateToTakeIsomorphicAccessAndReturnRecord(
 )
 
 /**
+ *
+ *
+ */
+export const InputPortsRecord = Effect.flatMap(
+  EffectfulMIDIAccess,
+  getInputPortsRecord,
+)
+
+/**
+ *
+ *
+ */
+export const OutputPortsRecord = Effect.flatMap(
+  EffectfulMIDIAccess,
+  getInputPortsRecord,
+)
+
+/**
+ *
+ *
+ */
+export const AllPortsRecord = Effect.flatMap(
+  EffectfulMIDIAccess,
+  getInputPortsRecord,
+)
+
+/**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
@@ -363,7 +394,7 @@ export const makeMIDIPortStateChangesStream =
 // from something into an actual API
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIAccess, E, R> {}
+  extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
 
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
@@ -468,7 +499,7 @@ export interface MIDIMessageSenderAccessFirst {
    *
    */
   <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
@@ -485,7 +516,7 @@ export interface MIDIMessageSenderAccessLast {
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ): <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) => SentMessageEffectFromAccess<E, R>
 }
 

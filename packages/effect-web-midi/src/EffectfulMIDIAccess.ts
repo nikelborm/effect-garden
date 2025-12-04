@@ -1,5 +1,5 @@
 export {
-  type EffectfulMIDIAccess,
+  type EffectfulMIDIAccessInstance as EffectfulMIDIAccess,
   getAllPortsRecord,
   getInputPortsRecord,
   getOutputPortsRecord,
@@ -15,7 +15,7 @@ export {
   request,
   type SentMessageEffectFromAccess,
   send,
-  Tag,
+  EffectfulMIDIAccess as Tag,
   type TargetPortSelector,
   type TypeId,
 } from './internal/EffectfulMIDIAccess.ts'
