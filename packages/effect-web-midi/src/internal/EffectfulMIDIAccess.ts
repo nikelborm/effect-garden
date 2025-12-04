@@ -1,17 +1,19 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
-import { Order, pipe, SortedMap, type Tuple } from 'effect'
+import { SortedMap } from 'effect'
 import * as EArray from 'effect/Array'
-import * as Iterable from 'effect/Iterable'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import { dual, flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
+import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Pipeable from 'effect/Pipeable'
+import * as Record from 'effect/Record'
+import type * as Types from 'effect/Types'
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
@@ -23,10 +25,11 @@ import {
   NotSupportedError,
   remapErrorByName,
 } from './errors.ts'
-import type { MIDIPortId, SentMessageEffectFrom } from './util.ts'
-import * as Record from 'effect/Record'
-import * as Types from 'effect/Types'
-import * as Unify from 'effect/Unify'
+import {
+  isomorphicCheckInDual,
+  type MIDIPortId,
+  type SentMessageEffectFrom,
+} from './util.ts'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -352,7 +355,7 @@ export const send = dual<
   MIDIMessageSenderAccessLast,
   MIDIMessageSenderAccessFirst
 >(
-  args => Effect.isEffect(args[0]) || is(args[0]),
+  isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
     function* (access, target, midiMessage, timestamp) {
       const outputs = yield* getOutputPorts(access)

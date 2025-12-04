@@ -26,7 +26,7 @@
     "effect": "catalog:",
     "effect-octokit-layer": "catalog:",
     "outdent": "catalog:",
-    "tinybench": "^5.1.0",
+    "tinybench": "^6.0.0",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:"
   }

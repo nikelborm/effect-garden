@@ -7,6 +7,11 @@ import * as Stream from 'effect/Stream'
 import type { EffectfulMIDIAccess } from './EffectfulMIDIAccess.ts'
 import type { EffectfulMIDIInputPort } from './EffectfulMIDIInputPort.ts'
 import type { EffectfulMIDIOutputPort } from './EffectfulMIDIOutputPort.ts'
+import {
+  fromIsomorphic,
+  type IsomorphicEffect,
+  isomorphicCheckInDual,
+} from './util.ts'
 
 // TODO: make stream maker isomorphic
 
@@ -110,85 +115,64 @@ export const createStreamMakerFrom =
       fieldValue: TEventTypeToEventValueMap[TSelectedEventType][TNullableFieldName],
     ) => TContainerWithNullableFields,
   ): DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
-    dual(
-      args => Effect.isEffect(args[0]) || isSelf(args[0]),
-      (cameFrom: TCameFrom, options?: StreamMakerOptions<OnNullStrategy>) => {
-        const {
-          tag,
-          eventListener: { target, type },
-          spanAttributes,
-          nullableFieldName: field,
-        } = buildConfig(cameFrom)
+    dual<
+      StreamMakerTargetLast<TCameFrom, TTag, TContainerWithNullableFields>,
+      StreamMakerTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>
+    >(
+      isomorphicCheckInDual(isSelf),
+      (cameFromIsomorphic, options) =>
+        Effect.gen(function* () {
+          const onNullStrategy = ((
+            options as { onExtremelyRareNullableField?: OnNullStrategy }
+          )?.onExtremelyRareNullableField ?? 'die') as Exclude<
+            OnNullStrategy,
+            undefined
+          >
 
-        const onNullStrategy = ((
-          options as { onExtremelyRareNullableField?: OnNullStrategy }
-        )?.onExtremelyRareNullableField ?? 'die') as Exclude<
-          OnNullStrategy,
-          undefined
-        >
+          if (!validOnNullStrategies.has(onNullStrategy))
+            throw new Error(
+              `Invalid strategy to handle nullish values: ${onNullStrategy}`,
+            )
 
-        if (!validOnNullStrategies.has(onNullStrategy))
-          throw new Error(
-            `Invalid strategy to handle nullish values: ${onNullStrategy}`,
+          const cameFrom = yield* fromIsomorphic(cameFromIsomorphic, isSelf)
+
+          const {
+            tag,
+            eventListener: { target, type },
+            spanAttributes,
+            nullableFieldName: field,
+          } = buildConfig(cameFrom)
+
+          const missingFieldMessage = `Property ${field} of ${tag} is null`
+          const NullCausedErrorEffect = new Cause.NoSuchElementException(
+            missingFieldMessage,
           )
 
-        if (!isSelf(cameFrom))
-          throw new TypeError(
-            'Stream maker is called with wrong arguments. The type of argument `self` is incorrect',
+          return Stream.fromEventListener(target, type, options).pipe(
+            Stream.filter(
+              event => !!event[field] || onNullStrategy !== 'ignore',
+            ),
+            Stream.mapEffect(event =>
+              event[field] || onNullStrategy === 'passthrough'
+                ? Effect.succeed({
+                    _tag: tag,
+                    ...remapValueToContainer(event[field]),
+                    cameFrom,
+                    capturedAt: new Date(),
+                  })
+                : onNullStrategy === 'fail'
+                  ? NullCausedErrorEffect
+                  : Effect.dieMessage(missingFieldMessage),
+            ),
+            Stream.withSpan('MIDI Web API event stream', {
+              kind: 'producer',
+              attributes: { eventType: type, ...spanAttributes },
+            }),
           )
-
-        const missingFieldMessage = `Property ${field} of ${tag} is null`
-        const NullCausedErrorEffect = new Cause.NoSuchElementException(
-          missingFieldMessage,
-        )
-
-        return Stream.fromEventListener(target, type, options).pipe(
-          Stream.filter(event => !!event[field] || onNullStrategy !== 'ignore'),
-          Stream.mapEffect(event =>
-            event[field] || onNullStrategy === 'passthrough'
-              ? Effect.succeed({
-                  _tag: tag,
-                  ...remapValueToContainer(event[field]),
-                  cameFrom,
-                  capturedAt: new Date(),
-                })
-              : onNullStrategy === 'fail'
-                ? NullCausedErrorEffect
-                : Effect.dieMessage(missingFieldMessage),
-          ),
-          Stream.withSpan('MIDI Web API event stream', {
-            kind: 'producer',
-            attributes: { eventType: type, ...spanAttributes },
-          }),
-        )
-      },
+        }).pipe(Stream.unwrap) as any,
     )
 
-const _makeStreamFromWrapped = <
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
->(
-  makeStream: DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields>,
-) =>
-  dual<
-    StreamMakerFromEffectTargetLast<
-      TCameFrom,
-      TTag,
-      TContainerWithNullableFields
-    >,
-    StreamMakerFromEffectTargetFirst<
-      TCameFrom,
-      TTag,
-      TContainerWithNullableFields
-    >
-  >(
-    args => Effect.isEffect(args[0]),
-    (wrappedSelf, options) =>
-      wrappedSelf.pipe(Effect.map(makeStream(options)), Stream.unwrap),
-  )
-
-export interface StreamConfig<
+interface StreamConfig<
   TTag,
   TEventTarget,
   TSelectedEventType,
@@ -361,17 +345,28 @@ export interface StreamMakerTargetFirst<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param eventTarget An effectful entity that wraps the raw MIDI object,
-   * which triggered an event. Will be assigned to the `cameFrom` property of
-   * the stream's success channel object
+   * @param isomorphicEventTarget Raw MIDI object, which triggers events,
+   * wrapped in this lib's abstraction and potentially inside Effect. Will be
+   * assigned to the `cameFrom` property of the stream's success channel object
    *
    * @param options Passing a boolean is equivalent to setting `options.capture`
    * property
    */
-  <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    eventTarget: TCameFrom,
+  <
+    E = never,
+    R = never,
+    const TOnNullStrategy extends OnNullStrategy = undefined,
+  >(
+    isomorphicEventTarget: IsomorphicEffect<TCameFrom, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
-  ): BuiltStream<TTag, TCameFrom, TContainerWithNullableFields, TOnNullStrategy>
+  ): BuiltStream<
+    TTag,
+    TCameFrom,
+    TContainerWithNullableFields,
+    TOnNullStrategy,
+    E,
+    R
+  >
 }
 
 export interface StreamMakerTargetLast<
@@ -385,67 +380,21 @@ export interface StreamMakerTargetLast<
    *
    * **Second call argument**
    *
-   * - `eventTarget` An effectful entity that wraps the raw MIDI object,
-   *   which triggered an event. Will be assigned to the `cameFrom` property of
-   *   the stream's success channel object
+   * - `isomorphicEventTarget` Raw MIDI object, which triggers events, wrapped
+   *   in this lib's abstraction and potentially inside Effect. Will be assigned
+   *   to the `cameFrom` property of the stream's success channel object
    */
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
-     * @param eventTarget An effectful entity that wraps the raw MIDI
-     * object, which triggered an event. Will be assigned to the `cameFrom`
-     * property of the stream's success channel object
+     * @param isomorphicEventTarget Raw MIDI object, which triggers events,
+     * wrapped in this lib's abstraction and potentially inside Effect. Will be
+     * assigned to the `cameFrom` property of the stream's success channel
+     * object
      */
-    (
-      eventTarget: TCameFrom,
-    ): BuiltStream<
-      TTag,
-      TCameFrom,
-      TContainerWithNullableFields,
-      TOnNullStrategy
-    >
-  }
-}
-
-export interface DualStreamMakerFromEffect<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> extends StreamMakerFromEffectTargetLast<
-      TCameFrom,
-      TTag,
-      TContainerWithNullableFields
-    >,
-    StreamMakerFromEffectTargetFirst<
-      TCameFrom,
-      TTag,
-      TContainerWithNullableFields
-    > {}
-
-export interface StreamMakerFromEffectTargetLast<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> {
-  /**
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
-   *
-   * **Second call argument**
-   *
-   * - `wrappedEventTarget` An effect, that in success channel has entity that
-   *   wraps the raw MIDI object, which triggered an event
-   */
-  <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    options?: StreamMakerOptions<TOnNullStrategy>,
-  ): {
-    /**
-     * @param wrappedEventTarget An effect, that in success channel has entity
-     * that wraps the raw MIDI object, which triggered an event
-     */
-    <E, R>(
-      wrappedEventTarget: Effect.Effect<TCameFrom, E, R>,
+    <E = never, R = never>(
+      isomorphicEventTarget: IsomorphicEffect<TCameFrom, E, R>,
     ): BuiltStream<
       TTag,
       TCameFrom,
@@ -455,29 +404,4 @@ export interface StreamMakerFromEffectTargetLast<
       R
     >
   }
-}
-
-export interface StreamMakerFromEffectTargetFirst<
-  TCameFrom,
-  TTag extends string,
-  TContainerWithNullableFields extends object,
-> {
-  /**
-   * @param wrappedEventTarget An effect, that in success channel has entity
-   * that wraps the raw MIDI object, which triggered an event
-   *
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
-   */
-  <E, R, const TOnNullStrategy extends OnNullStrategy = undefined>(
-    wrappedEventTarget: Effect.Effect<TCameFrom, E, R>,
-    options?: StreamMakerOptions<TOnNullStrategy>,
-  ): BuiltStream<
-    TTag,
-    TCameFrom,
-    TContainerWithNullableFields,
-    TOnNullStrategy,
-    E,
-    R
-  >
 }

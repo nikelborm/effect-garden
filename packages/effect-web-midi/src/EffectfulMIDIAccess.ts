@@ -1,5 +1,6 @@
 export {
   type EffectfulMIDIAccess,
+  getAllPorts,
   getInputPorts,
   getOutputPorts,
   is,

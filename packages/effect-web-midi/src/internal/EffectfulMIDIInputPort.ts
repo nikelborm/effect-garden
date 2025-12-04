@@ -73,13 +73,15 @@ export const makeStateChangesStream =
  *
  */
 export const matchConnectionState =
-  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
 
 /**
  *
  */
-export const matchDeviceState =
-  EffectfulMIDIPort.matchMutableMIDIPortProperty('state')<'input'>()
+export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
+  'state',
+  is,
+)
 
 /**
  * [MIDIMessageEvent MDN

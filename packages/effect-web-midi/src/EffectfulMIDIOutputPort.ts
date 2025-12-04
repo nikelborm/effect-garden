@@ -2,6 +2,8 @@ export {
   clear,
   type EffectfulMIDIOutputPort,
   is,
+  type MIDIMessageSenderPortFirst,
+  type MIDIMessageSenderPortLast,
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,

@@ -1,5 +1,5 @@
 import * as Brand from 'effect/Brand'
-import type * as Effect from 'effect/Effect'
+import * as Effect from 'effect/Effect'
 import * as Struct from 'effect/Struct'
 import type {
   BadMidiMessageError,
@@ -40,3 +40,22 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
     E | InvalidAccessError | InvalidStateError | BadMidiMessageError,
     R
   > {}
+
+export type IsomorphicEffect<A, E, R> = A | Effect.Effect<A, E, R>
+
+export const isomorphicCheckInDual =
+  (is: (arg: unknown) => boolean) => (arg: IArguments) =>
+    Effect.isEffect(arg[0]) || is(arg[0])
+
+export function* fromIsomorphic<A, E = never, R = never>(
+  isomorphicValue: IsomorphicEffect<A, E, R>,
+  is: (arg: unknown) => arg is A,
+) {
+  const value = Effect.isEffect(isomorphicValue)
+    ? yield* isomorphicValue
+    : isomorphicValue
+
+  if (!is(value)) throw new Error('Assertion failed on isomorphic value')
+
+  return value
+}

@@ -9,7 +9,13 @@ import {
   InvalidStateError,
   remapErrorByName,
 } from './errors.ts'
-import { getStaticMIDIPortInfo, type SentMessageEffectFrom } from './util.ts'
+import {
+  fromIsomorphic,
+  getStaticMIDIPortInfo,
+  type IsomorphicEffect,
+  isomorphicCheckInDual,
+  type SentMessageEffectFrom,
+} from './util.ts'
 
 /**
  * Wrapper around {@linkcode MIDIOutput} instances
@@ -72,13 +78,15 @@ export const makeStateChangesStream =
  *
  */
 export const matchConnectionState =
-  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection')<'input'>()
+  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
 
 /**
  *
  */
-export const matchDeviceState =
-  EffectfulMIDIPort.matchMutableMIDIPortProperty('state')<'input'>()
+export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
+  'state',
+  is,
+)
 
 /**
  * If midiMessage is a System Exclusive message, and the MIDIAccess did not
@@ -93,12 +101,10 @@ export const matchDeviceState =
  * @returns An effect with the same port for easier chaining of operations
  */
 export const send = dual<MIDIMessageSenderPortLast, MIDIMessageSenderPortFirst>(
-  args => Effect.isEffect(args[0]) || is(args[0]),
+  isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIOutputPort.send')(
     function* (outputPortIsomorphic, midiMessage, timestamp) {
-      const outputPort = Effect.isEffect(outputPortIsomorphic)
-        ? yield* outputPortIsomorphic
-        : outputPortIsomorphic
+      const outputPort = yield* fromIsomorphic(outputPortIsomorphic, is)
 
       const rawPort = asImpl(outputPort)._port
 
@@ -136,10 +142,8 @@ export interface MIDIMessageSenderPortLast {
     /**
      *
      */
-    <E, R>(
-      outputPort:
-        | EffectfulMIDIOutputPort
-        | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+    <E = never, R = never>(
+      outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
     ): SentMessageEffect<E, R>
   }
 }
@@ -148,10 +152,8 @@ export interface MIDIMessageSenderPortFirst {
   /**
    *
    */
-  <E, R>(
-    outputPort:
-      | EffectfulMIDIOutputPort
-      | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
+  <E = never, R = never>(
+    outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ): SentMessageEffect<E, R>
@@ -176,16 +178,10 @@ export interface SentMessageEffect<E = never, R = never>
  * @returns An effect with the same port for easier chaining of operations
  */
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
-  E,
-  R,
->(
-  outputPortIsomorphic:
-    | EffectfulMIDIOutputPort
-    | Effect.Effect<EffectfulMIDIOutputPort, E, R>,
-) {
-  const outputPort = Effect.isEffect(outputPortIsomorphic)
-    ? yield* outputPortIsomorphic
-    : outputPortIsomorphic
+  E = never,
+  R = never,
+>(outputPortIsomorphic: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>) {
+  const outputPort = yield* fromIsomorphic(outputPortIsomorphic, is)
 
   const rawPort = asImpl(outputPort)._port
 
