@@ -419,7 +419,7 @@ export type TargetPortSelector =
  * delivered, or all not delivered, as in ACID transactions. There's not even a
  * mechanism to remove a specific message (not all) from the sending queue
  */
-export const send = dual<
+export const send: DualMIDIMessageSenderAccess = dual<
   MIDIMessageSenderAccessLast,
   MIDIMessageSenderAccessFirst
 >(
@@ -504,6 +504,10 @@ export const send = dual<
     },
   ),
 )
+
+export interface DualMIDIMessageSenderAccess
+  extends MIDIMessageSenderAccessFirst,
+    MIDIMessageSenderAccessLast {}
 
 export interface MIDIMessageSenderAccessFirst {
   /**

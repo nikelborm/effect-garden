@@ -205,7 +205,7 @@ const callMIDIPortMethod = <TError = never>(
 
     yield* Effect.annotateCurrentSpan({
       method,
-      port: getStaticMIDIPortInfo(asImpl(port)._port),
+      port: getStaticMIDIPortInfo(port),
     })
 
     yield* Effect.tryPromise({
@@ -254,7 +254,7 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
     eventListener: { target: asImpl(port)._port, type: 'statechange' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
-      port: getStaticMIDIPortInfo(asImpl(port)._port),
+      port: getStaticMIDIPortInfo(port),
     },
     nullableFieldName: 'port',
   }),
@@ -368,21 +368,19 @@ export const matchMutableMIDIPortProperty = <
     MatchPortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>
   >(
     isomorphicCheckInDual(is),
-    Effect.fn('matchMutableMIDIPortProperty')(
-      function* (isomorphicPort, config) {
-        const port = yield* fromIsomorphic(isomorphicPort, is)
+    Effect.fn(function* (isomorphicPort, config) {
+      const port = yield* fromIsomorphic(isomorphicPort, is)
 
-        const state = getValueInRawPortFieldUnsafe(property)(port)
+      const state = getValueInRawPortFieldUnsafe(property)(port)
 
-        for (const [stateCase, stateCallback] of Record.toEntries(config))
-          if (state === stateCase)
-            return (stateCallback as PortStateHandler)(port)
+      for (const [stateCase, stateCallback] of Record.toEntries(config))
+        if (state === stateCase)
+          return (stateCallback as PortStateHandler)(port)
 
-        throw new Error(
-          `AssertionFailed: Missing handler for "${state}" state inside "${property}" property`,
-        )
-      },
-    ),
+      return yield* Effect.dieMessage(
+        `AssertionFailed: Missing handler for "${state}" state inside "${property}" property`,
+      )
+    }),
   )
 
 // biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>

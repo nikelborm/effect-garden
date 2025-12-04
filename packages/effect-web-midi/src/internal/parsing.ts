@@ -41,12 +41,6 @@ export const withTouchpadPositionUpdates = <
     { x: 0, y: 0, seenPressedTouchpadEventsInARow: 0 },
     (ctx, current) => {
       const { midiMessage, ...rest } = current
-      // TODO: use Match.valueTags?
-      // Match.valueTags(midiMessage, {
-      //   'Control Change': e => 'control',
-      //   'Pitch Bend Change': () => 'pitch',
-      //   'Touchpad Release': () => 0, // resets everything
-      // })
       const select = <T>(control: T, pitch: T, previous: T) =>
         ({
           'Control Change': control,

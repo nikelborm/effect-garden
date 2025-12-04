@@ -26,9 +26,9 @@ export const midiPortStaticFields = [
 
 export type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
-// TODO: call toJSON instead?
-export const getStaticMIDIPortInfo = (port: MIDIPort) =>
-  Struct.pick(port, ...midiPortStaticFields)
+export const getStaticMIDIPortInfo = (
+  port: Pick<MIDIPort, MIDIPortStaticFields>,
+) => Struct.pick(port, ...midiPortStaticFields)
 
 /**
  * Puts Self into success channel for easier chaining of operations on the same

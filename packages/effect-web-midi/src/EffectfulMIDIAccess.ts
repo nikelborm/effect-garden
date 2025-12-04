@@ -1,5 +1,6 @@
 export {
   AllPortsRecord,
+  type DualMIDIMessageSenderAccess,
   EffectfulMIDIAccess,
   type EffectfulMIDIAccessInstance,
   getAllPortsRecord,

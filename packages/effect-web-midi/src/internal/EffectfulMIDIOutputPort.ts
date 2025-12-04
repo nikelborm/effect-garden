@@ -102,22 +102,23 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const send = dual<MIDIMessageSenderPortLast, MIDIMessageSenderPortFirst>(
+export const send: DualMIDIMessageSenderPort = dual<
+  MIDIMessageSenderPortLast,
+  MIDIMessageSenderPortFirst
+>(
   isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIOutputPort.send')(
     function* (outputPortIsomorphic, midiMessage, timestamp) {
       const outputPort = yield* fromIsomorphic(outputPortIsomorphic, is)
 
-      const rawPort = asImpl(outputPort)._port
-
       yield* Effect.annotateCurrentSpan({
         midiMessage,
         timestamp,
-        port: getStaticMIDIPortInfo(rawPort),
+        port: getStaticMIDIPortInfo(outputPort),
       })
 
       yield* Effect.try({
-        try: () => rawPort.send(midiMessage, timestamp),
+        try: () => asImpl(outputPort)._port.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
             InvalidAccessError,
@@ -132,6 +133,10 @@ export const send = dual<MIDIMessageSenderPortLast, MIDIMessageSenderPortFirst>(
     },
   ),
 )
+
+export interface DualMIDIMessageSenderPort
+  extends MIDIMessageSenderPortLast,
+    MIDIMessageSenderPortFirst {}
 
 export interface MIDIMessageSenderPortLast {
   /**
@@ -187,12 +192,10 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
 >(isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>) {
   const outputPort = yield* fromIsomorphic(isomorphicOutputPort, is)
 
-  const rawPort = asImpl(outputPort)._port
-
-  yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(rawPort) })
+  yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
 
   // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
-  yield* Effect.sync(() => rawPort.clear())
+  yield* Effect.sync(() => asImpl(outputPort)._port.clear())
 
   return outputPort
 })

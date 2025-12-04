@@ -99,7 +99,7 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
     eventListener: { target: asImpl(inputPort)._port, type: 'midimessage' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
-      port: getStaticMIDIPortInfo(asImpl(inputPort)._port),
+      port: getStaticMIDIPortInfo(inputPort),
     },
     nullableFieldName: 'data',
   }),

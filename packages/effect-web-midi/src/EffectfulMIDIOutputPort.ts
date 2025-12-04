@@ -1,5 +1,6 @@
 export {
   clear,
+  type DualMIDIMessageSenderPort,
   type EffectfulMIDIOutputPort,
   is,
   type MIDIMessageSenderPortFirst,
