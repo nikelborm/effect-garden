@@ -1,11 +1,10 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
-import { SortedMap } from 'effect'
 import * as EArray from 'effect/Array'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-import { dual, flow } from 'effect/Function'
+import { dual, flow, pipe } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Iterable from 'effect/Iterable'
@@ -26,6 +25,8 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import {
+  fromIsomorphic,
+  type IsomorphicEffect,
   isomorphicCheckInDual,
   type MIDIPortId,
   type SentMessageEffectFrom,
@@ -214,9 +215,9 @@ type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
 /**
  *
- *
+ * @internal
  */
-const getPortEntries =
+const getPortEntriesFromRawAccess =
   <
     const TMIDIPortType extends MIDIPortType,
     const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
@@ -236,27 +237,27 @@ const getPortEntries =
 
 /**
  *
- *
+ * @internal
  */
-const getInputPortEntries = getPortEntries(
+const getInputPortEntriesFromRaw = getPortEntriesFromRawAccess(
   'inputs',
   EffectfulMIDIInputPort.make,
 )
 
 /**
  *
- *
+ * @internal
  */
-const getOutputPortEntries = getPortEntries(
+const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
   'outputs',
   EffectfulMIDIOutputPort.make,
 )
 
 /**
  *
- *
+ * @internal
  */
-const getAllPortsEntries = (
+const getAllPortsEntriesFromRaw = (
   access: MIDIAccess,
 ): Iterable<
   [
@@ -267,9 +268,27 @@ const getAllPortsEntries = (
     ),
   ]
 > =>
-  Iterable.appendAll(getInputPortEntries(access), getOutputPortEntries(access))
+  Iterable.appendAll(
+    getInputPortEntriesFromRaw(access),
+    getOutputPortEntriesFromRaw(access),
+  )
 
-// TODO: isomorphic
+/**
+ *
+ * @param accessor
+ * @returns
+ * @internal
+ */
+const adasd =
+  <T>(accessor: (access: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
+  <E = never, R = never>(
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
+  ) =>
+    Effect.map(
+      fromIsomorphic(accessIsomorphic, is),
+      flow(asImpl, e => e._access, accessor, Record.fromEntries),
+    )
+
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
@@ -280,9 +299,8 @@ const getAllPortsEntries = (
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
-export const getInputPorts = flow(getInputPortEntries, Record.fromEntries)
+export const getInputPortsRecord = adasd(getInputPortEntriesFromRaw)
 
-// TODO: isomorphic
 /**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
@@ -293,13 +311,13 @@ export const getInputPorts = flow(getInputPortEntries, Record.fromEntries)
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
-export const getOutputPorts = flow(getOutputPortEntries, Record.fromEntries)
+export const getOutputPortsRecord = adasd(getOutputPortEntriesFromRaw)
 
 /**
  *
  *
  */
-export const getAllPorts = flow(getAllPortsEntries, Record.fromEntries)
+export const getAllPortsRecord = adasd(getAllPortsEntriesFromRaw)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -337,10 +355,10 @@ export const makeMIDIPortStateChangesStream =
 // TODO: add sinks that will accepts command streams to redirect midi commands
 // from something into an actual API
 
-export interface SentMessageEffect<E = never, R = never>
+export interface SentMessageEffectFromAccess<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIAccess, E, R> {}
 
-type TargetPortSelector =
+export type TargetPortSelector =
   | 'all existing outputs at effect execution'
   | 'all open connections at effect execution'
   | MIDIPortId
@@ -357,19 +375,21 @@ export const send = dual<
 >(
   isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
-    function* (access, target, midiMessage, timestamp) {
-      const outputs = yield* getOutputPorts(access)
+    function* (accessIsomorphic, target, midiMessage, timestamp) {
+      const access = yield* fromIsomorphic(accessIsomorphic, is)
+
+      const outputs = yield* getOutputPortsRecord(access)
 
       if (target === 'all existing outputs at effect execution')
-        return yield* outputs.pipe(
-          SortedMap.values,
+        return yield* pipe(
+          Record.values(outputs),
           Effect.forEach(EffectfulMIDIOutputPort.send(midiMessage, timestamp)),
-          Effect.asVoid,
+          Effect.as(access),
         )
 
       if (target === 'all open connections at effect execution')
-        return yield* outputs.pipe(
-          SortedMap.values,
+        return yield* pipe(
+          Record.values(outputs),
           // TODO: maybe also do something about pending?
           Effect.filter(EffectfulMIDIPort.isConnectionOpen),
           Effect.flatMap(
@@ -377,7 +397,7 @@ export const send = dual<
               EffectfulMIDIOutputPort.send(midiMessage, timestamp),
             ),
           ),
-          Effect.asVoid,
+          Effect.as(access),
         )
 
       // TODO: maybe since deviceState returns always connected devices we can
@@ -386,7 +406,7 @@ export const send = dual<
       const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
-        Option.match(SortedMap.get(outputs, id), {
+        Option.match(Record.get(outputs, id), {
           onNone: () => Effect.succeed('disconnected' as const),
           onSome: EffectfulMIDIPort.getDeviceState,
         }),
@@ -405,16 +425,19 @@ export const send = dual<
 
       const sendToSome = (predicate: (id: MIDIPortId) => boolean) =>
         Effect.all(
-          SortedMap.reduce(
+          Record.reduce(
             outputs,
-            [] as EffectfulMIDIOutputPort.SentMessageEffect[],
-            (acc, port, id) =>
-              predicate(id)
+            [] as EffectfulMIDIOutputPort.SentMessageEffectFromPort[],
+            // TODO: investigate what the fuck is going on, why the fuck can't I make it a simple expression
+            (acc, port, id) => {
+              const newAcc = predicate(id)
                 ? [
                     ...acc,
                     EffectfulMIDIOutputPort.send(port, midiMessage, timestamp),
                   ]
-                : acc,
+                : acc
+              return newAcc
+            },
           ),
         )
 
@@ -430,12 +453,12 @@ export interface MIDIMessageSenderAccessFirst {
    *
    *
    */
-  (
-    access: EffectfulMIDIAccess,
+  <E = never, R = never>(
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ): SentMessageEffect
+  ): SentMessageEffectFromAccess<E, R>
 }
 
 export interface MIDIMessageSenderAccessLast {
@@ -447,7 +470,9 @@ export interface MIDIMessageSenderAccessLast {
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ): (access: EffectfulMIDIAccess) => SentMessageEffect
+  ): <E = never, R = never>(
+    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccess, E, R>,
+  ) => SentMessageEffectFromAccess<E, R>
 }
 
 /**

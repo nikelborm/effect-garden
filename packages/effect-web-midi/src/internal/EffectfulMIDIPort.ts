@@ -261,7 +261,7 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
     }) as const,
 ) as DualStateChangesStreamMaker
 
-const getValueInRawPortField =
+const getValueInRawPortFieldUnsafe =
   <const TPortMutableProperty extends 'state' | 'connection'>(
     property: TPortMutableProperty,
   ) =>
@@ -272,12 +272,10 @@ const getMutableProperty =
   <const TPortMutableProperty extends 'state' | 'connection'>(
     property: TPortMutableProperty,
   ) =>
-  <E = never, R = never>(
-    port: EffectfulMIDIPort | Effect.Effect<EffectfulMIDIPort, E, R>,
-  ) =>
+  <E = never, R = never>(port: IsomorphicEffect<EffectfulMIDIPort, E, R>) =>
     Effect.isEffect(port)
-      ? Effect.map(port, getValueInRawPortField(property))
-      : Effect.sync(() => getValueInRawPortField(property)(port))
+      ? Effect.map(port, getValueInRawPortFieldUnsafe(property))
+      : Effect.sync(() => getValueInRawPortFieldUnsafe(property)(port))
 
 /**
  * @returns A state of the hardware connection between the OS and the device
@@ -359,7 +357,7 @@ export const matchMutableMIDIPortProperty = <
       function* (isomorphicPort, config) {
         const port = yield* fromIsomorphic(isomorphicPort, is)
 
-        const state = getValueInRawPortField(property)(port)
+        const state = getValueInRawPortFieldUnsafe(property)(port)
 
         for (const [stateCase, stateCallback] of Record.toEntries(config))
           if (state === stateCase) return (stateCallback as Function)(port)

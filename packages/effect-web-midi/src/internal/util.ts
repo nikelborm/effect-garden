@@ -47,15 +47,16 @@ export const isomorphicCheckInDual =
   (is: (arg: unknown) => boolean) => (arg: IArguments) =>
     Effect.isEffect(arg[0]) || is(arg[0])
 
-export function* fromIsomorphic<A, E = never, R = never>(
+export function fromIsomorphic<A, E = never, R = never>(
   isomorphicValue: IsomorphicEffect<A, E, R>,
   is: (arg: unknown) => arg is A,
 ) {
-  const value = Effect.isEffect(isomorphicValue)
-    ? yield* isomorphicValue
-    : isomorphicValue
+  const check = (value: A) =>
+    is(value)
+      ? Effect.succeed(value)
+      : Effect.dieMessage('Assertion failed on isomorphic value')
 
-  if (!is(value)) throw new Error('Assertion failed on isomorphic value')
-
-  return value
+  return Effect.isEffect(isomorphicValue)
+    ? Effect.flatMap(isomorphicValue, check)
+    : check(isomorphicValue)
 }

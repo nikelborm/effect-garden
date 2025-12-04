@@ -7,6 +7,6 @@ export {
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,
-  type SentMessageEffect,
+  type SentMessageEffectFromPort,
   send,
 } from './internal/EffectfulMIDIOutputPort.ts'

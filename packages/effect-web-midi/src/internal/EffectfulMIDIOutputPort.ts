@@ -144,7 +144,7 @@ export interface MIDIMessageSenderPortLast {
      */
     <E = never, R = never>(
       outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
-    ): SentMessageEffect<E, R>
+    ): SentMessageEffectFromPort<E, R>
   }
 }
 
@@ -156,14 +156,16 @@ export interface MIDIMessageSenderPortFirst {
     outputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ): SentMessageEffect<E, R>
+  ): SentMessageEffectFromPort<E, R>
 }
 
 /**
  *
  */
-export interface SentMessageEffect<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
+export type SentMessageEffectFromPort<
+  E = never,
+  R = never,
+> = SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R>
 
 // TODO: fix upstream type-signature of clear method
 

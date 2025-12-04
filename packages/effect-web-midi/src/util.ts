@@ -1,5 +1,6 @@
 export {
   getStaticMIDIPortInfo,
+  type IsomorphicEffect,
   MIDIPortId,
   type MIDIPortStaticFields,
   midiPortStaticFields,

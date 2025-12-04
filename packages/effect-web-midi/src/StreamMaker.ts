@@ -1,5 +1,6 @@
 export type {
   BuiltStream,
+  DualStreamMaker,
   OnNullStrategy,
   StreamError,
   StreamMakerOptions,
