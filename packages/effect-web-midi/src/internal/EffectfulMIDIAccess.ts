@@ -334,28 +334,19 @@ export const getAllPortsRecord = decorateToTakeIsomorphicAccessAndReturnRecord(
  *
  *
  */
-export const InputPortsRecord = Effect.flatMap(
-  EffectfulMIDIAccess,
-  getInputPortsRecord,
-)
+export const InputPortsRecord = getInputPortsRecord(EffectfulMIDIAccess)
 
 /**
  *
  *
  */
-export const OutputPortsRecord = Effect.flatMap(
-  EffectfulMIDIAccess,
-  getInputPortsRecord,
-)
+export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
 
 /**
  *
  *
  */
-export const AllPortsRecord = Effect.flatMap(
-  EffectfulMIDIAccess,
-  getInputPortsRecord,
-)
+export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 
 /**
  *
@@ -374,10 +365,8 @@ export const getPortDeviceState = (key: MIDIPortId) =>
  *
  */
 export const getPortConnectionState = (key: MIDIPortId) =>
-  pipe(
-    AllPortsRecord,
-    Effect.flatMap(Record.get(key)),
-    EffectfulMIDIPort.getConnectionState,
+  EffectfulMIDIPort.getConnectionState(
+    Effect.flatMap(AllPortsRecord, Record.get(key)),
   )
 
 /**
@@ -538,9 +527,15 @@ export interface MIDIMessageSenderAccessLast {
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
-  ): <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => SentMessageEffectFromAccess<E, R>
+  ): {
+    /**
+     *
+     *
+     */
+    <E = never, R = never>(
+      accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    ): SentMessageEffectFromAccess<E, R>
+  }
 }
 
 /**
