@@ -114,8 +114,8 @@ export const createStreamMakerFrom =
     ) => TContainerWithNullableFields,
   ): DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
     dual<
-      StreamMakerTargetLast<TCameFrom, TTag, TContainerWithNullableFields>,
-      StreamMakerTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>
+      MakeStreamTargetLast<TCameFrom, TTag, TContainerWithNullableFields>,
+      MakeStreamTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>
     >(
       isomorphicCheckInDual(isSelf),
       (cameFromIsomorphic, options) =>
@@ -339,10 +339,10 @@ export interface DualStreamMaker<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
-> extends StreamMakerTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>,
-    StreamMakerTargetLast<TCameFrom, TTag, TContainerWithNullableFields> {}
+> extends MakeStreamTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>,
+    MakeStreamTargetLast<TCameFrom, TTag, TContainerWithNullableFields> {}
 
-export interface StreamMakerTargetFirst<
+export interface MakeStreamTargetFirst<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,
@@ -372,7 +372,7 @@ export interface StreamMakerTargetFirst<
   >
 }
 
-export interface StreamMakerTargetLast<
+export interface MakeStreamTargetLast<
   TCameFrom,
   TTag extends string,
   TContainerWithNullableFields extends object,

@@ -1,10 +1,10 @@
 export {
   clear,
-  type DualMIDIMessageSenderPort,
+  type DualSendMIDIMessageFromPort,
   type EffectfulMIDIOutputPort,
   is,
-  type MIDIMessageSenderPortFirst,
-  type MIDIMessageSenderPortLast,
+  type SendMIDIMessagePortFirst,
+  type SendMIDIMessagePortLast,
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,

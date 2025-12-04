@@ -267,7 +267,7 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
           } as const)
         : null,
     }) as const,
-) as DualStateChangesStreamMaker
+) as DualMakeStateChangesStream
 
 // const asd = makeStateChangesStream({} as any, {})
 // asd
@@ -362,10 +362,10 @@ export const matchMutableMIDIPortProperty = <
   is: (
     port: unknown,
   ) => port is EffectfulMIDIPort<TMIDIPortTypeHighLevelRestriction>,
-): DualMatchPort<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> =>
+): DualMatchPortState<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> =>
   dual<
-    MatchPortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
-    MatchPortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>
+    MatchStatePortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
+    MatchStatePortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>
   >(
     isomorphicCheckInDual(is),
     Effect.fn(function* (isomorphicPort, config) {
@@ -390,7 +390,7 @@ export type MatcherConfigPlain = Record<string, PortStateHandler>
 export interface MatchResult<TActualConf extends MatcherConfigPlain, E, R>
   extends Effect.Effect<ReturnType<TActualConf[keyof TActualConf]>, E, R> {}
 
-export interface MatchPortFirst<
+export interface MatchStatePortFirst<
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
@@ -398,48 +398,51 @@ export interface MatchPortFirst<
    * Description placeholder
    *
    * @param isomorphicPort
-   * @param config
+   * @param stateCaseToHandlerMap
    * @returns
    */
   <
-    TActualConf extends GoodConfig<
+    TStateCaseToHandlerMap extends StateCaseToHandlerMap<
       TMIDIPortProperty,
       TMIDIPortTypeHighLevelRestriction,
-      TActualConf
+      TStateCaseToHandlerMap
     >,
     TMIDIPortType extends TMIDIPortTypeHighLevelRestriction,
     E = never,
     R = never,
   >(
     isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
-    config: TActualConf,
-  ): MatchResult<TActualConf, E, R>
+    stateCaseToHandlerMap: TStateCaseToHandlerMap,
+  ): MatchResult<TStateCaseToHandlerMap, E, R>
 }
 
-export interface DualMatchPort<
+export interface DualMatchPortState<
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
-> extends MatchPortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
-    MatchPortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> {}
+> extends MatchStatePortLast<
+      TMIDIPortTypeHighLevelRestriction,
+      TMIDIPortProperty
+    >,
+    MatchStatePortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> {}
 
-export interface MatchPortLast<
+export interface MatchStatePortLast<
   TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
   /**
    * Description placeholder
    *
-   * @param config
+   * @param stateCaseToHandlerMap
    * @returns
    */
   <
-    TActualConf extends GoodConfig<
+    TStateCaseToHandlerMap extends StateCaseToHandlerMap<
       TMIDIPortProperty,
       TMIDIPortTypeHighLevelRestriction,
-      TActualConf
+      TStateCaseToHandlerMap
     >,
   >(
-    config: TActualConf,
+    stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ): {
     /**
      * Description placeholder
@@ -453,7 +456,7 @@ export interface MatchPortLast<
       R = never,
     >(
       isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
-    ): MatchResult<TActualConf, E, R>
+    ): MatchResult<TStateCaseToHandlerMap, E, R>
   }
 }
 
@@ -470,7 +473,7 @@ export const matchConnectionState = matchMutableMIDIPortProperty(
  */
 export const matchDeviceState = matchMutableMIDIPortProperty('state', is)
 
-export type GoodConfig<
+export type StateCaseToHandlerMap<
   TMIDIPortProperty extends MIDIPortMutableProperty,
   TMIDIPortType extends MIDIPortType,
   TConfigSelf,
@@ -513,16 +516,16 @@ export interface StateChangesStream<
  * A custom type is needed because the port type will be generic, but this is
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
-export interface DualStateChangesStreamMaker<
+export interface DualMakeStateChangesStream<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
-> extends StateChangesStreamMakerPortFirst<THighLevelTypeRestriction>,
-    StateChangesStreamMakerPortLast<THighLevelTypeRestriction> {}
+> extends MakeStateChangesStreamPortFirst<THighLevelTypeRestriction>,
+    MakeStateChangesStreamPortLast<THighLevelTypeRestriction> {}
 
 /**
  * A custom type is needed because the port type will be generic, but this is
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
-export interface StateChangesStreamMakerPortFirst<
+export interface MakeStateChangesStreamPortFirst<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
   /**
@@ -544,7 +547,7 @@ export interface StateChangesStreamMakerPortFirst<
  * A custom type is needed because the port type will be generic, but this is
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
-export interface StateChangesStreamMakerPortLast<
+export interface MakeStateChangesStreamPortLast<
   THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
 > {
   /**

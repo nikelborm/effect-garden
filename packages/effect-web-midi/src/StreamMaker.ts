@@ -1,12 +1,12 @@
 export type {
   BuiltStream,
   DualStreamMaker,
+  MakeStreamTargetFirst,
+  MakeStreamTargetLast,
   OnNullStrategy,
   StreamError,
   StreamMakerOptions,
   StreamMakerOptionsObject,
   StreamMakerOptionsWellknown,
-  StreamMakerTargetFirst,
-  StreamMakerTargetLast,
   StreamValue,
 } from './internal/createStreamMakerFrom.ts'

@@ -74,7 +74,7 @@ export const is: (port: unknown) => port is EffectfulMIDIOutputPort = isImpl
  *
  */
 export const makeStateChangesStream =
-  EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualStateChangesStreamMaker<'output'>
+  EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'output'>
 
 /**
  *
@@ -102,9 +102,9 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const send: DualMIDIMessageSenderPort = dual<
-  MIDIMessageSenderPortLast,
-  MIDIMessageSenderPortFirst
+export const send: DualSendMIDIMessageFromPort = dual<
+  SendMIDIMessagePortLast,
+  SendMIDIMessagePortFirst
 >(
   isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIOutputPort.send')(
@@ -134,11 +134,11 @@ export const send: DualMIDIMessageSenderPort = dual<
   ),
 )
 
-export interface DualMIDIMessageSenderPort
-  extends MIDIMessageSenderPortLast,
-    MIDIMessageSenderPortFirst {}
+export interface DualSendMIDIMessageFromPort
+  extends SendMIDIMessagePortLast,
+    SendMIDIMessagePortFirst {}
 
-export interface MIDIMessageSenderPortLast {
+export interface SendMIDIMessagePortLast {
   /**
    *
    */
@@ -155,7 +155,7 @@ export interface MIDIMessageSenderPortLast {
   }
 }
 
-export interface MIDIMessageSenderPortFirst {
+export interface SendMIDIMessagePortFirst {
   /**
    *
    */

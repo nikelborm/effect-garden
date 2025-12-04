@@ -68,7 +68,7 @@ export const is: (port: unknown) => port is EffectfulMIDIInputPort = isImpl
  *
  */
 export const makeStateChangesStream =
-  EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualStateChangesStreamMaker<'input'>
+  EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'input'>
 
 /**
  *

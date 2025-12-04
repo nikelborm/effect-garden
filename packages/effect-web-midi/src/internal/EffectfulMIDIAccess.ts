@@ -419,9 +419,9 @@ export type TargetPortSelector =
  * delivered, or all not delivered, as in ACID transactions. There's not even a
  * mechanism to remove a specific message (not all) from the sending queue
  */
-export const send: DualMIDIMessageSenderAccess = dual<
-  MIDIMessageSenderAccessLast,
-  MIDIMessageSenderAccessFirst
+export const send: DualSendMIDIMessageFromAccess = dual<
+  SendMIDIMessageAccessLast,
+  SendMIDIMessageAccessFirst
 >(
   isomorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
@@ -505,11 +505,11 @@ export const send: DualMIDIMessageSenderAccess = dual<
   ),
 )
 
-export interface DualMIDIMessageSenderAccess
-  extends MIDIMessageSenderAccessFirst,
-    MIDIMessageSenderAccessLast {}
+export interface DualSendMIDIMessageFromAccess
+  extends SendMIDIMessageAccessFirst,
+    SendMIDIMessageAccessLast {}
 
-export interface MIDIMessageSenderAccessFirst {
+export interface SendMIDIMessageAccessFirst {
   /**
    *
    *
@@ -522,7 +522,7 @@ export interface MIDIMessageSenderAccessFirst {
   ): SentMessageEffectFromAccess<E, R>
 }
 
-export interface MIDIMessageSenderAccessLast {
+export interface SendMIDIMessageAccessLast {
   /**
    *
    *
