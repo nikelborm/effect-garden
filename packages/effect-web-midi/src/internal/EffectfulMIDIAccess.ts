@@ -37,6 +37,11 @@ import {
 // TODO: fat service APIs, where all the methods are attached to instance and
 // you don't have to constantly write the prefix
 
+// TODO: implement scoping of midi access that will cleanup all message queues
+// and streams, and remove listeners
+
+// TODO: implement scope inheritance
+
 /**
  * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
@@ -52,18 +57,14 @@ const TypeId: unique symbol = Symbol.for(
  */
 export type TypeId = typeof TypeId
 
-// TODO: implement scoping of midi access that will cleanup all message queues
-// and streams, and remove listeners
-
-// TODO: implement scope inheritance
-
 /**
  * A tag that allows to provide
  * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
  * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc and reuse
- * it anywhere, instead of repeatedly {@linkcode request}ing it. The downside to
- * using DI might be that in different places of the app there would be harder
- * to maintain tight MIDI permission scopes
+ * it anywhere, instead of repeatedly {@linkcode request}ing it.
+ *
+ * The downside to using DI might be that in different places of the app there
+ * would be harder to maintain tight MIDI permission scopes.
  *
  * @example
  * ```ts
@@ -84,6 +85,8 @@ export type TypeId = typeof TypeId
  *   //                 ^ true
  * }).pipe(Effect.provide(EffectfulMIDIAccess.layerSystemExclusiveSupported))
  * ```
+ *
+ * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
  */
 export class EffectfulMIDIAccess extends Context.Tag(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
@@ -93,15 +96,18 @@ interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to send and receive
    * `System Exclusive` messages is requested or allowed on a given
-   * {@linkcode EffectfulMIDIAccessInstance} object. If this field is set to
-   * `true`, but `System Exclusive` support is denied (either by policy or by
-   * user action), the access request will fail with a
-   * {@linkcode NotAllowedError} error. If this support is not requested (and
-   * allowed), the system will throw exceptions if the user tries to send
-   * `System Exclusive` messages, and will silently mask out any `System
-   * Exclusive` messages received on the port.
+   * {@linkcode EffectfulMIDIAccessInstance} object.
+   *
+   * If this field is set to `true`, but `System Exclusive` support is denied
+   * (either by policy or by user action), the access request will fail with a
+   * {@linkcode NotAllowedError} error.
+   *
+   * If this support is not requested (and allowed), the system will throw
+   * exceptions if the user tries to send `System Exclusive` messages, and will
+   * silently mask out any `System Exclusive` messages received on the port.
    *
    * @default false
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-software|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#software|MDN reference}
    */
   readonly software?: boolean
 
@@ -123,9 +129,12 @@ interface RequestMIDIAccessOptions {
    * be disabled when MIDI hardware device access is allowed.
    *
    * @default false
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-sysex|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#sysex|MDN reference}
    */
   readonly sysex?: boolean
 }
+
+// !!! DOCUMENTATION CURSOR !!!
 
 /**
  *
