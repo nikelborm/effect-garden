@@ -456,16 +456,19 @@ export const makeMIDIPortStateChangesStream =
       },
       nullableFieldName: 'port',
     }),
-    port =>
+    rawPort =>
       ({
-        newState: port
-          ? ({ ofDevice: port.state, ofConnection: port.connection } as const)
+        newState: rawPort
+          ? ({
+              ofDevice: rawPort.state,
+              ofConnection: rawPort.connection,
+            } as const)
           : null,
         port:
-          port instanceof MIDIInput
-            ? EffectfulMIDIInputPort.make(port)
-            : port instanceof MIDIOutput
-              ? EffectfulMIDIOutputPort.make(port)
+          rawPort instanceof MIDIInput
+            ? EffectfulMIDIInputPort.make(rawPort)
+            : rawPort instanceof MIDIOutput
+              ? EffectfulMIDIOutputPort.make(rawPort)
               : null,
       }) as const,
   )
