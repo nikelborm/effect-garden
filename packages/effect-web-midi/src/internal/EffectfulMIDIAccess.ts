@@ -25,9 +25,9 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import {
-  fromIsomorphic,
-  type IsomorphicEffect,
-  isomorphicCheckInDual,
+  fromPolymorphic,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
   type MIDIPortId,
   type SentMessageEffectFrom,
 } from './util.ts'
@@ -355,13 +355,13 @@ const getAllPortsEntriesFromRaw = (
  * @returns
  * @internal
  */
-const decorateToTakeIsomorphicAccessAndReturnRecord =
+const decorateToTakePolymorphicAccessAndReturnRecord =
   <T>(accessor: (access: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
   <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) =>
     Effect.map(
-      fromIsomorphic(accessIsomorphic, is),
+      fromPolymorphic(accessPolymorphic, is),
       flow(asImpl, e => e._access, accessor, Record.fromEntries),
     )
 
@@ -376,7 +376,7 @@ const decorateToTakeIsomorphicAccessAndReturnRecord =
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
 export const getInputPortsRecord =
-  decorateToTakeIsomorphicAccessAndReturnRecord(getInputPortEntriesFromRaw)
+  decorateToTakePolymorphicAccessAndReturnRecord(getInputPortEntriesFromRaw)
 
 /**
  * Because MIDIOutputMap can potentially be a mutable object, meaning new
@@ -389,13 +389,13 @@ export const getInputPortsRecord =
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
 export const getOutputPortsRecord =
-  decorateToTakeIsomorphicAccessAndReturnRecord(getOutputPortEntriesFromRaw)
+  decorateToTakePolymorphicAccessAndReturnRecord(getOutputPortEntriesFromRaw)
 
 /**
  *
  *
  */
-export const getAllPortsRecord = decorateToTakeIsomorphicAccessAndReturnRecord(
+export const getAllPortsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
   getAllPortsEntriesFromRaw,
 )
 
@@ -497,10 +497,10 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   SendMIDIMessageAccessLast,
   SendMIDIMessageAccessFirst
 >(
-  isomorphicCheckInDual(is),
+  polymorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
-    function* (accessIsomorphic, target, midiMessage, timestamp) {
-      const access = yield* fromIsomorphic(accessIsomorphic, is)
+    function* (accessPolymorphic, target, midiMessage, timestamp) {
+      const access = yield* fromPolymorphic(accessPolymorphic, is)
 
       const outputs = yield* getOutputPortsRecord(access)
 
@@ -589,7 +589,7 @@ export interface SendMIDIMessageAccessFirst {
    *
    */
   <E = never, R = never>(
-    accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     targetPortSelector: TargetPortSelector,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
@@ -611,7 +611,7 @@ export interface SendMIDIMessageAccessLast {
      *
      */
     <E = never, R = never>(
-      accessIsomorphic: IsomorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     ): SentMessageEffectFromAccess<E, R>
   }
 }

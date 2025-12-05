@@ -15,10 +15,10 @@ import {
 } from './createStreamMakerFrom.ts'
 import { InvalidAccessError, remapErrorByName } from './errors.ts'
 import {
-  fromIsomorphic,
+  fromPolymorphic,
   getStaticMIDIPortInfo,
-  type IsomorphicEffect,
-  isomorphicCheckInDual,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
 } from './util.ts'
 
 /**
@@ -200,8 +200,8 @@ const callMIDIPortMethod = <TError = never>(
     TType extends MIDIPortType,
     E = never,
     R = never,
-  >(isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>) {
-    const port = yield* fromIsomorphic(isomorphicPort, is)
+  >(polymorphicPort: PolymorphicEffect<EffectfulMIDIPort<TType>, E, R>) {
+    const port = yield* fromPolymorphic(polymorphicPort, is)
 
     yield* Effect.annotateCurrentSpan({
       method,
@@ -284,12 +284,12 @@ const getMutableProperty =
     property: TMIDIPortMutableProperty,
   ) =>
   <E = never, R = never>(
-    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort, E, R>,
+    polymorphicPort: PolymorphicEffect<EffectfulMIDIPort, E, R>,
   ) =>
-    Effect.isEffect(isomorphicPort)
-      ? Effect.map(isomorphicPort, getValueInRawPortFieldUnsafe(property))
+    Effect.isEffect(polymorphicPort)
+      ? Effect.map(polymorphicPort, getValueInRawPortFieldUnsafe(property))
       : Effect.sync(() =>
-          getValueInRawPortFieldUnsafe(property)(isomorphicPort),
+          getValueInRawPortFieldUnsafe(property)(polymorphicPort),
         )
 
 /**
@@ -367,9 +367,9 @@ export const matchMutableMIDIPortProperty = <
     MatchStatePortLast<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>,
     MatchStatePortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty>
   >(
-    isomorphicCheckInDual(is),
-    Effect.fn(function* (isomorphicPort, config) {
-      const port = yield* fromIsomorphic(isomorphicPort, is)
+    polymorphicCheckInDual(is),
+    Effect.fn(function* (polymorphicPort, config) {
+      const port = yield* fromPolymorphic(polymorphicPort, is)
 
       const state = getValueInRawPortFieldUnsafe(property)(port)
 
@@ -397,7 +397,7 @@ export interface MatchStatePortFirst<
   /**
    * Description placeholder
    *
-   * @param isomorphicPort
+   * @param polymorphicPort
    * @param stateCaseToHandlerMap
    * @returns
    */
@@ -411,7 +411,7 @@ export interface MatchStatePortFirst<
     E = never,
     R = never,
   >(
-    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+    polymorphicPort: PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ): MatchResult<TStateCaseToHandlerMap, E, R>
 }
@@ -447,7 +447,7 @@ export interface MatchStatePortLast<
     /**
      * Description placeholder
      *
-     * @param isomorphicPort
+     * @param polymorphicPort
      * @returns
      */
     <
@@ -455,7 +455,11 @@ export interface MatchStatePortLast<
       E = never,
       R = never,
     >(
-      isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+      polymorphicPort: PolymorphicEffect<
+        EffectfulMIDIPort<TMIDIPortType>,
+        E,
+        R
+      >,
     ): MatchResult<TStateCaseToHandlerMap, E, R>
   }
 }
@@ -538,7 +542,7 @@ export interface MakeStateChangesStreamPortFirst<
     E = never,
     R = never,
   >(
-    isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>,
+    polymorphicPort: PolymorphicEffect<EffectfulMIDIPort<TType>, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): StateChangesStream<TOnNullStrategy, TType, E, R>
 }
@@ -562,7 +566,7 @@ export interface MakeStateChangesStreamPortLast<
      *
      */
     <TType extends THighLevelTypeRestriction, E = never, R = never>(
-      isomorphicPort: IsomorphicEffect<EffectfulMIDIPort<TType>, E, R>,
+      polymorphicPort: PolymorphicEffect<EffectfulMIDIPort<TType>, E, R>,
     ): StateChangesStream<TOnNullStrategy, TType, E, R>
   }
 }

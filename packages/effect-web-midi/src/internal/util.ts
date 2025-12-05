@@ -41,22 +41,22 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
     R
   > {}
 
-export type IsomorphicEffect<A, E, R> = A | Effect.Effect<A, E, R>
+export type PolymorphicEffect<A, E, R> = A | Effect.Effect<A, E, R>
 
-export const isomorphicCheckInDual =
+export const polymorphicCheckInDual =
   (is: (arg: unknown) => boolean) => (arg: IArguments) =>
     Effect.isEffect(arg[0]) || is(arg[0])
 
-export function fromIsomorphic<A, E = never, R = never>(
-  isomorphicValue: IsomorphicEffect<A, E, R>,
+export function fromPolymorphic<A, E = never, R = never>(
+  polymorphicValue: PolymorphicEffect<A, E, R>,
   is: (arg: unknown) => arg is A,
 ) {
   const check = (value: A) =>
     is(value)
       ? Effect.succeed(value)
-      : Effect.dieMessage('Assertion failed on isomorphic value')
+      : Effect.dieMessage('Assertion failed on polymorphic value')
 
-  return Effect.isEffect(isomorphicValue)
-    ? Effect.flatMap(isomorphicValue, check)
-    : check(isomorphicValue)
+  return Effect.isEffect(polymorphicValue)
+    ? Effect.flatMap(polymorphicValue, check)
+    : check(polymorphicValue)
 }

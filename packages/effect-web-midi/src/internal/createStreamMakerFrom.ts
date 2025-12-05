@@ -8,9 +8,9 @@ import type { EffectfulMIDIAccessInstance } from './EffectfulMIDIAccess.ts'
 import type { EffectfulMIDIInputPort } from './EffectfulMIDIInputPort.ts'
 import type { EffectfulMIDIOutputPort } from './EffectfulMIDIOutputPort.ts'
 import {
-  fromIsomorphic,
-  type IsomorphicEffect,
-  isomorphicCheckInDual,
+  fromPolymorphic,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
 } from './util.ts'
 
 /**
@@ -117,8 +117,8 @@ export const createStreamMakerFrom =
       MakeStreamTargetLast<TCameFrom, TTag, TContainerWithNullableFields>,
       MakeStreamTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>
     >(
-      isomorphicCheckInDual(isSelf),
-      (cameFromIsomorphic, options) =>
+      polymorphicCheckInDual(isSelf),
+      (cameFromPolymorphic, options) =>
         Effect.gen(function* () {
           const onNullStrategy = ((
             options as { onExtremelyRareNullableField?: OnNullStrategy }
@@ -132,7 +132,7 @@ export const createStreamMakerFrom =
               `Invalid strategy to handle nullish values: ${onNullStrategy}`,
             )
 
-          const cameFrom = yield* fromIsomorphic(cameFromIsomorphic, isSelf)
+          const cameFrom = yield* fromPolymorphic(cameFromPolymorphic, isSelf)
 
           const {
             tag,
@@ -348,7 +348,7 @@ export interface MakeStreamTargetFirst<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param isomorphicEventTarget Raw MIDI object, which triggers events,
+   * @param polymorphicEventTarget Raw MIDI object, which triggers events,
    * wrapped in this lib's abstraction and potentially inside Effect. Will be
    * assigned to the `cameFrom` property of the stream's success channel object
    *
@@ -360,7 +360,7 @@ export interface MakeStreamTargetFirst<
     R = never,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
-    isomorphicEventTarget: IsomorphicEffect<TCameFrom, E, R>,
+    polymorphicEventTarget: PolymorphicEffect<TCameFrom, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): BuiltStream<
     TTag,
@@ -383,7 +383,7 @@ export interface MakeStreamTargetLast<
    *
    * **Second call argument**
    *
-   * - `isomorphicEventTarget` Raw MIDI object, which triggers events, wrapped
+   * - `polymorphicEventTarget` Raw MIDI object, which triggers events, wrapped
    *   in this lib's abstraction and potentially inside Effect. Will be assigned
    *   to the `cameFrom` property of the stream's success channel object
    */
@@ -391,13 +391,13 @@ export interface MakeStreamTargetLast<
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
-     * @param isomorphicEventTarget Raw MIDI object, which triggers events,
+     * @param polymorphicEventTarget Raw MIDI object, which triggers events,
      * wrapped in this lib's abstraction and potentially inside Effect. Will be
      * assigned to the `cameFrom` property of the stream's success channel
      * object
      */
     <E = never, R = never>(
-      isomorphicEventTarget: IsomorphicEffect<TCameFrom, E, R>,
+      polymorphicEventTarget: PolymorphicEffect<TCameFrom, E, R>,
     ): BuiltStream<
       TTag,
       TCameFrom,

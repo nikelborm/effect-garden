@@ -10,10 +10,10 @@ import {
   remapErrorByName,
 } from './errors.ts'
 import {
-  fromIsomorphic,
+  fromPolymorphic,
   getStaticMIDIPortInfo,
-  type IsomorphicEffect,
-  isomorphicCheckInDual,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
   type SentMessageEffectFrom,
 } from './util.ts'
 
@@ -106,10 +106,10 @@ export const send: DualSendMIDIMessageFromPort = dual<
   SendMIDIMessagePortLast,
   SendMIDIMessagePortFirst
 >(
-  isomorphicCheckInDual(is),
+  polymorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIOutputPort.send')(
-    function* (outputPortIsomorphic, midiMessage, timestamp) {
-      const outputPort = yield* fromIsomorphic(outputPortIsomorphic, is)
+    function* (outputPortPolymorphic, midiMessage, timestamp) {
+      const outputPort = yield* fromPolymorphic(outputPortPolymorphic, is)
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
@@ -150,7 +150,7 @@ export interface SendMIDIMessagePortLast {
      *
      */
     <E = never, R = never>(
-      isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
+      polymorphicOutputPort: PolymorphicEffect<EffectfulMIDIOutputPort, E, R>,
     ): SentMessageEffectFromPort<E, R>
   }
 }
@@ -160,7 +160,7 @@ export interface SendMIDIMessagePortFirst {
    *
    */
   <E = never, R = never>(
-    isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>,
+    polymorphicOutputPort: PolymorphicEffect<EffectfulMIDIOutputPort, E, R>,
     midiMessage: Iterable<number>,
     timestamp?: DOMHighResTimeStamp,
   ): SentMessageEffectFromPort<E, R>
@@ -189,8 +189,8 @@ export type SentMessageEffectFromPort<
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
   E = never,
   R = never,
->(isomorphicOutputPort: IsomorphicEffect<EffectfulMIDIOutputPort, E, R>) {
-  const outputPort = yield* fromIsomorphic(isomorphicOutputPort, is)
+>(polymorphicOutputPort: PolymorphicEffect<EffectfulMIDIOutputPort, E, R>) {
+  const outputPort = yield* fromPolymorphic(polymorphicOutputPort, is)
 
   yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
 
