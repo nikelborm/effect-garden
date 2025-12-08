@@ -1,4 +1,5 @@
 export {
+  as,
   clear,
   clearById,
   type DualSendMIDIMessageFromPort,
