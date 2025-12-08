@@ -10,7 +10,7 @@ export {
   matchPortConnectionStateByPortId as matchConnectionStateById,
   matchPortDeviceStateByPortId as matchDeviceStateById,
   openPortConnectionByPortId as openConnectionById,
-} from './internal/EffectfulMIDIAccess.ts'
+} from './internal/contextualFunctions.ts'
 
 export {
   acquireReleaseConnection,

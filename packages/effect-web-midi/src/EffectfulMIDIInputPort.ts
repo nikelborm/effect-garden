@@ -3,7 +3,7 @@ export {
   makeMessagesStreamByPortId as makeMessagesStreamById,
   matchInputPortConnectionStateByPortId as matchConnectionStateById,
   matchInputPortDeviceStateByPortId as matchDeviceStateById,
-} from './internal/EffectfulMIDIAccess.ts'
+} from './internal/contextualFunctions.ts'
 
 export {
   assert,

@@ -4,7 +4,7 @@ export {
   matchOutputPortConnectionStateByPortId as matchConnectionStateById,
   matchOutputPortDeviceStateByPortId as matchDeviceStateById,
   sendToPortById as sendById,
-} from './internal/EffectfulMIDIAccess.ts'
+} from './internal/contextualFunctions.ts'
 
 export {
   assert,

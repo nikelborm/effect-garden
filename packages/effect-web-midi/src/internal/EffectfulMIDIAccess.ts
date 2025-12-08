@@ -14,11 +14,7 @@ import * as Option from 'effect/Option'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
 import type * as Types from 'effect/Types'
-import {
-  createStreamMakerFrom,
-  type OnNullStrategy,
-  type StreamMakerOptions,
-} from './createStreamMakerFrom.ts'
+import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
@@ -518,34 +514,13 @@ export const getPortById = getPortByIdGeneric(getAllPortsRecord)
  *
  *
  */
-export const getPortByIdFromContext = (id: MIDIPortId) =>
-  getPortById(EffectfulMIDIAccess, id)
-
-/**
- *
- *
- */
 export const getInputPortById = getPortByIdGeneric(getInputPortsRecord)
 
 /**
  *
  *
  */
-export const getInputPortByIdFromContext = (id: MIDIPortId) =>
-  getInputPortById(EffectfulMIDIAccess, id)
-
-/**
- *
- *
- */
 export const getOutputPortById = getPortByIdGeneric(getOutputPortsRecord)
-
-/**
- *
- *
- */
-export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
-  getOutputPortById(EffectfulMIDIAccess, id)
 
 /**
  *
@@ -572,13 +547,6 @@ export const getPortDeviceState = <TE = never, TR = never>(
  *
  *
  */
-export const getPortDeviceStateByPortId = (id: MIDIPortId) =>
-  getPortDeviceState(EffectfulMIDIAccess, id)
-
-/**
- *
- *
- */
 export const getPortConnectionState = <TE = never, TR = never>(
   polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
   id: MIDIPortId,
@@ -588,13 +556,6 @@ export const getPortConnectionState = <TE = never, TR = never>(
     EffectfulMIDIPort.getConnectionState,
     id,
   )
-
-/**
- *
- *
- */
-export const getPortConnectionStateByPortId = (id: MIDIPortId) =>
-  getPortConnectionState(EffectfulMIDIAccess, id)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -631,16 +592,6 @@ export const makeAllPortsStateChangesStream =
               : null,
       }) as const,
   )
-
-/**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
- */
-export const makeAllPortsStateChangesStreamFromContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => makeAllPortsStateChangesStream(EffectfulMIDIAccess, options)
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
@@ -742,13 +693,6 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   ),
 )
 
-/**
- *
- *
- */
-export const sendFromContext = (...args: SendFromAccessArgs) =>
-  Effect.asVoid(send(EffectfulMIDIAccess, ...args))
-
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
     SendMIDIMessageAccessLast {}
@@ -820,180 +764,4 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
   return make(rawMIDIAccess, options)
 })
 
-/**
- *
- */
-export const openPortConnectionByPortId = flow(
-  getPortByIdFromContext,
-  EffectfulMIDIPort.openConnection,
-)
-
-/**
- *
- */
-export const closePortConnectionByPortId = flow(
-  getPortByIdFromContext,
-  EffectfulMIDIPort.closeConnection,
-)
-
-/**
- *
- */
-export const acquireReleasePortConnectionByPortId = flow(
-  getPortByIdFromContext,
-  EffectfulMIDIPort.acquireReleaseConnection,
-)
-
-/**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
- */
-export const makePortStateChangesStreamByPortId = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  id: MIDIPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) =>
-  EffectfulMIDIPort.makeStateChangesStream(getPortByIdFromContext(id), options)
-
-/**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
- */
-export const makeInputPortStateChangesStreamByPortId = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  id: MIDIPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) =>
-  EffectfulMIDIInputPort.makeStateChangesStream(
-    getInputPortByIdFromContext(id),
-    options,
-  )
-
-/**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
- */
-export const makeOutputPortStateChangesStreamByPortId = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  id: MIDIPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) =>
-  EffectfulMIDIOutputPort.makeStateChangesStream(
-    getOutputPortByIdFromContext(id),
-    options,
-  )
-
-/**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
- */
-export const makeMessagesStreamByPortId = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  id: MIDIPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) =>
-  EffectfulMIDIInputPort.makeMessagesStream(
-    getInputPortByIdFromContext(id),
-    options,
-  )
-
-export const sendToPortById = (
-  id: MIDIPortId,
-  ...args: EffectfulMIDIOutputPort.SendFromPortArgs
-) =>
-  Effect.asVoid(
-    EffectfulMIDIOutputPort.send(getOutputPortByIdFromContext(id), ...args),
-  )
-
-export const clearPortById = flow(
-  getOutputPortByIdFromContext,
-  EffectfulMIDIOutputPort.clear,
-  Effect.asVoid,
-)
-
 // TODO: clear all outputs
-
-///////////////////////////////////////////////////////////
-
-const makeMatcherTakingPortIds =
-  <
-    TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
-    TMIDIPortProperty extends EffectfulMIDIPort.MIDIPortMutableProperty,
-  >(
-    match: EffectfulMIDIPort.DualMatchPortState<
-      TMIDIPortTypeHighLevelRestriction,
-      TMIDIPortProperty
-    >,
-    getPort: (
-      id: MIDIPortId,
-    ) => Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<
-        NoInfer<TMIDIPortTypeHighLevelRestriction>
-      >,
-      Cause.NoSuchElementException,
-      EffectfulMIDIAccess
-    >,
-  ) =>
-  <
-    TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-      TMIDIPortProperty,
-      TMIDIPortTypeHighLevelRestriction,
-      TStateCaseToHandlerMap
-    >,
-  >(
-    id: MIDIPortId,
-    stateCaseToHandlerMap: TStateCaseToHandlerMap,
-  ) =>
-    match(getPort(id), stateCaseToHandlerMap)
-
-/**
- *
- */
-export const matchPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIPort.matchConnectionState,
-  getPortByIdFromContext,
-)
-
-/**
- *
- */
-export const matchInputPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIInputPort.matchConnectionState,
-  getInputPortByIdFromContext,
-)
-
-/**
- *
- */
-export const matchOutputPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIOutputPort.matchConnectionState,
-  getOutputPortByIdFromContext,
-)
-
-/**
- *
- */
-export const matchPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIPort.matchDeviceState,
-  getPortByIdFromContext,
-)
-
-/**
- *
- */
-export const matchInputPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIInputPort.matchDeviceState,
-  getInputPortByIdFromContext,
-)
-
-/**
- *
- */
-export const matchOutputPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  EffectfulMIDIOutputPort.matchDeviceState,
-  getOutputPortByIdFromContext,
-)
