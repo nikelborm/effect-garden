@@ -737,8 +737,6 @@ export const send: DualSendMIDIMessageFromAccess = dual<
 export const sendFromContext = (...args: SendFromAccessArgs) =>
   Effect.asVoid(send(EffectfulMIDIAccess, ...args))
 
-// TODO: clear all
-
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
     SendMIDIMessageAccessLast {}
@@ -904,6 +902,8 @@ export const clearPortById = flow(
   EffectfulMIDIOutputPort.clear,
   Effect.asVoid,
 )
+
+// TODO: clear all outputs
 
 ///////////////////////////////////////////////////////////
 
