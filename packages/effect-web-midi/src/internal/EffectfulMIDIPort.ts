@@ -412,9 +412,11 @@ export const matchConnectionState = matchMutableMIDIPortProperty(
  */
 export const matchDeviceState = matchMutableMIDIPortProperty('state', is)
 
-// biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
-export type PortStateHandler = (port: EffectfulMIDIPort) => any
-export type MatcherConfigPlain = Record<string, PortStateHandler>
+export interface PortStateHandler {
+  // biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
+  (port: EffectfulMIDIPort): any
+}
+export interface MatcherConfigPlain extends Record<string, PortStateHandler> {}
 
 export interface MatchResult<TActualConf extends MatcherConfigPlain, E, R>
   extends Effect.Effect<ReturnType<TActualConf[keyof TActualConf]>, E, R> {}

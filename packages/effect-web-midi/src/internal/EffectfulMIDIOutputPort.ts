@@ -188,10 +188,8 @@ export interface SendMIDIMessagePortFirst {
 /**
  *
  */
-export type SentMessageEffectFromPort<
-  E = never,
-  R = never,
-> = SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R>
+export interface SentMessageEffectFromPort<E = never, R = never>
+  extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
 
 /**
  * Clears any enqueued send data that has not yet been sent from the
