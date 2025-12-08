@@ -38,8 +38,8 @@ interface EffectfulMIDIOutputPortImpl
  *
  * @internal
  */
-const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
-  EffectfulMIDIPort.makeImpl(port, 'output', MIDIOutput)
+const makeImpl = (rawOutputPort: MIDIOutput): EffectfulMIDIOutputPortImpl =>
+  EffectfulMIDIPort.makeImpl(rawOutputPort, 'output', MIDIOutput)
 
 /**
  * Asserts an object to be valid EffectfulMIDIOutputPort and casts it to
@@ -47,28 +47,31 @@ const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
  *
  * @internal
  */
-const assertImpl = (port: unknown) => {
-  if (!isImpl(port))
-    throw new Error('Failed to cast to EffectfulMIDIOutputPortImpl')
-  return port
+const assertImpl = (outputPort: unknown) => {
+  if (!isImpl(outputPort))
+    throw new Error('Assertion failed: Not a EffectfulMIDIOutputPortImpl')
+  return outputPort
 }
 
 /**
  * Asserts an object to be valid EffectfulMIDIOutputPort
  */
-export const assert: (port: unknown) => EffectfulMIDIOutputPort = assertImpl
+export const assert: (outputPort: unknown) => EffectfulMIDIOutputPort =
+  assertImpl
 
 /**
+ * Casts
  * @internal
  */
-const assumeImpl = (port: EffectfulMIDIOutputPort) =>
-  port as EffectfulMIDIOutputPortImpl
+const assumeImpl = (outputPort: EffectfulMIDIOutputPort) =>
+  outputPort as EffectfulMIDIOutputPortImpl
 
 /**
  *
  * @internal
  */
-export const make: (port: MIDIOutput) => EffectfulMIDIOutputPort = makeImpl
+export const make: (rawOutputPort: MIDIOutput) => EffectfulMIDIOutputPort =
+  makeImpl
 
 /**
  *
@@ -79,7 +82,9 @@ const isImpl = EffectfulMIDIPort.isImplOfSpecificType('output', MIDIOutput)
 /**
  *
  */
-export const is: (port: unknown) => port is EffectfulMIDIOutputPort = isImpl
+export const is: (
+  outputPort: unknown,
+) => outputPort is EffectfulMIDIOutputPort = isImpl
 
 /**
  *
@@ -119,8 +124,8 @@ export const send: DualSendMIDIMessageFromPort = dual<
 >(
   polymorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIOutputPort.send')(
-    function* (outputPortPolymorphic, midiMessage, timestamp) {
-      const outputPort = yield* fromPolymorphic(outputPortPolymorphic, is)
+    function* (polymorphicOutputPort, midiMessage, timestamp) {
+      const outputPort = yield* fromPolymorphic(polymorphicOutputPort, is)
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
