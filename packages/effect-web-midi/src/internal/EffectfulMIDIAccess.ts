@@ -396,10 +396,10 @@ const getAllPortsEntriesFromRaw = (
 const decorateToTakePolymorphicAccessAndReturnRecord =
   <T>(accessor: (rawAccess: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
   <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) =>
     Effect.map(
-      fromPolymorphic(accessPolymorphic, is),
+      fromPolymorphic(polymorphicAccess, is),
       flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
     )
 
@@ -460,38 +460,38 @@ export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
  */
 const getPortByIdGeneric = <TKindOfPort>(
   getPortMap: <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
 ) =>
   dual<
     (
       id: MIDIPortId,
     ) => <E = never, R = never>(
-      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>,
     <E = never, R = never>(
-      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
       id: MIDIPortId,
     ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>
-  >(2, (accessPolymorphic, id) =>
-    Effect.flatMap(getPortMap(accessPolymorphic), Record.get(id)),
+  >(2, (polymorphicAccess, id) =>
+    Effect.flatMap(getPortMap(polymorphicAccess), Record.get(id)),
   )
 
 const getPortByIdGeneric2 =
   <TKindOfPort>(
     getPortMap: <E = never, R = never>(
-      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
   ) =>
   <A, E2, R2, TE = never, TR = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
     transformPortEffect: (
       effect: Effect.Effect<TKindOfPort, TE | Cause.NoSuchElementException, TR>,
     ) => Effect.Effect<A, E2, R2>,
     id: MIDIPortId,
   ) =>
     pipe(
-      getPortMap(accessPolymorphic),
+      getPortMap(polymorphicAccess),
       Effect.flatMap(Record.get(id)),
       transformPortEffect,
     )
@@ -540,13 +540,13 @@ export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
  *
  */
 export const getPortDeviceState = <TE = never, TR = never>(
-  accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
   id: MIDIPortId,
 ) =>
   // TODO: Check if software synth devices access is present. Having desired
   // port absent in the record doesn't guarantee it's disconnected
   getPortByIdGeneric2(getAllPortsRecord)(
-    accessPolymorphic,
+    polymorphicAccess,
     flow(
       EffectfulMIDIPort.getDeviceState,
       Effect.catchTag('NoSuchElementException', () =>
@@ -568,11 +568,11 @@ export const getPortDeviceStateByPortId = (id: MIDIPortId) =>
  *
  */
 export const getPortConnectionState = <TE = never, TR = never>(
-  accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
   id: MIDIPortId,
 ) =>
   getPortByIdGeneric2(getAllPortsRecord)(
-    accessPolymorphic,
+    polymorphicAccess,
     EffectfulMIDIPort.getConnectionState,
     id,
   )
@@ -650,8 +650,8 @@ export const send: DualSendMIDIMessageFromAccess = dual<
 >(
   polymorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
-    function* (accessPolymorphic, target, midiMessage, timestamp) {
-      const access = yield* fromPolymorphic(accessPolymorphic, is)
+    function* (polymorphicAccess, target, midiMessage, timestamp) {
+      const access = yield* fromPolymorphic(polymorphicAccess, is)
 
       const outputs = yield* getOutputPortsRecord(access)
 
@@ -756,7 +756,7 @@ export interface SendMIDIMessageAccessFirst {
    *
    */
   <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     ...args: SendFromAccessArgs
   ): SentMessageEffectFromAccess<E, R>
 }
@@ -774,7 +774,7 @@ export interface SendMIDIMessageAccessLast {
      *
      */
     <E = never, R = never>(
-      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
     ): SentMessageEffectFromAccess<E, R>
   }
 }
