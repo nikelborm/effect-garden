@@ -109,7 +109,7 @@ export class EffectfulMIDIAccess extends Context.Tag(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
 )<EffectfulMIDIAccess, EffectfulMIDIAccessInstance>() {}
 
-interface RequestMIDIAccessOptions {
+export interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to send and receive
    * `System Exclusive` messages is requested or allowed on a given
@@ -223,6 +223,10 @@ const Proto = {
   get sysexEnabled() {
     return assumeImpl(this)._access.sysexEnabled
   },
+
+  get softwareSynthEnabled() {
+    return !!assumeImpl(this)._config.software
+  },
 } satisfies EffectfulMIDIAccessInstance
 
 /**
@@ -232,10 +236,18 @@ const Proto = {
 export interface EffectfulMIDIAccessInstance
   extends Equal.Equal,
     Pipeable.Pipeable,
-    Inspectable.Inspectable,
-    Pick<MIDIAccess, 'sysexEnabled'> {
+    Inspectable.Inspectable {
   readonly [TypeId]: TypeId
   readonly _tag: 'EffectfulMIDIAccess'
+
+  /**
+   * The **`sysexEnabled`** read-only property of the MIDIAccess interface indicates whether system exclusive support is enabled on the current MIDIAccess instance.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/sysexEnabled)
+   */
+  readonly sysexEnabled: boolean
+
+  readonly softwareSynthEnabled: boolean
 }
 
 /**

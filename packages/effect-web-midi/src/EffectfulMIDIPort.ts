@@ -33,6 +33,7 @@ export {
   type MatchResult,
   type MatchStatePortFirst,
   type MatchStatePortLast,
+  type MIDIPortMutableProperty,
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,

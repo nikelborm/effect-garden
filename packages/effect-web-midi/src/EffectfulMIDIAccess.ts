@@ -41,6 +41,7 @@ export {
   matchPortDeviceStateByPortId,
   OutputPortsRecord,
   openPortConnectionByPortId,
+  type RequestMIDIAccessOptions,
   request,
   type SendFromAccessArgs,
   type SendMIDIMessageAccessFirst,
