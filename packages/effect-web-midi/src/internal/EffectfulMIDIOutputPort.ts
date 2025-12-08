@@ -211,7 +211,7 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
 
   yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
 
-  // TODO: handling of type errors in not supported browsers
+  // TODO: handling of type errors in unsupported browsers
 
   // @ts-expect-error even though .clear is in spec, the API is not supported in
   // at least 2 major browsers, hence doesn't meet the condition to be be

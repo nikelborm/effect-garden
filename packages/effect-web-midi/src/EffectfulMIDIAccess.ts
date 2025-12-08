@@ -20,7 +20,6 @@ export {
   matchPortDeviceStateByPortId,
   openPortConnectionByPortId,
   sendFromContext,
-  sendToPortById,
 } from './internal/contextualFunctions.ts'
 
 export {
