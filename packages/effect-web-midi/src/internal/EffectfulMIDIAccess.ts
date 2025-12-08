@@ -456,32 +456,51 @@ export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
 export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 
 /**
+ * @internal
+ */
+const getPortByIdGeneric = <TKindOfPort>(
+  getPortMap: <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
+) =>
+  dual<
+    (
+      id: MIDIPortId,
+    ) => <E = never, R = never>(
+      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>,
+    <E = never, R = never>(
+      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+      id: MIDIPortId,
+    ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>
+  >(2, (accessPolymorphic, id) =>
+    Effect.flatMap(getPortMap(accessPolymorphic), Record.get(id)),
+  )
+
+const getPortByIdGeneric2 =
+  <TKindOfPort>(
+    getPortMap: <E = never, R = never>(
+      accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+    ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
+  ) =>
+  <A, E2, R2, TE = never, TR = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+    transformPortEffect: (
+      effect: Effect.Effect<TKindOfPort, TE | Cause.NoSuchElementException, TR>,
+    ) => Effect.Effect<A, E2, R2>,
+    id: MIDIPortId,
+  ) =>
+    pipe(
+      getPortMap(accessPolymorphic),
+      Effect.flatMap(Record.get(id)),
+      transformPortEffect,
+    )
+
+/**
  *
  *
  */
-export const getPortById = dual<
-  (
-    id: MIDIPortId,
-  ) => <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => Effect.Effect<
-    | EffectfulMIDIInputPort.EffectfulMIDIInputPort
-    | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >,
-  <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    id: MIDIPortId,
-  ) => Effect.Effect<
-    | EffectfulMIDIInputPort.EffectfulMIDIInputPort
-    | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >
->(2, (accessPolymorphic, id) =>
-  Effect.flatMap(getAllPortsRecord(accessPolymorphic), Record.get(id)),
-)
+export const getPortById = getPortByIdGeneric(getAllPortsRecord)
 
 /**
  *
@@ -490,27 +509,11 @@ export const getPortById = dual<
 export const getPortByIdFromContext = (id: MIDIPortId) =>
   getPortById(EffectfulMIDIAccess, id)
 
-export const getInputPortById = dual<
-  (
-    id: MIDIPortId,
-  ) => <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => Effect.Effect<
-    EffectfulMIDIInputPort.EffectfulMIDIInputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >,
-  <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    id: MIDIPortId,
-  ) => Effect.Effect<
-    EffectfulMIDIInputPort.EffectfulMIDIInputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >
->(2, (accessPolymorphic, id) =>
-  Effect.flatMap(getInputPortsRecord(accessPolymorphic), Record.get(id)),
-)
+/**
+ *
+ *
+ */
+export const getInputPortById = getPortByIdGeneric(getInputPortsRecord)
 
 /**
  *
@@ -519,27 +522,11 @@ export const getInputPortById = dual<
 export const getInputPortByIdFromContext = (id: MIDIPortId) =>
   getInputPortById(EffectfulMIDIAccess, id)
 
-export const getOutputPortById = dual<
-  (
-    id: MIDIPortId,
-  ) => <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => Effect.Effect<
-    EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >,
-  <E = never, R = never>(
-    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    id: MIDIPortId,
-  ) => Effect.Effect<
-    EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
-    E | Cause.NoSuchElementException,
-    R
-  >
->(2, (accessPolymorphic, id) =>
-  Effect.flatMap(getOutputPortsRecord(accessPolymorphic), Record.get(id)),
-)
+/**
+ *
+ *
+ */
+export const getOutputPortById = getPortByIdGeneric(getOutputPortsRecord)
 
 /**
  *
@@ -552,36 +539,56 @@ export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
  *
  *
  */
-export const getPortDeviceStateFromContext = flow(
+export const getPortDeviceState = <TE = never, TR = never>(
+  accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  id: MIDIPortId,
+) =>
   // TODO: Check if software synth devices access is present. Having desired
   // port absent in the record doesn't guarantee it's disconnected
-  EffectfulMIDIPort.getDeviceStateByPortId,
-  Effect.orElseSucceed(() => 'disconnected' as const),
-)
-
-// TODO: non contextual variant
-export const getPortDeviceState = getPortDeviceStateFromContext
+  getPortByIdGeneric2(getAllPortsRecord)(
+    accessPolymorphic,
+    flow(
+      EffectfulMIDIPort.getDeviceState,
+      Effect.catchTag('NoSuchElementException', () =>
+        Effect.succeed('disconnected' as const),
+      ),
+    ),
+    id,
+  )
 
 /**
  *
  *
  */
-export const getPortConnectionStateFromContext = flow(
-  getPortByIdFromContext,
-  EffectfulMIDIPort.getConnectionState,
-)
+export const getPortDeviceStateByPortId = (id: MIDIPortId) =>
+  getPortDeviceState(EffectfulMIDIAccess, id)
 
-// TODO: non contextual variant
-export const getPortConnectionState = flow(
-  getPortById,
-  EffectfulMIDIPort.getConnectionState,
-)
+/**
+ *
+ *
+ */
+export const getPortConnectionState = <TE = never, TR = never>(
+  accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  id: MIDIPortId,
+) =>
+  getPortByIdGeneric2(getAllPortsRecord)(
+    accessPolymorphic,
+    EffectfulMIDIPort.getConnectionState,
+    id,
+  )
+
+/**
+ *
+ *
+ */
+export const getPortConnectionStateByPortId = (id: MIDIPortId) =>
+  getPortConnectionState(EffectfulMIDIAccess, id)
 
 /**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-export const makeMIDIPortStateChangesStream =
+export const makeAllPortsStateChangesStream =
   createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     access => ({
@@ -617,11 +624,11 @@ export const makeMIDIPortStateChangesStream =
  * @param options Passing a boolean is equivalent to setting `options.capture`
  * property
  */
-export const makeMIDIPortStateChangesStreamFromContext = <
+export const makeAllPortsStateChangesStreamFromContext = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
   options?: StreamMakerOptions<TOnNullStrategy>,
-) => makeMIDIPortStateChangesStream(EffectfulMIDIAccess, options)
+) => makeAllPortsStateChangesStream(EffectfulMIDIAccess, options)
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
@@ -804,3 +811,192 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
 
   return make(rawMIDIAccess, options)
 })
+
+/**
+ *
+ */
+export const openPortConnectionByPortId = flow(
+  getPortByIdFromContext,
+  EffectfulMIDIPort.openConnection,
+)
+
+/**
+ *
+ */
+export const closePortConnectionByPortId = flow(
+  getPortByIdFromContext,
+  EffectfulMIDIPort.closeConnection,
+)
+
+/**
+ *
+ */
+export const acquireReleasePortConnectionByPortId = flow(
+  getPortByIdFromContext,
+  EffectfulMIDIPort.acquireReleaseConnection,
+)
+
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makePortStateChangesStreamByPortId = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  EffectfulMIDIPort.makeStateChangesStream(getPortByIdFromContext(id), options)
+
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeInputPortStateChangesStreamByPortId = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  EffectfulMIDIInputPort.makeStateChangesStream(
+    getInputPortByIdFromContext(id),
+    options,
+  )
+
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeOutputPortStateChangesStreamByPortId = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  EffectfulMIDIOutputPort.makeStateChangesStream(
+    getOutputPortByIdFromContext(id),
+    options,
+  )
+
+/**
+ *
+ */
+export const matchPortConnectionStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'connection',
+    'input' | 'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIPort.matchConnectionState(
+    getPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ *
+ */
+export const matchInputPortConnectionStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'connection',
+    'input',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIInputPort.matchConnectionState(
+    getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ *
+ */
+export const matchOutputPortConnectionStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'connection',
+    'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIOutputPort.matchConnectionState(
+    getOutputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ *
+ */
+export const matchPortDeviceStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'state',
+    'input' | 'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIPort.matchDeviceState(
+    getPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ *
+ */
+export const matchInputPortDeviceStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'state',
+    'input',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIInputPort.matchDeviceState(
+    getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ *
+ */
+export const matchOutputPortDeviceStateByPortId = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'state',
+    'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  EffectfulMIDIOutputPort.matchDeviceState(
+    getOutputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeMessagesStreamByPortId = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  EffectfulMIDIInputPort.makeMessagesStream(
+    getInputPortByIdFromContext(id),
+    options,
+  )

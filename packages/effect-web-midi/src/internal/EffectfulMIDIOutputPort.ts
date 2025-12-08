@@ -2,10 +2,6 @@
  * preserve JSDoc comments attached to the function signature */
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
-import type {
-  OnNullStrategy,
-  StreamMakerOptions,
-} from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
@@ -94,19 +90,10 @@ export const makeStateChangesStream =
   EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'output'>
 
 /**
- * @param options Passing a boolean is equivalent to setting `options.capture`
- * property
+ *
  */
-export const makeStateChangesStreamFromContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
->(
-  id: MIDIPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) =>
-  makeStateChangesStream(
-    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
-    options,
-  )
+export const makeStateChangesStreamById =
+  EffectfulMIDIAccess.makeOutputPortStateChangesStreamByPortId
 
 /**
  *
@@ -114,20 +101,8 @@ export const makeStateChangesStreamFromContext = <
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
 
-export const matchConnectionStateFromContext = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'connection',
-    'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  matchConnectionState(
-    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
+export const matchConnectionStateById =
+  EffectfulMIDIAccess.matchOutputPortConnectionStateByPortId
 
 /**
  *
@@ -137,20 +112,8 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
   is,
 )
 
-export const matchDeviceStateFromContext = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'state',
-    'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  matchDeviceState(
-    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
+export const matchDeviceStateById =
+  EffectfulMIDIAccess.matchOutputPortDeviceStateByPortId
 
 /**
  * If `midiMessage` is a System Exclusive message, and the `MIDIAccess` did not
