@@ -3,8 +3,8 @@ import * as Effect from 'effect/Effect'
 import * as Struct from 'effect/Struct'
 import type {
   BadMidiMessageError,
-  InvalidAccessError,
-  InvalidStateError,
+  AbsentSystemExclusiveMessagesAccessError,
+  DisconnectedPortError,
 } from './errors.ts'
 
 /**
@@ -37,7 +37,10 @@ export const getStaticMIDIPortInfo = (
 export interface SentMessageEffectFrom<Self, E = never, R = never>
   extends Effect.Effect<
     Self,
-    E | InvalidAccessError | InvalidStateError | BadMidiMessageError,
+    | E
+    | AbsentSystemExclusiveMessagesAccessError
+    | BadMidiMessageError
+    | DisconnectedPortError,
     R
   > {}
 

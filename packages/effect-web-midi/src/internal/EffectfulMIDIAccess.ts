@@ -13,22 +13,27 @@ import * as Option from 'effect/Option'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
 import type * as Types from 'effect/Types'
-import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
+import {
+  createStreamMakerFrom,
+  type OnNullStrategy,
+  type StreamMakerOptions,
+} from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   AbortError,
-  InvalidStateError,
+  DisconnectedPortError,
   NotAllowedError,
   NotSupportedError,
   remapErrorByName,
+  UnderlyingSystemError,
 } from './errors.ts'
 import {
   fromPolymorphic,
+  type MIDIPortId,
   type PolymorphicEffect,
   polymorphicCheckInDual,
-  type MIDIPortId,
   type SentMessageEffectFrom,
 } from './util.ts'
 
@@ -41,6 +46,17 @@ import {
 // and streams, and remove listeners
 
 // TODO: implement scope inheritance
+
+// TODO: make a Ref with a port map that would be automatically updated by
+// listening to the stream of connection events?
+
+// TODO: add a stream to listen for all messages of all currently
+// connected inputs, all present inputs, specific input
+
+// TODO: add sinks that will accepts command streams to redirect midi commands
+// from something into an actual API
+
+// TODO: add effect to wait until connected by port id
 
 /**
  * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
@@ -137,6 +153,13 @@ interface RequestMIDIAccessOptions {
 // !!! DOCUMENTATION CURSOR !!!
 
 /**
+ *
+ * **Errors:**
+ *
+ * - {@linkcode AbortError} Argument x must be non-zero
+ * - {@linkcode UnderlyingSystemError} Argument x must be non-zero
+ * - {@linkcode NotSupportedError} Argument x must be non-zero
+ * - {@linkcode NotAllowedError} Argument x must be non-zero
  *
  * @param config
  * @returns
@@ -421,24 +444,58 @@ export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
  *
  *
  */
-export const getPortDeviceState = (key: MIDIPortId) =>
-  pipe(
-    // TODO: Check if software synth devices access is present. Having desired
-    // port absent in the record doesn't guarantee it's disconnected
-    AllPortsRecord,
-    Effect.flatMap(Record.get(key)),
-    EffectfulMIDIPort.getDeviceState,
-    Effect.orElseSucceed(() => 'disconnected' as const),
-  )
+export const getPortByIdFromContext = (id: MIDIPortId) =>
+  Effect.flatMap(AllPortsRecord, Record.get(id))
+
+// TODO: non contextual variant
+export const getPortById = getPortByIdFromContext
 
 /**
  *
  *
  */
-export const getPortConnectionState = (key: MIDIPortId) =>
-  EffectfulMIDIPort.getConnectionState(
-    Effect.flatMap(AllPortsRecord, Record.get(key)),
-  )
+export const getInputPortByIdFromContext = (id: MIDIPortId) =>
+  Effect.flatMap(InputPortsRecord, Record.get(id))
+
+// TODO: non contextual variant
+export const getInputPortById = getInputPortByIdFromContext
+
+/**
+ *
+ *
+ */
+export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
+  Effect.flatMap(OutputPortsRecord, Record.get(id))
+
+// TODO: non contextual variant
+export const getOutputPortById = getOutputPortByIdFromContext
+
+/**
+ *
+ *
+ */
+export const getPortDeviceStateFromContext = flow(
+  // TODO: Check if software synth devices access is present. Having desired
+  // port absent in the record doesn't guarantee it's disconnected
+  getPortByIdFromContext,
+  EffectfulMIDIPort.getDeviceState,
+  Effect.orElseSucceed(() => 'disconnected' as const),
+)
+
+// TODO: non contextual variant
+export const getPortDeviceState = getPortDeviceStateFromContext
+
+/**
+ *
+ *
+ */
+export const getPortConnectionStateFromContext = flow(
+  getPortByIdFromContext,
+  EffectfulMIDIPort.getConnectionState,
+)
+
+// TODO: non contextual variant
+export const getPortConnectionState = getPortConnectionStateFromContext
 
 /**
  * [MIDIConnectionEvent MDN
@@ -473,11 +530,15 @@ export const makeMIDIPortStateChangesStream =
       }) as const,
   )
 
-// TODO: add a stream to listen for all messages of all currently
-// connected inputs, all present inputs, specific input
-
-// TODO: add sinks that will accepts command streams to redirect midi commands
-// from something into an actual API
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeMIDIPortStateChangesStreamFromContext = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) => makeMIDIPortStateChangesStream(EffectfulMIDIAccess, options)
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
   extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
@@ -539,7 +600,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       const deviceStatuses = yield* Effect.all(deviceStatusesEffect)
 
       if (deviceStatuses.includes('disconnected'))
-        return yield* new InvalidStateError({
+        return yield* new DisconnectedPortError({
           cause: new DOMException(
             'InvalidStateError',
             // TODO: imitate
@@ -579,9 +640,24 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   ),
 )
 
+/**
+ *
+ *
+ */
+export const sendFromContext = (...args: SendFromAccessArgs) =>
+  Effect.asVoid(send(EffectfulMIDIAccess, ...args))
+
+// TODO: clear by id
+// TODO: clear all
+
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
     SendMIDIMessageAccessLast {}
+
+export type SendFromAccessArgs = [
+  targetPortSelector: TargetPortSelector,
+  ...args: EffectfulMIDIOutputPort.SendFromPortArgs,
+]
 
 export interface SendMIDIMessageAccessFirst {
   /**
@@ -590,9 +666,7 @@ export interface SendMIDIMessageAccessFirst {
    */
   <E = never, R = never>(
     accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
+    ...args: SendFromAccessArgs
   ): SentMessageEffectFromAccess<E, R>
 }
 
@@ -602,9 +676,7 @@ export interface SendMIDIMessageAccessLast {
    *
    */
   (
-    targetPortSelector: TargetPortSelector,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
+    ...args: SendFromAccessArgs
   ): {
     /**
      *
@@ -632,7 +704,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
     catch: remapErrorByName(
       {
         AbortError,
-        InvalidStateError,
+        InvalidStateError: UnderlyingSystemError,
         NotSupportedError,
         NotAllowedError,
         // because of https://github.com/WebAudio/web-midi-api/pull/267

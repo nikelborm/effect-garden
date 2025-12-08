@@ -1,6 +1,11 @@
-import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
+import {
+  createStreamMakerFrom,
+  type OnNullStrategy,
+  type StreamMakerOptions,
+} from './createStreamMakerFrom.ts'
+import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
-import { getStaticMIDIPortInfo } from './util.ts'
+import { getStaticMIDIPortInfo, type MIDIPortId } from './util.ts'
 
 // TODO: implement scoping of midi access that will cleanup all message queues
 // and streams, and remove listeners
@@ -71,10 +76,40 @@ export const makeStateChangesStream =
   EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'input'>
 
 /**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeStateChangesStreamFromContext = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  makeStateChangesStream(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    options,
+  )
+
+/**
  *
  */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
+
+export const matchConnectionStateFromContext = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'connection',
+    'input',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchConnectionState(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
 
 /**
  *
@@ -83,6 +118,21 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
   'state',
   is,
 )
+
+export const matchDeviceStateFromContext = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'state',
+    'input',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchDeviceState(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
 
 /**
  * [MIDIMessageEvent MDN
@@ -105,3 +155,18 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   }),
   midiMessage => ({ midiMessage }),
 )
+
+/**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeMessagesStreamFromContext = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  makeMessagesStream(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    options,
+  )

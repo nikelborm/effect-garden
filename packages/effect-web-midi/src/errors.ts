@@ -1,8 +1,10 @@
 export {
   AbortError,
+  AbsentSystemExclusiveMessagesAccessError,
   BadMidiMessageError,
-  InvalidAccessError,
-  InvalidStateError,
+  DisconnectedPortError,
   NotAllowedError,
   NotSupportedError,
+  UnavailablePortError,
+  UnderlyingSystemError,
 } from './internal/errors.ts'

@@ -1,6 +1,13 @@
+/**
+ * @file This module is not generalized, it's just the things to test the API
+ * with the only MIDI device I have: nanoPAD v1
+ */
+
 import * as Stream from 'effect/Stream'
 
-// TODO: split parsed and raw midiMessage?
+// Look at it from time to time:
+// Higher-level MIDI message access
+// https://github.com/WebAudio/web-midi-api/issues/179
 
 export const withParsedDataField = <
   A extends { readonly midiMessage: Uint8Array<ArrayBuffer> },

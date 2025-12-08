@@ -348,9 +348,10 @@ export interface MakeStreamTargetFirst<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param polymorphicEventTarget Raw MIDI object, which triggers events,
-   * wrapped in this lib's abstraction and potentially inside Effect. Will be
-   * assigned to the `cameFrom` property of the stream's success channel object
+   * @param polymorphicEventTargetWrapper Raw MIDI object, which triggers
+   * events, wrapped in this lib's abstraction and potentially inside Effect.
+   * Will be assigned to the `cameFrom` property of the stream's success channel
+   * object
    *
    * @param options Passing a boolean is equivalent to setting `options.capture`
    * property
@@ -360,7 +361,7 @@ export interface MakeStreamTargetFirst<
     R = never,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
-    polymorphicEventTarget: PolymorphicEffect<TCameFrom, E, R>,
+    polymorphicEventTargetWrapper: PolymorphicEffect<TCameFrom, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): BuiltStream<
     TTag,
@@ -383,21 +384,22 @@ export interface MakeStreamTargetLast<
    *
    * **Second call argument**
    *
-   * - `polymorphicEventTarget` Raw MIDI object, which triggers events, wrapped
-   *   in this lib's abstraction and potentially inside Effect. Will be assigned
-   *   to the `cameFrom` property of the stream's success channel object
+   * - `polymorphicEventTargetWrapper` Raw MIDI object, which triggers events,
+   *   wrapped in this lib's abstraction and potentially inside Effect. Will be
+   *   assigned to the `cameFrom` property of the stream's success channel
+   *   object
    */
   <const TOnNullStrategy extends OnNullStrategy = undefined>(
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
-     * @param polymorphicEventTarget Raw MIDI object, which triggers events,
-     * wrapped in this lib's abstraction and potentially inside Effect. Will be
-     * assigned to the `cameFrom` property of the stream's success channel
-     * object
+     * @param polymorphicEventTargetWrapper Raw MIDI object, which triggers
+     * events, wrapped in this lib's abstraction and potentially inside Effect.
+     * Will be assigned to the `cameFrom` property of the stream's success
+     * channel object
      */
     <E = never, R = never>(
-      polymorphicEventTarget: PolymorphicEffect<TCameFrom, E, R>,
+      polymorphicEventTargetWrapper: PolymorphicEffect<TCameFrom, E, R>,
     ): BuiltStream<
       TTag,
       TCameFrom,

@@ -1,5 +1,8 @@
 import * as Schema from 'effect/Schema'
 
+// TODO: add the fields related to the info about which port/access handle the
+// error is happened on
+
 const ErrorSchema = Schema.Struct({
   name: Schema.NonEmptyTrimmedString,
   message: Schema.NonEmptyTrimmedString,
@@ -17,10 +20,11 @@ export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
 }) {}
 
 /**
- * Thrown if the underlying system raises any errors.
+ * Thrown if the underlying system raises any errors when trying to open the
+ * port.
  */
-export class InvalidStateError extends Schema.TaggedError<InvalidStateError>()(
-  'InvalidStateError',
+export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemError>()(
+  'UnderlyingSystemError',
   { cause: ErrorSchema },
 ) {}
 
@@ -33,11 +37,28 @@ export class NotSupportedError extends Schema.TaggedError<NotSupportedError>()(
 ) {}
 
 /**
- * The object does not support the operation or argument. Thrown if the port is
- * unavailable.
+ * Thrown when trying the port is unavailable (e.g. is already in use by another
+ * process and cannot be opened, or is disconnected).
  */
-export class InvalidAccessError extends Schema.TaggedError<InvalidAccessError>()(
-  'InvalidAccessError',
+export class UnavailablePortError extends Schema.TaggedError<UnavailablePortError>()(
+  'UnavailablePortError',
+  { cause: ErrorSchema },
+) {}
+
+/**
+ * Thrown when .send operation was called on a disconnected port
+ */
+export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortError>()(
+  'DisconnectedPortError',
+  { cause: ErrorSchema },
+) {}
+
+/**
+ * Thrown when trying to send system exclusive message from the access handle,
+ * that doesn't have this permission
+ */
+export class AbsentSystemExclusiveMessagesAccessError extends Schema.TaggedError<AbsentSystemExclusiveMessagesAccessError>()(
+  'AbsentSystemExclusiveMessagesAccessError',
   { cause: ErrorSchema },
 ) {}
 

@@ -3,11 +3,12 @@
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import {
   BadMidiMessageError,
-  InvalidAccessError,
-  InvalidStateError,
+  AbsentSystemExclusiveMessagesAccessError,
   remapErrorByName,
+  DisconnectedPortError,
 } from './errors.ts'
 import {
   fromPolymorphic,
@@ -15,7 +16,12 @@ import {
   type PolymorphicEffect,
   polymorphicCheckInDual,
   type SentMessageEffectFrom,
+  type MIDIPortId,
 } from './util.ts'
+import type {
+  OnNullStrategy,
+  StreamMakerOptions,
+} from './createStreamMakerFrom.ts'
 
 /**
  * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all of
@@ -77,10 +83,40 @@ export const makeStateChangesStream =
   EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'output'>
 
 /**
+ * @param options Passing a boolean is equivalent to setting `options.capture`
+ * property
+ */
+export const makeStateChangesStreamFromContext = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  makeStateChangesStream(
+    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
+    options,
+  )
+
+/**
  *
  */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
+
+export const matchConnectionStateFromContext = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'connection',
+    'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchConnectionState(
+    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
 
 /**
  *
@@ -90,15 +126,30 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
   is,
 )
 
+export const matchDeviceStateFromContext = <
+  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+    'state',
+    'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchDeviceState(
+    EffectfulMIDIAccess.getOutputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
 /**
- * If midiMessage is a System Exclusive message, and the MIDIAccess did not
- * enable System Exclusive access, an InvalidAccessError exception will be
+ * If `midiMessage` is a System Exclusive message, and the `MIDIAccess` did not
+ * enable System Exclusive access, an `InvalidAccessError` exception will be
  * thrown
  *
- * If the port is "connected" but the connection is "closed", asynchronously
+ * If the port is `"connected"` but the connection is `"closed"`, asynchronously
  * tries to open the port. It's unclear in the spec if potential error of `open`
- * call would result in an InvalidAccessError error coming from the send method
- * itself.
+ * call would result in an `InvalidAccessError` error coming from the `send`
+ * method itself.
  *
  * @returns An effect with the same port for easier chaining of operations
  */
@@ -121,8 +172,8 @@ export const send: DualSendMIDIMessageFromPort = dual<
         try: () => asImpl(outputPort)._port.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
-            InvalidAccessError,
-            InvalidStateError,
+            InvalidAccessError: AbsentSystemExclusiveMessagesAccessError,
+            InvalidStateError: DisconnectedPortError,
             TypeError: BadMidiMessageError,
           },
           'EffectfulMIDIOutputPort.send error handling absurd',
@@ -134,6 +185,16 @@ export const send: DualSendMIDIMessageFromPort = dual<
   ),
 )
 
+export const sendById = (id: MIDIPortId, ...args: SendFromPortArgs) =>
+  Effect.asVoid(
+    send(EffectfulMIDIAccess.getOutputPortByIdFromContext(id), ...args),
+  )
+
+export type SendFromPortArgs = [
+  midiMessage: Iterable<number>,
+  timestamp?: DOMHighResTimeStamp,
+]
+
 export interface DualSendMIDIMessageFromPort
   extends SendMIDIMessagePortLast,
     SendMIDIMessagePortFirst {}
@@ -143,8 +204,7 @@ export interface SendMIDIMessagePortLast {
    *
    */
   (
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
+    ...args: SendFromPortArgs
   ): {
     /**
      *
@@ -161,8 +221,7 @@ export interface SendMIDIMessagePortFirst {
    */
   <E = never, R = never>(
     polymorphicOutputPort: PolymorphicEffect<EffectfulMIDIOutputPort, E, R>,
-    midiMessage: Iterable<number>,
-    timestamp?: DOMHighResTimeStamp,
+    ...args: SendFromPortArgs
   ): SentMessageEffectFromPort<E, R>
 }
 
@@ -174,17 +233,17 @@ export type SentMessageEffectFromPort<
   R = never,
 > = SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R>
 
-// TODO: fix upstream type-signature of clear method
-
 /**
  * Clears any enqueued send data that has not yet been sent from the
  * `MIDIOutput`'s queue. The browser will ensure the MIDI stream is left in a
  * good state, and if the output port is in the middle of a sysex message, a
  * sysex termination byte (`0xf7`) will be sent.
  *
- * @param outputPort An effectful output port
+ * @param polymorphicOutputPort An effectful output port
  *
  * @returns An effect with the same port for easier chaining of operations
+ * @experimental Supported only in Firefox. {@link https://caniuse.com/mdn-api_midioutput_clear|Can I use - MIDIOutput API: clear}
+ * @see {@link https://www.w3.org/TR/webmidi/#dom-midioutput-clear|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/MIDIOutput/clear|MDN reference}
  */
 export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
   E = never,
@@ -194,8 +253,15 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
 
   yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
 
-  // @ts-expect-error upstream bug that .clear is missing, because it's definitely in spec
+  // TODO: handling of type errors in not supported browsers
+
+  // @ts-expect-error even though .clear is in spec, the API is not supported in
+  // at least 2 major browsers, hence doesn't meet the condition to be be
+  // included and is missing in TS's DOM types
   yield* Effect.sync(() => asImpl(outputPort)._port.clear())
 
   return outputPort
 })
+
+export const clearById = (id: MIDIPortId) =>
+  Effect.asVoid(clear(EffectfulMIDIAccess.getOutputPortByIdFromContext(id)))
