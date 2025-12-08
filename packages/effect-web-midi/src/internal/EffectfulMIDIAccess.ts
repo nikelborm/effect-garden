@@ -255,11 +255,11 @@ interface EffectfulMIDIAccessImplementationInstance
  * @internal
  */
 const makeImpl = (
-  access: MIDIAccess,
+  rawAccess: MIDIAccess,
   config?: Readonly<RequestMIDIAccessOptions>,
 ): EffectfulMIDIAccessImplementationInstance => {
   const instance = Object.create(Proto)
-  instance._access = access
+  instance._access = rawAccess
   instance._config = config ?? {}
   return instance
 }
@@ -295,7 +295,7 @@ const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
  * @internal
  */
 const make: (
-  access: MIDIAccess,
+  rawAccess: MIDIAccess,
   config?: Readonly<RequestMIDIAccessOptions>,
 ) => EffectfulMIDIAccessInstance = makeImpl
 
@@ -342,9 +342,9 @@ const getPortEntriesFromRawAccess =
     key: TMIDIAccessObjectKey,
     make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
   ) =>
-  (access: MIDIAccess) =>
+  (rawAccess: MIDIAccess) =>
     Iterable.map(
-      access[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
+      rawAccess[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
       ([id, raw]) =>
         [id as MIDIPortId, make(raw)] satisfies Types.TupleOf<2, unknown>,
     )
@@ -372,7 +372,7 @@ const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
  * @internal
  */
 const getAllPortsEntriesFromRaw = (
-  access: MIDIAccess,
+  rawAccess: MIDIAccess,
 ): Iterable<
   [
     MIDIPortId,
@@ -383,8 +383,8 @@ const getAllPortsEntriesFromRaw = (
   ]
 > =>
   Iterable.appendAll(
-    getInputPortEntriesFromRaw(access),
-    getOutputPortEntriesFromRaw(access),
+    getInputPortEntriesFromRaw(rawAccess),
+    getOutputPortEntriesFromRaw(rawAccess),
   )
 
 /**
@@ -394,7 +394,7 @@ const getAllPortsEntriesFromRaw = (
  * @internal
  */
 const decorateToTakePolymorphicAccessAndReturnRecord =
-  <T>(accessor: (access: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
+  <T>(accessor: (rawAccess: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
   <E = never, R = never>(
     accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) =>
