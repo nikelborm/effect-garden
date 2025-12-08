@@ -1,5 +1,4 @@
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
-import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
 
@@ -86,20 +85,8 @@ export const makeStateChangesStream =
 /**
  *
  */
-export const makeStateChangesStreamById =
-  EffectfulMIDIAccess.makeInputPortStateChangesStreamByPortId
-
-/**
- *
- */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
-
-/**
- *
- */
-export const matchConnectionStateById =
-  EffectfulMIDIAccess.matchInputPortConnectionStateByPortId
 
 /**
  *
@@ -108,12 +95,6 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
   'state',
   is,
 )
-
-/**
- *
- */
-export const matchDeviceStateById =
-  EffectfulMIDIAccess.matchInputPortDeviceStateByPortId
 
 /**
  * [MIDIMessageEvent MDN
@@ -136,9 +117,3 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   }),
   midiMessage => ({ midiMessage }),
 )
-
-/**
- *
- */
-export const makeMessagesStreamById =
-  EffectfulMIDIAccess.makeMessagesStreamByPortId

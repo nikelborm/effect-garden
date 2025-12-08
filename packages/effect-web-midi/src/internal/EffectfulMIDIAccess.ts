@@ -879,114 +879,6 @@ export const makeOutputPortStateChangesStreamByPortId = <
   )
 
 /**
- *
- */
-export const matchPortConnectionStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'connection',
-    'input' | 'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIPort.matchConnectionState(
-    getPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
- *
- */
-export const matchInputPortConnectionStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'connection',
-    'input',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIInputPort.matchConnectionState(
-    getInputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
- *
- */
-export const matchOutputPortConnectionStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'connection',
-    'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIOutputPort.matchConnectionState(
-    getOutputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
- *
- */
-export const matchPortDeviceStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'state',
-    'input' | 'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIPort.matchDeviceState(
-    getPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
- *
- */
-export const matchInputPortDeviceStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'state',
-    'input',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIInputPort.matchDeviceState(
-    getInputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
- *
- */
-export const matchOutputPortDeviceStateByPortId = <
-  TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
-    'state',
-    'output',
-    TStateCaseToHandlerMap
-  >,
->(
-  id: MIDIPortId,
-  stateCaseToHandlerMap: TStateCaseToHandlerMap,
-) =>
-  EffectfulMIDIOutputPort.matchDeviceState(
-    getOutputPortByIdFromContext(id),
-    stateCaseToHandlerMap,
-  )
-
-/**
  * @param options Passing a boolean is equivalent to setting `options.capture`
  * property
  */
@@ -1000,3 +892,95 @@ export const makeMessagesStreamByPortId = <
     getInputPortByIdFromContext(id),
     options,
   )
+
+export const sendToPortById = (
+  id: MIDIPortId,
+  ...args: EffectfulMIDIOutputPort.SendFromPortArgs
+) =>
+  Effect.asVoid(
+    EffectfulMIDIOutputPort.send(getOutputPortByIdFromContext(id), ...args),
+  )
+
+export const clearPortById = (id: MIDIPortId) =>
+  Effect.asVoid(EffectfulMIDIOutputPort.clear(getOutputPortByIdFromContext(id)))
+
+///////////////////////////////////////////////////////////
+
+const makeMatcherTakingPortIds =
+  <
+    TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+    TMIDIPortProperty extends EffectfulMIDIPort.MIDIPortMutableProperty,
+  >(
+    match: EffectfulMIDIPort.DualMatchPortState<
+      TMIDIPortTypeHighLevelRestriction,
+      TMIDIPortProperty
+    >,
+    getPort: (
+      id: MIDIPortId,
+    ) => Effect.Effect<
+      EffectfulMIDIPort.EffectfulMIDIPort<
+        NoInfer<TMIDIPortTypeHighLevelRestriction>
+      >,
+      Cause.NoSuchElementException,
+      EffectfulMIDIAccess
+    >,
+  ) =>
+  <
+    TStateCaseToHandlerMap extends EffectfulMIDIPort.StateCaseToHandlerMap<
+      TMIDIPortProperty,
+      TMIDIPortTypeHighLevelRestriction,
+      TStateCaseToHandlerMap
+    >,
+  >(
+    id: MIDIPortId,
+    stateCaseToHandlerMap: TStateCaseToHandlerMap,
+  ) =>
+    match(getPort(id), stateCaseToHandlerMap)
+
+/**
+ *
+ */
+export const matchPortConnectionStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIPort.matchConnectionState,
+  getPortByIdFromContext,
+)
+
+/**
+ *
+ */
+export const matchInputPortConnectionStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIInputPort.matchConnectionState,
+  getInputPortByIdFromContext,
+)
+
+/**
+ *
+ */
+export const matchOutputPortConnectionStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIOutputPort.matchConnectionState,
+  getOutputPortByIdFromContext,
+)
+
+/**
+ *
+ */
+export const matchPortDeviceStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIPort.matchDeviceState,
+  getPortByIdFromContext,
+)
+
+/**
+ *
+ */
+export const matchInputPortDeviceStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIInputPort.matchDeviceState,
+  getInputPortByIdFromContext,
+)
+
+/**
+ *
+ */
+export const matchOutputPortDeviceStateByPortId = makeMatcherTakingPortIds(
+  EffectfulMIDIOutputPort.matchDeviceState,
+  getOutputPortByIdFromContext,
+)

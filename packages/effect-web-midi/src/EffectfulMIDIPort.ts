@@ -1,18 +1,26 @@
-// remember to make sure there's no ___FromContext and ___ByPortId and put them
-// into EffectfulMIDIAccess
+// remember to make sure there's no ___FromContext and ___ByPortId in
+// internal/EffectfulMIDIPort.ts and put them into EffectfulMIDIAccess
+
+export {
+  acquireReleasePortConnectionByPortId as acquireReleaseConnectionById,
+  closePortConnectionByPortId as closeConnectionById,
+  getPortConnectionStateByPortId as getConnectionStateById,
+  getPortDeviceStateByPortId as getDeviceStateById,
+  makePortStateChangesStreamByPortId as makeStateChangesStreamById,
+  matchPortConnectionStateByPortId as matchConnectionStateById,
+  matchPortDeviceStateByPortId as matchDeviceStateById,
+  openPortConnectionByPortId as openConnectionById,
+} from './internal/EffectfulMIDIAccess.ts'
+
 export {
   acquireReleaseConnection,
-  acquireReleaseConnectionById,
   assert,
   closeConnection,
-  closeConnectionById,
   type DualMakeStateChangesStream,
   type DualMatchPortState,
   type EffectfulMIDIPort,
   getConnectionState,
-  getConnectionStateById,
   getDeviceState,
-  getDeviceStateById,
   is,
   isConnectionClosed,
   isConnectionOpen,
@@ -26,13 +34,9 @@ export {
   type MatchStatePortFirst,
   type MatchStatePortLast,
   makeStateChangesStream,
-  makeStateChangesStreamById,
   matchConnectionState,
-  matchConnectionStateById,
   matchDeviceState,
-  matchDeviceStateById,
   openConnection,
-  openConnectionById,
   type PortStateHandler,
   type StateCaseToHandlerMap,
   type StateChangesStream,

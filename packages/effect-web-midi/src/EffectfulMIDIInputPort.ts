@@ -1,13 +1,16 @@
 export {
+  makeInputPortStateChangesStreamByPortId as makeStateChangesStreamById,
+  makeMessagesStreamByPortId as makeMessagesStreamById,
+  matchInputPortConnectionStateByPortId as matchConnectionStateById,
+  matchInputPortDeviceStateByPortId as matchDeviceStateById,
+} from './internal/EffectfulMIDIAccess.ts'
+
+export {
   assert,
   type EffectfulMIDIInputPort,
   is,
   makeMessagesStream,
-  makeMessagesStreamById,
   makeStateChangesStream,
-  makeStateChangesStreamById,
   matchConnectionState,
-  matchConnectionStateById,
   matchDeviceState,
-  matchDeviceStateById,
 } from './internal/EffectfulMIDIInputPort.ts'

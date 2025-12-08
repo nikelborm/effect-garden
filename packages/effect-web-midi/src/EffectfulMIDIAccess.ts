@@ -2,6 +2,7 @@ export {
   AllPortsRecord,
   acquireReleasePortConnectionByPortId,
   assert,
+  clearPortById,
   closePortConnectionByPortId,
   type DualSendMIDIMessageFromAccess,
   EffectfulMIDIAccess,
@@ -47,6 +48,7 @@ export {
   type SentMessageEffectFromAccess,
   send,
   sendFromContext,
+  sendToPortById,
   type TargetPortSelector,
   type TypeId,
 } from './internal/EffectfulMIDIAccess.ts'

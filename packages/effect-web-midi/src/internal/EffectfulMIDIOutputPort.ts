@@ -2,7 +2,6 @@
  * preserve JSDoc comments attached to the function signature */
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
-import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   AbsentSystemExclusiveMessagesAccessError,
@@ -13,7 +12,6 @@ import {
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
-  type MIDIPortId,
   type PolymorphicEffect,
   polymorphicCheckInDual,
   type SentMessageEffectFrom,
@@ -92,17 +90,8 @@ export const makeStateChangesStream =
 /**
  *
  */
-export const makeStateChangesStreamById =
-  EffectfulMIDIAccess.makeOutputPortStateChangesStreamByPortId
-
-/**
- *
- */
 export const matchConnectionState =
   EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
-
-export const matchConnectionStateById =
-  EffectfulMIDIAccess.matchOutputPortConnectionStateByPortId
 
 /**
  *
@@ -111,9 +100,6 @@ export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
   'state',
   is,
 )
-
-export const matchDeviceStateById =
-  EffectfulMIDIAccess.matchOutputPortDeviceStateByPortId
 
 /**
  * If `midiMessage` is a System Exclusive message, and the `MIDIAccess` did not
@@ -158,11 +144,6 @@ export const send: DualSendMIDIMessageFromPort = dual<
     },
   ),
 )
-
-export const sendById = (id: MIDIPortId, ...args: SendFromPortArgs) =>
-  Effect.asVoid(
-    send(EffectfulMIDIAccess.getOutputPortByIdFromContext(id), ...args),
-  )
 
 export type SendFromPortArgs = [
   midiMessage: Iterable<number>,
@@ -236,6 +217,3 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
 
   return outputPort
 })
-
-export const clearById = (id: MIDIPortId) =>
-  Effect.asVoid(clear(EffectfulMIDIAccess.getOutputPortByIdFromContext(id)))

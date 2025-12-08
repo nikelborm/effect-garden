@@ -20,7 +20,6 @@ import {
   type PolymorphicEffect,
   polymorphicCheckInDual,
 } from './util.ts'
-import { EffectfulMIDIAccess } from '../index.ts'
 
 /**
  * Unique symbol used for distinguishing {@linkcode EffectfulMIDIPort} instances
@@ -588,50 +587,4 @@ export interface MakeStateChangesStreamPortLast<
   }
 }
 
-type MIDIPortMutableProperty = 'state' | 'connection'
-
-/**
- *
- */
-export const acquireReleaseConnectionById =
-  EffectfulMIDIAccess.acquireReleasePortConnectionByPortId
-
-/**
- *
- */
-export const closeConnectionById =
-  EffectfulMIDIAccess.closePortConnectionByPortId
-
-/**
- *
- */
-export const getConnectionStateById =
-  EffectfulMIDIAccess.getPortConnectionStateByPortId
-
-/**
- *
- */
-export const getDeviceStateById = EffectfulMIDIAccess.getPortDeviceStateByPortId
-
-/**
- *
- */
-export const makeStateChangesStreamById =
-  EffectfulMIDIAccess.makePortStateChangesStreamByPortId
-
-/**
- *
- */
-export const matchConnectionStateById =
-  EffectfulMIDIAccess.matchPortConnectionStateByPortId
-
-/**
- *
- */
-export const matchDeviceStateById =
-  EffectfulMIDIAccess.matchPortDeviceStateByPortId
-
-/**
- *
- */
-export const openConnectionById = EffectfulMIDIAccess.openPortConnectionByPortId
+export type MIDIPortMutableProperty = 'state' | 'connection'

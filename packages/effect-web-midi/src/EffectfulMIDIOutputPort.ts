@@ -1,20 +1,23 @@
 export {
+  clearPortById as clearById,
+  makeOutputPortStateChangesStreamByPortId as makeStateChangesStreamById,
+  matchOutputPortConnectionStateByPortId as matchConnectionStateById,
+  matchOutputPortDeviceStateByPortId as matchDeviceStateById,
+  sendToPortById as sendById,
+} from './internal/EffectfulMIDIAccess.ts'
+
+export {
   assert,
   clear,
-  clearById,
   type DualSendMIDIMessageFromPort,
   type EffectfulMIDIOutputPort,
   is,
   makeStateChangesStream,
-  makeStateChangesStreamById,
   matchConnectionState,
-  matchConnectionStateById,
   matchDeviceState,
-  matchDeviceStateById,
   type SendFromPortArgs,
   type SendMIDIMessagePortFirst,
   type SendMIDIMessagePortLast,
   type SentMessageEffectFromPort,
   send,
-  sendById,
 } from './internal/EffectfulMIDIOutputPort.ts'
