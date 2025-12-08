@@ -2,26 +2,26 @@
  * preserve JSDoc comments attached to the function signature */
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
-import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
-import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
-import {
-  BadMidiMessageError,
-  AbsentSystemExclusiveMessagesAccessError,
-  remapErrorByName,
-  DisconnectedPortError,
-} from './errors.ts'
-import {
-  fromPolymorphic,
-  getStaticMIDIPortInfo,
-  type PolymorphicEffect,
-  polymorphicCheckInDual,
-  type SentMessageEffectFrom,
-  type MIDIPortId,
-} from './util.ts'
 import type {
   OnNullStrategy,
   StreamMakerOptions,
 } from './createStreamMakerFrom.ts'
+import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
+import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import {
+  AbsentSystemExclusiveMessagesAccessError,
+  BadMidiMessageError,
+  DisconnectedPortError,
+  remapErrorByName,
+} from './errors.ts'
+import {
+  fromPolymorphic,
+  getStaticMIDIPortInfo,
+  type MIDIPortId,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
+  type SentMessageEffectFrom,
+} from './util.ts'
 
 /**
  * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all of
@@ -53,11 +53,18 @@ const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
  *
  * @internal
  */
-const asImpl = (port: EffectfulMIDIOutputPort) => {
+const asImpl = (port: EffectfulMIDIPort.EffectfulMIDIPort) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIOutputPortImpl')
   return port
 }
+
+/**
+ * Asserts an object to be valid EffectfulMIDIOutputPort
+ */
+export const as: (
+  port: EffectfulMIDIPort.EffectfulMIDIPort,
+) => EffectfulMIDIOutputPort = asImpl
 
 /**
  *

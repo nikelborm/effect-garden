@@ -14,13 +14,13 @@ import {
   type StreamMakerOptions,
 } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
-import { UnavailablePortError, remapErrorByName } from './errors.ts'
+import { remapErrorByName, UnavailablePortError } from './errors.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
   type MIDIPortId,
-  polymorphicCheckInDual,
   type PolymorphicEffect,
+  polymorphicCheckInDual,
 } from './util.ts'
 
 /**
@@ -231,8 +231,10 @@ export const openConnection = callMIDIPortMethod(
 /**
  *
  */
-export const openConnectionByPortId = (id: MIDIPortId) =>
-  openConnection(EffectfulMIDIAccess.getPortByIdFromContext(id))
+export const openConnectionByPortId = flow(
+  EffectfulMIDIAccess.getPortByIdFromContext,
+  openConnection,
+)
 
 /**
  * @returns An effect with the same port for easier chaining of operations
@@ -244,8 +246,10 @@ export const closeConnection = callMIDIPortMethod('close', err => {
 /**
  *
  */
-export const closeConnectionByPortId = (id: MIDIPortId) =>
-  closeConnection(EffectfulMIDIAccess.getPortByIdFromContext(id))
+export const closeConnectionByPortId = flow(
+  EffectfulMIDIAccess.getPortByIdFromContext,
+  closeConnection,
+)
 
 /**
  * @returns An effect with the same port for easier chaining of operations
@@ -258,8 +262,10 @@ export const acquireReleaseConnection = <
   port: PolymorphicEffect<EffectfulMIDIPort<TType>, E, R>,
 ) => Effect.acquireRelease(openConnection(port), closeConnection)
 
-export const acquireReleaseConnectionByPortId = (id: MIDIPortId) =>
-  acquireReleaseConnection(EffectfulMIDIAccess.getPortByIdFromContext(id))
+export const acquireReleaseConnectionByPortId = flow(
+  EffectfulMIDIAccess.getPortByIdFromContext,
+  acquireReleaseConnection,
+)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -304,6 +310,9 @@ export const makeStateChangesStreamFromContext = <
     options,
   )
 
+/**
+ * @internal
+ */
 const getValueInRawPortFieldUnsafe =
   <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
     property: TMIDIPortMutableProperty,
@@ -311,6 +320,9 @@ const getValueInRawPortFieldUnsafe =
   (port: EffectfulMIDIPort) =>
     asImpl(port)._port[property]
 
+/**
+ * @internal
+ */
 const getMutableProperty =
   <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
     property: TMIDIPortMutableProperty,
@@ -333,8 +345,13 @@ const getMutableProperty =
  */
 export const getDeviceState = getMutableProperty('state')
 
-export const getDeviceStateByPortId = (id: MIDIPortId) =>
-  getDeviceState(EffectfulMIDIAccess.getPortById(id))
+/**
+ *
+ */
+export const getDeviceStateByPortId = flow(
+  EffectfulMIDIAccess.getPortByIdFromContext,
+  getDeviceState,
+)
 
 /**
  * @returns A state of the connection between the browser's tab and OS
@@ -346,8 +363,13 @@ export const getDeviceStateByPortId = (id: MIDIPortId) =>
  */
 export const getConnectionState = getMutableProperty('connection')
 
-export const getConnectionStateByPortId = (id: MIDIPortId) =>
-  getConnectionState(EffectfulMIDIAccess.getPortById(id))
+/**
+ *
+ */
+export const getConnectionStateByPortId = flow(
+  EffectfulMIDIAccess.getPortByIdFromContext,
+  getConnectionState,
+)
 
 /**
  *
@@ -429,10 +451,40 @@ export const matchConnectionState = matchMutableMIDIPortProperty(
   is,
 )
 
+export const matchConnectionStateFromContext = <
+  TStateCaseToHandlerMap extends StateCaseToHandlerMap<
+    'connection',
+    'input' | 'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchConnectionState(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
+
 /**
  *
  */
 export const matchDeviceState = matchMutableMIDIPortProperty('state', is)
+
+export const matchDeviceStateFromContext = <
+  TStateCaseToHandlerMap extends StateCaseToHandlerMap<
+    'state',
+    'input' | 'output',
+    TStateCaseToHandlerMap
+  >,
+>(
+  id: MIDIPortId,
+  stateCaseToHandlerMap: TStateCaseToHandlerMap,
+) =>
+  matchDeviceState(
+    EffectfulMIDIAccess.getInputPortByIdFromContext(id),
+    stateCaseToHandlerMap,
+  )
 
 // biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
 export type PortStateHandler = (port: EffectfulMIDIPort) => any

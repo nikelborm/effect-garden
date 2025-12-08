@@ -2,8 +2,8 @@ import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as Struct from 'effect/Struct'
 import type {
-  BadMidiMessageError,
   AbsentSystemExclusiveMessagesAccessError,
+  BadMidiMessageError,
   DisconnectedPortError,
 } from './errors.ts'
 

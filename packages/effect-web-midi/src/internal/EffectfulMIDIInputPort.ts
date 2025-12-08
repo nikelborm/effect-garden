@@ -42,11 +42,18 @@ const makeImpl = (port: MIDIInput): EffectfulMIDIInputPortImpl =>
  *
  * @internal
  */
-const asImpl = (port: EffectfulMIDIInputPort) => {
+const asImpl = (port: EffectfulMIDIPort.EffectfulMIDIPort) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIInputPortImpl')
   return port
 }
+
+/**
+ * Asserts an object to be valid EffectfulMIDIInputPort
+ */
+export const as: (
+  port: EffectfulMIDIPort.EffectfulMIDIPort,
+) => EffectfulMIDIInputPort = asImpl
 
 /**
  *
@@ -60,7 +67,8 @@ export const make: (port: MIDIInput) => EffectfulMIDIInputPort = makeImpl
  *
  * @internal
  */
-const isImpl = EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
+const isImpl: (port: unknown) => port is EffectfulMIDIInputPortImpl =
+  EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
 
 /**
  *

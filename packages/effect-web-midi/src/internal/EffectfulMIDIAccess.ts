@@ -440,35 +440,52 @@ export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
  */
 export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 
+// TODO: dual
 /**
  *
  *
  */
-export const getPortByIdFromContext = (id: MIDIPortId) =>
-  Effect.flatMap(AllPortsRecord, Record.get(id))
-
-// TODO: non contextual variant
-export const getPortById = getPortByIdFromContext
-
-/**
- *
- *
- */
-export const getInputPortByIdFromContext = (id: MIDIPortId) =>
-  Effect.flatMap(InputPortsRecord, Record.get(id))
-
-// TODO: non contextual variant
-export const getInputPortById = getInputPortByIdFromContext
+export const getPortById =
+  <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) =>
+  (id: MIDIPortId) =>
+    Effect.flatMap(getAllPortsRecord(accessPolymorphic), Record.get(id))
 
 /**
  *
  *
  */
-export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
-  Effect.flatMap(OutputPortsRecord, Record.get(id))
+export const getPortByIdFromContext = getPortById(EffectfulMIDIAccess)
 
-// TODO: non contextual variant
-export const getOutputPortById = getOutputPortByIdFromContext
+// TODO: dual
+export const getInputPortById =
+  <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) =>
+  (id: MIDIPortId) =>
+    Effect.flatMap(getInputPortsRecord(accessPolymorphic), Record.get(id))
+
+/**
+ *
+ *
+ */
+export const getInputPortByIdFromContext = getInputPortById(EffectfulMIDIAccess)
+
+// TODO: dual
+export const getOutputPortById =
+  <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) =>
+  (id: MIDIPortId) =>
+    Effect.flatMap(getOutputPortsRecord(accessPolymorphic), Record.get(id))
+
+/**
+ *
+ *
+ */
+export const getOutputPortByIdFromContext =
+  getOutputPortById(EffectfulMIDIAccess)
 
 /**
  *
