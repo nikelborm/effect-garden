@@ -1,5 +1,5 @@
 export {
-  as,
+  assert,
   type EffectfulMIDIInputPort,
   is,
   makeMessagesStream,

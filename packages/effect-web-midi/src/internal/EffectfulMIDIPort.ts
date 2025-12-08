@@ -80,19 +80,19 @@ const CommonProto = {
   },
 
   get id() {
-    return asImpl(this)._port.id
+    return assumeImpl(this)._port.id
   },
   get name() {
-    return asImpl(this)._port.name
+    return assumeImpl(this)._port.name
   },
   get manufacturer() {
-    return asImpl(this)._port.manufacturer
+    return assumeImpl(this)._port.manufacturer
   },
   get version() {
-    return asImpl(this)._port.version
+    return assumeImpl(this)._port.version
   },
   get type() {
-    return asImpl(this)._port.type
+    return assumeImpl(this)._port.type
   },
 } satisfies EffectfulMIDIPort
 
@@ -147,11 +147,21 @@ export const makeImpl = <TPort extends MIDIPort, TType extends MIDIPortType>(
  *
  * @internal
  */
-const asImpl = (port: EffectfulMIDIPort) => {
+const assertImpl = (port: unknown) => {
   if (!isGeneralImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIPort')
   return port
 }
+
+/**
+ * Asserts an object to be valid EffectfulMIDIPort
+ */
+export const assert: (port: unknown) => EffectfulMIDIPort = assertImpl
+
+/**
+ * @internal
+ */
+const assumeImpl = (port: EffectfulMIDIPort) => port as EffectfulMIDIPortImpl
 
 /**
  *
@@ -210,7 +220,7 @@ const callMIDIPortMethod = <TError = never>(
     })
 
     yield* Effect.tryPromise({
-      try: () => asImpl(port)._port[method](),
+      try: () => assumeImpl(port)._port[method](),
       catch: mapError,
     })
 
@@ -277,7 +287,7 @@ export const makeStateChangesStream = createStreamMakerFrom<MIDIPortEventMap>()(
   is,
   port => ({
     tag: 'MIDIPortStateChange',
-    eventListener: { target: asImpl(port)._port, type: 'statechange' },
+    eventListener: { target: assumeImpl(port)._port, type: 'statechange' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
       port: getStaticMIDIPortInfo(port),
@@ -318,7 +328,7 @@ const getValueInRawPortFieldUnsafe =
     property: TMIDIPortMutableProperty,
   ) =>
   (port: EffectfulMIDIPort) =>
-    asImpl(port)._port[property]
+    assumeImpl(port)._port[property]
 
 /**
  * @internal

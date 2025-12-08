@@ -42,7 +42,7 @@ const makeImpl = (port: MIDIInput): EffectfulMIDIInputPortImpl =>
  *
  * @internal
  */
-const asImpl = (port: unknown) => {
+const assertImpl = (port: unknown) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIInputPortImpl')
   return port
@@ -51,7 +51,13 @@ const asImpl = (port: unknown) => {
 /**
  * Asserts an object to be valid EffectfulMIDIInputPort
  */
-export const as: (port: unknown) => EffectfulMIDIInputPort = asImpl
+export const assert: (port: unknown) => EffectfulMIDIInputPort = assertImpl
+
+/**
+ * @internal
+ */
+const assumeImpl = (port: EffectfulMIDIInputPort) =>
+  port as EffectfulMIDIInputPortImpl
 
 /**
  *
@@ -152,7 +158,7 @@ export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
   is,
   inputPort => ({
     tag: 'MIDIMessage',
-    eventListener: { target: asImpl(inputPort)._port, type: 'midimessage' },
+    eventListener: { target: assumeImpl(inputPort)._port, type: 'midimessage' },
     spanAttributes: {
       spanTargetName: 'MIDI port',
       port: getStaticMIDIPortInfo(inputPort),

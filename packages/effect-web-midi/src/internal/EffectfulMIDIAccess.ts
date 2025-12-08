@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 import * as EArray from 'effect/Array'
+import type * as Cause from 'effect/Cause'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
@@ -220,7 +221,7 @@ const Proto = {
   },
 
   get sysexEnabled() {
-    return asImpl(this)._access.sysexEnabled
+    return assumeImpl(this)._access.sysexEnabled
   },
 } satisfies EffectfulMIDIAccessInstance
 
@@ -269,10 +270,24 @@ const makeImpl = (
  *
  * @internal
  */
-const asImpl = (access: EffectfulMIDIAccessInstance) => {
+const assertImpl = (access: unknown) => {
   if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
   return access
 }
+
+/**
+ * Asserts an object to be valid EffectfulMIDIAccess
+ *
+ * @internal
+ */
+export const assert: (access: unknown) => EffectfulMIDIAccessInstance =
+  assertImpl
+
+/**
+ * @internal
+ */
+const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
+  access as EffectfulMIDIAccessImplementationInstance
 
 /**
  *
@@ -385,7 +400,7 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
   ) =>
     Effect.map(
       fromPolymorphic(accessPolymorphic, is),
-      flow(asImpl, e => e._access, accessor, Record.fromEntries),
+      flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
     )
 
 /**
@@ -440,52 +455,98 @@ export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
  */
 export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 
-// TODO: dual
 /**
  *
  *
  */
-export const getPortById =
+export const getPortById = dual<
+  (
+    id: MIDIPortId,
+  ) => <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) => Effect.Effect<
+    | EffectfulMIDIInputPort.EffectfulMIDIInputPort
+    | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >,
   <E = never, R = never>(
     accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) =>
-  (id: MIDIPortId) =>
-    Effect.flatMap(getAllPortsRecord(accessPolymorphic), Record.get(id))
+    id: MIDIPortId,
+  ) => Effect.Effect<
+    | EffectfulMIDIInputPort.EffectfulMIDIInputPort
+    | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >
+>(2, (accessPolymorphic, id) =>
+  Effect.flatMap(getAllPortsRecord(accessPolymorphic), Record.get(id)),
+)
 
 /**
  *
  *
  */
-export const getPortByIdFromContext = getPortById(EffectfulMIDIAccess)
+export const getPortByIdFromContext = (id: MIDIPortId) =>
+  getPortById(EffectfulMIDIAccess, id)
 
-// TODO: dual
-export const getInputPortById =
+export const getInputPortById = dual<
+  (
+    id: MIDIPortId,
+  ) => <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) => Effect.Effect<
+    EffectfulMIDIInputPort.EffectfulMIDIInputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >,
   <E = never, R = never>(
     accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) =>
-  (id: MIDIPortId) =>
-    Effect.flatMap(getInputPortsRecord(accessPolymorphic), Record.get(id))
+    id: MIDIPortId,
+  ) => Effect.Effect<
+    EffectfulMIDIInputPort.EffectfulMIDIInputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >
+>(2, (accessPolymorphic, id) =>
+  Effect.flatMap(getInputPortsRecord(accessPolymorphic), Record.get(id)),
+)
 
 /**
  *
  *
  */
-export const getInputPortByIdFromContext = getInputPortById(EffectfulMIDIAccess)
+export const getInputPortByIdFromContext = (id: MIDIPortId) =>
+  getInputPortById(EffectfulMIDIAccess, id)
 
-// TODO: dual
-export const getOutputPortById =
+export const getOutputPortById = dual<
+  (
+    id: MIDIPortId,
+  ) => <E = never, R = never>(
+    accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
+  ) => Effect.Effect<
+    EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >,
   <E = never, R = never>(
     accessPolymorphic: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) =>
-  (id: MIDIPortId) =>
-    Effect.flatMap(getOutputPortsRecord(accessPolymorphic), Record.get(id))
+    id: MIDIPortId,
+  ) => Effect.Effect<
+    EffectfulMIDIOutputPort.EffectfulMIDIOutputPort,
+    E | Cause.NoSuchElementException,
+    R
+  >
+>(2, (accessPolymorphic, id) =>
+  Effect.flatMap(getOutputPortsRecord(accessPolymorphic), Record.get(id)),
+)
 
 /**
  *
  *
  */
-export const getOutputPortByIdFromContext =
-  getOutputPortById(EffectfulMIDIAccess)
+export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
+  getOutputPortById(EffectfulMIDIAccess, id)
 
 /**
  *
@@ -494,8 +555,7 @@ export const getOutputPortByIdFromContext =
 export const getPortDeviceStateFromContext = flow(
   // TODO: Check if software synth devices access is present. Having desired
   // port absent in the record doesn't guarantee it's disconnected
-  getPortByIdFromContext,
-  EffectfulMIDIPort.getDeviceState,
+  EffectfulMIDIPort.getDeviceStateByPortId,
   Effect.orElseSucceed(() => 'disconnected' as const),
 )
 
@@ -512,7 +572,10 @@ export const getPortConnectionStateFromContext = flow(
 )
 
 // TODO: non contextual variant
-export const getPortConnectionState = getPortConnectionStateFromContext
+export const getPortConnectionState = flow(
+  getPortById,
+  EffectfulMIDIPort.getConnectionState,
+)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -523,10 +586,13 @@ export const makeMIDIPortStateChangesStream =
     is,
     access => ({
       tag: 'MIDIPortStateChange',
-      eventListener: { target: asImpl(access)._access, type: 'statechange' },
+      eventListener: {
+        target: assumeImpl(access)._access,
+        type: 'statechange',
+      },
       spanAttributes: {
         spanTargetName: 'MIDI access handle',
-        requestedAccessConfig: asImpl(access)._config,
+        requestedAccessConfig: assumeImpl(access)._config,
       },
       nullableFieldName: 'port',
     }),
@@ -657,6 +723,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   ),
 )
 
+// TODO: dual
 /**
  *
  *

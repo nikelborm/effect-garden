@@ -1,6 +1,7 @@
 export {
   acquireReleaseConnection,
   acquireReleaseConnectionByPortId,
+  assert,
   closeConnection,
   closeConnectionByPortId,
   type DualMakeStateChangesStream,

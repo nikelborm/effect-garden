@@ -53,7 +53,7 @@ const makeImpl = (port: MIDIOutput): EffectfulMIDIOutputPortImpl =>
  *
  * @internal
  */
-const asImpl = (port: unknown) => {
+const assertImpl = (port: unknown) => {
   if (!isImpl(port))
     throw new Error('Failed to cast to EffectfulMIDIOutputPortImpl')
   return port
@@ -62,7 +62,13 @@ const asImpl = (port: unknown) => {
 /**
  * Asserts an object to be valid EffectfulMIDIOutputPort
  */
-export const as: (port: unknown) => EffectfulMIDIOutputPort = asImpl
+export const assert: (port: unknown) => EffectfulMIDIOutputPort = assertImpl
+
+/**
+ * @internal
+ */
+const assumeImpl = (port: EffectfulMIDIOutputPort) =>
+  port as EffectfulMIDIOutputPortImpl
 
 /**
  *
@@ -174,7 +180,7 @@ export const send: DualSendMIDIMessageFromPort = dual<
       })
 
       yield* Effect.try({
-        try: () => asImpl(outputPort)._port.send(midiMessage, timestamp),
+        try: () => assumeImpl(outputPort)._port.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
             InvalidAccessError: AbsentSystemExclusiveMessagesAccessError,
@@ -263,7 +269,7 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
   // @ts-expect-error even though .clear is in spec, the API is not supported in
   // at least 2 major browsers, hence doesn't meet the condition to be be
   // included and is missing in TS's DOM types
-  yield* Effect.sync(() => asImpl(outputPort)._port.clear())
+  yield* Effect.sync(() => assumeImpl(outputPort)._port.clear())
 
   return outputPort
 })

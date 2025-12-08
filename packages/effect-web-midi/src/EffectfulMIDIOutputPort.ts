@@ -1,5 +1,5 @@
 export {
-  as,
+  assert,
   clear,
   clearById,
   type DualSendMIDIMessageFromPort,
