@@ -58,6 +58,8 @@ import {
 
 // TODO: add effect to wait until connected by port id
 
+// TODO: reflect sysex and software flags in type-system
+
 /**
  * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
@@ -151,44 +153,6 @@ export interface RequestMIDIAccessOptions {
    */
   readonly sysex?: boolean
 }
-
-/**
- *
- * **Errors:**
- *
- * - {@linkcode AbortError} Argument x must be non-zero
- * - {@linkcode UnderlyingSystemError} Argument x must be non-zero
- * - {@linkcode MIDIAccessNotSupportedError} Argument x must be non-zero
- * - {@linkcode MIDIAccessNotAllowedError} Argument x must be non-zero
- *
- * @param config
- * @returns
- */
-export const layer = (config?: RequestMIDIAccessOptions) =>
-  Layer.effect(EffectfulMIDIAccess, request(config))
-
-/**
- *
- */
-export const layerMostRestricted = layer()
-
-/**
- *
- */
-export const layerSystemExclusiveSupported = layer({ sysex: true })
-
-/**
- *
- */
-export const layerSoftwareSynthSupported = layer({ software: true })
-
-/**
- *
- */
-export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
-  software: true,
-  sysex: true,
-})
 
 /**
  * Prototype of all {@linkcode EffectfulMIDIAccessInstance} instances
@@ -754,7 +718,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
         InvalidStateError: UnderlyingSystemError,
 
         NotAllowedError: MIDIAccessNotAllowedError,
-        // SecurityError was deprecated by https://github.com/WebAudio/web-midi-api/pull/267
+        // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/267):
         SecurityError: MIDIAccessNotAllowedError,
 
         NotSupportedError: MIDIAccessNotSupportedError,
@@ -778,3 +742,41 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
 })
 
 // TODO: clear all outputs
+
+/**
+ *
+ * **Errors:**
+ *
+ * - {@linkcode AbortError} Argument x must be non-zero
+ * - {@linkcode UnderlyingSystemError} Argument x must be non-zero
+ * - {@linkcode MIDIAccessNotSupportedError} Argument x must be non-zero
+ * - {@linkcode MIDIAccessNotAllowedError} Argument x must be non-zero
+ *
+ * @param config
+ * @returns
+ */
+export const layer = (config?: RequestMIDIAccessOptions) =>
+  Layer.effect(EffectfulMIDIAccess, request(config))
+
+/**
+ *
+ */
+export const layerMostRestricted = layer()
+
+/**
+ *
+ */
+export const layerSystemExclusiveSupported = layer({ sysex: true })
+
+/**
+ *
+ */
+export const layerSoftwareSynthSupported = layer({ software: true })
+
+/**
+ *
+ */
+export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
+  software: true,
+  sysex: true,
+})

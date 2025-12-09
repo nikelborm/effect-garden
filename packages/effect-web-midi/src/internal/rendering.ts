@@ -34,9 +34,9 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
             ? oldText.slice(
                 ...(show === 'latestFirst'
                   ? // biome-ignore lint/style/noNonNullAssertion: oldLog guaranteed to have at least one element by oldLog.length >= windowSize
-                    [0, -oldLog.at(-1)! - 1]
+                    [0, -oldLog.at(-1)!]
                   : // biome-ignore lint/style/noNonNullAssertion: oldLog guaranteed to have at least one element by oldLog.length >= windowSize
-                    [oldLog.at(0)! + 1]),
+                    [oldLog.at(0)!]),
               )
             : oldText
 

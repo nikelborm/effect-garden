@@ -186,10 +186,18 @@ export const isImplOfSpecificType =
     type: TType,
     ClassToAssertInheritance: new (...args: unknown[]) => TPort,
   ) =>
-  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TType> =>
-    isGeneralImpl(port) &&
-    port.type === type &&
-    port._port instanceof ClassToAssertInheritance
+  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TType> => {
+    if (!ClassToAssertInheritance)
+      throw new Error(
+        'Called in a context where ClassToAssertInheritance is falsy, probably on a platform where MIDI APIs are not supported, like node.js or bun',
+      )
+
+    return (
+      isGeneralImpl(port) &&
+      port.type === type &&
+      port._port instanceof ClassToAssertInheritance
+    )
+  }
 
 /**
  *
@@ -232,10 +240,10 @@ export const openConnection = callMIDIPortMethod(
   'open',
   remapErrorByName(
     {
+      NotAllowedError: UnavailablePortError,
+      // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/278):
       InvalidAccessError: UnavailablePortError,
 
-      // 🤞🏻 https://github.com/WebAudio/web-midi-api/pull/278
-      NotAllowedError: UnavailablePortError,
       InvalidStateError: UnavailablePortError,
     },
     'MIDI port open error handling absurd',

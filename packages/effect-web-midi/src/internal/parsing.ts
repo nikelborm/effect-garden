@@ -5,9 +5,8 @@
 
 import * as Stream from 'effect/Stream'
 
-// Look at it from time to time:
-// Higher-level MIDI message access
-// https://github.com/WebAudio/web-midi-api/issues/179
+//? NOTE: Look at the issue https://github.com/WebAudio/web-midi-api/issues/179
+// which discusses higher-level MIDI message access
 
 export const withParsedDataField = <
   A extends { readonly midiMessage: Uint8Array<ArrayBuffer> },

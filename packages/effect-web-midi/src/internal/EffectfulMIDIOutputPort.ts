@@ -78,7 +78,10 @@ export const make: (rawOutputPort: MIDIOutput) => EffectfulMIDIOutputPort =
  *
  * @internal
  */
-const isImpl = EffectfulMIDIPort.isImplOfSpecificType('output', MIDIOutput)
+const isImpl = EffectfulMIDIPort.isImplOfSpecificType(
+  'output',
+  globalThis.MIDIOutput,
+)
 
 /**
  *
@@ -138,10 +141,9 @@ export const send: DualSendMIDIMessageFromPort = dual<
         try: () => assumeImpl(outputPort)._port.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
-            InvalidAccessError: CantSendSysexMessagesError,
-
-            // 🤞🏻 https://github.com/WebAudio/web-midi-api/pull/278
             NotAllowedError: CantSendSysexMessagesError,
+            // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/278):
+            InvalidAccessError: CantSendSysexMessagesError,
 
             InvalidStateError: DisconnectedPortError,
             TypeError: MalformedMidiMessageError,

@@ -41,7 +41,7 @@
     "@effect/sql-drizzle": "catalog:",
     "@effect/sql-pg": "catalog:",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
-    "drizzle-kit": "^0.31.7",
+    "drizzle-kit": "^0.31.8",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "pg": "catalog:"

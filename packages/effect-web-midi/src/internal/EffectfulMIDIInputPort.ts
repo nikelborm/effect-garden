@@ -68,7 +68,7 @@ export const make: (rawInputPort: MIDIInput) => EffectfulMIDIInputPort =
  * @internal
  */
 const isImpl: (inputPort: unknown) => inputPort is EffectfulMIDIInputPortImpl =
-  EffectfulMIDIPort.isImplOfSpecificType('input', MIDIInput)
+  EffectfulMIDIPort.isImplOfSpecificType('input', globalThis.MIDIInput)
 
 /**
  *
