@@ -1,10 +1,11 @@
 export {
   AbortError,
-  AbsentSystemExclusiveMessagesAccessError,
-  BadMidiMessageError,
+  CantSendSysexMessagesError,
+  ClearingSendingQueueIsNotSupportedError,
   DisconnectedPortError,
-  NotAllowedError,
-  NotSupportedError,
+  MalformedMidiMessageError,
+  MIDIAccessNotAllowedError,
+  MIDIAccessNotSupportedError,
   UnavailablePortError,
   UnderlyingSystemError,
 } from './internal/errors.ts'

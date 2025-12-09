@@ -7,6 +7,8 @@ import type {
 // TODO: add the fields related to the info about which port/access handle the
 // error is happened on
 
+// TODO: ensure stacks are preserved in errors
+
 const ErrorSchema = Schema.Struct({
   name: Schema.NonEmptyTrimmedString,
   message: Schema.NonEmptyTrimmedString,
@@ -18,6 +20,10 @@ const ErrorSchema = Schema.Struct({
 
 /**
  * Thrown if the document or page is going to be closed due to user navigation.
+ *
+ * Wraps `DOMException { name: 'AbortError' }`
+ *
+ * @see {@link https://webidl.spec.whatwg.org/#aborterror|Web IDL spec}
  */
 export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
   cause: ErrorSchema,
@@ -26,6 +32,10 @@ export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
 /**
  * Thrown if the underlying system raises any errors when trying to open the
  * port.
+ *
+ * Wraps `DOMException { name: 'InvalidStateError' }`
+ *
+ * @see {@link https://webidl.spec.whatwg.org/#invalidstateerror|Web IDL spec}
  */
 export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemError>()(
   'UnderlyingSystemError',
@@ -33,16 +43,40 @@ export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemEr
 ) {}
 
 /**
- * Thrown if the feature or options are not supported by the system.
+ * Thrown if the MIDI API, or a certain configuration of it is not supported by
+ * the system.
+ *
+ * Wraps `ReferenceError | TypeError | DOMException { name: 'NotSupportedError' }`
+ *
+ * @see {@link https://webidl.spec.whatwg.org/#notsupportederror|Web IDL spec}
  */
-export class NotSupportedError extends Schema.TaggedError<NotSupportedError>()(
-  'NotSupportedError',
+export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNotSupportedError>()(
+  'MIDIAccessNotSupportedError',
   { cause: ErrorSchema },
 ) {}
 
 /**
- * Thrown when trying the port is unavailable (e.g. is already in use by another
- * process and cannot be opened, or is disconnected).
+ * Thrown on platforms where `.clear()` method of output ports is not supported
+ * (currently supported only in Firefox)
+ *
+ * Wraps `TypeError | DOMException { name: 'NotSupportedError' }`
+ *
+ * @see {@link https://webidl.spec.whatwg.org/#notsupportederror|Web IDL spec}
+ */
+export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<ClearingSendingQueueIsNotSupportedError>()(
+  'ClearingSendingQueueIsNotSupportedError',
+  { cause: ErrorSchema },
+) {}
+
+/**
+ * Thrown when attempt to open the port failed because it is unavailable (e.g.
+ * is already in use by another process and cannot be opened, or is
+ * disconnected).
+ *
+ * Wraps `DOMException { name: 'InvalidAccessError' | 'NotAllowedError' |
+ * 'InvalidStateError' }`
+ *
+ * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#invalidaccesserror|InvalidAccessError}, {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}, {@link https://webidl.spec.whatwg.org/#invalidstateerror|InvalidStateError}
  */
 export class UnavailablePortError extends Schema.TaggedError<UnavailablePortError>()(
   'UnavailablePortError',
@@ -50,7 +84,11 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
 ) {}
 
 /**
- * Thrown when .send operation was called on a disconnected port
+ * Thrown when `.send` operation was called on a disconnected port.
+ *
+ * Wraps `DOMException { name: 'InvalidStateError' }`
+ *
+ * @see {@link https://webidl.spec.whatwg.org/#invalidaccesserror|Web IDL spec}
  */
 export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortError>()(
   'DisconnectedPortError',
@@ -60,9 +98,13 @@ export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortEr
 /**
  * Thrown when trying to send system exclusive message from the access handle,
  * that doesn't have this permission
+ *
+ * Wraps `DOMException { name: 'InvalidAccessError' | 'NotAllowedError' }`
+ *
+ * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#invalidaccesserror|InvalidAccessError}, {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}
  */
-export class AbsentSystemExclusiveMessagesAccessError extends Schema.TaggedError<AbsentSystemExclusiveMessagesAccessError>()(
-  'AbsentSystemExclusiveMessagesAccessError',
+export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysexMessagesError>()(
+  'CantSendSysexMessagesError',
   { cause: ErrorSchema },
 ) {}
 
@@ -73,19 +115,23 @@ export class AbsentSystemExclusiveMessagesAccessError extends Schema.TaggedError
  * is not allowed to use the feature (for example, because of a Permission
  * Policy, or because the user previously denied a permission request).
  *
- * `SecurityError` in MIDI spec was replaced by {@linkcode NotAllowedError}.
+ * Wraps `DOMException { name: 'NotAllowedError' | 'SecurityError' }`
+ *
+ * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}, {@link https://webidl.spec.whatwg.org/#securityerror|SecurityError}
  */
-export class NotAllowedError extends Schema.TaggedError<NotAllowedError>()(
-  'NotAllowedError',
+export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotAllowedError>()(
+  'MIDIAccessNotAllowedError',
   { cause: ErrorSchema },
 ) {}
 
 /**
  * Thrown when data to be sent is not a valid sequence or does not contain a
  * valid MIDI message
+ *
+ * Wraps `TypeError`
  */
-export class BadMidiMessageError extends Schema.TaggedError<BadMidiMessageError>()(
-  'BadMidiMessageError',
+export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiMessageError>()(
+  'MalformedMidiMessageError',
   { cause: ErrorSchema },
 ) {}
 

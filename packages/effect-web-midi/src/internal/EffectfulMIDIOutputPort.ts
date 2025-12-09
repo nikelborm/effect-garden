@@ -4,8 +4,9 @@ import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
-  AbsentSystemExclusiveMessagesAccessError,
-  BadMidiMessageError,
+  CantSendSysexMessagesError,
+  MalformedMidiMessageError,
+  ClearingSendingQueueIsNotSupportedError,
   DisconnectedPortError,
   remapErrorByName,
 } from './errors.ts'
@@ -137,9 +138,13 @@ export const send: DualSendMIDIMessageFromPort = dual<
         try: () => assumeImpl(outputPort)._port.send(midiMessage, timestamp),
         catch: remapErrorByName(
           {
-            InvalidAccessError: AbsentSystemExclusiveMessagesAccessError,
+            InvalidAccessError: CantSendSysexMessagesError,
+
+            // 🤞🏻 https://github.com/WebAudio/web-midi-api/pull/278
+            NotAllowedError: CantSendSysexMessagesError,
+
             InvalidStateError: DisconnectedPortError,
-            TypeError: BadMidiMessageError,
+            TypeError: MalformedMidiMessageError,
           },
           'EffectfulMIDIOutputPort.send error handling absurd',
         ),
@@ -211,12 +216,21 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
 
   yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
 
-  // TODO: handling of type errors in unsupported browsers
-
-  // @ts-expect-error even though .clear is in spec, the API is not supported in
-  // at least 2 major browsers, hence doesn't meet the condition to be be
-  // included and is missing in TS's DOM types
-  yield* Effect.sync(() => assumeImpl(outputPort)._port.clear())
+  yield* Effect.try({
+    // @ts-expect-error even though .clear is in spec, the API is not supported in
+    // at least 2 major browsers, hence doesn't meet the condition to be be
+    // included and is missing in TS's DOM types
+    try: () => assumeImpl(outputPort)._port.clear(),
+    catch: remapErrorByName(
+      {
+        // TODO: test this
+        // most likely it would be something like `TypeError: Undefined is not a function`
+        TypeError: ClearingSendingQueueIsNotSupportedError,
+        NotSupportedError: ClearingSendingQueueIsNotSupportedError,
+      },
+      'EffectfulMIDIOutputPort.clear error handling absurd',
+    ),
+  })
 
   return outputPort
 })

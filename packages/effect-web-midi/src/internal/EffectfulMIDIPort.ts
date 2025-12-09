@@ -231,7 +231,13 @@ const callMIDIPortMethod = <TError = never>(
 export const openConnection = callMIDIPortMethod(
   'open',
   remapErrorByName(
-    { InvalidAccessError: UnavailablePortError },
+    {
+      InvalidAccessError: UnavailablePortError,
+
+      // 🤞🏻 https://github.com/WebAudio/web-midi-api/pull/278
+      NotAllowedError: UnavailablePortError,
+      InvalidStateError: UnavailablePortError,
+    },
     'MIDI port open error handling absurd',
   ),
 )

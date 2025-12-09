@@ -11,8 +11,11 @@ import * as Inspectable from 'effect/Inspectable'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
+import * as Order from 'effect/Order'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
+import * as Ref from 'effect/Ref'
+import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
@@ -21,8 +24,8 @@ import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   AbortError,
   DisconnectedPortError,
-  NotAllowedError,
-  NotSupportedError,
+  MIDIAccessNotSupportedError,
+  MIDIAccessNotAllowedError,
   remapErrorByName,
   UnderlyingSystemError,
 } from './errors.ts'
@@ -70,6 +73,8 @@ const TypeId: unique symbol = Symbol.for(
  */
 export type TypeId = typeof TypeId
 
+// !!! DOCUMENTATION CURSOR !!!
+// TODO: update error in the comment
 /**
  * A tag that allows to provide
  * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
@@ -87,7 +92,7 @@ export type TypeId = typeof TypeId
  * const program = Effect.gen(function* () {
  *   //  ^ Effect.Effect<
  *   //      void,
- *   //      AbortError | InvalidStateError | NotSupportedError | NotAllowedError,
+ *   //      AbortError | InvalidStateError | MIDIAccessNotSupportedError | NotAllowedError,
  *   //      never
  *   //    >
  *
@@ -113,7 +118,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode NotAllowedError} error.
+   * {@linkcode MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested (and allowed), the system will throw
    * exceptions if the user tries to send `System Exclusive` messages, and will
@@ -131,7 +136,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode NotAllowedError} error.
+   * {@linkcode MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
    * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc would
@@ -147,16 +152,14 @@ export interface RequestMIDIAccessOptions {
   readonly sysex?: boolean
 }
 
-// !!! DOCUMENTATION CURSOR !!!
-
 /**
  *
  * **Errors:**
  *
  * - {@linkcode AbortError} Argument x must be non-zero
  * - {@linkcode UnderlyingSystemError} Argument x must be non-zero
- * - {@linkcode NotSupportedError} Argument x must be non-zero
- * - {@linkcode NotAllowedError} Argument x must be non-zero
+ * - {@linkcode MIDIAccessNotSupportedError} Argument x must be non-zero
+ * - {@linkcode MIDIAccessNotAllowedError} Argument x must be non-zero
  *
  * @param config
  * @returns
@@ -747,20 +750,30 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
     catch: remapErrorByName(
       {
         AbortError,
+
         InvalidStateError: UnderlyingSystemError,
-        NotSupportedError,
-        NotAllowedError,
-        // because of https://github.com/WebAudio/web-midi-api/pull/267
-        SecurityError: NotAllowedError,
+
+        NotAllowedError: MIDIAccessNotAllowedError,
+        // SecurityError was deprecated by https://github.com/WebAudio/web-midi-api/pull/267
+        SecurityError: MIDIAccessNotAllowedError,
+
+        NotSupportedError: MIDIAccessNotSupportedError,
         // For case when navigator doesn't exist
-        ReferenceError: NotSupportedError,
+        ReferenceError: MIDIAccessNotSupportedError,
         // For case when navigator.requestMIDIAccess is undefined
-        TypeError: NotSupportedError,
+        TypeError: MIDIAccessNotSupportedError,
       },
       'EffectfulMIDIAccess.request error handling absurd',
     ),
   })
 
+  // TODO: finish this
+
+  const ref = yield* Ref.make(
+    SortedMap.empty<MIDIPortId, boolean>(Order.string),
+  )
+
+  // return make(rawMIDIAccess, options, ref)
   return make(rawMIDIAccess, options)
 })
 

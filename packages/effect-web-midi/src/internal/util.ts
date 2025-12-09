@@ -2,9 +2,9 @@ import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as Struct from 'effect/Struct'
 import type {
-  AbsentSystemExclusiveMessagesAccessError,
-  BadMidiMessageError,
+  CantSendSysexMessagesError,
   DisconnectedPortError,
+  MalformedMidiMessageError,
 } from './errors.ts'
 
 /**
@@ -38,8 +38,8 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
   extends Effect.Effect<
     Self,
     | E
-    | AbsentSystemExclusiveMessagesAccessError
-    | BadMidiMessageError
+    | CantSendSysexMessagesError
+    | MalformedMidiMessageError
     | DisconnectedPortError,
     R
   > {}
