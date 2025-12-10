@@ -77,15 +77,13 @@ const TypeId: unique symbol = Symbol.for(
  */
 export type TypeId = typeof TypeId
 
-// !!! DOCUMENTATION CURSOR !!!
-// TODO: update error in the comment
 /**
  * A tag that allows to provide
  * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
  * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc and reuse
  * it anywhere, instead of repeatedly {@linkcode request}ing it.
  *
- * The downside to using DI might be that in different places of the app there
+ * The downside of using DI might be that in different places of the app it
  * would be harder to maintain tight MIDI permission scopes.
  *
  * @example
@@ -96,7 +94,10 @@ export type TypeId = typeof TypeId
  * const program = Effect.gen(function* () {
  *   //  ^ Effect.Effect<
  *   //      void,
- *   //      AbortError | InvalidStateError | MIDIAccessNotSupportedError | NotAllowedError,
+ *   //      | AbortError
+ *   //      | UnderlyingSystemError
+ *   //      | MIDIAccessNotAllowedError
+ *   //      | MIDIAccessNotSupportedError
  *   //      never
  *   //    >
  *
@@ -129,9 +130,9 @@ export interface RequestMIDIAccessOptions {
    * silently mask out any `System Exclusive` messages received on the port.
    *
    * @default false
-   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-software|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#software|MDN reference}
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-sysex|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#sysex|MDN reference}
    */
-  readonly software?: boolean
+  readonly sysex?: boolean
 
   /**
    * This field informs the system whether the ability to utilize any software
@@ -151,9 +152,9 @@ export interface RequestMIDIAccessOptions {
    * be disabled when MIDI hardware device access is allowed.
    *
    * @default false
-   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-sysex|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#sysex|MDN reference}
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-software|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#software|MDN reference}
    */
-  readonly sysex?: boolean
+  readonly software?: boolean
 }
 
 /**
@@ -193,6 +194,8 @@ const Proto = {
     return !!assumeImpl(this)._config.software
   },
 } satisfies EffectfulMIDIAccessInstance
+
+// !!! DOCUMENTATION CURSOR !!!
 
 /**
  * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all of
@@ -237,6 +240,7 @@ const makeImpl = (
 ): EffectfulMIDIAccessImplementationInstance => {
   const instance = Object.create(Proto)
   instance._access = rawAccess
+  // TODO: set individual software and sysex flags instead
   instance._config = config ?? {}
   return instance
 }
@@ -644,7 +648,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
         return yield* new DisconnectedPortError({
           cause: new DOMException(
             'InvalidStateError',
-            // TODO: imitate
+            // TODO: make an experiment and paste the error text here
             'TODO: imitate there an error thats thrown when the port is disconnected',
           ),
         })

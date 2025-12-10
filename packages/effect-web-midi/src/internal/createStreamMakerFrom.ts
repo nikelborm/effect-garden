@@ -13,6 +13,8 @@ import {
   polymorphicCheckInDual,
 } from './util.ts'
 
+// TODO: make an experiment to see if listeners are automatically removed on disconnect
+
 /**
  * Set of possible ways to react when the MIDI-related event will have relevant
  * field be null. Although there should be no sane scenario where it would be
