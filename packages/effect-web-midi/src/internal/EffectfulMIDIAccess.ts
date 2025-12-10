@@ -328,6 +328,12 @@ const getPortEntriesFromRawAccess =
         >,
     )
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TODO: make getInputPortsRecord, getOutputPortsRecord, getAllPortsRecord
+// look-up from all records, but throw errors if data found in unexpected
+// buckets
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 /**
  *
  * @internal

@@ -118,6 +118,8 @@ export const matchOutputPortDeviceStateByPortId = makeMatcherTakingPortIds(
   getOutputPortByIdFromContext,
 )
 
+// TODO: input-specific and output-specific connection openers, closers and acquirers
+
 /**
  *
  */
