@@ -17,6 +17,7 @@ import { remapErrorByName, UnavailablePortError } from './errors.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
+  MIDIPortId,
   type PolymorphicEffect,
   polymorphicCheckInDual,
 } from './util.ts'
@@ -78,7 +79,7 @@ const CommonProto = {
   },
 
   get id() {
-    return assumeImpl(this)._port.id
+    return MIDIPortId(assumeImpl(this)._port.id)
   },
   get name() {
     return assumeImpl(this)._port.name
@@ -103,7 +104,13 @@ export interface EffectfulMIDIPort<
 > extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable,
-    Pick<MIDIPort, 'version' | 'name' | 'id' | 'manufacturer'> {
+    Pick<MIDIPort, 'version' | 'name' | 'manufacturer'> {
+  /**
+   * The **`id`** read-only property of the MIDIPort interface returns the unique ID of the port.
+   *
+   * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
+   */
+  readonly id: MIDIPortId<TMIDIPortType>
   readonly [TypeId]: TypeId
   readonly _tag: 'EffectfulMIDIPort'
   readonly type: TMIDIPortType
@@ -461,11 +468,14 @@ export interface MatchStatePortFirst<
       TMIDIPortTypeHighLevelRestriction,
       TStateCaseToHandlerMap
     >,
-    TMIDIPortType extends TMIDIPortTypeHighLevelRestriction,
     E = never,
     R = never,
   >(
-    polymorphicPort: PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>,
+    polymorphicPort: PolymorphicEffect<
+      EffectfulMIDIPort<TMIDIPortTypeHighLevelRestriction>,
+      E,
+      R
+    >,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ): MatchResult<TStateCaseToHandlerMap, E, R>
 }
@@ -495,13 +505,9 @@ export interface MatchStatePortLast<
      * @param polymorphicPort
      * @returns
      */
-    <
-      TMIDIPortType extends TMIDIPortTypeHighLevelRestriction,
-      E = never,
-      R = never,
-    >(
+    <E = never, R = never>(
       polymorphicPort: PolymorphicEffect<
-        EffectfulMIDIPort<TMIDIPortType>,
+        EffectfulMIDIPort<TMIDIPortTypeHighLevelRestriction>,
         E,
         R
       >,

@@ -24,13 +24,14 @@ import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   AbortError,
   DisconnectedPortError,
-  MIDIAccessNotSupportedError,
   MIDIAccessNotAllowedError,
+  MIDIAccessNotSupportedError,
   remapErrorByName,
   UnderlyingSystemError,
 } from './errors.ts'
 import {
   fromPolymorphic,
+  type MIDIOutputPortId,
   type MIDIPortId,
   type PolymorphicEffect,
   polymorphicCheckInDual,
@@ -311,17 +312,20 @@ const getPortEntriesFromRawAccess =
     const TMIDIPortType extends MIDIPortType,
     const TMIDIAccessObjectKey extends `${TMIDIPortType}s`,
     TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
-    TEffectfulMIDIPort extends
-      EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
   >(
     key: TMIDIAccessObjectKey,
-    make: (port: TRawMIDIPort) => TEffectfulMIDIPort,
+    make: (
+      port: TRawMIDIPort,
+    ) => EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
   ) =>
   (rawAccess: MIDIAccess) =>
     Iterable.map(
-      rawAccess[key] as ReadonlyMap<MIDIPortId, TRawMIDIPort>,
+      rawAccess[key] as ReadonlyMap<MIDIPortId<TMIDIPortType>, TRawMIDIPort>,
       ([id, raw]) =>
-        [id as MIDIPortId, make(raw)] satisfies Types.TupleOf<2, unknown>,
+        [id as MIDIPortId<TMIDIPortType>, make(raw)] satisfies Types.TupleOf<
+          2,
+          unknown
+        >,
     )
 
 /**
@@ -346,17 +350,7 @@ const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
  *
  * @internal
  */
-const getAllPortsEntriesFromRaw = (
-  rawAccess: MIDIAccess,
-): Iterable<
-  [
-    MIDIPortId,
-    (
-      | EffectfulMIDIInputPort.EffectfulMIDIInputPort
-      | EffectfulMIDIOutputPort.EffectfulMIDIOutputPort
-    ),
-  ]
-> =>
+const getAllPortsEntriesFromRaw = (rawAccess: MIDIAccess) =>
   Iterable.appendAll(
     getInputPortEntriesFromRaw(rawAccess),
     getOutputPortEntriesFromRaw(rawAccess),
@@ -369,14 +363,20 @@ const getAllPortsEntriesFromRaw = (
  * @internal
  */
 const decorateToTakePolymorphicAccessAndReturnRecord =
-  <T>(accessor: (rawAccess: MIDIAccess) => Iterable<[MIDIPortId, T]>) =>
+  <T extends [string, unknown]>(
+    accessor: (rawAccess: MIDIAccess) => Iterable<T>,
+  ) =>
   <E = never, R = never>(
     polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
   ) =>
     Effect.map(
       fromPolymorphic(polymorphicAccess, is),
       flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
-    )
+    ) as Effect.Effect<
+      Types.UnionToIntersection<T extends unknown ? Record<T[0], T[1]> : never>,
+      E,
+      R
+    >
 
 /**
  * Because MIDIInputMap can potentially be a mutable object, meaning new
@@ -433,37 +433,49 @@ export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 /**
  * @internal
  */
-const getPortByIdGeneric = <TKindOfPort>(
+const getPortByIdGeneric = <T extends Record.ReadonlyRecord<string, any>>(
   getPortMap: <E = never, R = never>(
     polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
+  ) => Effect.Effect<T, E, R>,
 ) =>
   dual<
     (
-      id: MIDIPortId,
+      id: Extract<keyof T, string>,
     ) => <E = never, R = never>(
       polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>,
+    ) => Effect.Effect<
+      T[Extract<keyof T, string>],
+      E | Cause.NoSuchElementException,
+      R
+    >,
     <E = never, R = never>(
       polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-      id: MIDIPortId,
-    ) => Effect.Effect<TKindOfPort, E | Cause.NoSuchElementException, R>
+      id: Extract<keyof T, string>,
+    ) => Effect.Effect<
+      T[Extract<keyof T, string>],
+      E | Cause.NoSuchElementException,
+      R
+    >
   >(2, (polymorphicAccess, id) =>
     Effect.flatMap(getPortMap(polymorphicAccess), Record.get(id)),
   )
 
 const getPortByIdGeneric2 =
-  <TKindOfPort>(
+  <T extends Record.ReadonlyRecord<string, any>>(
     getPortMap: <E = never, R = never>(
       polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ) => Effect.Effect<Record<MIDIPortId, TKindOfPort>, E, R>,
+    ) => Effect.Effect<T, E, R>,
   ) =>
   <A, E2, R2, TE = never, TR = never>(
     polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
     transformPortEffect: (
-      effect: Effect.Effect<TKindOfPort, TE | Cause.NoSuchElementException, TR>,
+      effect: Effect.Effect<
+        T[Extract<keyof T, string>],
+        TE | Cause.NoSuchElementException,
+        TR
+      >,
     ) => Effect.Effect<A, E2, R2>,
-    id: MIDIPortId,
+    id: Extract<keyof T, string>,
   ) =>
     pipe(
       getPortMap(polymorphicAccess),
@@ -488,6 +500,8 @@ export const getInputPortById = getPortByIdGeneric(getInputPortsRecord)
  *
  */
 export const getOutputPortById = getPortByIdGeneric(getOutputPortsRecord)
+
+// const as2d = getOutputPortById(MIDIOutputPortId(''))
 
 /**
  *
@@ -552,9 +566,9 @@ export const makeAllPortsStateChangesStream =
             } as const)
           : null,
         port:
-          rawPort instanceof MIDIInput
+          rawPort instanceof globalThis.MIDIInput
             ? EffectfulMIDIInputPort.make(rawPort)
-            : rawPort instanceof MIDIOutput
+            : rawPort instanceof globalThis.MIDIOutput
               ? EffectfulMIDIOutputPort.make(rawPort)
               : null,
       }) as const,
@@ -566,8 +580,8 @@ export interface SentMessageEffectFromAccess<E = never, R = never>
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
   | 'all open connections at effect execution'
-  | MIDIPortId
-  | MIDIPortId[]
+  | MIDIOutputPortId
+  | MIDIOutputPortId[]
 
 /**
  * beware that it's not possible to ensure the messages will either be all
@@ -608,7 +622,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       // TODO: maybe since deviceState returns always connected devices we can
       // simplify this check by applying intersections and comparing lengths
 
-      const portsIdsToSend: MIDIPortId[] = EArray.ensure(target)
+      const portsIdsToSend: MIDIOutputPortId[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
         Option.match(Record.get(outputs, id), {
@@ -628,7 +642,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
           ),
         })
 
-      const sendToSome = (predicate: (id: MIDIPortId) => boolean) =>
+      const sendToSome = (predicate: (id: MIDIOutputPortId) => boolean) =>
         Effect.all(
           Record.reduce(
             outputs,
@@ -734,7 +748,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
   // TODO: finish this
 
   const ref = yield* Ref.make(
-    SortedMap.empty<MIDIPortId, boolean>(Order.string),
+    SortedMap.empty<MIDIPortId, MIDIPortType>(Order.string),
   )
 
   // return make(rawMIDIAccess, options, ref)

@@ -29,7 +29,7 @@ interface EffectfulMIDIInputPortImpl
  * @internal
  */
 const makeImpl = (rawInputPort: MIDIInput): EffectfulMIDIInputPortImpl =>
-  EffectfulMIDIPort.makeImpl(rawInputPort, 'input', MIDIInput)
+  EffectfulMIDIPort.makeImpl(rawInputPort, 'input', globalThis.MIDIInput)
 
 /**
  * Asserts an object to be valid EffectfulMIDIInputPort and casts it to internal

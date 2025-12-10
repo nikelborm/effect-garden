@@ -5,9 +5,9 @@ import { dual } from 'effect/Function'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   CantSendSysexMessagesError,
-  MalformedMidiMessageError,
   ClearingSendingQueueIsNotSupportedError,
   DisconnectedPortError,
+  MalformedMidiMessageError,
   remapErrorByName,
 } from './errors.ts'
 import {
@@ -40,7 +40,7 @@ interface EffectfulMIDIOutputPortImpl
  * @internal
  */
 const makeImpl = (rawOutputPort: MIDIOutput): EffectfulMIDIOutputPortImpl =>
-  EffectfulMIDIPort.makeImpl(rawOutputPort, 'output', MIDIOutput)
+  EffectfulMIDIPort.makeImpl(rawOutputPort, 'output', globalThis.MIDIOutput)
 
 /**
  * Asserts an object to be valid EffectfulMIDIOutputPort and casts it to

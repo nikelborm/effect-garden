@@ -7,7 +7,7 @@ import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
-import type { MIDIPortId } from './util.ts'
+import type { MIDIInputPortId, MIDIOutputPortId, MIDIPortId } from './util.ts'
 
 /**
  * @internal
@@ -22,7 +22,7 @@ const makeMatcherTakingPortIds =
       TMIDIPortProperty
     >,
     getPort: (
-      id: MIDIPortId,
+      id: MIDIPortId<TMIDIPortTypeHighLevelRestriction>,
     ) => Effect.Effect<
       EffectfulMIDIPort.EffectfulMIDIPort<
         NoInfer<TMIDIPortTypeHighLevelRestriction>
@@ -38,7 +38,7 @@ const makeMatcherTakingPortIds =
       TStateCaseToHandlerMap
     >,
   >(
-    id: MIDIPortId,
+    id: MIDIPortId<TMIDIPortTypeHighLevelRestriction>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ) =>
     match(getPort(id), stateCaseToHandlerMap)
@@ -54,7 +54,7 @@ export const getPortByIdFromContext = (id: MIDIPortId) =>
  *
  *
  */
-export const getInputPortByIdFromContext = (id: MIDIPortId) =>
+export const getInputPortByIdFromContext = (id: MIDIInputPortId) =>
   EffectfulMIDIAccess.getInputPortById(
     EffectfulMIDIAccess.EffectfulMIDIAccess,
     id,
@@ -64,7 +64,7 @@ export const getInputPortByIdFromContext = (id: MIDIPortId) =>
  *
  *
  */
-export const getOutputPortByIdFromContext = (id: MIDIPortId) =>
+export const getOutputPortByIdFromContext = (id: MIDIOutputPortId) =>
   EffectfulMIDIAccess.getOutputPortById(
     EffectfulMIDIAccess.EffectfulMIDIAccess,
     id,
@@ -161,7 +161,7 @@ export const makePortStateChangesStreamByPortId = <
 export const makeInputPortStateChangesStreamByPortId = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
-  id: MIDIPortId,
+  id: MIDIInputPortId,
   options?: StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EffectfulMIDIInputPort.makeStateChangesStream(
@@ -176,7 +176,7 @@ export const makeInputPortStateChangesStreamByPortId = <
 export const makeOutputPortStateChangesStreamByPortId = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
-  id: MIDIPortId,
+  id: MIDIOutputPortId,
   options?: StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EffectfulMIDIOutputPort.makeStateChangesStream(
@@ -191,7 +191,7 @@ export const makeOutputPortStateChangesStreamByPortId = <
 export const makeMessagesStreamByPortId = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
-  id: MIDIPortId,
+  id: MIDIInputPortId,
   options?: StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EffectfulMIDIInputPort.makeMessagesStream(
@@ -200,7 +200,7 @@ export const makeMessagesStreamByPortId = <
   )
 
 export const sendToPortById = (
-  id: MIDIPortId,
+  id: MIDIOutputPortId,
   ...args: EffectfulMIDIOutputPort.SendFromPortArgs
 ) =>
   Effect.asVoid(
