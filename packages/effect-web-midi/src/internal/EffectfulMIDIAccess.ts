@@ -62,6 +62,10 @@ import {
 
 // TODO: reflect sysex and software flags in type-system
 
+// TODO: rename Cause.NoSuchElementException to NoSuchPortError
+
+// TODO: make matchers that support returning effects from the callback instead of plain values
+
 /**
  * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
