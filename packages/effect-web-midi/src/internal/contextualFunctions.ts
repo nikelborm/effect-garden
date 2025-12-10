@@ -7,7 +7,12 @@ import * as EffectfulMIDIAccess from './EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
-import type { MIDIInputPortId, MIDIOutputPortId, MIDIPortId } from './util.ts'
+import type {
+  MIDIBothPortId,
+  MIDIInputPortId,
+  MIDIOutputPortId,
+  MIDIPortId,
+} from './util.ts'
 
 /**
  * @internal
@@ -47,7 +52,7 @@ const makeMatcherTakingPortIds =
  *
  *
  */
-export const getPortByIdFromContext = (id: MIDIPortId) =>
+export const getPortByIdFromContext = (id: MIDIBothPortId) =>
   EffectfulMIDIAccess.getPortById(EffectfulMIDIAccess.EffectfulMIDIAccess, id)
 
 /**
@@ -151,7 +156,7 @@ export const acquireReleasePortConnectionByPortId = flow(
 export const makePortStateChangesStreamByPortId = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
-  id: MIDIPortId,
+  id: MIDIBothPortId,
   options?: StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EffectfulMIDIPort.makeStateChangesStream(getPortByIdFromContext(id), options)
@@ -219,7 +224,7 @@ export const clearPortById = flow(
  *
  *
  */
-export const getPortDeviceStateByPortId = (id: MIDIPortId) =>
+export const getPortDeviceStateByPortId = (id: MIDIBothPortId) =>
   EffectfulMIDIAccess.getPortDeviceState(
     EffectfulMIDIAccess.EffectfulMIDIAccess,
     id,
@@ -229,7 +234,7 @@ export const getPortDeviceStateByPortId = (id: MIDIPortId) =>
  *
  *
  */
-export const getPortConnectionStateByPortId = (id: MIDIPortId) =>
+export const getPortConnectionStateByPortId = (id: MIDIBothPortId) =>
   EffectfulMIDIAccess.getPortConnectionState(
     EffectfulMIDIAccess.EffectfulMIDIAccess,
     id,

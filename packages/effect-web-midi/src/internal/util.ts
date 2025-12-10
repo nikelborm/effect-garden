@@ -12,12 +12,14 @@ import type {
  *
  * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
  */
-export type MIDIPortId<TType extends MIDIPortType = MIDIPortType> =
+export type MIDIPortId<TType extends MIDIPortType> =
   // for distribution
   TType extends MIDIPortType
     ? string & Brand.Brand<'MIDIPortId'> & Brand.Brand<TType>
     : never
-export const MIDIPortId = Brand.nominal<MIDIPortId>()
+
+export type MIDIBothPortId = MIDIPortId<MIDIPortType>
+export const MIDIBothPortId = Brand.nominal<MIDIBothPortId>()
 
 export type MIDIOutputPortId = MIDIPortId<'output'>
 export const MIDIOutputPortId = Brand.nominal<MIDIOutputPortId>()

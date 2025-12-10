@@ -17,7 +17,8 @@ import { remapErrorByName, UnavailablePortError } from './errors.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
-  MIDIPortId,
+  MIDIBothPortId,
+  type MIDIPortId,
   type PolymorphicEffect,
   polymorphicCheckInDual,
 } from './util.ts'
@@ -79,7 +80,7 @@ const CommonProto = {
   },
 
   get id() {
-    return MIDIPortId(assumeImpl(this)._port.id)
+    return MIDIBothPortId(assumeImpl(this)._port.id)
   },
   get name() {
     return assumeImpl(this)._port.name

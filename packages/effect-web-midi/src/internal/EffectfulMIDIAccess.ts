@@ -31,6 +31,7 @@ import {
 } from './errors.ts'
 import {
   fromPolymorphic,
+  type MIDIBothPortId,
   type MIDIOutputPortId,
   type MIDIPortId,
   type PolymorphicEffect,
@@ -515,7 +516,7 @@ export const getOutputPortById = getPortByIdGeneric(getOutputPortsRecord)
  */
 export const getPortDeviceState = <TE = never, TR = never>(
   polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
-  id: MIDIPortId,
+  id: MIDIBothPortId,
 ) =>
   // TODO: Check if software synth devices access is present. Having desired
   // port absent in the record doesn't guarantee it's disconnected
@@ -536,7 +537,7 @@ export const getPortDeviceState = <TE = never, TR = never>(
  */
 export const getPortConnectionState = <TE = never, TR = never>(
   polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
-  id: MIDIPortId,
+  id: MIDIBothPortId,
 ) =>
   getPortByIdGeneric2(getAllPortsRecord)(
     polymorphicAccess,
@@ -754,7 +755,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
   // TODO: finish this
 
   const ref = yield* Ref.make(
-    SortedMap.empty<MIDIPortId, MIDIPortType>(Order.string),
+    SortedMap.empty<MIDIBothPortId, MIDIPortType>(Order.string),
   )
 
   // return make(rawMIDIAccess, options, ref)

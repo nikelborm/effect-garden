@@ -1,8 +1,9 @@
 export {
   getStaticMIDIPortInfo,
+  MIDIBothPortId,
   MIDIInputPortId,
   MIDIOutputPortId,
-  MIDIPortId,
+  type MIDIPortId,
   type MIDIPortStaticFields,
   midiPortStaticFields,
   type PolymorphicEffect,
