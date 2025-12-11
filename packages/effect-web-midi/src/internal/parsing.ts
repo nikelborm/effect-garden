@@ -1,6 +1,6 @@
 /**
- * @file This module is not generalized, it's just the things to test the API
- * with the only MIDI device I have: nanoPAD v1
+ * @file This module is not for general use, these are just helpers to test the
+ * MIDI API with the only MIDI device I have: nanoPAD v1
  */
 
 import * as Stream from 'effect/Stream'
@@ -8,6 +8,11 @@ import * as Stream from 'effect/Stream'
 //? NOTE: Look at the issue https://github.com/WebAudio/web-midi-api/issues/179
 // which discusses higher-level MIDI message access
 
+/**
+ *
+ * @param self
+ * @returns
+ */
 export const withParsedDataField = <
   A extends { readonly midiMessage: Uint8Array<ArrayBuffer> },
   E,
@@ -24,6 +29,11 @@ export const withParsedDataField = <
     R
   >
 
+/**
+ *
+ * @param self
+ * @returns
+ */
 export const withTouchpadPositionUpdates = <
   A extends {
     midiMessage:
