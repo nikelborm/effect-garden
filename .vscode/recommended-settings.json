@@ -1,7 +1,9 @@
 {
   "json.schemas": [
     {
-      "fileMatch": ["*.tsconfig.json"],
+      "fileMatch": [
+        "*.tsconfig.json"
+      ],
       "url": "https://json.schemastore.org/tsconfig"
     }
   ],
@@ -22,6 +24,23 @@
     "Эндпоинт",
     "VNAs",
     "Voidify"
+  ],
+  "emojisense.languages": {
+    "*": true
+  },
+  "ltex.checkFrequency": "edit",
+  "ltex.enabled": [
+    "bibtex",
+    "context",
+    "context.tex",
+    "html",
+    "latex",
+    "markdown",
+    "typescript",
+    "javascript",
+    "org",
+    "restructuredtext",
+    "rsweave"
   ],
   "typescript.preferences.importModuleSpecifier": "project-relative",
   "javascript.preferences.importModuleSpecifier": "project-relative",

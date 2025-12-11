@@ -42,9 +42,9 @@ import {
 // TODO: add stream of messages sent from this device to target midi device
 
 // TODO: fat service APIs, where all the methods are attached to instance and
-// you don't have to constantly write the prefix
+// where you don't have to constantly write the prefix
 
-// TODO: implement scoping of midi access that will cleanup all message queues
+// TODO: implement scoping of midi access that will clean up all message queues
 // and streams, and remove listeners
 
 // TODO: implement scope inheritance
@@ -55,7 +55,7 @@ import {
 // TODO: add a stream to listen for all messages of all currently
 // connected inputs, all present inputs, specific input
 
-// TODO: add sinks that will accepts command streams to redirect midi commands
+// TODO: add sinks that will accept command streams to redirect midi commands
 // from something into an actual API
 
 // TODO: add effect to wait until connected by port id
@@ -148,7 +148,7 @@ export interface RequestMIDIAccessOptions {
    * {@linkcode MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
-   * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc would
+   * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc. would
    * not include any software synthesizers.
    *
    * Note that may result in a two-step request procedure if software
@@ -156,7 +156,7 @@ export interface RequestMIDIAccessOptions {
    * be disabled when MIDI hardware device access is allowed.
    *
    * @default false
-   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-software|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#software|MDN reference}
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-software|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#software|MDN reference}
    */
   readonly software?: boolean
 }
@@ -202,8 +202,8 @@ const Proto = {
 // !!! DOCUMENTATION CURSOR !!!
 
 /**
- * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all of
- * the external code.
+ * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all the
+ * external code.
  */
 export interface EffectfulMIDIAccessInstance
   extends Equal.Equal,
@@ -250,7 +250,7 @@ const makeImpl = (
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIAccess and casts it to internal
+ * Asserts an object to be valid `EffectfulMIDIAccess` and casts it to internal
  * implementation type
  *
  * @internal
@@ -261,7 +261,7 @@ const assertImpl = (access: unknown) => {
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIAccess
+ * Asserts an object to be valid `EffectfulMIDIAccess`
  *
  * @internal
  */
@@ -394,7 +394,7 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
     >
 
 /**
- * Because MIDIInputMap can potentially be a mutable object, meaning new
+ * Because `MIDIInputMap` can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
  *
  * The **`inputs`** read-only property of the MIDIAccess interface provides
@@ -407,7 +407,7 @@ export const getInputPortsRecord =
   decorateToTakePolymorphicAccessAndReturnRecord(getInputPortEntriesFromRaw)
 
 /**
- * Because MIDIOutputMap can potentially be a mutable object, meaning new
+ * Because `MIDIOutputMap` can potentially be a mutable object, meaning new
  * devices can be added or removed at runtime, it is effectful.
  *
  * The **`outputs`** read-only property of the MIDIAccess interface provides

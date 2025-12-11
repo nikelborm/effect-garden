@@ -19,11 +19,11 @@ import {
  * Set of possible ways to react when the MIDI-related event will have relevant
  * field be null. Although there should be no sane scenario where it would be
  * the case, it's still allowed by the spec, and for a better UX this lib lets
- * the dev to make a decision on how to handle such cases.
+ * the developer make a decision on how to handle such cases.
  *
  * - `fail` will add an error into a signature of a stream, allowing the user to
  *   handle it
- * - `die` will throw an defect, which wont be reflected as a possible failure
+ * - `die` will throw a defect, which won't be reflected as a possible failure
  *   in types
  * - `ignore` will just silently remove such events from the stream
  * - `passthrough` - will pass such events with an unmodified content of the
@@ -57,7 +57,7 @@ const validOnNullStrategies = new Set([
  *   {@linkcode EffectfulMIDIOutputPort}) of a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
- *   selected field to an extension of the object inside streams's success
+ *   selected field to an extension of the object inside stream's success
  *   channel. All fields of the returned object must always be present and
  *   should be consistently nullable, when the incoming event's field is null.
  *
@@ -81,7 +81,7 @@ export const createStreamMakerFrom =
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
    * event's selected field (`nullableFieldName`) to an extension of the object
-   * inside streams's success channel. The value is not null, except when
+   * inside stream's success channel. The value is not null, except when
    * `onNullStrategy` is `'passthrough'`. All fields of the returned object must
    * always be present and should be consistently nullable, if the incoming
    * event's field is null.
@@ -208,7 +208,7 @@ interface StreamConfig<
   }
 
   /**
-   * Additional attributes that will be attached to OpenTelemetry span of
+   * Additional attributes that will be attached to Open Telemetry span of
    * the stream
    */
   readonly spanAttributes: {
@@ -243,8 +243,8 @@ export interface StreamMakerOptionsWellknown {
 
   /**
    * A boolean value that, if true, indicates that the function specified by
-   * listener will never call preventDefault(). If a passive listener calls
-   * preventDefault(), nothing will happen and a console warning may be
+   * listener will never call `preventDefault()`. If a passive listener calls
+   * `preventDefault()`, nothing will happen and a console warning may be
    * generated.
    * @default false
    */
@@ -265,7 +265,7 @@ export interface StreamMakerOptionsObject<
    * A strategy to react when the MIDI-related event will have relevant field be
    * null. Although there should be no sane scenario where it would be the case,
    * it's still allowed by the spec, and for a better DevX this lib lets the dev
-   * to make a decision on how to handle such cases.
+   * make a decision on how to handle such cases.
    *
    * - `fail` will add an error into a signature of a stream, allowing the user
    *   to handle it
@@ -281,8 +281,8 @@ export interface StreamMakerOptionsObject<
 }
 
 /**
- * Passing a boolean is equivalent to setting `options.capture`
- * property
+ * Passing a value of a `boolean` type is equivalent to setting
+ * `options.capture` property
  */
 export type StreamMakerOptions<TOnNullStrategy extends OnNullStrategy> =
   | boolean
@@ -355,8 +355,8 @@ export interface MakeStreamTargetFirst<
    * Will be assigned to the `cameFrom` property of the stream's success channel
    * object
    *
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
+   * @param options Passing a value of a `boolean` type is equivalent to setting
+   * `options.capture` property
    */
   <
     E = never,
@@ -381,8 +381,8 @@ export interface MakeStreamTargetLast<
   TContainerWithNullableFields extends object,
 > {
   /**
-   * @param options Passing a boolean is equivalent to setting `options.capture`
-   * property
+   * @param options Passing a value of a `boolean` type is equivalent to setting
+   * `options.capture` property
    *
    * **Second call argument**
    *
