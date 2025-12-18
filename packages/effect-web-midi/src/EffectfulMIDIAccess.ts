@@ -45,6 +45,7 @@ export {
   layerSystemExclusiveSupported,
   makeAllPortsStateChangesStream,
   OutputPortsRecord,
+  type PolymorphicAccessInstance,
   type RequestMIDIAccessOptions,
   request,
   type SendFromAccessArgs,

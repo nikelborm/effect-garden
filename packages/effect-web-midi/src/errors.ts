@@ -6,6 +6,7 @@ export {
   MalformedMidiMessageError,
   MIDIAccessNotAllowedError,
   MIDIAccessNotSupportedError,
+  PortNotFoundError,
   UnavailablePortError,
   UnderlyingSystemError,
 } from './internal/errors.ts'

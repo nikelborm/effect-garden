@@ -38,6 +38,7 @@ export {
   matchConnectionState,
   matchDeviceState,
   openConnection,
+  type PolymorphicPort,
   type PortStateHandler,
   type StateCaseToHandlerMap,
   type StateChangesStream,

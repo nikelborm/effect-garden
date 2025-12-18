@@ -9,14 +9,17 @@ import type {
 
 // TODO: ensure stacks are preserved in errors (the best option for this would be to write an actual test of course)
 
-const ErrorSchema = Schema.Struct({
-  name: Schema.NonEmptyTrimmedString,
-  message: Schema.NonEmptyTrimmedString,
-  stack: Schema.NonEmptyTrimmedString.pipe(
-    Schema.optionalWith({ exact: true }),
-  ),
-  cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
-})
+const ErrorSchema = <A extends string, E extends string, R>(
+  nameSchema?: Schema.Schema<A, E, R>,
+) =>
+  Schema.Struct({
+    name: nameSchema ?? Schema.NonEmptyTrimmedString,
+    message: Schema.NonEmptyTrimmedString,
+    stack: Schema.NonEmptyTrimmedString.pipe(
+      Schema.optionalWith({ exact: true }),
+    ),
+    cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
+  })
 
 /**
  * Thrown if the document or page is going to be closed due to user navigation.
@@ -26,7 +29,7 @@ const ErrorSchema = Schema.Struct({
  * @see {@link https://webidl.spec.whatwg.org/#aborterror|Web IDL spec}
  */
 export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
-  cause: ErrorSchema,
+  cause: ErrorSchema(Schema.Literal('AbortError')),
 }) {}
 
 /**
@@ -39,7 +42,7 @@ export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
  */
 export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemError>()(
   'UnderlyingSystemError',
-  { cause: ErrorSchema },
+  { cause: ErrorSchema(Schema.Literal('InvalidStateError')) },
 ) {}
 
 /**
@@ -52,7 +55,11 @@ export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemEr
  */
 export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNotSupportedError>()(
   'MIDIAccessNotSupportedError',
-  { cause: ErrorSchema },
+  {
+    cause: ErrorSchema(
+      Schema.Literal('ReferenceError', 'TypeError', 'NotSupportedError'),
+    ),
+  },
 ) {}
 
 /**
@@ -65,7 +72,7 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
  */
 export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<ClearingSendingQueueIsNotSupportedError>()(
   'ClearingSendingQueueIsNotSupportedError',
-  { cause: ErrorSchema },
+  { cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')) },
 ) {}
 
 /**
@@ -73,14 +80,21 @@ export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<
  * is already in use by another process and cannot be opened, or is
  * disconnected).
  *
- * Wraps `DOMException { name: 'InvalidAccessError' | 'NotAllowedError' |
- * 'InvalidStateError' }`
+ * Wraps `DOMException { name: 'InvalidAccessError' | 'NotAllowedError' | 'InvalidStateError' }`
  *
  * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#invalidaccesserror|InvalidAccessError}, {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}, {@link https://webidl.spec.whatwg.org/#invalidstateerror|InvalidStateError}
  */
 export class UnavailablePortError extends Schema.TaggedError<UnavailablePortError>()(
   'UnavailablePortError',
-  { cause: ErrorSchema },
+  {
+    cause: ErrorSchema(
+      Schema.Literal(
+        'InvalidAccessError',
+        'NotAllowedError',
+        'InvalidStateError',
+      ),
+    ),
+  },
 ) {}
 
 /**
@@ -92,7 +106,7 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
  */
 export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortError>()(
   'DisconnectedPortError',
-  { cause: ErrorSchema },
+  { cause: ErrorSchema(Schema.Literal('InvalidStateError')) },
 ) {}
 
 /**
@@ -105,7 +119,9 @@ export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortEr
  */
 export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysexMessagesError>()(
   'CantSendSysexMessagesError',
-  { cause: ErrorSchema },
+  {
+    cause: ErrorSchema(Schema.Literal('InvalidAccessError', 'NotAllowedError')),
+  },
 ) {}
 
 /**
@@ -122,7 +138,7 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
  */
 export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotAllowedError>()(
   'MIDIAccessNotAllowedError',
-  { cause: ErrorSchema },
+  { cause: ErrorSchema(Schema.Literal('NotAllowedError', 'SecurityError')) },
 ) {}
 
 /**
@@ -133,7 +149,18 @@ export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotA
  */
 export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiMessageError>()(
   'MalformedMidiMessageError',
-  { cause: ErrorSchema },
+  { cause: ErrorSchema(Schema.Literal('TypeError')) },
+) {}
+
+/**
+ * Keep in mind that if port isn't found, it might not mean it's disconnected.
+ * For example, virtual ports created by software won't show up in the list of
+ * available inputs/outputs of MIDI Access handle with disabled
+ * {@linkcode RequestMIDIAccessOptions.software} flag.
+ */
+export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
+  'PortNotFound',
+  { attemptedToGetById: Schema.NonEmptyTrimmedString },
 ) {}
 
 /**
@@ -144,7 +171,7 @@ export const remapErrorByName =
   <
     TErrorNameToTaggedErrorClassMap extends {
       [name: string]: new (arg: {
-        cause: Schema.Schema.Encoded<typeof ErrorSchema>
+        cause: Schema.Schema.Encoded<ReturnType<typeof ErrorSchema>>
       }) => Error
     },
   >(

@@ -63,7 +63,7 @@ export const polymorphicCheckInDual =
 
 export function fromPolymorphic<A, E = never, R = never>(
   polymorphicValue: PolymorphicEffect<A, E, R>,
-  is: (arg: unknown) => arg is A,
+  is: (arg: unknown) => arg is NoInfer<A>,
 ) {
   const check = (value: A) =>
     is(value)
@@ -74,3 +74,35 @@ export function fromPolymorphic<A, E = never, R = never>(
     ? Effect.flatMap(polymorphicValue, check)
     : check(polymorphicValue)
 }
+
+/**
+ * @internal
+ */
+const isEqual =
+  <TWideValue extends string, TPropertyName extends string>() =>
+  <const TExpectedValue extends TWideValue>(expected: TExpectedValue) =>
+  <E, R>(self: Effect.Effect<TWideValue, E, R>) =>
+    Effect.map(
+      self,
+      current =>
+        (current === expected) as boolean &
+          Brand.Brand<TPropertyName> &
+          Brand.Brand<`expectedValue: ${TExpectedValue}`>,
+    )
+
+export const isCertainDeviceState = isEqual<
+  MIDIPortDeviceState,
+  'isCertainDeviceState'
+>()
+
+export const isCertainConnectionState = isEqual<
+  MIDIPortConnectionState,
+  'isCertainConnectionState'
+>()
+
+export const isDeviceConnected = isCertainDeviceState('connected')
+export const isDeviceDisconnected = isCertainDeviceState('disconnected')
+
+export const isConnectionOpen = isCertainConnectionState('open')
+export const isConnectionPending = isCertainConnectionState('pending')
+export const isConnectionClosed = isCertainConnectionState('closed')

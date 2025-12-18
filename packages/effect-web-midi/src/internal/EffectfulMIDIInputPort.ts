@@ -2,14 +2,14 @@ import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
 
-// TODO: implement scoping of midi access that will cleanup all message queues
+// TODO: implement scoping of midi access that will clean up all message queues
 // and streams, and remove listeners
 
 // TODO: implement scope inheritance
 
 /**
- * Thin wrapper around {@linkcode MIDIInput} instance. Will be seen in all of
- * the external code.
+ * Thin wrapper around {@linkcode MIDIInput} instance. Will be seen in all
+ * external code.
  */
 export interface EffectfulMIDIInputPort
   extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
@@ -78,32 +78,11 @@ export const is: (inputPort: unknown) => inputPort is EffectfulMIDIInputPort =
   isImpl
 
 /**
- *
- *
- */
-export const makeStateChangesStream =
-  EffectfulMIDIPort.makeStateChangesStream as EffectfulMIDIPort.DualMakeStateChangesStream<'input'>
-
-/**
- *
- */
-export const matchConnectionState =
-  EffectfulMIDIPort.matchMutableMIDIPortProperty('connection', is)
-
-/**
- *
- */
-export const matchDeviceState = EffectfulMIDIPort.matchMutableMIDIPortProperty(
-  'state',
-  is,
-)
-
-/**
  * [MIDIMessageEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIMessageEvent)
  *
  * MIDI spec says that synthetically built `MIDIMessageEvent`s can have `data`
- * field equal to `null`, but when coming from the browser, the won't be. The
+ * field equal to `null`, but when coming from the browser, they won't. The
  * default behavior is to defect on `null`.
  */
 export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(

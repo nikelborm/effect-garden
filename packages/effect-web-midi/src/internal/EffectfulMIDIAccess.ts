@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 import * as EArray from 'effect/Array'
-import type * as Cause from 'effect/Cause'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
@@ -26,12 +25,14 @@ import {
   DisconnectedPortError,
   MIDIAccessNotAllowedError,
   MIDIAccessNotSupportedError,
+  PortNotFoundError,
   remapErrorByName,
   UnderlyingSystemError,
 } from './errors.ts'
 import {
   fromPolymorphic,
   type MIDIBothPortId,
+  type MIDIInputPortId,
   type MIDIOutputPortId,
   type MIDIPortId,
   type PolymorphicEffect,
@@ -58,11 +59,9 @@ import {
 // TODO: add sinks that will accept command streams to redirect midi commands
 // from something into an actual API
 
-// TODO: add effect to wait until connected by port id
+// TODO: add effect to wait until connected by port ID
 
 // TODO: reflect sysex and software flags in type-system
-
-// TODO: rename Cause.NoSuchElementException to NoSuchPortError
 
 // TODO: make matchers that support returning effects from the callback instead of plain values
 
@@ -84,7 +83,7 @@ export type TypeId = typeof TypeId
 /**
  * A tag that allows to provide
  * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
- * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc and reuse
+ * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc. and reuse
  * it anywhere, instead of repeatedly {@linkcode request}ing it.
  *
  * The downside of using DI might be that in different places of the app it
@@ -113,7 +112,7 @@ export type TypeId = typeof TypeId
  * }).pipe(Effect.provide(EffectfulMIDIAccess.layerSystemExclusiveSupported))
  * ```
  *
- * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
+ * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
  */
 export class EffectfulMIDIAccess extends Context.Tag(
   '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
@@ -134,7 +133,7 @@ export interface RequestMIDIAccessOptions {
    * silently mask out any `System Exclusive` messages received on the port.
    *
    * @default false
-   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-sysex|WebMIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#sysex|MDN reference}
+   * @see {@link https://www.w3.org/TR/webmidi/#dom-midioptions-sysex|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess#sysex|MDN reference}
    */
   readonly sysex?: boolean
 
@@ -271,7 +270,7 @@ export const assert: (access: unknown) => EffectfulMIDIAccessInstance =
 /**
  * @internal
  */
-const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
+export const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
   access as EffectfulMIDIAccessImplementationInstance
 
 /**
@@ -310,6 +309,28 @@ const isImpl = (
 export const is: (access: unknown) => access is EffectfulMIDIAccessInstance =
   isImpl
 
+/**
+ *
+ * @internal
+ */
+export const resolve = <E = never, R = never>(
+  polymorphicAccess: PolymorphicAccessInstance<E, R>,
+) => fromPolymorphic(polymorphicAccess, is)
+
+/**
+ *
+ *
+ */
+export type PolymorphicAccessInstance<E = never, R = never> = PolymorphicEffect<
+  EffectfulMIDIAccessInstance,
+  E,
+  R
+>
+
+/**
+ *
+ *
+ */
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
 /**
@@ -336,12 +357,6 @@ const getPortEntriesFromRawAccess =
           unknown
         >,
     )
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TODO: make getInputPortsRecord, getOutputPortsRecord, getAllPortsRecord
-// look-up from all records, but throw errors if data found in unexpected
-// buckets
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 /**
  *
@@ -381,11 +396,9 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
   <T extends [string, unknown]>(
     accessor: (rawAccess: MIDIAccess) => Iterable<T>,
   ) =>
-  <E = never, R = never>(
-    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) =>
+  <E = never, R = never>(polymorphicAccess: PolymorphicAccessInstance<E, R>) =>
     Effect.map(
-      fromPolymorphic(polymorphicAccess, is),
+      resolve(polymorphicAccess),
       flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
     ) as Effect.Effect<
       Types.UnionToIntersection<T extends unknown ? Record<T[0], T[1]> : never>,
@@ -446,114 +459,6 @@ export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
 export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
 
 /**
- * @internal
- */
-const getPortByIdGeneric = <T extends Record.ReadonlyRecord<string, any>>(
-  getPortMap: <E = never, R = never>(
-    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-  ) => Effect.Effect<T, E, R>,
-) =>
-  dual<
-    (
-      id: Extract<keyof T, string>,
-    ) => <E = never, R = never>(
-      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ) => Effect.Effect<
-      T[Extract<keyof T, string>],
-      E | Cause.NoSuchElementException,
-      R
-    >,
-    <E = never, R = never>(
-      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-      id: Extract<keyof T, string>,
-    ) => Effect.Effect<
-      T[Extract<keyof T, string>],
-      E | Cause.NoSuchElementException,
-      R
-    >
-  >(2, (polymorphicAccess, id) =>
-    Effect.flatMap(getPortMap(polymorphicAccess), Record.get(id)),
-  )
-
-const getPortByIdGeneric2 =
-  <T extends Record.ReadonlyRecord<string, any>>(
-    getPortMap: <E = never, R = never>(
-      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ) => Effect.Effect<T, E, R>,
-  ) =>
-  <A, E2, R2, TE = never, TR = never>(
-    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
-    transformPortEffect: (
-      effect: Effect.Effect<
-        T[Extract<keyof T, string>],
-        TE | Cause.NoSuchElementException,
-        TR
-      >,
-    ) => Effect.Effect<A, E2, R2>,
-    id: Extract<keyof T, string>,
-  ) =>
-    pipe(
-      getPortMap(polymorphicAccess),
-      Effect.flatMap(Record.get(id)),
-      transformPortEffect,
-    )
-
-/**
- *
- *
- */
-export const getPortById = getPortByIdGeneric(getAllPortsRecord)
-
-/**
- *
- *
- */
-export const getInputPortById = getPortByIdGeneric(getInputPortsRecord)
-
-/**
- *
- *
- */
-export const getOutputPortById = getPortByIdGeneric(getOutputPortsRecord)
-
-// const as2d = getOutputPortById(MIDIOutputPortId(''))
-
-/**
- *
- *
- */
-export const getPortDeviceState = <TE = never, TR = never>(
-  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
-  id: MIDIBothPortId,
-) =>
-  // TODO: Check if software synth devices access is present. Having desired
-  // port absent in the record doesn't guarantee it's disconnected
-  getPortByIdGeneric2(getAllPortsRecord)(
-    polymorphicAccess,
-    flow(
-      EffectfulMIDIPort.getDeviceState,
-      Effect.catchTag('NoSuchElementException', () =>
-        Effect.succeed('disconnected' as const),
-      ),
-    ),
-    id,
-  )
-
-/**
- *
- *
- */
-export const getPortConnectionState = <TE = never, TR = never>(
-  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
-  id: MIDIBothPortId,
-) =>
-  getPortByIdGeneric2(getAllPortsRecord)(
-    polymorphicAccess,
-    EffectfulMIDIPort.getConnectionState,
-    id,
-  )
-
-/**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
@@ -589,15 +494,6 @@ export const makeAllPortsStateChangesStream =
       }) as const,
   )
 
-export interface SentMessageEffectFromAccess<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
-
-export type TargetPortSelector =
-  | 'all existing outputs at effect execution'
-  | 'all open connections at effect execution'
-  | MIDIOutputPortId
-  | MIDIOutputPortId[]
-
 /**
  * beware that it's not possible to ensure the messages will either be all
  * delivered, or all not delivered, as in ACID transactions. There's not even a
@@ -610,7 +506,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   polymorphicCheckInDual(is),
   Effect.fn('EffectfulMIDIAccess.send')(
     function* (polymorphicAccess, target, midiMessage, timestamp) {
-      const access = yield* fromPolymorphic(polymorphicAccess, is)
+      const access = yield* resolve(polymorphicAccess)
 
       const outputs = yield* getOutputPortsRecord(access)
 
@@ -689,44 +585,6 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   ),
 )
 
-export interface DualSendMIDIMessageFromAccess
-  extends SendMIDIMessageAccessFirst,
-    SendMIDIMessageAccessLast {}
-
-export type SendFromAccessArgs = [
-  targetPortSelector: TargetPortSelector,
-  ...args: EffectfulMIDIOutputPort.SendFromPortArgs,
-]
-
-export interface SendMIDIMessageAccessFirst {
-  /**
-   *
-   *
-   */
-  <E = never, R = never>(
-    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ...args: SendFromAccessArgs
-  ): SentMessageEffectFromAccess<E, R>
-}
-
-export interface SendMIDIMessageAccessLast {
-  /**
-   *
-   *
-   */
-  (
-    ...args: SendFromAccessArgs
-  ): {
-    /**
-     *
-     *
-     */
-    <E = never, R = never>(
-      polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, E, R>,
-    ): SentMessageEffectFromAccess<E, R>
-  }
-}
-
 /**
  * @param options
  *
@@ -738,7 +596,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
 ) {
   yield* Effect.annotateCurrentSpan({ options })
 
-  const rawMIDIAccess = yield* Effect.tryPromise({
+  const rawAccess = yield* Effect.tryPromise({
     try: () => navigator.requestMIDIAccess(options),
     catch: remapErrorByName(
       {
@@ -766,8 +624,8 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
     SortedMap.empty<MIDIBothPortId, MIDIPortType>(Order.string),
   )
 
-  // return make(rawMIDIAccess, options, ref)
-  return make(rawMIDIAccess, options)
+  // return make(rawAccess, options, ref)
+  return make(rawAccess, options)
 })
 
 // TODO: clear all outputs
@@ -809,3 +667,50 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
   software: true,
   sysex: true,
 })
+
+export interface SentMessageEffectFromAccess<E = never, R = never>
+  extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
+
+export type TargetPortSelector =
+  | 'all existing outputs at effect execution'
+  | 'all open connections at effect execution'
+  | MIDIOutputPortId
+  | MIDIOutputPortId[]
+
+export interface DualSendMIDIMessageFromAccess
+  extends SendMIDIMessageAccessFirst,
+    SendMIDIMessageAccessLast {}
+
+export type SendFromAccessArgs = [
+  targetPortSelector: TargetPortSelector,
+  ...args: EffectfulMIDIOutputPort.SendFromPortArgs,
+]
+
+export interface SendMIDIMessageAccessFirst {
+  /**
+   *
+   *
+   */
+  <E = never, R = never>(
+    polymorphicAccess: PolymorphicAccessInstance<E, R>,
+    ...args: SendFromAccessArgs
+  ): SentMessageEffectFromAccess<E, R>
+}
+
+export interface SendMIDIMessageAccessLast {
+  /**
+   *
+   *
+   */
+  (
+    ...args: SendFromAccessArgs
+  ): {
+    /**
+     *
+     *
+     */
+    <E = never, R = never>(
+      polymorphicAccess: PolymorphicAccessInstance<E, R>,
+    ): SentMessageEffectFromAccess<E, R>
+  }
+}

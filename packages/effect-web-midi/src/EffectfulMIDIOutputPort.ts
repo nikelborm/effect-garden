@@ -15,6 +15,7 @@ export {
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,
+  type PolymorphicOutputPort,
   type SendFromPortArgs,
   type SendMIDIMessagePortFirst,
   type SendMIDIMessagePortLast,
