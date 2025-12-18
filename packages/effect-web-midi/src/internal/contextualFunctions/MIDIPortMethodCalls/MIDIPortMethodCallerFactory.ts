@@ -13,28 +13,32 @@ export const MIDIPortMethodCallerFactory =
     method: 'close' | 'open',
     mapError: (err: unknown) => TError,
   ) =>
-  <THighLevelType extends MIDIPortType>(
+  <THighLevelPortType extends MIDIPortType>(
     is: (
       port: unknown,
-    ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelType>,
+    ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
   ): {
     /**
      * @returns An effect with the same port for easier chaining of operations
      */
-    <TType extends THighLevelType, E = never, R = never>(
-      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TType>,
-    ): Effect.Effect<EffectfulMIDIPort.EffectfulMIDIPort<TType>, TError | E, R>
+    <TPortType extends THighLevelPortType, E = never, R = never>(
+      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
+    ): Effect.Effect<
+      EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+      TError | E,
+      R
+    >
   } =>
     Effect.fn(`EffectfulMIDIPort.${method}`)(function* <
-      TType extends THighLevelType,
+      TPortType extends THighLevelPortType,
       E = never,
       R = never,
-    >(polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TType>) {
+    >(polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>) {
       const port = yield* fromPolymorphic(
         polymorphicPort,
         is as unknown as (
           port: unknown,
-        ) => port is EffectfulMIDIPort.EffectfulMIDIPort<TType>,
+        ) => port is EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
       )
 
       yield* Effect.annotateCurrentSpan({

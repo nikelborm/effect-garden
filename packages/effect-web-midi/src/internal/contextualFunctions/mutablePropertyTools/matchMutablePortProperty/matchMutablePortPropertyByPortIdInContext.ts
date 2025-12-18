@@ -25,19 +25,14 @@ import {
  */
 const makeMatcherTakingPortIds =
   <
-    TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+    THighLevelPortType extends MIDIPortType,
     TMIDIPortProperty extends MIDIPortMutableProperty,
   >(
-    match: DualMatchPortState<
-      TMIDIPortTypeHighLevelRestriction,
-      TMIDIPortProperty
-    >,
+    match: DualMatchPortState<THighLevelPortType, TMIDIPortProperty>,
     getPort: (
-      id: MIDIPortId<TMIDIPortTypeHighLevelRestriction>,
+      id: MIDIPortId<THighLevelPortType>,
     ) => Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<
-        NoInfer<TMIDIPortTypeHighLevelRestriction>
-      >,
+      EffectfulMIDIPort.EffectfulMIDIPort<NoInfer<THighLevelPortType>>,
       PortNotFoundError,
       EffectfulMIDIAccess.EffectfulMIDIAccess
     >,
@@ -45,11 +40,11 @@ const makeMatcherTakingPortIds =
   <
     TStateCaseToHandlerMap extends StateCaseToHandlerMap<
       TMIDIPortProperty,
-      TMIDIPortTypeHighLevelRestriction,
+      THighLevelPortType,
       TStateCaseToHandlerMap
     >,
   >(
-    id: MIDIPortId<TMIDIPortTypeHighLevelRestriction>,
+    id: MIDIPortId<THighLevelPortType>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ) =>
     match(getPort(id), stateCaseToHandlerMap)

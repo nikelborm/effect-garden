@@ -16,11 +16,11 @@ import { getStaticMIDIPortInfo } from '../../util.ts'
  * @internal
  */
 export const makePortStateChangesStreamMaker = <
-  THighLevelType extends MIDIPortType,
+  THighLevelPortType extends MIDIPortType,
 >(
   is: (
     port: unknown,
-  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelType>,
+  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
 ) =>
   createStreamMakerFrom<MIDIPortEventMap>()(
     is,
@@ -80,30 +80,30 @@ export const makeOutputPortStateChangesStreamByPort =
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
 export interface DualMakeStateChangesStream<
-  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
-> extends MakeStateChangesStreamPortFirst<THighLevelTypeRestriction>,
-    MakeStateChangesStreamPortLast<THighLevelTypeRestriction> {}
+  THighLevelPortType extends MIDIPortType = MIDIPortType,
+> extends MakeStateChangesStreamPortFirst<THighLevelPortType>,
+    MakeStateChangesStreamPortLast<THighLevelPortType> {}
 
 /**
  * A custom type is needed because the port type will be generic, but this is
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
 export interface MakeStateChangesStreamPortFirst<
-  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
+  THighLevelPortType extends MIDIPortType = MIDIPortType,
 > {
   /**
    * @param options Passing a value of a `boolean` type is equivalent to setting `options.capture`
    * property
    */
   <
-    TType extends THighLevelTypeRestriction,
+    TPortType extends THighLevelPortType,
     const TOnNullStrategy extends OnNullStrategy = undefined,
     E = never,
     R = never,
   >(
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TType>,
+    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
     options?: StreamMakerOptions<TOnNullStrategy>,
-  ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TType, E, R>
+  ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TPortType, E, R>
 }
 
 /**
@@ -111,7 +111,7 @@ export interface MakeStateChangesStreamPortFirst<
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
 export interface MakeStateChangesStreamPortLast<
-  THighLevelTypeRestriction extends MIDIPortType = MIDIPortType,
+  THighLevelPortType extends MIDIPortType = MIDIPortType,
 > {
   /**
    * @param options Passing a value of a `boolean` type is equivalent to setting `options.capture`
@@ -124,8 +124,8 @@ export interface MakeStateChangesStreamPortLast<
      *
      *
      */
-    <TType extends THighLevelTypeRestriction, E = never, R = never>(
-      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TType>,
-    ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TType, E, R>
+    <TPortType extends THighLevelPortType, E = never, R = never>(
+      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
+    ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TPortType, E, R>
   }
 }

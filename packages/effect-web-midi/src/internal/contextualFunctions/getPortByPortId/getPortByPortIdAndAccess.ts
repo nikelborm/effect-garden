@@ -18,11 +18,11 @@ import type {
  * @internal
  */
 export const getPortByIdAndRemap =
-  <TType extends MIDIBothPortId>() =>
+  <TPortType extends MIDIBothPortId>() =>
   <OnInput, OnOutput>(handlers: {
     onInputFound: (rawInputPort: MIDIInput) => Effect.Effect<OnInput>
     onOutputFound: (rawOutputPort: MIDIOutput) => Effect.Effect<OnOutput>
-  }): GetPortById<TType, OnInput, OnOutput> =>
+  }): GetPortById<TPortType, OnInput, OnOutput> =>
     dual(2, (polymorphicAccess, portId) =>
       Effect.flatMap(EffectfulMIDIAccess.resolve(polymorphicAccess), e => {
         const rawAccess = EffectfulMIDIAccess.assumeImpl(e)._access
@@ -81,18 +81,18 @@ export const getOutputPortByPortIdAndAccess =
  *
  *
  */
-export interface GetPortById<TType, OnInput, OnOutput>
-  extends GetPortByIdAccessFirst<TType, OnInput, OnOutput>,
-    GetPortByIdAccessLast<TType, OnInput, OnOutput> {}
+export interface GetPortById<TPortType, OnInput, OnOutput>
+  extends GetPortByIdAccessFirst<TPortType, OnInput, OnOutput>,
+    GetPortByIdAccessLast<TPortType, OnInput, OnOutput> {}
 
 /**
  *
  *
  */
-export interface GetPortByIdAccessFirst<TType, OnInput, OnOutput> {
+export interface GetPortByIdAccessFirst<TPortType, OnInput, OnOutput> {
   <E = never, R = never>(
     polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<E, R>,
-    portId: TType,
+    portId: TPortType,
   ): PortTaken<OnInput, OnOutput, E, R>
 }
 
@@ -100,9 +100,9 @@ export interface GetPortByIdAccessFirst<TType, OnInput, OnOutput> {
  *
  *
  */
-export interface GetPortByIdAccessLast<TType, OnInput, OnOutput> {
+export interface GetPortByIdAccessLast<TPortType, OnInput, OnOutput> {
   (
-    portId: TType,
+    portId: TPortType,
   ): {
     <E = never, R = never>(
       polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<E, R>,

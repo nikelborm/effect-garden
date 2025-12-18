@@ -9,16 +9,16 @@ import { openConnectionFactory } from '../openConnection/openConnectionByPort.ts
  * @internal
  */
 export const acquireReleaseConnectionFactory =
-  <THighLevelType extends MIDIPortType>(
+  <THighLevelPortType extends MIDIPortType>(
     is: (
       port: unknown,
-    ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelType>,
+    ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
   ) =>
   /**
    * @returns An effect with the same port for easier chaining of operations
    */
-  <TType extends THighLevelType, E = never, R = never>(
-    port: EffectfulMIDIPort.PolymorphicPort<E, R, TType>,
+  <TPortType extends THighLevelPortType, E = never, R = never>(
+    port: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
   ) =>
     Effect.acquireRelease(
       openConnectionFactory(is)(port),

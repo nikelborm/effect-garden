@@ -50,16 +50,24 @@ const getPortByIdGeneric2 =
 // port absent in the record doesn't guarantee it's disconnected
 
 const getPortDeviceStateGeneral =
-  <TType extends MIDIBothPortId>() =>
+  <TPortType extends MIDIBothPortId>() =>
   <
     OnInput extends EffectfulMIDIPort.EffectfulMIDIPort,
     OnOutput extends EffectfulMIDIPort.EffectfulMIDIPort,
   >(
-    getPort: GetPortById<TType, OnInput, OnOutput>,
-  ): GetPortById<TType, MIDIPortDeviceState, MIDIPortDeviceState> =>
+    getPort: GetPortById<TPortType, OnInput, OnOutput>,
+  ): GetPortById<TPortType, MIDIPortDeviceState, MIDIPortDeviceState> =>
     dual<
-      GetPortByIdAccessLast<TType, MIDIPortDeviceState, MIDIPortDeviceState>,
-      GetPortByIdAccessFirst<TType, MIDIPortDeviceState, MIDIPortDeviceState>
+      GetPortByIdAccessLast<
+        TPortType,
+        MIDIPortDeviceState,
+        MIDIPortDeviceState
+      >,
+      GetPortByIdAccessFirst<
+        TPortType,
+        MIDIPortDeviceState,
+        MIDIPortDeviceState
+      >
     >(2, (polymorphicAccess, portId) =>
       Effect.map(
         getPort(polymorphicAccess, portId),

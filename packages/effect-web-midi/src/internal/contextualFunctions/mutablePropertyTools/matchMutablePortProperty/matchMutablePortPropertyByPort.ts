@@ -14,16 +14,16 @@ import { getValueInRawPortFieldUnsafe } from '../mutablePropertyTools.ts'
  */
 export const matchMutableMIDIPortProperty = <
   const TMIDIPortProperty extends MIDIPortMutableProperty,
-  THighLevelType extends MIDIPortType,
+  THighLevelPortType extends MIDIPortType,
 >(
   property: TMIDIPortProperty,
   is: (
     port: unknown,
-  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelType>,
-): DualMatchPortState<THighLevelType, TMIDIPortProperty> =>
+  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+): DualMatchPortState<THighLevelPortType, TMIDIPortProperty> =>
   dual<
-    MatchStatePortLast<THighLevelType, TMIDIPortProperty>,
-    MatchStatePortFirst<THighLevelType, TMIDIPortProperty>
+    MatchStatePortLast<THighLevelPortType, TMIDIPortProperty>,
+    MatchStatePortFirst<THighLevelPortType, TMIDIPortProperty>
   >(
     polymorphicCheckInDual(is),
     Effect.fn(function* (polymorphicPort, config) {
@@ -31,7 +31,7 @@ export const matchMutableMIDIPortProperty = <
         polymorphicPort,
         is as (
           port: unknown,
-        ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelType>,
+        ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
       )
 
       const state = getValueInRawPortFieldUnsafe(property)(port)
@@ -104,16 +104,13 @@ export interface MatchResult<TActualConf extends MatcherConfigPlain, E, R>
   extends Effect.Effect<ReturnType<TActualConf[keyof TActualConf]>, E, R> {}
 
 export interface DualMatchPortState<
-  TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+  THighLevelPortType extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
-> extends MatchStatePortLast<
-      TMIDIPortTypeHighLevelRestriction,
-      TMIDIPortProperty
-    >,
-    MatchStatePortFirst<TMIDIPortTypeHighLevelRestriction, TMIDIPortProperty> {}
+> extends MatchStatePortLast<THighLevelPortType, TMIDIPortProperty>,
+    MatchStatePortFirst<THighLevelPortType, TMIDIPortProperty> {}
 
 export interface MatchStatePortFirst<
-  TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+  THighLevelPortType extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
   /**
@@ -126,7 +123,7 @@ export interface MatchStatePortFirst<
   <
     TStateCaseToHandlerMap extends StateCaseToHandlerMap<
       TMIDIPortProperty,
-      TMIDIPortTypeHighLevelRestriction,
+      THighLevelPortType,
       TStateCaseToHandlerMap
     >,
     E = never,
@@ -135,14 +132,14 @@ export interface MatchStatePortFirst<
     polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
       E,
       R,
-      TMIDIPortTypeHighLevelRestriction
+      THighLevelPortType
     >,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ): MatchResult<TStateCaseToHandlerMap, E, R>
 }
 
 export interface MatchStatePortLast<
-  TMIDIPortTypeHighLevelRestriction extends MIDIPortType,
+  THighLevelPortType extends MIDIPortType,
   TMIDIPortProperty extends MIDIPortMutableProperty,
 > {
   /**
@@ -154,7 +151,7 @@ export interface MatchStatePortLast<
   <
     TStateCaseToHandlerMap extends StateCaseToHandlerMap<
       TMIDIPortProperty,
-      TMIDIPortTypeHighLevelRestriction,
+      THighLevelPortType,
       TStateCaseToHandlerMap
     >,
   >(
@@ -170,7 +167,7 @@ export interface MatchStatePortLast<
       polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
         E,
         R,
-        TMIDIPortTypeHighLevelRestriction
+        THighLevelPortType
       >,
     ): MatchResult<TStateCaseToHandlerMap, E, R>
   }

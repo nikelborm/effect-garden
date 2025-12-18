@@ -123,8 +123,8 @@ export interface EffectfulMIDIPort<
  */
 export interface EffectfulMIDIPortImpl<
   TPort extends MIDIPort = MIDIPort,
-  TType extends MIDIPortType = MIDIPortType,
-> extends EffectfulMIDIPort<TType> {
+  TPortType extends MIDIPortType = MIDIPortType,
+> extends EffectfulMIDIPort<TPortType> {
   readonly _port: TPort
 }
 
@@ -133,11 +133,14 @@ export interface EffectfulMIDIPortImpl<
  *
  * @internal
  */
-export const makeImpl = <TPort extends MIDIPort, TType extends MIDIPortType>(
+export const makeImpl = <
+  TPort extends MIDIPort,
+  TPortType extends MIDIPortType,
+>(
   port: NoInfer<TPort>,
-  type: TType,
+  type: TPortType,
   ClassToAssertInheritance: new (...args: unknown[]) => TPort,
-): EffectfulMIDIPortImpl<TPort, TType> => {
+): EffectfulMIDIPortImpl<TPort, TPortType> => {
   if (port.type !== type || !(port instanceof ClassToAssertInheritance))
     throw new Error(`EffectfulMIDIPort constructor accepts only ${type} ports`)
 
@@ -217,11 +220,11 @@ export type PolymorphicPort<
  * @internal
  */
 export const isImplOfSpecificType =
-  <const TType extends MIDIPortType, TPort extends MIDIPort>(
-    type: TType,
+  <const TPortType extends MIDIPortType, TPort extends MIDIPort>(
+    type: TPortType,
     ClassToAssertInheritance: new (...args: unknown[]) => TPort,
   ) =>
-  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TType> => {
+  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TPortType> => {
     if (!ClassToAssertInheritance)
       throw new Error(
         'Called in a context where ClassToAssertInheritance is falsy, probably on a platform where MIDI APIs are not supported, like node.js or bun',
@@ -246,12 +249,12 @@ export const is: (port: unknown) => port is EffectfulMIDIPort = isGeneralImpl
  */
 export interface StateChangesStream<
   TOnNullStrategy extends OnNullStrategy,
-  TType extends MIDIPortType,
+  TPortType extends MIDIPortType,
   E = never,
   R = never,
 > extends BuiltStream<
     'MIDIPortStateChange',
-    EffectfulMIDIPort<TType>,
+    EffectfulMIDIPort<TPortType>,
     {
       readonly newState: {
         readonly ofDevice: MIDIPortDeviceState
