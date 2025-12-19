@@ -1,12 +1,12 @@
 import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
-import { MIDIPortMethodCallerFactory } from '../MIDIPortMethodCallerFactory.ts'
+import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**
  * @internal
  */
-export const closeConnectionFactory = MIDIPortMethodCallerFactory(
+export const makePortConnectionCloser = makeMIDIPortMethodCallerFactory(
   'close',
   err => {
     throw err
@@ -16,20 +16,20 @@ export const closeConnectionFactory = MIDIPortMethodCallerFactory(
 /**
  *
  */
-export const closePortConnectionByPort = closeConnectionFactory(
+export const closePortConnectionByPort = makePortConnectionCloser(
   EffectfulMIDIPort.is,
 )
 
 /**
  *
  */
-export const closeInputPortConnectionByPort = closeConnectionFactory(
+export const closeInputPortConnectionByPort = makePortConnectionCloser(
   EffectfulMIDIInputPort.is,
 )
 
 /**
  *
  */
-export const closeOutputPortConnectionByPort = closeConnectionFactory(
+export const closeOutputPortConnectionByPort = makePortConnectionCloser(
   EffectfulMIDIOutputPort.is,
 )

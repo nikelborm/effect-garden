@@ -2,13 +2,13 @@ import * as Effect from 'effect/Effect'
 import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
-import { closeConnectionFactory } from '../closeConnection/closeConnectionByPort.ts'
-import { openConnectionFactory } from '../openConnection/openConnectionByPort.ts'
+import { makePortConnectionCloser } from '../closePortConnection/closePortConnectionByPort.ts'
+import { makePortConnectionOpener } from '../openPortConnection/openPortConnectionByPort.ts'
 
 /**
  * @internal
  */
-export const acquireReleaseConnectionFactory =
+export const makeConnectionAcquirerReleaser =
   <THighLevelPortType extends MIDIPortType>(
     is: (
       port: unknown,
@@ -21,24 +21,24 @@ export const acquireReleaseConnectionFactory =
     port: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
   ) =>
     Effect.acquireRelease(
-      openConnectionFactory(is)(port),
-      closeConnectionFactory(is),
+      makePortConnectionOpener(is)(port),
+      makePortConnectionCloser(is),
     )
 
 /**
  *
  */
 export const acquireReleasePortConnectionByPort =
-  acquireReleaseConnectionFactory(EffectfulMIDIPort.is)
+  makeConnectionAcquirerReleaser(EffectfulMIDIPort.is)
 
 /**
  *
  */
 export const acquireReleaseInputPortConnectionByPort =
-  acquireReleaseConnectionFactory(EffectfulMIDIInputPort.is)
+  makeConnectionAcquirerReleaser(EffectfulMIDIInputPort.is)
 
 /**
  *
  */
 export const acquireReleaseOutputPortConnectionByPort =
-  acquireReleaseConnectionFactory(EffectfulMIDIOutputPort.is)
+  makeConnectionAcquirerReleaser(EffectfulMIDIOutputPort.is)

@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
+
 import * as EArray from 'effect/Array'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
@@ -16,16 +17,25 @@ import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
+import {
+  getInputPortByPortIdInContext,
+  getOutputPortByPortIdInContext,
+} from './contextualFunctions/getPortByPortId/getPortByPortIdInContext.ts'
+import { isOutputPortConnectionOpenByPort } from './contextualFunctions/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
+import { getOutputPortDeviceStateByPort } from './contextualFunctions/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import type {
+  OnNullStrategy,
+  StreamMakerOptions,
+} from './createStreamMakerFrom.ts'
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
 import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import type * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
 import {
   AbortError,
   DisconnectedPortError,
   MIDIAccessNotAllowedError,
   MIDIAccessNotSupportedError,
-  PortNotFoundError,
   remapErrorByName,
   UnderlyingSystemError,
 } from './errors.ts'
@@ -521,7 +531,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
         return yield* pipe(
           Record.values(outputs),
           // TODO: maybe also do something about pending?
-          Effect.filter(EffectfulMIDIPort.isConnectionOpen),
+          Effect.filter(isOutputPortConnectionOpenByPort),
           Effect.flatMap(
             Effect.forEach(
               EffectfulMIDIOutputPort.send(midiMessage, timestamp),
@@ -538,7 +548,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       const deviceStatusesEffect = portsIdsToSend.map(id =>
         Option.match(Record.get(outputs, id), {
           onNone: () => Effect.succeed('disconnected' as const),
-          onSome: EffectfulMIDIPort.getDeviceState,
+          onSome: getOutputPortDeviceStateByPort,
         }),
       )
 
@@ -584,6 +594,58 @@ export const send: DualSendMIDIMessageFromAccess = dual<
     },
   ),
 )
+
+/**
+ * @param options Passing a value of a `boolean` type is equivalent to setting
+ * `options.capture` property
+ */
+export const makeMessagesStreamByPortId = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  id: MIDIInputPortId,
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) =>
+  EffectfulMIDIInputPort.makeMessagesStream(
+    getInputPortByPortIdInContext(id),
+    options,
+  )
+
+/**
+ *
+ */
+export const sendToPortById = (
+  id: MIDIOutputPortId,
+  ...args: EffectfulMIDIOutputPort.SendFromPortArgs
+) =>
+  Effect.asVoid(
+    EffectfulMIDIOutputPort.send(getOutputPortByPortIdInContext(id), ...args),
+  )
+
+/**
+ *
+ */
+export const clearPortById = flow(
+  getOutputPortByPortIdInContext,
+  EffectfulMIDIOutputPort.clear,
+  Effect.asVoid,
+)
+
+/**
+ * @param options Passing a value of a `boolean` type is equivalent to setting
+ * `options.capture` property
+ */
+export const makeAllPortsStateChangesStreamFromContext = <
+  const TOnNullStrategy extends OnNullStrategy = undefined,
+>(
+  options?: StreamMakerOptions<TOnNullStrategy>,
+) => makeAllPortsStateChangesStream(EffectfulMIDIAccess, options)
+
+/**
+ *
+ *
+ */
+export const sendFromContext = (...args: SendFromAccessArgs) =>
+  Effect.asVoid(send(EffectfulMIDIAccess, ...args))
 
 /**
  * @param options

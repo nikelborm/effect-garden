@@ -8,7 +8,7 @@ import {
   acquireReleaseInputPortConnectionByPort,
   acquireReleaseOutputPortConnectionByPort,
   acquireReleasePortConnectionByPort,
-} from './acquireReleaseConnectionByPort.ts'
+} from './acquireReleasePortConnectionByPort.ts'
 
 /**
  *

@@ -1,19 +1,18 @@
 import * as Effect from 'effect/Effect'
-import { dual, flow, pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
-import type {
-  EffectfulMIDIAccessInstance,
-  PolymorphicAccessInstance,
+import {
+  type EffectfulMIDIAccessInstance,
+  getAllPortsRecord,
+  type PolymorphicAccessInstance,
 } from '../../../EffectfulMIDIAccess.ts'
-import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
 import { PortNotFoundError } from '../../../errors.ts'
 import type { MIDIBothPortId, PolymorphicEffect } from '../../../util.ts'
-import type {
-  GetPortById,
-  GetPortByIdAccessFirst,
-  GetPortByIdAccessLast,
-} from '../../getPortByPortId/getPortByPortIdAndAccess.ts'
+import {
+  getPortConnectionStateByPort,
+  getPortDeviceStateByPort,
+} from './getMutablePortPropertyByPort.ts'
 
 const getPortByIdGeneric2 =
   <T extends Record.ReadonlyRecord<string, any>>(
@@ -49,32 +48,6 @@ const getPortByIdGeneric2 =
 // TODO: Check if software synth devices access is present. Having desired
 // port absent in the record doesn't guarantee it's disconnected
 
-const getPortDeviceStateGeneral =
-  <TPortType extends MIDIBothPortId>() =>
-  <
-    OnInput extends EffectfulMIDIPort.EffectfulMIDIPort,
-    OnOutput extends EffectfulMIDIPort.EffectfulMIDIPort,
-  >(
-    getPort: GetPortById<TPortType, OnInput, OnOutput>,
-  ): GetPortById<TPortType, MIDIPortDeviceState, MIDIPortDeviceState> =>
-    dual<
-      GetPortByIdAccessLast<
-        TPortType,
-        MIDIPortDeviceState,
-        MIDIPortDeviceState
-      >,
-      GetPortByIdAccessFirst<
-        TPortType,
-        MIDIPortDeviceState,
-        MIDIPortDeviceState
-      >
-    >(2, (polymorphicAccess, portId) =>
-      Effect.map(
-        getPort(polymorphicAccess, portId),
-        e => EffectfulMIDIPort.assumeImpl(e)._port.state,
-      ),
-    )
-
 /**
  *
  *
@@ -86,7 +59,7 @@ export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
   getPortByIdGeneric2(getAllPortsRecord)(
     polymorphicAccess,
     flow(
-      EffectfulMIDIPort.getDeviceState,
+      getPortDeviceStateByPort,
       Effect.catchTag('PortNotFound', () =>
         Effect.succeed('disconnected' as const),
       ),
@@ -104,6 +77,6 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
 ) =>
   getPortByIdGeneric2(getAllPortsRecord)(
     polymorphicAccess,
-    EffectfulMIDIPort.getConnectionState,
+    getPortConnectionStateByPort,
     portId,
   )

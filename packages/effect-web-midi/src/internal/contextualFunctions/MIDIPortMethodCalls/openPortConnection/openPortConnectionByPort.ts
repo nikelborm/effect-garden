@@ -2,12 +2,12 @@ import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
 import { remapErrorByName, UnavailablePortError } from '../../../errors.ts'
-import { MIDIPortMethodCallerFactory } from '../MIDIPortMethodCallerFactory.ts'
+import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**
  * @internal
  */
-export const openConnectionFactory = MIDIPortMethodCallerFactory(
+export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
   'open',
   remapErrorByName(
     {
@@ -24,20 +24,20 @@ export const openConnectionFactory = MIDIPortMethodCallerFactory(
 /**
  *
  */
-export const openPortConnectionByPort = openConnectionFactory(
+export const openPortConnectionByPort = makePortConnectionOpener(
   EffectfulMIDIPort.is,
 )
 
 /**
  *
  */
-export const openInputPortConnectionByPort = openConnectionFactory(
+export const openInputPortConnectionByPort = makePortConnectionOpener(
   EffectfulMIDIInputPort.is,
 )
 
 /**
  *
  */
-export const openOutputPortConnectionByPort = openConnectionFactory(
+export const openOutputPortConnectionByPort = makePortConnectionOpener(
   EffectfulMIDIOutputPort.is,
 )

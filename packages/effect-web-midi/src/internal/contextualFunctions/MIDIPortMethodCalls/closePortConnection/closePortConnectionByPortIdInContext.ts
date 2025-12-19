@@ -8,7 +8,7 @@ import {
   closeInputPortConnectionByPort,
   closeOutputPortConnectionByPort,
   closePortConnectionByPort,
-} from './closeConnectionByPort.ts'
+} from './closePortConnectionByPort.ts'
 
 /**
  *

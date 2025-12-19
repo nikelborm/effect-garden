@@ -2,6 +2,7 @@
  * preserve JSDoc comments attached to the function signature */
 
 import {
+  type BuiltStream,
   createStreamMakerFrom,
   type OnNullStrategy,
   type StreamMakerOptions,
@@ -15,7 +16,7 @@ import { getStaticMIDIPortInfo } from '../../util.ts'
  *
  * @internal
  */
-export const makePortStateChangesStreamMaker = <
+export const makePortStateChangesStreamFactory = <
   THighLevelPortType extends MIDIPortType,
 >(
   is: (
@@ -45,7 +46,7 @@ export const makePortStateChangesStreamMaker = <
             } as const)
           : null,
       }) as const,
-  ) as DualMakeStateChangesStream
+  ) as DualMakeStateChangesStream<THighLevelPortType>
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -53,9 +54,8 @@ export const makePortStateChangesStreamMaker = <
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-export const makePortStateChangesStreamByPort = makePortStateChangesStreamMaker(
-  EffectfulMIDIPort.is,
-)
+export const makePortStateChangesStreamByPort =
+  makePortStateChangesStreamFactory(EffectfulMIDIPort.is)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -64,7 +64,7 @@ export const makePortStateChangesStreamByPort = makePortStateChangesStreamMaker(
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeInputPortStateChangesStreamByPort =
-  makePortStateChangesStreamMaker(EffectfulMIDIInputPort.is)
+  makePortStateChangesStreamFactory(EffectfulMIDIInputPort.is)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -73,7 +73,7 @@ export const makeInputPortStateChangesStreamByPort =
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeOutputPortStateChangesStreamByPort =
-  makePortStateChangesStreamMaker(EffectfulMIDIOutputPort.is)
+  makePortStateChangesStreamFactory(EffectfulMIDIOutputPort.is)
 
 /**
  * A custom type is needed because the port type will be generic, but this is
@@ -103,7 +103,7 @@ export interface MakeStateChangesStreamPortFirst<
   >(
     polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
     options?: StreamMakerOptions<TOnNullStrategy>,
-  ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TPortType, E, R>
+  ): StateChangesStream<TOnNullStrategy, TPortType, E, R>
 }
 
 /**
@@ -126,6 +126,29 @@ export interface MakeStateChangesStreamPortLast<
      */
     <TPortType extends THighLevelPortType, E = never, R = never>(
       polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
-    ): EffectfulMIDIPort.StateChangesStream<TOnNullStrategy, TPortType, E, R>
+    ): StateChangesStream<TOnNullStrategy, TPortType, E, R>
   }
 }
+
+/**
+ * A custom type is needed because the port type will be generic, but this is
+ * not possible if using just {@linkcode createStreamMakerFrom}
+ */
+export interface StateChangesStream<
+  TOnNullStrategy extends OnNullStrategy,
+  TPortType extends MIDIPortType,
+  E = never,
+  R = never,
+> extends BuiltStream<
+    'MIDIPortStateChange',
+    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    {
+      readonly newState: {
+        readonly ofDevice: MIDIPortDeviceState
+        readonly ofConnection: MIDIPortConnectionState
+      } | null
+    },
+    TOnNullStrategy,
+    E,
+    R
+  > {}

@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
+
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import { dual, flow } from 'effect/Function'
@@ -242,26 +243,3 @@ export const isImplOfSpecificType =
  *
  */
 export const is: (port: unknown) => port is EffectfulMIDIPort = isGeneralImpl
-
-/**
- * A custom type is needed because the port type will be generic, but this is
- * not possible if using just {@linkcode createStreamMakerFrom}
- */
-export interface StateChangesStream<
-  TOnNullStrategy extends OnNullStrategy,
-  TPortType extends MIDIPortType,
-  E = never,
-  R = never,
-> extends BuiltStream<
-    'MIDIPortStateChange',
-    EffectfulMIDIPort<TPortType>,
-    {
-      readonly newState: {
-        readonly ofDevice: MIDIPortDeviceState
-        readonly ofConnection: MIDIPortConnectionState
-      } | null
-    },
-    TOnNullStrategy,
-    E,
-    R
-  > {}

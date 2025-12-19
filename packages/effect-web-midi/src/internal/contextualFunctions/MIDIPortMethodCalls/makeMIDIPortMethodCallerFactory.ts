@@ -8,7 +8,7 @@ import { fromPolymorphic, getStaticMIDIPortInfo } from '../../util.ts'
 /**
  * @internal
  */
-export const MIDIPortMethodCallerFactory =
+export const makeMIDIPortMethodCallerFactory =
   <TError = never>(
     method: 'close' | 'open',
     mapError: (err: unknown) => TError,
