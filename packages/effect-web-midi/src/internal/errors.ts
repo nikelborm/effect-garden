@@ -4,11 +4,12 @@ import type {
   EffectfulMIDIAccessInstance,
   RequestMIDIAccessOptions,
 } from './EffectfulMIDIAccess.ts'
+import { MIDIBothPortId } from './util.ts'
 
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-// TODO: branded port ids
+const PortId = Schema.fromBrand(MIDIBothPortId)(Schema.NonEmptyTrimmedString)
 
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,
@@ -89,7 +90,7 @@ export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<
   'ClearingSendingQueueIsNotSupportedError',
   {
     cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')),
-    portId: Schema.NonEmptyTrimmedString,
+    portId: PortId,
   },
 ) {}
 
@@ -112,7 +113,7 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
         'InvalidStateError',
       ),
     ),
-    portId: Schema.NonEmptyTrimmedString,
+    portId: PortId,
   },
 ) {}
 
@@ -127,7 +128,7 @@ export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortEr
   'DisconnectedPortError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidStateError')),
-    portId: Schema.NonEmptyTrimmedString,
+    portId: PortId,
   },
 ) {}
 
@@ -143,7 +144,7 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
   'CantSendSysexMessagesError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidAccessError', 'NotAllowedError')),
-    portId: Schema.NonEmptyTrimmedString,
+    portId: PortId,
   },
 ) {}
 
@@ -177,7 +178,7 @@ export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiM
   'MalformedMidiMessageError',
   {
     cause: ErrorSchema(Schema.Literal('TypeError')),
-    portId: Schema.NonEmptyTrimmedString,
+    portId: PortId,
     midiMessage: Schema.Array(Schema.Int),
   },
 ) {}
@@ -190,7 +191,7 @@ export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiM
  */
 export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   'PortNotFound',
-  { portId: Schema.NonEmptyTrimmedString },
+  { portId: PortId },
 ) {}
 
 /**
