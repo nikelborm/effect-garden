@@ -4,11 +4,11 @@
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as Record from 'effect/Record'
-import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
-import { fromPolymorphic, polymorphicCheckInDual } from '../../../util.ts'
-import { getValueInRawPortFieldUnsafe } from '../mutablePropertyTools.ts'
+import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
+import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import { fromPolymorphic, polymorphicCheckInDual } from '../../util.ts'
+import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
 
 /**
  * @internal

@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
-import type * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
+import type * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
 import type { MIDIPortMutableProperty } from '../matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
-import { getValueInRawPortFieldUnsafe } from '../mutablePropertyTools.ts'
+import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
 
 /**
  * @internal

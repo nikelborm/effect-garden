@@ -5,7 +5,7 @@ import {
   isConnectionPending,
   isDeviceConnected,
   isDeviceDisconnected,
-} from '../../../util.ts'
+} from '../../util.ts'
 import {
   getInputPortConnectionStateByPort,
   getInputPortDeviceStateByPort,

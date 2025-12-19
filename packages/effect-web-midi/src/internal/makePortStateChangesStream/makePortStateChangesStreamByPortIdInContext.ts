@@ -1,17 +1,17 @@
 import type {
   OnNullStrategy,
   StreamMakerOptions,
-} from '../../createStreamMakerFrom.ts'
-import type {
-  MIDIBothPortId,
-  MIDIInputPortId,
-  MIDIOutputPortId,
-} from '../../util.ts'
+} from '../createStreamMakerFrom.ts'
 import {
   getInputPortByPortIdInContext,
   getOutputPortByPortIdInContext,
   getPortByPortIdInContext,
 } from '../getPortByPortId/getPortByPortIdInContext.ts'
+import type {
+  MIDIBothPortId,
+  MIDIInputPortId,
+  MIDIOutputPortId,
+} from '../util.ts'
 import {
   makeInputPortStateChangesStreamByPort,
   makeOutputPortStateChangesStreamByPort,

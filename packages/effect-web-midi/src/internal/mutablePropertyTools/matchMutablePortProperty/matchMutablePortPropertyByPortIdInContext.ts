@@ -1,13 +1,13 @@
 import type * as Effect from 'effect/Effect'
-import type * as EffectfulMIDIAccess from '../../../EffectfulMIDIAccess.ts'
-import type * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
-import type { PortNotFoundError } from '../../../errors.ts'
-import type { MIDIPortId } from '../../../util.ts'
+import type * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
+import type * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import type { PortNotFoundError } from '../../errors.ts'
 import {
   getInputPortByPortIdInContext,
   getOutputPortByPortIdInContext,
   getPortByPortIdInContext,
 } from '../../getPortByPortId/getPortByPortIdInContext.ts'
+import type { MIDIPortId } from '../../util.ts'
 import {
   type DualMatchPortState,
   type MIDIPortMutableProperty,

@@ -20,9 +20,9 @@ import type * as Types from 'effect/Types'
 import {
   getInputPortByPortIdInContext,
   getOutputPortByPortIdInContext,
-} from './contextualFunctions/getPortByPortId/getPortByPortIdInContext.ts'
-import { isOutputPortConnectionOpenByPort } from './contextualFunctions/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
-import { getOutputPortDeviceStateByPort } from './contextualFunctions/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+} from './getPortByPortId/getPortByPortIdInContext.ts'
+import { isOutputPortConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
+import { getOutputPortDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 import type {
   OnNullStrategy,
   StreamMakerOptions,
@@ -49,6 +49,7 @@ import {
   polymorphicCheckInDual,
   type SentMessageEffectFrom,
 } from './util.ts'
+import * as Unify from 'effect/Unify'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -546,16 +547,25 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       const portsIdsToSend: MIDIOutputPortId[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
-        Option.match(Record.get(outputs, id), {
-          onNone: () => Effect.succeed('disconnected' as const),
-          onSome: getOutputPortDeviceStateByPort,
-        }),
+        pipe(
+          Record.get(outputs, id),
+          Option.match({
+            onNone: () => Effect.succeed('disconnected' as const),
+            onSome: flow(getOutputPortDeviceStateByPort),
+          }),
+          effect => Unify.unify(effect),
+          Effect.map(state => ({ id, state })),
+        ),
       )
 
-      const deviceStatuses = yield* Effect.all(deviceStatusesEffect)
+      const disconnectedDevice = EArray.findFirst(
+        yield* Effect.all(deviceStatusesEffect),
+        _ => _.state === 'disconnected',
+      )
 
-      if (deviceStatuses.includes('disconnected'))
+      if (Option.isSome(disconnectedDevice))
         return yield* new DisconnectedPortError({
+          portId: disconnectedDevice.value.id,
           cause: new DOMException(
             // TODO: make an experiment and paste the error text here
             'TODO: imitate there an error thats thrown when the port is disconnected',

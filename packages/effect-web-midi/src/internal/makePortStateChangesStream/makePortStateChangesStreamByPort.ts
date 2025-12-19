@@ -6,11 +6,11 @@ import {
   createStreamMakerFrom,
   type OnNullStrategy,
   type StreamMakerOptions,
-} from '../../createStreamMakerFrom.ts'
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
-import { getStaticMIDIPortInfo } from '../../util.ts'
+} from '../createStreamMakerFrom.ts'
+import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
+import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import { getStaticMIDIPortInfo } from '../util.ts'
 
 /**
  *

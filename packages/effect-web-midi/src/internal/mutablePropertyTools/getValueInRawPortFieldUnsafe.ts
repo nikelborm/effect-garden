@@ -1,4 +1,4 @@
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
 import type { MIDIPortMutableProperty } from './matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 
 /**

@@ -6,9 +6,9 @@ import {
   type EffectfulMIDIAccessInstance,
   getAllPortsRecord,
   type PolymorphicAccessInstance,
-} from '../../../EffectfulMIDIAccess.ts'
-import { PortNotFoundError } from '../../../errors.ts'
-import type { MIDIBothPortId, PolymorphicEffect } from '../../../util.ts'
+} from '../../EffectfulMIDIAccess.ts'
+import { PortNotFoundError } from '../../errors.ts'
+import type { MIDIBothPortId, PolymorphicEffect } from '../../util.ts'
 import {
   getPortConnectionStateByPort,
   getPortDeviceStateByPort,
@@ -80,3 +80,5 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
     getPortConnectionStateByPort,
     portId,
   )
+
+// TODO: other variants for inputs and outputs

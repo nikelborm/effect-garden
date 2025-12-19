@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
-import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
+import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
+import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
 import { makePortConnectionCloser } from '../closePortConnection/closePortConnectionByPort.ts'
 import { makePortConnectionOpener } from '../openPortConnection/openPortConnectionByPort.ts'
 

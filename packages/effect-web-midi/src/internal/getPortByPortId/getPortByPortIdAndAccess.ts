@@ -3,15 +3,15 @@
 
 import * as Effect from 'effect/Effect'
 import { dual, flow } from 'effect/Function'
-import * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import { PortNotFoundError } from '../../errors.ts'
+import * as EffectfulMIDIAccess from '../EffectfulMIDIAccess.ts'
+import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
+import { PortNotFoundError } from '../errors.ts'
 import type {
   MIDIBothPortId,
   MIDIInputPortId,
   MIDIOutputPortId,
-} from '../../util.ts'
+} from '../util.ts'
 
 /**
  *

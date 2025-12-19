@@ -1,6 +1,6 @@
-import * as EffectfulMIDIInputPort from '../../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../../EffectfulMIDIPort.ts'
+import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
+import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
+import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**

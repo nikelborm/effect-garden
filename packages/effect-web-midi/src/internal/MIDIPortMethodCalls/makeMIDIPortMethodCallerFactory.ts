@@ -2,12 +2,12 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
   type MIDIBothPortId,
-} from '../../util.ts'
+} from '../util.ts'
 
 /**
  * @internal

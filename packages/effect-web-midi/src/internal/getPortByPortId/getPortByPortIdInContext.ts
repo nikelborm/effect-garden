@@ -1,9 +1,9 @@
-import * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
+import * as EffectfulMIDIAccess from '../EffectfulMIDIAccess.ts'
 import type {
   MIDIBothPortId,
   MIDIInputPortId,
   MIDIOutputPortId,
-} from '../../util.ts'
+} from '../util.ts'
 import {
   getInputPortByPortIdAndAccess,
   getOutputPortByPortIdAndAccess,
