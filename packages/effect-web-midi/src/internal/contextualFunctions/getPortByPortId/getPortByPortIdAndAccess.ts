@@ -37,7 +37,7 @@ export const getPortByIdAndRemap =
         if (rawPort) return handlers.onOutputFound(rawPort)
 
         return new PortNotFoundError({
-          attemptedToGetById: portId,
+          portId: portId,
         }) as PortTaken<OnInput, OnOutput>
       }),
     )

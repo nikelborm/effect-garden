@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+import type * as Types from 'effect/Types'
 import type {
   EffectfulMIDIAccessInstance,
   RequestMIDIAccessOptions,
@@ -7,19 +8,32 @@ import type {
 // TODO: add the fields related to the info about which port/access handle the
 // error is happened on
 
-// TODO: ensure stacks are preserved in errors (the best option for this would be to write an actual test of course)
+// NOTE: stacks are properly extracted from error instances into structs, while
+// decoding
 
-const ErrorSchema = <A extends string, E extends string, R>(
-  nameSchema?: Schema.Schema<A, E, R>,
+// TODO: branded port ids
+
+const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
+  nameSchema?: TSchema,
 ) =>
   Schema.Struct({
-    name: nameSchema ?? Schema.NonEmptyTrimmedString,
+    name: (nameSchema ??
+      Schema.NonEmptyTrimmedString) as TSchema extends undefined
+      ? typeof Schema.NonEmptyTrimmedString
+      : TSchema,
     message: Schema.NonEmptyTrimmedString,
     stack: Schema.NonEmptyTrimmedString.pipe(
       Schema.optionalWith({ exact: true }),
     ),
     cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
   })
+
+const midiAccessFailureFields = {
+  whileAskingForPermissions: Schema.Struct({
+    sysex: Schema.optional(Schema.Boolean),
+    software: Schema.optional(Schema.Boolean),
+  }),
+}
 
 /**
  * Thrown if the document or page is going to be closed due to user navigation.
@@ -42,7 +56,10 @@ export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
  */
 export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemError>()(
   'UnderlyingSystemError',
-  { cause: ErrorSchema(Schema.Literal('InvalidStateError')) },
+  {
+    cause: ErrorSchema(Schema.Literal('InvalidStateError')),
+    ...midiAccessFailureFields,
+  },
 ) {}
 
 /**
@@ -59,6 +76,7 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
     cause: ErrorSchema(
       Schema.Literal('ReferenceError', 'TypeError', 'NotSupportedError'),
     ),
+    ...midiAccessFailureFields,
   },
 ) {}
 
@@ -121,6 +139,7 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
   'CantSendSysexMessagesError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidAccessError', 'NotAllowedError')),
+    portId: Schema.NonEmptyTrimmedString,
   },
 ) {}
 
@@ -138,7 +157,10 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
  */
 export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotAllowedError>()(
   'MIDIAccessNotAllowedError',
-  { cause: ErrorSchema(Schema.Literal('NotAllowedError', 'SecurityError')) },
+  {
+    cause: ErrorSchema(Schema.Literal('NotAllowedError', 'SecurityError')),
+    ...midiAccessFailureFields,
+  },
 ) {}
 
 /**
@@ -160,7 +182,7 @@ export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiM
  */
 export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   'PortNotFound',
-  { attemptedToGetById: Schema.NonEmptyTrimmedString },
+  { portId: Schema.NonEmptyTrimmedString },
 ) {}
 
 /**
@@ -168,21 +190,22 @@ export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
  * @internal
  */
 export const remapErrorByName =
-  <
-    TErrorNameToTaggedErrorClassMap extends {
-      [name: string]: new (arg: {
-        cause: Schema.Schema.Encoded<ReturnType<typeof ErrorSchema>>
-      }) => Error
-    },
-  >(
-    map: TErrorNameToTaggedErrorClassMap,
+  <TErrorClassUnion extends new (arg: any) => Error>(
+    map: { [name: string]: TErrorClassUnion },
     absurdMessage: string,
+    rest: Omit<
+      Types.UnionToIntersection<
+        TErrorClassUnion extends new (arg: infer P) => any ? P : never
+      >,
+      'cause'
+    >,
   ) =>
   (cause: unknown) => {
     if (!(cause instanceof Error && cause.name in map))
       throw new Error(absurdMessage)
-    type TErrorClassUnion =
-      TErrorNameToTaggedErrorClassMap[keyof TErrorNameToTaggedErrorClassMap]
-    const Class = map[cause.name] as TErrorClassUnion
-    return new Class({ cause }) as InstanceType<TErrorClassUnion>
+    const Class = map[cause.name]!
+    return new Class({
+      cause,
+      ...rest,
+    }) as InstanceType<TErrorClassUnion>
   }

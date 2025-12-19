@@ -557,9 +557,9 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       if (deviceStatuses.includes('disconnected'))
         return yield* new DisconnectedPortError({
           cause: new DOMException(
-            'InvalidStateError',
             // TODO: make an experiment and paste the error text here
             'TODO: imitate there an error thats thrown when the port is disconnected',
+            'InvalidStateError',
           ),
         })
 
@@ -677,6 +677,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
         TypeError: MIDIAccessNotSupportedError,
       },
       'EffectfulMIDIAccess.request error handling absurd',
+      { whileAskingForPermissions: options ?? {} },
     ),
   })
 

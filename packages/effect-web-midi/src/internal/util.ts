@@ -85,10 +85,15 @@ const isEqual =
     Effect.map(
       self,
       current =>
-        (current === expected) as boolean &
-          Brand.Brand<TPropertyName> &
-          Brand.Brand<`expectedValue: ${TExpectedValue}`>,
+        (current === expected) as IsEqualFlag<TPropertyName, TExpectedValue>,
     )
+
+export type IsEqualFlag<
+  TPropertyName extends string,
+  TExpectedValue extends string,
+> = boolean &
+  Brand.Brand<TPropertyName> &
+  Brand.Brand<`expectedValue: ${TExpectedValue}`>
 
 export const isCertainDeviceState = isEqual<
   MIDIPortDeviceState,

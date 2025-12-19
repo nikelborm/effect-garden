@@ -37,7 +37,7 @@ const getPortByIdGeneric2 =
         flow(
           Record.get(id),
           Option.match({
-            onNone: () => new PortNotFoundError({ attemptedToGetById: id }),
+            onNone: () => new PortNotFoundError({ portId: id }),
             onSome: e => Effect.succeed(e),
           }),
         ),
