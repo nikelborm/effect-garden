@@ -560,7 +560,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
             // TODO: make an experiment and paste the error text here
             'TODO: imitate there an error thats thrown when the port is disconnected',
             'InvalidStateError',
-          ),
+          ) as DOMException & { name: 'InvalidStateError' },
         })
 
       const sendToSome = (predicate: (id: MIDIOutputPortId) => boolean) =>
@@ -667,7 +667,8 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
         InvalidStateError: UnderlyingSystemError,
 
         NotAllowedError: MIDIAccessNotAllowedError,
-        // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/267):
+        // SecurityError is kept for compatibility reason
+        // (https://github.com/WebAudio/web-midi-api/pull/267):
         SecurityError: MIDIAccessNotAllowedError,
 
         NotSupportedError: MIDIAccessNotSupportedError,

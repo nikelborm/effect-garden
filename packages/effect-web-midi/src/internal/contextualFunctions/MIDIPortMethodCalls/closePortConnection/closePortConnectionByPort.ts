@@ -8,7 +8,7 @@ import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFact
  */
 export const makePortConnectionCloser = makeMIDIPortMethodCallerFactory(
   'close',
-  err => {
+  () => err => {
     throw err
   },
 )

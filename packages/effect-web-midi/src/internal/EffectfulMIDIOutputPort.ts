@@ -132,13 +132,15 @@ export const send: DualSendMIDIMessageFromPort = dual<
         catch: remapErrorByName(
           {
             NotAllowedError: CantSendSysexMessagesError,
-            // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/278):
+            // InvalidAccessError is kept for compatibility reason
+            // (https://github.com/WebAudio/web-midi-api/pull/278):
             InvalidAccessError: CantSendSysexMessagesError,
 
             InvalidStateError: DisconnectedPortError,
             TypeError: MalformedMidiMessageError,
           },
           'EffectfulMIDIOutputPort.send error handling absurd',
+          { portId: outputPort.id, midiMessage: [...midiMessage] },
         ),
       })
 
@@ -180,6 +182,7 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
         NotSupportedError: ClearingSendingQueueIsNotSupportedError,
       },
       'EffectfulMIDIOutputPort.clear error handling absurd',
+      { portId: outputPort.id },
     ),
   })
 

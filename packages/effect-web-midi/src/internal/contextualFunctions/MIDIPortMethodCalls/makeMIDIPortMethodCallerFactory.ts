@@ -3,7 +3,11 @@
 
 import * as Effect from 'effect/Effect'
 import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
-import { fromPolymorphic, getStaticMIDIPortInfo } from '../../util.ts'
+import {
+  fromPolymorphic,
+  getStaticMIDIPortInfo,
+  type MIDIBothPortId,
+} from '../../util.ts'
 
 /**
  * @internal
@@ -11,7 +15,7 @@ import { fromPolymorphic, getStaticMIDIPortInfo } from '../../util.ts'
 export const makeMIDIPortMethodCallerFactory =
   <TError = never>(
     method: 'close' | 'open',
-    mapError: (err: unknown) => TError,
+    mapError: (portId: MIDIBothPortId) => (err: unknown) => TError,
   ) =>
   <THighLevelPortType extends MIDIPortType>(
     is: (
@@ -48,7 +52,7 @@ export const makeMIDIPortMethodCallerFactory =
 
       yield* Effect.tryPromise({
         try: () => EffectfulMIDIPort.assumeImpl(port)._port[method](),
-        catch: mapError,
+        catch: mapError(port.id),
       })
 
       return port

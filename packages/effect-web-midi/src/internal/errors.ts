@@ -5,9 +5,6 @@ import type {
   RequestMIDIAccessOptions,
 } from './EffectfulMIDIAccess.ts'
 
-// TODO: add the fields related to the info about which port/access handle the
-// error is happened on
-
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
@@ -90,7 +87,10 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
  */
 export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<ClearingSendingQueueIsNotSupportedError>()(
   'ClearingSendingQueueIsNotSupportedError',
-  { cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')) },
+  {
+    cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')),
+    portId: Schema.NonEmptyTrimmedString,
+  },
 ) {}
 
 /**
@@ -112,6 +112,7 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
         'InvalidStateError',
       ),
     ),
+    portId: Schema.NonEmptyTrimmedString,
   },
 ) {}
 
@@ -124,7 +125,10 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
  */
 export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortError>()(
   'DisconnectedPortError',
-  { cause: ErrorSchema(Schema.Literal('InvalidStateError')) },
+  {
+    cause: ErrorSchema(Schema.Literal('InvalidStateError')),
+    portId: Schema.NonEmptyTrimmedString,
+  },
 ) {}
 
 /**
@@ -171,7 +175,11 @@ export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotA
  */
 export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiMessageError>()(
   'MalformedMidiMessageError',
-  { cause: ErrorSchema(Schema.Literal('TypeError')) },
+  {
+    cause: ErrorSchema(Schema.Literal('TypeError')),
+    portId: Schema.NonEmptyTrimmedString,
+    midiMessage: Schema.Array(Schema.Int),
+  },
 ) {}
 
 /**
@@ -203,6 +211,7 @@ export const remapErrorByName =
   (cause: unknown) => {
     if (!(cause instanceof Error && cause.name in map))
       throw new Error(absurdMessage)
+    // biome-ignore lint/style/noNonNullAssertion: Because we checked it above with `cause.name in map`
     const Class = map[cause.name]!
     return new Class({
       cause,

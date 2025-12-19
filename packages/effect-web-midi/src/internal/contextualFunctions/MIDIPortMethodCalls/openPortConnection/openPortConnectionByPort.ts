@@ -9,16 +9,19 @@ import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFact
  */
 export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
   'open',
-  remapErrorByName(
-    {
-      NotAllowedError: UnavailablePortError,
-      // Kept for compatibility reason (https://github.com/WebAudio/web-midi-api/pull/278):
-      InvalidAccessError: UnavailablePortError,
+  portId =>
+    remapErrorByName(
+      {
+        NotAllowedError: UnavailablePortError,
+        // InvalidAccessError is kept for compatibility reason
+        // (https://github.com/WebAudio/web-midi-api/pull/278):
+        InvalidAccessError: UnavailablePortError,
 
-      InvalidStateError: UnavailablePortError,
-    },
-    'MIDI port open error handling absurd',
-  ),
+        InvalidStateError: UnavailablePortError,
+      },
+      'MIDI port open error handling absurd',
+      { portId },
+    ),
 )
 
 /**
