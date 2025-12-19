@@ -1,26 +1,14 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-import { dual, flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import * as Record from 'effect/Record'
 import {
-  type BuiltStream,
-  createStreamMakerFrom,
-  type OnNullStrategy,
-  type StreamMakerOptions,
-} from './createStreamMakerFrom.ts'
-import {
-  fromPolymorphic,
-  getStaticMIDIPortInfo,
   MIDIBothPortId,
   type MIDIPortId,
   type PolymorphicEffect,
-  polymorphicCheckInDual,
 } from './util.ts'
 
 /**
@@ -187,23 +175,6 @@ const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
   '_port' in port &&
   typeof port._port === 'object' &&
   port._port instanceof MIDIPort
-
-/**
- *
- *
- * @internal
- */
-export const resolve = <
-  TMIDIPortType extends MIDIPortType = MIDIPortType,
-  E = never,
-  R = never,
->(
-  polymorphicPort: PolymorphicPort<E, R, TMIDIPortType>,
-) =>
-  fromPolymorphic(
-    polymorphicPort,
-    is as (port: unknown) => port is EffectfulMIDIPort<TMIDIPortType>,
-  )
 
 /**
  *
