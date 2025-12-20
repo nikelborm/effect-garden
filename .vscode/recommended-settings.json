@@ -12,8 +12,14 @@
     "Dont",
     "gefo",
     "incorr",
+    "midimessage",
     "ondelete",
+    "TMIDI",
+    "trellisform",
+    "tspc",
     "valltest",
+    "VNAs",
+    "Voidify",
     "yandexgpt",
     "айди",
     "инстанса",
@@ -21,9 +27,7 @@
     "Промпт",
     "промпта",
     "промптами",
-    "Эндпоинт",
-    "VNAs",
-    "Voidify"
+    "Эндпоинт"
   ],
   "emojisense.languages": {
     "*": true
@@ -42,6 +46,14 @@
     "restructuredtext",
     "rsweave"
   ],
+  "yaml.schemas": {
+    "file:///home/nikel/.vscode/extensions/atlassian.atlascode-3.0.3/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml",
+    "https://raw.githubusercontent.com/compose-spec/compose-go/master/schema/compose-spec.json": "file:///./dev.compose.yaml"
+  },
+  "github-actions.workflows.pinned.workflows": [
+    ".github/workflows/release.yml",
+    ".github/workflows/test.yml"
+  ],
   "typescript.preferences.importModuleSpecifier": "project-relative",
   "javascript.preferences.importModuleSpecifier": "project-relative",
   "typescript.preferences.importModuleSpecifierEnding": "js",
@@ -50,6 +62,6 @@
   "prettier.jsxSingleQuote": true,
   "prettier.singleQuote": true,
   "cmake.ignoreCMakeListsMissing": true,
-  "typescript.tsdk": "./node_modules/typescript/lib",
+  "typescript.tsdk": "./packages/tsconfig/node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true
 }
