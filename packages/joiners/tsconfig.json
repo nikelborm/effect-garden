@@ -9,10 +9,14 @@
   "exclude": [
     ".github",
     ".stryker-tmp",
+    ".turbo",
     ".vscode",
+    "build",
+    "dist-types",
     "dist",
     "gh-page",
     "node_modules",
+    "out",
     "reports",
     "tmp",
     "vite.config.ts"

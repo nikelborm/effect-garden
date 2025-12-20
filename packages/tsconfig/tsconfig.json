@@ -40,7 +40,7 @@
     "preserveWatchOutput": true,
     "allowUnreachableCode": false,
     "incremental": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "exactOptionalPropertyTypes": true,
     "allowJs": false,
     "noErrorTruncation": true,

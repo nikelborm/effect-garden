@@ -362,7 +362,7 @@
     "@vitest/coverage-v8": "^4.0.15",
     "change-case": "^5.4.4",
     "drizzle-orm": "^0.45.0",
-    "effect": "3.19.13",
+    "effect": "^3.19.13",
     "effect-errors": "^1.10.17",
     "effect-octokit-layer": "^1.15.1",
     "jsr": "^0.13.4",

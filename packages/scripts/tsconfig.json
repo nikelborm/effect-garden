@@ -7,13 +7,18 @@
   },
   "include": ["**/*.ts"],
   "exclude": [
-    "vite.config.ts",
+    ".github",
+    ".stryker-tmp",
     ".turbo",
-    "tmp",
-    "dist",
-    "dist-types",
+    ".vscode",
     "build",
+    "dist-types",
+    "dist",
+    "gh-page",
+    "node_modules",
     "out",
-    "node_modules"
+    "reports",
+    "tmp",
+    "vite.config.ts"
   ]
 }
