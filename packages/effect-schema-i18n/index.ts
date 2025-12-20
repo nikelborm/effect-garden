@@ -4,6 +4,9 @@ import * as JSONSchema from 'effect/JSONSchema'
 import * as Schema from 'effect/Schema'
 import * as SchemaAST from 'effect/SchemaAST'
 
+// arekmaz's:
+// https://effect.website/play#3efe9f827b7d
+
 const asd = Schema.Struct({
   asd_property1: Schema.String.annotations({
     identifier: '@identifier/asd_property1',

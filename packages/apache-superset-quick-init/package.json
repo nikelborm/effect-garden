@@ -35,7 +35,6 @@
     "@rollup/plugin-node-resolve": "catalog:",
     "@rollup/plugin-terser": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
-    "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "jsr": "catalog:",
     "rimraf": "catalog:",

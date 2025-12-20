@@ -27,7 +27,6 @@
     "@nikelborm/tsconfig": "workspace:*",
     "@stryker-mutator/vitest-runner": "^9.4.0",
     "@total-typescript/ts-reset": "catalog:",
-    "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "change-case": "catalog:",
     "jsr": "catalog:",

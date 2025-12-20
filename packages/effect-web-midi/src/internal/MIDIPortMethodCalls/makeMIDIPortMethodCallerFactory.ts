@@ -35,9 +35,15 @@ export const makeMIDIPortMethodCallerFactory =
   } =>
     Effect.fn(`EffectfulMIDIPort.${method}`)(function* <
       TPortType extends THighLevelPortType,
-      E = never,
-      R = never,
-    >(polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>) {
+      EPort = never,
+      RPort = never,
+    >(
+      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
+        EPort,
+        RPort,
+        TPortType
+      >,
+    ) {
       const port = yield* fromPolymorphic(
         polymorphicPort,
         is as unknown as (

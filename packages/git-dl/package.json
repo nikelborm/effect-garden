@@ -41,7 +41,6 @@
     "@rollup/plugin-node-resolve": "catalog:",
     "@rollup/plugin-terser": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
-    "@types/node": "catalog:",
     "@types/tar-fs": "^2.0.4",
     "@vitest/coverage-v8": "catalog:",
     "jsr": "catalog:",

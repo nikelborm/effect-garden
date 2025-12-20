@@ -305,3 +305,10 @@ for (const { devDependencies } of myMonorepoPackages) {
 // ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
 
 // ensure there are no packages with the same name
+
+// ensure properly added everywhere:
+// "@effect/language-service": "catalog:",
+// "@nikelborm/tsconfig": "workspace:*",
+// "ts-namespace-import": "catalog:",
+// "ts-patch": "catalog:",
+// "typescript": "catalog:"

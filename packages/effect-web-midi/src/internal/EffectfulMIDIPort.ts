@@ -181,10 +181,10 @@ const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
  *
  */
 export type PolymorphicPort<
-  E,
-  R,
+  EPort,
+  RPort,
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, E, R>
+> = PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, EPort, RPort>
 
 /**
  *

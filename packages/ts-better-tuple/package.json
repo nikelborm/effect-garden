@@ -12,14 +12,16 @@
   "license": "ISC",
   "dependencies": {
     "@total-typescript/ts-reset": "catalog:",
-    "@types/node": "catalog:",
     "change-case": "catalog:",
-    "ts-patch": "catalog:",
     "ts-toolbelt": "catalog:",
     "tsafe": "catalog:",
     "type-fest": "catalog:",
-    "typescript": "catalog:",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "devDependencies": {
     "@nikelborm/tsconfig": "workspace:*"

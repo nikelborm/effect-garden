@@ -9,18 +9,18 @@ import { passthroughSpawn } from './lib/passthroughSpawn.ts'
 // dynamically, and don't forget about changing --frozen-lockfile below
 const deleteSet = new Set<string>([
   'node_modules',
-  // '.turbo',
+  '.turbo',
   '.next',
   'build',
-  // 'bun.lock',
-  // 'bun.lockb',
+  'bun.lock',
+  'bun.lockb',
   '__pycache__',
+  'dist-types',
+  'dist',
   // because we don't use yarn, npm, or pnpm
   'yarn.lock',
   'package-lock.json',
   'pnpm-lock.yaml',
-  'dist-types',
-  'dist',
 ])
 
 const cleanTree = async (dirPath: string): Promise<void> => {
@@ -63,8 +63,8 @@ await cleanTree(rootDir)
 await passthroughSpawn(
   'bun',
   'install',
-  '--prefer-offline',
-  '--frozen-lockfile',
+  // '--prefer-offline',
+  // '--frozen-lockfile',
 )
 
 await passthroughSpawn('bun', 'turbo', 'boundaries')

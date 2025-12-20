@@ -19,10 +19,26 @@ import type {
  */
 export const getPortByIdAndRemap =
   <TPortType extends MIDIBothPortId>() =>
-  <OnInput, OnOutput>(handlers: {
-    onInputFound: (rawInputPort: MIDIInput) => Effect.Effect<OnInput>
-    onOutputFound: (rawOutputPort: MIDIOutput) => Effect.Effect<OnOutput>
-  }): GetPortById<TPortType, OnInput, OnOutput> =>
+  <
+    AInputPort,
+    AOutputPort,
+    EInputPort,
+    EOutputPort,
+    RInputPort,
+    ROutputPort,
+  >(handlers: {
+    onInputFound: (
+      rawInputPort: MIDIInput,
+    ) => Effect.Effect<AInputPort, EInputPort, RInputPort>
+    onOutputFound: (
+      rawOutputPort: MIDIOutput,
+    ) => Effect.Effect<AOutputPort, EOutputPort, ROutputPort>
+  }): GetPortById<
+    TPortType,
+    AInputPort | AOutputPort,
+    EInputPort | EOutputPort,
+    RInputPort | ROutputPort
+  > =>
     dual(2, (polymorphicAccess, portId) =>
       Effect.flatMap(EffectfulMIDIAccess.resolve(polymorphicAccess), e => {
         const rawAccess = EffectfulMIDIAccess.assumeImpl(e)._access
@@ -36,9 +52,13 @@ export const getPortByIdAndRemap =
 
         if (rawPort) return handlers.onOutputFound(rawPort)
 
-        return new PortNotFoundError({
-          portId: portId,
-        }) as PortTaken<OnInput, OnOutput>
+        return new PortNotFoundError({ portId }) as PortTaken<
+          AInputPort | AOutputPort,
+          never,
+          never,
+          EInputPort | EOutputPort,
+          RInputPort | ROutputPort
+        >
       }),
     )
 
@@ -81,41 +101,61 @@ export const getOutputPortByPortIdAndAccess =
  *
  *
  */
-export interface GetPortById<TPortType, OnInput, OnOutput>
-  extends GetPortByIdAccessFirst<TPortType, OnInput, OnOutput>,
-    GetPortByIdAccessLast<TPortType, OnInput, OnOutput> {}
+export interface GetPortById<
+  TPortId extends MIDIBothPortId,
+  APort,
+  EPort,
+  RPort,
+> extends GetPortByIdAccessFirst<TPortId, APort, EPort, RPort>,
+    GetPortByIdAccessLast<TPortId, APort, EPort, RPort> {}
 
-/**
- *
- *
- */
-export interface GetPortByIdAccessFirst<TPortType, OnInput, OnOutput> {
-  <E = never, R = never>(
-    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<E, R>,
-    portId: TPortType,
-  ): PortTaken<OnInput, OnOutput, E, R>
+export interface GetPortByIdAccessFirst<
+  TPortId extends MIDIBothPortId,
+  APort,
+  EPort,
+  RPort,
+> {
+  /**
+   *
+   *
+   */
+  <EAccess = never, RAccess = never>(
+    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+      EAccess,
+      RAccess
+    >,
+    portId: TPortId,
+  ): PortTaken<APort, EAccess, RAccess, EPort, RPort>
 }
 
-/**
- *
- *
- */
-export interface GetPortByIdAccessLast<TPortType, OnInput, OnOutput> {
-  (
-    portId: TPortType,
-  ): {
-    <E = never, R = never>(
-      polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<E, R>,
-    ): PortTaken<OnInput, OnOutput, E, R>
-  }
+export interface GetPortByIdAccessLast<
+  TPortId extends MIDIBothPortId,
+  APort,
+  EPort,
+  RPort,
+> {
+  /**
+   *
+   *
+   */
+  (portId: TPortId): GetPortByIdAccessLastSecondHalf<APort, EPort, RPort>
 }
 
-/**
- *
- *
- */
-export type PortTaken<OnInput, OnOutput, E = never, R = never> = Effect.Effect<
-  OnInput | OnOutput,
-  E | PortNotFoundError,
-  R
+export interface GetPortByIdAccessLastSecondHalf<APort, EPort, RPort> {
+  /**
+   *
+   *
+   */
+  <EAccess = never, RAccess = never>(
+    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+      EAccess,
+      RAccess
+    >,
+  ): PortTaken<APort, EAccess, RAccess, EPort, RPort>
+}
+
+export type PortTaken<APort, EAccess, RAccess, EPort, RPort> = Effect.Effect<
+  APort,
+  EAccess | EPort | PortNotFoundError,
+  RAccess | RPort
 >

@@ -13,9 +13,10 @@ import {
   getPortConnectionStateByPort,
   getPortDeviceStateByPort,
 } from './getMutablePortPropertyByPort.ts'
+import * as Brand from 'effect/Brand'
 
 const getPortByIdGeneric2 =
-  <T extends Record.ReadonlyRecord<string, any>>(
+  <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(
     getPortMap: <E = never, R = never>(
       polymorphicAccess: PolymorphicAccessInstance<E, R>,
     ) => Effect.Effect<T, E, R>,
@@ -24,12 +25,12 @@ const getPortByIdGeneric2 =
     polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
     transformPortEffect: (
       effect: Effect.Effect<
-        T[Extract<keyof T, string>],
+        T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
         TE | PortNotFoundError,
         TR
       >,
     ) => Effect.Effect<A, E2, R2>,
-    id: Extract<keyof T, string>,
+    id: Extract<keyof T, MIDIBothPortId>,
   ) =>
     pipe(
       getPortMap(polymorphicAccess),

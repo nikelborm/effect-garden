@@ -11,8 +11,9 @@
     "@effect/platform-node": "catalog:",
     "@effect/sql": "catalog:",
     "@effect/sql-pg": "catalog:",
-    "@effect/typeclass": "^0.38.0",
-    "@effect/vitest": "^0.27.0",
+    "@effect/typeclass": "catalog:",
+    "@effect/vitest": "catalog:",
+    "tinybench": "catalog:",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
@@ -27,7 +28,6 @@
     "effect": "catalog:",
     "effect-octokit-layer": "catalog:",
     "outdent": "catalog:",
-    "tinybench": "^6.0.0",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:"
   }
