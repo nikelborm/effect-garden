@@ -17,6 +17,7 @@ import { pipe } from 'effect/Function'
 import { prettyPrint } from 'effect-errors'
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
+import { Layer } from 'effect'
 
 const appCommand = make(
   pkg.name,
@@ -35,18 +36,20 @@ const cli = run(appCommand, {
   summary: Span.text(pkg.description),
 })
 
+const AppLayer = Layer.mergeAll(
+  NodeFileSystemLayer,
+  NodePathLayer,
+  NodeTerminalLayer,
+  CliConfig.layer({ showTypes: false }),
+  OctokitLayer({
+    // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
+  }),
+)
+
 pipe(
   process.argv,
   cli,
-  provide(NodeFileSystemLayer),
-  provide(NodePathLayer),
-  provide(NodeTerminalLayer),
-  provide(CliConfig.layer({ showTypes: false })),
-  provide(
-    OctokitLayer({
-      // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
-    }),
-  ),
+  provide(AppLayer),
   sandbox,
   catchAll(e => {
     console.error(prettyPrint(e))

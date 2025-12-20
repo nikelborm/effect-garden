@@ -62,7 +62,7 @@
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "types": "./dist/dts/index.d.ts",
+  "types": "./dist-types/index.d.ts",
   "bin": {
     "git-dl": "dist/git-dl.js",
     "gdl": "dist/git-dl.js"
@@ -87,31 +87,31 @@
   "homepage": "https://github.com/nikelborm/git-dl#readme",
   "exports": {
     ".": {
-      "types": "./dist/dts/index.d.ts",
+      "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./index": {
-      "types": "./dist/dts/index.d.ts",
+      "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./index.js": {
-      "types": "./dist/dts/index.d.ts",
+      "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
     "./errors": {
-      "types": "./dist/dts/errors.d.ts",
+      "types": "./dist-types/errors.d.ts",
       "default": "./dist/errors.js"
     },
     "./errors.js": {
-      "types": "./dist/dts/errors.d.ts",
+      "types": "./dist-types/errors.d.ts",
       "default": "./dist/errors.js"
     },
     "./cli": {
-      "types": "./dist/dts/cli.d.ts",
+      "types": "./dist-types/cli.d.ts",
       "default": "./dist/cli.js"
     },
     "./cli.js": {
-      "types": "./dist/dts/cli.d.ts",
+      "types": "./dist-types/cli.d.ts",
       "default": "./dist/cli.js"
     },
     "./package.json": "./package.json"

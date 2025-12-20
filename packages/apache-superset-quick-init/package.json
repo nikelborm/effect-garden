@@ -21,27 +21,35 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@nikelborm/git-dl": "workspace:*",
-    "effect": "catalog:",
-    "effect-errors": "catalog:",
-    "outdent": "catalog:",
-    "tslib": "catalog:"
-  },
-  "devDependencies": {
+    "@effect/platform-node-shared": "catalog:",
     "@effect/vitest": "catalog:",
+    "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
+    "@octokit/core": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",
     "@rollup/plugin-json": "catalog:",
     "@rollup/plugin-node-resolve": "catalog:",
     "@rollup/plugin-terser": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "effect": "catalog:",
+    "effect-errors": "catalog:",
     "jsr": "catalog:",
+    "outdent": "catalog:",
     "rimraf": "catalog:",
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
+    "tslib": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "^2.8.2"
+  },
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public",
@@ -53,7 +61,7 @@
   },
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
-  "types": "./dist/dts/src/index.d.ts",
+  "types": "./dist-types/src/index.d.ts",
   "bin": {
     "apache-superset-quick-init": "dist/apache-superset-quick-init.js",
     "asqi": "dist/apache-superset-quick-init.js"
@@ -75,15 +83,15 @@
   "homepage": "https://github.com/nikelborm/apache-superset-quick-init#readme",
   "exports": {
     ".": {
-      "types": "./dist/dts/src/index.d.ts",
+      "types": "./dist-types/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
     "./index": {
-      "types": "./dist/dts/src/index.d.ts",
+      "types": "./dist-types/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
     "./index.js": {
-      "types": "./dist/dts/src/index.d.ts",
+      "types": "./dist-types/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
     "./package.json": "./package.json"

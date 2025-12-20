@@ -23,5 +23,6 @@ rimraf dist gh-page/bundled_deps
 tspc
 mkdir -p ./dist/minified
 rollup -c ./rollup.config.mts
-cli_name=$(jq -r '.name' package.json)
-chmod +x ./$cli_name.ts ./dist/$cli_name.js ./dist/minified/$cli_name.js
+# TODO: ?
+# cli_name=$(jq -r '.name' package.json)
+# chmod +x ./$cli_name.ts ./dist/$cli_name.js ./dist/minified/$cli_name.js
