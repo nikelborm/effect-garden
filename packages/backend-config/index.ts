@@ -24,6 +24,9 @@ import {
 //   )
 // )
 
+// TODO: replace with just Config.withMissingDataOnlyFallback
+// TODO: contribute to upstream Config.withMissingDataOnlyFallback, which is the same as default, but accepts Config instead of values
+// TODO: make Config.string ensure it's an actual string received, and also add `Config.asIs`, that accepts raw value.
 const ifConfigAbsentFallbackTo =
   <A2, E2, R2>(fallback: Effect.Effect<A2, E2, R2>) =>
   <
