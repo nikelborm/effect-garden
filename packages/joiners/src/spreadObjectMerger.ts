@@ -5,6 +5,8 @@
 // https://github.com/Effect-TS/effect-smol/blob/99ecec8d9d8ab69392855e444bb82dfe1cd9aba4/packages/effect/src/types/Types.ts#L217
 // Maybe move some of my tests there
 
+// TODO: compare with https://github.com/poteat/scopey since it uses merging by overriding fields
+
 // import type { Merge as MagicGeneric } from 'type-fest';
 import type { At as GetNthCharacter } from 'ts-toolbelt/out/String/At.d.ts'
 import type { BBA, ForbiddenLiteralUnion, VNA, NVA } from './types.ts'
