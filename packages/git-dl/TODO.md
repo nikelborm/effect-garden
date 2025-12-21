@@ -257,6 +257,9 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [gritql](https://github.com/getgrit/gritql) (maybe to try it to fix Effect.ts codebase and remove `_` in `Effect.gen`?)
 - [ChiriVulpes/typescript-girlboss](https://github.com/ChiriVulpes/typescript-girlboss/)
 - [stephenh/ts-poet](https://github.com/stephenh/ts-poet)
+- [ast-grep](https://github.com/ast-grep/ast-grep)
+- [facebook/jscodeshift](https://github.com/facebook/jscodeshift)
+- https://code.lol/post/programming/towards-declarative-ast-transformation/
 
 https://github.com/unjs/magicast
 
