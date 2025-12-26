@@ -1,4 +1,4 @@
-import * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
+import * as EMIDIAccess from '../../EMIDIAccess.ts'
 import type { MIDIBothPortId } from '../../util.ts'
 import {
   getPortConnectionStateByPortIdAndAccess,
@@ -10,19 +10,13 @@ import {
  *
  */
 export const getPortDeviceStateByPortId = (id: MIDIBothPortId) =>
-  getPortDeviceStateByPortIdAndAccess(
-    EffectfulMIDIAccess.EffectfulMIDIAccess,
-    id,
-  )
+  getPortDeviceStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
 /**
  *
  *
  */
 export const getPortConnectionStateByPortId = (id: MIDIBothPortId) =>
-  getPortConnectionStateByPortIdAndAccess(
-    EffectfulMIDIAccess.EffectfulMIDIAccess,
-    id,
-  )
+  getPortConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
 // TODO: other variants for inputs and outputs

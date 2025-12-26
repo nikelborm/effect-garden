@@ -2,10 +2,10 @@
  * preserve JSDoc comments attached to the function signature */
 
 import { flow, dual, pipe } from 'effect/Function'
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIAccess from '../../EMIDIAccess.ts'
+import * as EMIDIPort from '../../EMIDIPort.ts'
 import {
   getInputPortByPortIdAndAccess,
   getOutputPortByPortIdAndAccess,

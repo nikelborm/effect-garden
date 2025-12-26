@@ -1,5 +1,5 @@
 // remember to make sure there's no ___FromContext and ___ByPortId in
-// internal/EffectfulMIDIPort.ts and put them into EffectfulMIDIAccess
+// internal/EMIDIPort.ts and put them into EMIDIAccess
 
 export {
   acquireReleasePortConnectionByPortId as acquireReleaseConnectionById,
@@ -18,7 +18,7 @@ export {
   closeConnection,
   type DualMakeStateChangesStream,
   type DualMatchPortState,
-  type EffectfulMIDIPort,
+  type EMIDIPort,
   getConnectionState,
   getDeviceState,
   is,
@@ -43,4 +43,4 @@ export {
   type StateCaseToHandlerMap,
   type StateChangesStream,
   type TypeId,
-} from './internal/EffectfulMIDIPort.ts'
+} from './internal/EMIDIPort.ts'

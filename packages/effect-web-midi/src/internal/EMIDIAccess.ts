@@ -28,9 +28,9 @@ import type {
   StreamMakerOptions,
 } from './createStreamMakerFrom.ts'
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
-import * as EffectfulMIDIInputPort from './EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from './EffectfulMIDIOutputPort.ts'
-import type * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from './EMIDIInputPort.ts'
+import * as EMIDIOutputPort from './EMIDIOutputPort.ts'
+import type * as EMIDIPort from './EMIDIPort.ts'
 import {
   AbortError,
   DisconnectedPortError,
@@ -77,23 +77,23 @@ import * as Unify from 'effect/Unify'
 // TODO: make matchers that support returning effects from the callback instead of plain values
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
+ * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
  * @internal
  */
 const TypeId: unique symbol = Symbol.for(
-  '@nikelborm/effect-web-midi/EffectfulMIDIAccessInstance',
+  '@nikelborm/effect-web-midi/EMIDIAccessInstance',
 )
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIAccessInstance}
+ * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
  */
 export type TypeId = typeof TypeId
 
 /**
  * A tag that allows to provide
- * {@linkcode EffectfulMIDIAccessInstance|access instance} once with e.g.
+ * {@linkcode EMIDIAccessInstance|access instance} once with e.g.
  * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc. and reuse
  * it anywhere, instead of repeatedly {@linkcode request}ing it.
  *
@@ -102,7 +102,7 @@ export type TypeId = typeof TypeId
  *
  * @example
  * ```ts
- * import { EffectfulMIDIAccess } from '@nikelborm/effect-web-midi'
+ * import { EMIDIAccess } from '@nikelborm/effect-web-midi'
  * import * as Effect from 'effect/Effect'
  *
  * const program = Effect.gen(function* () {
@@ -115,25 +115,25 @@ export type TypeId = typeof TypeId
  *   //      never
  *   //    >
  *
- *   const access = yield* EffectfulMIDIAccess.EffectfulMIDIAccess
- *   //    ^ EffectfulMIDIAccessInstance
+ *   const access = yield* EMIDIAccess.EMIDIAccess
+ *   //    ^ EMIDIAccessInstance
  *
  *   console.log(access.sysexEnabled)
  *   //                 ^ true
- * }).pipe(Effect.provide(EffectfulMIDIAccess.layerSystemExclusiveSupported))
+ * }).pipe(Effect.provide(EMIDIAccess.layerSystemExclusiveSupported))
  * ```
  *
  * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
  */
-export class EffectfulMIDIAccess extends Context.Tag(
-  '@nikelborm/effect-web-midi/EffectfulMIDIAccess',
-)<EffectfulMIDIAccess, EffectfulMIDIAccessInstance>() {}
+export class EMIDIAccess extends Context.Tag(
+  '@nikelborm/effect-web-midi/EMIDIAccess',
+)<EMIDIAccess, EMIDIAccessInstance>() {}
 
 export interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to send and receive
    * `System Exclusive` messages is requested or allowed on a given
-   * {@linkcode EffectfulMIDIAccessInstance} object.
+   * {@linkcode EMIDIAccessInstance} object.
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
@@ -151,7 +151,7 @@ export interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to utilize any software
    * synthesizers installed in the host system is requested or allowed on a
-   * given {@linkcode EffectfulMIDIAccessInstance} object.
+   * given {@linkcode EMIDIAccessInstance} object.
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
@@ -172,13 +172,13 @@ export interface RequestMIDIAccessOptions {
 }
 
 /**
- * Prototype of all {@linkcode EffectfulMIDIAccessInstance} instances
+ * Prototype of all {@linkcode EMIDIAccessInstance} instances
  * @internal
  */
 const Proto = {
-  _tag: 'EffectfulMIDIAccess' as const,
+  _tag: 'EMIDIAccess' as const,
   [TypeId]: TypeId,
-  [Hash.symbol](this: EffectfulMIDIAccessImplementationInstance) {
+  [Hash.symbol](this: EMIDIAccessImplementationInstance) {
     return Hash.structure(this._config)
   },
   [Equal.symbol](that: Equal.Equal) {
@@ -188,15 +188,13 @@ const Proto = {
     // biome-ignore lint/complexity/noArguments: Effect's tradition
     return Pipeable.pipeArguments(this, arguments)
   },
-  toString(this: EffectfulMIDIAccessImplementationInstance) {
+  toString(this: EMIDIAccessImplementationInstance) {
     return Inspectable.format(this.toJSON())
   },
-  toJSON(this: EffectfulMIDIAccessImplementationInstance) {
-    return { _id: 'EffectfulMIDIAccess', config: this._config }
+  toJSON(this: EMIDIAccessImplementationInstance) {
+    return { _id: 'EMIDIAccess', config: this._config }
   },
-  [Inspectable.NodeInspectSymbol](
-    this: EffectfulMIDIAccessImplementationInstance,
-  ) {
+  [Inspectable.NodeInspectSymbol](this: EMIDIAccessImplementationInstance) {
     return this.toJSON()
   },
 
@@ -207,7 +205,7 @@ const Proto = {
   get softwareSynthEnabled() {
     return !!assumeImpl(this)._config.software
   },
-} satisfies EffectfulMIDIAccessInstance
+} satisfies EMIDIAccessInstance
 
 // !!! DOCUMENTATION CURSOR !!!
 
@@ -215,12 +213,12 @@ const Proto = {
  * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all the
  * external code.
  */
-export interface EffectfulMIDIAccessInstance
+export interface EMIDIAccessInstance
   extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable {
   readonly [TypeId]: TypeId
-  readonly _tag: 'EffectfulMIDIAccess'
+  readonly _tag: 'EMIDIAccess'
 
   /**
    * The **`sysexEnabled`** read-only property of the MIDIAccess interface indicates whether system exclusive support is enabled on the current MIDIAccess instance.
@@ -237,8 +235,7 @@ export interface EffectfulMIDIAccessInstance
  * actual field storing it.
  * @internal
  */
-interface EffectfulMIDIAccessImplementationInstance
-  extends EffectfulMIDIAccessInstance {
+interface EMIDIAccessImplementationInstance extends EMIDIAccessInstance {
   readonly _access: MIDIAccess
   readonly _config: Readonly<RequestMIDIAccessOptions>
 }
@@ -251,7 +248,7 @@ interface EffectfulMIDIAccessImplementationInstance
 const makeImpl = (
   rawAccess: MIDIAccess,
   config?: Readonly<RequestMIDIAccessOptions>,
-): EffectfulMIDIAccessImplementationInstance => {
+): EMIDIAccessImplementationInstance => {
   const instance = Object.create(Proto)
   instance._access = rawAccess
   // TODO: set individual software and sysex flags instead
@@ -260,29 +257,28 @@ const makeImpl = (
 }
 
 /**
- * Asserts an object to be valid `EffectfulMIDIAccess` and casts it to internal
+ * Asserts an object to be valid `EMIDIAccess` and casts it to internal
  * implementation type
  *
  * @internal
  */
 const assertImpl = (access: unknown) => {
-  if (!isImpl(access)) throw new Error('Failed to cast to EffectfulMIDIAccess')
+  if (!isImpl(access)) throw new Error('Failed to cast to EMIDIAccess')
   return access
 }
 
 /**
- * Asserts an object to be valid `EffectfulMIDIAccess`
+ * Asserts an object to be valid `EMIDIAccess`
  *
  * @internal
  */
-export const assert: (access: unknown) => EffectfulMIDIAccessInstance =
-  assertImpl
+export const assert: (access: unknown) => EMIDIAccessInstance = assertImpl
 
 /**
  * @internal
  */
-export const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
-  access as EffectfulMIDIAccessImplementationInstance
+export const assumeImpl = (access: EMIDIAccessInstance) =>
+  access as EMIDIAccessImplementationInstance
 
 /**
  *
@@ -292,16 +288,14 @@ export const assumeImpl = (access: EffectfulMIDIAccessInstance) =>
 const make: (
   rawAccess: MIDIAccess,
   config?: Readonly<RequestMIDIAccessOptions>,
-) => EffectfulMIDIAccessInstance = makeImpl
+) => EMIDIAccessInstance = makeImpl
 
 /**
  *
  *
  * @internal
  */
-const isImpl = (
-  access: unknown,
-): access is EffectfulMIDIAccessImplementationInstance =>
+const isImpl = (access: unknown): access is EMIDIAccessImplementationInstance =>
   typeof access === 'object' &&
   access !== null &&
   Object.getPrototypeOf(access) === Proto &&
@@ -317,8 +311,7 @@ const isImpl = (
  *
  *
  */
-export const is: (access: unknown) => access is EffectfulMIDIAccessInstance =
-  isImpl
+export const is: (access: unknown) => access is EMIDIAccessInstance = isImpl
 
 /**
  *
@@ -333,7 +326,7 @@ export const resolve = <E = never, R = never>(
  *
  */
 export type PolymorphicAccessInstance<E, R> = PolymorphicEffect<
-  EffectfulMIDIAccessInstance,
+  EMIDIAccessInstance,
   E,
   R
 >
@@ -342,7 +335,10 @@ export type PolymorphicAccessInstance<E, R> = PolymorphicEffect<
  *
  *
  */
-export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<never, never>
+export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<
+  never,
+  never
+>
 
 /**
  *
@@ -361,9 +357,7 @@ const getPortEntriesFromRawAccess =
     TRawMIDIPort extends ValueOfReadonlyMap<MIDIAccess[TMIDIAccessObjectKey]>,
   >(
     key: TMIDIAccessObjectKey,
-    make: (
-      port: TRawMIDIPort,
-    ) => EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
+    make: (port: TRawMIDIPort) => EMIDIPort.EMIDIPort<TMIDIPortType>,
   ) =>
   (rawAccess: MIDIAccess) =>
     Iterable.map(
@@ -381,7 +375,7 @@ const getPortEntriesFromRawAccess =
  */
 const getInputPortEntriesFromRaw = getPortEntriesFromRawAccess(
   'inputs',
-  EffectfulMIDIInputPort.make,
+  EMIDIInputPort.make,
 )
 
 /**
@@ -390,7 +384,7 @@ const getInputPortEntriesFromRaw = getPortEntriesFromRawAccess(
  */
 const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
   'outputs',
-  EffectfulMIDIOutputPort.make,
+  EMIDIOutputPort.make,
 )
 
 /**
@@ -461,19 +455,19 @@ export const getAllPortsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
  *
  *
  */
-export const InputPortsRecord = getInputPortsRecord(EffectfulMIDIAccess)
+export const InputPortsRecord = getInputPortsRecord(EMIDIAccess)
 
 /**
  *
  *
  */
-export const OutputPortsRecord = getOutputPortsRecord(EffectfulMIDIAccess)
+export const OutputPortsRecord = getOutputPortsRecord(EMIDIAccess)
 
 /**
  *
  *
  */
-export const AllPortsRecord = getAllPortsRecord(EffectfulMIDIAccess)
+export const AllPortsRecord = getAllPortsRecord(EMIDIAccess)
 
 /**
  * [MIDIConnectionEvent MDN
@@ -504,9 +498,9 @@ export const makeAllPortsStateChangesStream =
           : null,
         port:
           rawPort instanceof globalThis.MIDIInput
-            ? EffectfulMIDIInputPort.make(rawPort)
+            ? EMIDIInputPort.make(rawPort)
             : rawPort instanceof globalThis.MIDIOutput
-              ? EffectfulMIDIOutputPort.make(rawPort)
+              ? EMIDIOutputPort.make(rawPort)
               : null,
       }) as const,
   )
@@ -521,7 +515,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
   SendMIDIMessageAccessFirst
 >(
   polymorphicCheckInDual(is),
-  Effect.fn('EffectfulMIDIAccess.send')(
+  Effect.fn('EMIDIAccess.send')(
     function* (polymorphicAccess, target, midiMessage, timestamp) {
       const access = yield* resolve(polymorphicAccess)
 
@@ -530,7 +524,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       if (target === 'all existing outputs at effect execution')
         return yield* pipe(
           Record.values(outputs),
-          Effect.forEach(EffectfulMIDIOutputPort.send(midiMessage, timestamp)),
+          Effect.forEach(EMIDIOutputPort.send(midiMessage, timestamp)),
           Effect.as(access),
         )
 
@@ -540,9 +534,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
           // TODO: maybe also do something about pending?
           Effect.filter(isOutputPortConnectionOpenByPort),
           Effect.flatMap(
-            Effect.forEach(
-              EffectfulMIDIOutputPort.send(midiMessage, timestamp),
-            ),
+            Effect.forEach(EMIDIOutputPort.send(midiMessage, timestamp)),
           ),
           Effect.as(access),
         )
@@ -583,10 +575,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
         Effect.all(
           Record.reduce(
             outputs,
-            [] as EffectfulMIDIOutputPort.SentMessageEffectFromPort<
-              never,
-              never
-            >[],
+            [] as EMIDIOutputPort.SentMessageEffectFromPort<never, never>[],
             // TODO: investigate what the fuck is going on, why the fuck can't I
             // make it a simple expression without either nesting it in
             // curly-braced function body or adding manual type-annotation
@@ -594,11 +583,11 @@ export const send: DualSendMIDIMessageFromAccess = dual<
               predicate(id)
                 ? [
                     ...acc,
-                    EffectfulMIDIOutputPort.send(
+                    EMIDIOutputPort.send(
                       port,
                       midiMessage,
                       timestamp,
-                    ) as EffectfulMIDIOutputPort.SentMessageEffectFromPort,
+                    ) as EMIDIOutputPort.SentMessageEffectFromPort,
                   ]
                 : acc,
           ),
@@ -621,20 +610,17 @@ export const makeMessagesStreamByPortId = <
   id: MIDIInputPortId,
   options?: StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  EffectfulMIDIInputPort.makeMessagesStream(
-    getInputPortByPortIdInContext(id),
-    options,
-  )
+  EMIDIInputPort.makeMessagesStream(getInputPortByPortIdInContext(id), options)
 
 /**
  *
  */
 export const sendToPortById = (
   id: MIDIOutputPortId,
-  ...args: EffectfulMIDIOutputPort.SendFromPortArgs
+  ...args: EMIDIOutputPort.SendFromPortArgs
 ) =>
   Effect.asVoid(
-    EffectfulMIDIOutputPort.send(getOutputPortByPortIdInContext(id), ...args),
+    EMIDIOutputPort.send(getOutputPortByPortIdInContext(id), ...args),
   )
 
 /**
@@ -642,7 +628,7 @@ export const sendToPortById = (
  */
 export const clearPortById = flow(
   getOutputPortByPortIdInContext,
-  EffectfulMIDIOutputPort.clear,
+  EMIDIOutputPort.clear,
   Effect.asVoid,
 )
 
@@ -654,14 +640,14 @@ export const makeAllPortsStateChangesStreamFromContext = <
   const TOnNullStrategy extends OnNullStrategy = undefined,
 >(
   options?: StreamMakerOptions<TOnNullStrategy>,
-) => makeAllPortsStateChangesStream(EffectfulMIDIAccess, options)
+) => makeAllPortsStateChangesStream(EMIDIAccess, options)
 
 /**
  *
  *
  */
 export const sendFromContext = (...args: SendFromAccessArgs) =>
-  Effect.asVoid(send(EffectfulMIDIAccess, ...args))
+  Effect.asVoid(send(EMIDIAccess, ...args))
 
 /**
  * @param options
@@ -669,7 +655,7 @@ export const sendFromContext = (...args: SendFromAccessArgs) =>
  * @returns An Effect representing a request for access to MIDI devices on a
  * user's system. Available only in secure contexts.
  */
-export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
+export const request = Effect.fn('EMIDIAccess.request')(function* (
   options?: RequestMIDIAccessOptions,
 ) {
   yield* Effect.annotateCurrentSpan({ options })
@@ -693,7 +679,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
         // For case when navigator.requestMIDIAccess is undefined
         TypeError: MIDIAccessNotSupportedError,
       },
-      'EffectfulMIDIAccess.request error handling absurd',
+      'EMIDIAccess.request error handling absurd',
       { whileAskingForPermissions: options ?? {} },
     ),
   })
@@ -723,7 +709,7 @@ export const request = Effect.fn('EffectfulMIDIAccess.request')(function* (
  * @returns
  */
 export const layer = (config?: RequestMIDIAccessOptions) =>
-  Layer.effect(EffectfulMIDIAccess, request(config))
+  Layer.effect(EMIDIAccess, request(config))
 
 /**
  *
@@ -749,7 +735,7 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
 })
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIAccessInstance, E, R> {}
+  extends SentMessageEffectFrom<EMIDIAccessInstance, E, R> {}
 
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
@@ -763,7 +749,7 @@ export interface DualSendMIDIMessageFromAccess
 
 export type SendFromAccessArgs = [
   targetPortSelector: TargetPortSelector,
-  ...args: EffectfulMIDIOutputPort.SendFromPortArgs,
+  ...args: EMIDIOutputPort.SendFromPortArgs,
 ]
 
 export interface SendMIDIMessageAccessFirst {

@@ -10,7 +10,7 @@ export {
   assert,
   clear,
   type DualSendMIDIMessageFromPort,
-  type EffectfulMIDIOutputPort,
+  type EMIDIOutputPort,
   is,
   makeStateChangesStream,
   matchConnectionState,
@@ -21,4 +21,4 @@ export {
   type SendMIDIMessagePortLast,
   type SentMessageEffectFromPort,
   send,
-} from './internal/EffectfulMIDIOutputPort.ts'
+} from './internal/EMIDIOutputPort.ts'

@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIPort from '../../EMIDIPort.ts'
 import { makePortConnectionCloser } from '../closePortConnection/closePortConnectionByPort.ts'
 import { makePortConnectionOpener } from '../openPortConnection/openPortConnectionByPort.ts'
 
@@ -10,15 +10,13 @@ import { makePortConnectionOpener } from '../openPortConnection/openPortConnecti
  */
 export const makeConnectionAcquirerReleaser =
   <THighLevelPortType extends MIDIPortType>(
-    is: (
-      port: unknown,
-    ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+    is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
   ) =>
   /**
    * @returns An effect with the same port for easier chaining of operations
    */
   <TPortType extends THighLevelPortType, E = never, R = never>(
-    port: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
+    port: EMIDIPort.PolymorphicPort<E, R, TPortType>,
   ) =>
     Effect.acquireRelease(
       makePortConnectionOpener(is)(port),
@@ -29,16 +27,16 @@ export const makeConnectionAcquirerReleaser =
  *
  */
 export const acquireReleasePortConnectionByPort =
-  makeConnectionAcquirerReleaser(EffectfulMIDIPort.is)
+  makeConnectionAcquirerReleaser(EMIDIPort.is)
 
 /**
  *
  */
 export const acquireReleaseInputPortConnectionByPort =
-  makeConnectionAcquirerReleaser(EffectfulMIDIInputPort.is)
+  makeConnectionAcquirerReleaser(EMIDIInputPort.is)
 
 /**
  *
  */
 export const acquireReleaseOutputPortConnectionByPort =
-  makeConnectionAcquirerReleaser(EffectfulMIDIOutputPort.is)
+  makeConnectionAcquirerReleaser(EMIDIOutputPort.is)

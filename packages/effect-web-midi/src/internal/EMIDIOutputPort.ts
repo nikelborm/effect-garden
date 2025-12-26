@@ -3,7 +3,7 @@
 
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
-import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import * as EMIDIPort from './EMIDIPort.ts'
 import {
   CantSendSysexMessagesError,
   ClearingSendingQueueIsNotSupportedError,
@@ -23,16 +23,15 @@ import {
  * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all
  * external code.
  */
-export interface EffectfulMIDIOutputPort
-  extends EffectfulMIDIPort.EffectfulMIDIPort<'output'> {}
+export interface EMIDIOutputPort extends EMIDIPort.EMIDIPort<'output'> {}
 
 /**
  * Thin wrapper around {@linkcode MIDIOutput} instance giving access to the
  * actual field storing it.
  * @internal
  */
-interface EffectfulMIDIOutputPortImpl
-  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIOutput, 'output'> {}
+interface EMIDIOutputPortImpl
+  extends EMIDIPort.EMIDIPortImpl<MIDIOutput, 'output'> {}
 
 /**
  * Validates the raw MIDI output port, and puts it into a field hidden from the
@@ -40,56 +39,49 @@ interface EffectfulMIDIOutputPortImpl
  *
  * @internal
  */
-const makeImpl = (rawOutputPort: MIDIOutput): EffectfulMIDIOutputPortImpl =>
-  EffectfulMIDIPort.makeImpl(rawOutputPort, 'output', globalThis.MIDIOutput)
+const makeImpl = (rawOutputPort: MIDIOutput): EMIDIOutputPortImpl =>
+  EMIDIPort.makeImpl(rawOutputPort, 'output', globalThis.MIDIOutput)
 
 /**
- * Asserts an object to be valid EffectfulMIDIOutputPort and casts it to
+ * Asserts an object to be valid EMIDIOutputPort and casts it to
  * internal implementation type
  *
  * @internal
  */
 const assertImpl = (outputPort: unknown) => {
   if (!isImpl(outputPort))
-    throw new Error('Assertion failed: Not a EffectfulMIDIOutputPortImpl')
+    throw new Error('Assertion failed: Not a EMIDIOutputPortImpl')
   return outputPort
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIOutputPort
+ * Asserts an object to be valid EMIDIOutputPort
  */
-export const assert: (outputPort: unknown) => EffectfulMIDIOutputPort =
-  assertImpl
+export const assert: (outputPort: unknown) => EMIDIOutputPort = assertImpl
 
 /**
  * Casts
  * @internal
  */
-const assumeImpl = (outputPort: EffectfulMIDIOutputPort) =>
-  outputPort as EffectfulMIDIOutputPortImpl
+const assumeImpl = (outputPort: EMIDIOutputPort) =>
+  outputPort as EMIDIOutputPortImpl
 
 /**
  *
  * @internal
  */
-export const make: (rawOutputPort: MIDIOutput) => EffectfulMIDIOutputPort =
-  makeImpl
+export const make: (rawOutputPort: MIDIOutput) => EMIDIOutputPort = makeImpl
 
 /**
  *
  * @internal
  */
-const isImpl = EffectfulMIDIPort.isImplOfSpecificType(
-  'output',
-  globalThis.MIDIOutput,
-)
+const isImpl = EMIDIPort.isImplOfSpecificType('output', globalThis.MIDIOutput)
 
 /**
  *
  */
-export const is: (
-  outputPort: unknown,
-) => outputPort is EffectfulMIDIOutputPort = isImpl
+export const is: (outputPort: unknown) => outputPort is EMIDIOutputPort = isImpl
 
 /**
  *
@@ -117,7 +109,7 @@ export const send: DualSendMIDIMessageFromPort = dual<
   SendMIDIMessagePortFirst
 >(
   polymorphicCheckInDual(is),
-  Effect.fn('EffectfulMIDIOutputPort.send')(
+  Effect.fn('EMIDIOutputPort.send')(
     function* (polymorphicOutputPort, midiMessage, timestamp) {
       const outputPort = yield* resolve(polymorphicOutputPort)
 
@@ -139,12 +131,12 @@ export const send: DualSendMIDIMessageFromPort = dual<
             InvalidStateError: DisconnectedPortError,
             TypeError: MalformedMidiMessageError,
           },
-          'EffectfulMIDIOutputPort.send error handling absurd',
+          'EMIDIOutputPort.send error handling absurd',
           { portId: outputPort.id, midiMessage: [...midiMessage] },
         ),
       })
 
-      return outputPort as EffectfulMIDIOutputPort
+      return outputPort as EMIDIOutputPort
     },
   ),
 )
@@ -161,7 +153,7 @@ export const send: DualSendMIDIMessageFromPort = dual<
  * @experimental Supported only in Firefox. {@link https://caniuse.com/mdn-api_midioutput_clear|Can I use - MIDIOutput API: clear}
  * @see {@link https://www.w3.org/TR/webmidi/#dom-midioutput-clear|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/MIDIOutput/clear|MDN reference}
  */
-export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
+export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
   E = never,
   R = never,
 >(polymorphicOutputPort: PolymorphicOutputPort<E, R>) {
@@ -181,7 +173,7 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
         TypeError: ClearingSendingQueueIsNotSupportedError,
         NotSupportedError: ClearingSendingQueueIsNotSupportedError,
       },
-      'EffectfulMIDIOutputPort.clear error handling absurd',
+      'EMIDIOutputPort.clear error handling absurd',
       { portId: outputPort.id },
     ),
   })
@@ -194,7 +186,7 @@ export const clear = Effect.fn('EffectfulMIDIOutputPort.clear')(function* <
  *
  */
 export type PolymorphicOutputPort<E, R> = PolymorphicEffect<
-  EffectfulMIDIOutputPort,
+  EMIDIOutputPort,
   E,
   R
 >
@@ -238,4 +230,4 @@ export interface SendMIDIMessagePortFirst {
  *
  */
 export interface SentMessageEffectFromPort<E = never, R = never>
-  extends SentMessageEffectFrom<EffectfulMIDIOutputPort, E, R> {}
+  extends SentMessageEffectFrom<EMIDIOutputPort, E, R> {}

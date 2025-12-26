@@ -7,10 +7,10 @@ export {
 
 export {
   assert,
-  type EffectfulMIDIInputPort,
+  type EMIDIInputPort,
   is,
   makeMessagesStream,
   makeStateChangesStream,
   matchConnectionState,
   matchDeviceState,
-} from './internal/EffectfulMIDIInputPort.ts'
+} from './internal/EMIDIInputPort.ts'

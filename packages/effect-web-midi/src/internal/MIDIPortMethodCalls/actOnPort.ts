@@ -2,10 +2,10 @@
  * preserve JSDoc comments attached to the function signature */
 
 import { flow, dual, pipe } from 'effect/Function'
-import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIAccess from '../EffectfulMIDIAccess.ts'
-import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
+import * as EMIDIAccess from '../EMIDIAccess.ts'
+import * as EMIDIPort from '../EMIDIPort.ts'
 import {
   getInputPortByPortIdAndAccess,
   getOutputPortByPortIdAndAccess,
@@ -36,7 +36,7 @@ import { openInputPortConnectionByPort } from './openPortConnection/openPortConn
 
 export const actOnPort = <
   THighLevelPortType extends MIDIPortType,
-  APort extends EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+  APort extends EMIDIPort.EMIDIPort<THighLevelPortType>,
   PortGetter extends GetPortById<
     MIDIPortId<THighLevelPortType>,
     APort,
@@ -94,12 +94,8 @@ export const actOnPort = <
 >(
   portGetterFromAccessAndPortId: PortGetter,
   portTransformerSelfReturner: <TPortType extends THighLevelPortType>(
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<EPort, RPort, TPortType>,
-  ) => Effect.Effect<
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
-    EPort,
-    RPort
-  >,
+    polymorphicPort: EMIDIPort.PolymorphicPort<EPort, RPort, TPortType>,
+  ) => Effect.Effect<EMIDIPort.EMIDIPort<TPortType>, EPort, RPort>,
 ) =>
   dual<
     ActOnPortAccessLast<THighLevelPortType, EPort, RPort>,
@@ -134,13 +130,10 @@ export interface ActOnPortAccessFirst<
    *
    */
   <AccessE = never, AccessR = never>(
-    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
-      AccessE,
-      AccessR
-    >,
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<AccessE, AccessR>,
     portId: MIDIPortId<THighLevelPortType>,
   ): Effect.Effect<
-    EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+    EMIDIPort.EMIDIPort<THighLevelPortType>,
     TAdditionalError | AccessE | PortNotFoundError,
     TAdditionalRequirement | AccessR
   >
@@ -163,12 +156,12 @@ export interface ActOnPortAccessLast<
      *
      */
     <EAccess = never, RAccess = never>(
-      polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+      polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<
         EAccess,
         RAccess
       >,
     ): Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+      EMIDIPort.EMIDIPort<THighLevelPortType>,
       TAdditionalError | EAccess | PortNotFoundError,
       TAdditionalRequirement | RAccess
     >
@@ -195,10 +188,10 @@ export const actOnPort2 = <
      *
      */
     (
-      polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstanceClean,
+      polymorphicAccess: EMIDIAccess.PolymorphicAccessInstanceClean,
       portId: MIDIPortId<TPortTypeReturnedFromAccess>,
     ): Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeReturnedFromAccess>,
+      EMIDIPort.EMIDIPort<TPortTypeReturnedFromAccess>,
       TPortGettingError,
       TPortGettingRequirement
     >
@@ -214,16 +207,16 @@ export const actOnPort2 = <
        *
        */
       (
-        polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstanceClean,
+        polymorphicAccess: EMIDIAccess.PolymorphicAccessInstanceClean,
       ): Effect.Effect<
-        EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeReturnedFromAccess>,
+        EMIDIPort.EMIDIPort<TPortTypeReturnedFromAccess>,
         TPortGettingError,
         TPortGettingRequirement
       >
     }
   },
   act: (
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPortClean<TPortTypeSupportedInActing>,
+    polymorphicPort: EMIDIPort.PolymorphicPortClean<TPortTypeSupportedInActing>,
   ) => Effect.Effect<TActResult, TPortActingError, TPortActingRequirement>,
 ): ChainAccessWithPortId<
   TPortTypeReturnedFromAccess,
@@ -234,12 +227,12 @@ export const actOnPort2 = <
 > => {
   return ((portId: any) => (polymorphicAccess: any) => {
     const eff = Effect.gen(function* () {
-      const access = yield* EffectfulMIDIAccess.resolve(polymorphicAccess)
+      const access = yield* EMIDIAccess.resolve(polymorphicAccess)
 
       const port = yield* portGetterFromAccessAndPortId(access, portId)
 
       const actEffect = act(
-        port as unknown as EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeSupportedInActing>,
+        port as unknown as EMIDIPort.EMIDIPort<TPortTypeSupportedInActing>,
       )
 
       yield* actEffect
@@ -270,9 +263,9 @@ const asd = actOnPort2(
   openInputPortConnectionByPort,
 
   // (() => {}) as any as <E = never, R = never>(
-  //   polymorphicPort: EffectfulMIDIPort.PolymorphicPort<never, never, 'input'>,
+  //   polymorphicPort: EMIDIPort.PolymorphicPort<never, never, 'input'>,
   // ) => Effect.Effect<
-  //   EffectfulMIDIPort.EffectfulMIDIPort<'input'>,
+  //   EMIDIPort.EMIDIPort<'input'>,
   //   UnavailablePortError | never,
   //   never
   // >,
@@ -285,7 +278,7 @@ export interface ChainAccessWithPortId<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortId<
-    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    EMIDIAccess.EMIDIAccessInstance,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -300,7 +293,7 @@ export interface ChainAccessWithPortIdAccessFirst<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessFirst<
-    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    EMIDIAccess.EMIDIAccessInstance,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -315,7 +308,7 @@ export interface ChainAccessWithPortIdAccessLast<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLast<
-    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    EMIDIAccess.EMIDIAccessInstance,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -329,7 +322,7 @@ export interface ChainAccessWithPortIdAccessLastSecondHalf<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLastSecondHalf<
-    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    EMIDIAccess.EMIDIAccessInstance,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
     TAdditionalError,
@@ -344,7 +337,7 @@ export interface AcquiredAccess<
   TAdditionalError,
   TAdditionalRequirement,
 > extends AcquiredThing<
-    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    EMIDIAccess.EMIDIAccessInstance,
     TAccessGettingError,
     TAccessGettingRequirement,
     TAccessGettingFallbackError,

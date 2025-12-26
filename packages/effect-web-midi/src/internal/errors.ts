@@ -1,9 +1,9 @@
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 import type {
-  EffectfulMIDIAccessInstance,
+  EMIDIAccessInstance,
   RequestMIDIAccessOptions,
-} from './EffectfulMIDIAccess.ts'
+} from './EMIDIAccess.ts'
 import { MIDIBothPortId } from './util.ts'
 
 // NOTE: stacks are properly extracted from error instances into structs, while
@@ -150,7 +150,7 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
 
 /**
  * Thrown if the user, the system or their security settings denied the
- * application from creating an {@linkcode EffectfulMIDIAccessInstance} object
+ * application from creating an {@linkcode EMIDIAccessInstance} object
  * with the requested {@linkcode RequestMIDIAccessOptions|options}, or if the
  * document is not allowed to use the feature (for example, because of a
  * Permission Policy, or because the user previously denied a permission

@@ -1,6 +1,6 @@
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIPort from '../../EMIDIPort.ts'
 import { remapErrorByName, UnavailablePortError } from '../../errors.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
@@ -27,24 +27,22 @@ export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
 /**
  *
  */
-export const openPortConnectionByPort = makePortConnectionOpener(
-  EffectfulMIDIPort.is,
-)
+export const openPortConnectionByPort = makePortConnectionOpener(EMIDIPort.is)
 
 const ass = openPortConnectionByPort(
-  {} as EffectfulMIDIPort.PolymorphicPort<'1', '2', 'output'>,
+  {} as EMIDIPort.PolymorphicPort<'1', '2', 'output'>,
 )
 
 /**
  *
  */
 export const openInputPortConnectionByPort = makePortConnectionOpener(
-  EffectfulMIDIInputPort.is,
+  EMIDIInputPort.is,
 )
 
 /**
  *
  */
 export const openOutputPortConnectionByPort = makePortConnectionOpener(
-  EffectfulMIDIOutputPort.is,
+  EMIDIOutputPort.is,
 )

@@ -5,9 +5,9 @@ import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as Stream from 'effect/Stream'
-import type { EffectfulMIDIAccessInstance } from './EffectfulMIDIAccess.ts'
-import type { EffectfulMIDIInputPort } from './EffectfulMIDIInputPort.ts'
-import type { EffectfulMIDIOutputPort } from './EffectfulMIDIOutputPort.ts'
+import type { EMIDIAccessInstance } from './EMIDIAccess.ts'
+import type { EMIDIInputPort } from './EMIDIInputPort.ts'
+import type { EMIDIOutputPort } from './EMIDIOutputPort.ts'
 import {
   fromPolymorphic,
   type PolymorphicEffect,
@@ -54,8 +54,8 @@ const validOnNullStrategies = new Set([
  *   success channel of the stream
  *
  * - `buildConfig` - Function that makes config out of an effectful version
- *   (e.g. {@linkcode EffectfulMIDIAccessInstance}, {@linkcode EffectfulMIDIInputPort},
- *   {@linkcode EffectfulMIDIOutputPort}) of a MIDI object.
+ *   (e.g. {@linkcode EMIDIAccessInstance}, {@linkcode EMIDIInputPort},
+ *   {@linkcode EMIDIOutputPort}) of a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
  *   selected field to an extension of the object inside stream's success
@@ -77,8 +77,8 @@ export const createStreamMakerFrom =
    * success channel of the stream
    *
    * @param buildConfig Function that makes config out of an effectful version
-   * (e.g. {@linkcode EffectfulMIDIAccessInstance}, {@linkcode EffectfulMIDIInputPort},
-   * {@linkcode EffectfulMIDIOutputPort}) of a MIDI object.
+   * (e.g. {@linkcode EMIDIAccessInstance}, {@linkcode EMIDIInputPort},
+   * {@linkcode EMIDIOutputPort}) of a MIDI object.
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
    * event's selected field (`nullableFieldName`) to an extension of the object

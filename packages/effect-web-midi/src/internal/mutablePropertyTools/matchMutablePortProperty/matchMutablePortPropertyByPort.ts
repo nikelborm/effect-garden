@@ -4,9 +4,9 @@
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as Record from 'effect/Record'
-import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIPort from '../../EMIDIPort.ts'
 import { fromPolymorphic, polymorphicCheckInDual } from '../../util.ts'
 import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
 
@@ -18,9 +18,7 @@ export const matchMutableMIDIPortProperty = <
   THighLevelPortType extends MIDIPortType,
 >(
   property: TMIDIPortProperty,
-  is: (
-    port: unknown,
-  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+  is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
 ): DualMatchPortState<THighLevelPortType, TMIDIPortProperty> =>
   dual<
     MatchStatePortLast<THighLevelPortType, TMIDIPortProperty>,
@@ -32,7 +30,7 @@ export const matchMutableMIDIPortProperty = <
         polymorphicPort,
         is as (
           port: unknown,
-        ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+        ) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
       )
 
       const state = getValueInRawPortFieldUnsafe(property)(port)
@@ -52,7 +50,7 @@ export const matchMutableMIDIPortProperty = <
  */
 export const matchPortConnectionStateByPort = matchMutableMIDIPortProperty(
   'connection',
-  EffectfulMIDIPort.is,
+  EMIDIPort.is,
 )
 
 /**
@@ -60,7 +58,7 @@ export const matchPortConnectionStateByPort = matchMutableMIDIPortProperty(
  */
 export const matchPortDeviceStateByPort = matchMutableMIDIPortProperty(
   'state',
-  EffectfulMIDIPort.is,
+  EMIDIPort.is,
 )
 
 /**
@@ -68,7 +66,7 @@ export const matchPortDeviceStateByPort = matchMutableMIDIPortProperty(
  */
 export const matchInputPortConnectionStateByPort = matchMutableMIDIPortProperty(
   'connection',
-  EffectfulMIDIInputPort.is,
+  EMIDIInputPort.is,
 )
 
 /**
@@ -76,28 +74,28 @@ export const matchInputPortConnectionStateByPort = matchMutableMIDIPortProperty(
  */
 export const matchInputPortDeviceStateByPort = matchMutableMIDIPortProperty(
   'state',
-  EffectfulMIDIInputPort.is,
+  EMIDIInputPort.is,
 )
 
 /**
  *
  */
 export const matchOutputPortConnectionStateByPort =
-  matchMutableMIDIPortProperty('connection', EffectfulMIDIOutputPort.is)
+  matchMutableMIDIPortProperty('connection', EMIDIOutputPort.is)
 
 /**
  *
  */
 export const matchOutputPortDeviceStateByPort = matchMutableMIDIPortProperty(
   'state',
-  EffectfulMIDIOutputPort.is,
+  EMIDIOutputPort.is,
 )
 
 export type MIDIPortMutableProperty = 'state' | 'connection'
 
 export interface PortStateHandler {
   // biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
-  (port: EffectfulMIDIPort.EffectfulMIDIPort): any
+  (port: EMIDIPort.EMIDIPort): any
 }
 export interface MatcherConfigPlain extends Record<string, PortStateHandler> {}
 
@@ -130,11 +128,7 @@ export interface MatchStatePortFirst<
     E = never,
     R = never,
   >(
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
-      E,
-      R,
-      THighLevelPortType
-    >,
+    polymorphicPort: EMIDIPort.PolymorphicPort<E, R, THighLevelPortType>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ): MatchResult<TStateCaseToHandlerMap, E, R>
 }
@@ -165,11 +159,7 @@ export interface MatchStatePortLast<
      * @returns
      */
     <E = never, R = never>(
-      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
-        E,
-        R,
-        THighLevelPortType
-      >,
+      polymorphicPort: EMIDIPort.PolymorphicPort<E, R, THighLevelPortType>,
     ): MatchResult<TStateCaseToHandlerMap, E, R>
   }
 }
@@ -180,7 +170,7 @@ export type StateCaseToHandlerMap<
   TConfigSelf,
 > = {
   readonly [StateCase in MIDIPort[TMIDIPortProperty]]: (
-    port: EffectfulMIDIPort.EffectfulMIDIPort<TMIDIPortType>,
+    port: EMIDIPort.EMIDIPort<TMIDIPortType>,
     // biome-ignore lint/suspicious/noExplicitAny: <There's no preciser type>
   ) => any
 } & {

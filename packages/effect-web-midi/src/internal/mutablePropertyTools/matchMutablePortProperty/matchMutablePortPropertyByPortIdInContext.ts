@@ -1,6 +1,6 @@
 import type * as Effect from 'effect/Effect'
-import type * as EffectfulMIDIAccess from '../../EffectfulMIDIAccess.ts'
-import type * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import type * as EMIDIAccess from '../../EMIDIAccess.ts'
+import type * as EMIDIPort from '../../EMIDIPort.ts'
 import type { PortNotFoundError } from '../../errors.ts'
 import {
   getInputPortByPortIdInContext,
@@ -32,9 +32,9 @@ const makeMatcherTakingPortIds =
     getPort: (
       id: MIDIPortId<THighLevelPortType>,
     ) => Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<NoInfer<THighLevelPortType>>,
+      EMIDIPort.EMIDIPort<NoInfer<THighLevelPortType>>,
       PortNotFoundError,
-      EffectfulMIDIAccess.EffectfulMIDIAccess
+      EMIDIAccess.EMIDIAccess
     >,
   ) =>
   <

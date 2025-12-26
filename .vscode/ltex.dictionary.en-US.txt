@@ -17,11 +17,11 @@ AllPortsRecord
 buildConfig
 createStreamMakerFrom
 deviceState
-EffectfulMIDIAccess
-EffectfulMIDIAccessInstance
-EffectfulMIDIInputPort
-EffectfulMIDIOutputPort
-EffectfulMIDIPort
+EMIDIAccess
+EMIDIAccessInstance
+EMIDIInputPort
+EMIDIOutputPort
+EMIDIPort
 getAllPortsRecord
 getInputPortsRecord
 getOutputPortsRecord

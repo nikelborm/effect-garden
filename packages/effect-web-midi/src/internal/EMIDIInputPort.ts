@@ -1,5 +1,5 @@
 import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
-import * as EffectfulMIDIPort from './EffectfulMIDIPort.ts'
+import * as EMIDIPort from './EMIDIPort.ts'
 import { getStaticMIDIPortInfo } from './util.ts'
 
 // TODO: implement scoping of midi access that will clean up all message queues
@@ -11,16 +11,15 @@ import { getStaticMIDIPortInfo } from './util.ts'
  * Thin wrapper around {@linkcode MIDIInput} instance. Will be seen in all
  * external code.
  */
-export interface EffectfulMIDIInputPort
-  extends EffectfulMIDIPort.EffectfulMIDIPort<'input'> {}
+export interface EMIDIInputPort extends EMIDIPort.EMIDIPort<'input'> {}
 
 /**
  * Thin wrapper around {@linkcode MIDIInput} instance giving access to the
  * actual field storing it.
  * @internal
  */
-interface EffectfulMIDIInputPortImpl
-  extends EffectfulMIDIPort.EffectfulMIDIPortImpl<MIDIInput, 'input'> {}
+interface EMIDIInputPortImpl
+  extends EMIDIPort.EMIDIPortImpl<MIDIInput, 'input'> {}
 
 /**
  * Validates the raw MIDI input port, and puts it into a field hidden from the
@@ -28,54 +27,52 @@ interface EffectfulMIDIInputPortImpl
  *
  * @internal
  */
-const makeImpl = (rawInputPort: MIDIInput): EffectfulMIDIInputPortImpl =>
-  EffectfulMIDIPort.makeImpl(rawInputPort, 'input', globalThis.MIDIInput)
+const makeImpl = (rawInputPort: MIDIInput): EMIDIInputPortImpl =>
+  EMIDIPort.makeImpl(rawInputPort, 'input', globalThis.MIDIInput)
 
 /**
- * Asserts an object to be valid EffectfulMIDIInputPort and casts it to internal
+ * Asserts an object to be valid EMIDIInputPort and casts it to internal
  * implementation type
  *
  * @internal
  */
 const assertImpl = (inputPort: unknown) => {
   if (!isImpl(inputPort))
-    throw new Error('Failed to cast to EffectfulMIDIInputPortImpl')
+    throw new Error('Failed to cast to EMIDIInputPortImpl')
   return inputPort
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIInputPort
+ * Asserts an object to be valid EMIDIInputPort
  */
-export const assert: (inputPort: unknown) => EffectfulMIDIInputPort = assertImpl
+export const assert: (inputPort: unknown) => EMIDIInputPort = assertImpl
 
 /**
  * @internal
  */
-const assumeImpl = (inputPort: EffectfulMIDIInputPort) =>
-  inputPort as EffectfulMIDIInputPortImpl
-
-/**
- *
- *
- * @internal
- */
-export const make: (rawInputPort: MIDIInput) => EffectfulMIDIInputPort =
-  makeImpl
+const assumeImpl = (inputPort: EMIDIInputPort) =>
+  inputPort as EMIDIInputPortImpl
 
 /**
  *
  *
  * @internal
  */
-const isImpl: (inputPort: unknown) => inputPort is EffectfulMIDIInputPortImpl =
-  EffectfulMIDIPort.isImplOfSpecificType('input', globalThis.MIDIInput)
+export const make: (rawInputPort: MIDIInput) => EMIDIInputPort = makeImpl
+
+/**
+ *
+ *
+ * @internal
+ */
+const isImpl: (inputPort: unknown) => inputPort is EMIDIInputPortImpl =
+  EMIDIPort.isImplOfSpecificType('input', globalThis.MIDIInput)
 
 /**
  *
  *
  */
-export const is: (inputPort: unknown) => inputPort is EffectfulMIDIInputPort =
-  isImpl
+export const is: (inputPort: unknown) => inputPort is EMIDIInputPort = isImpl
 
 /**
  * [MIDIMessageEvent MDN

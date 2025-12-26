@@ -7,9 +7,9 @@ import {
   type OnNullStrategy,
   type StreamMakerOptions,
 } from '../createStreamMakerFrom.ts'
-import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
-import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import * as EMIDIInputPort from '../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
+import * as EMIDIPort from '../EMIDIPort.ts'
 import { getStaticMIDIPortInfo } from '../util.ts'
 
 /**
@@ -19,16 +19,14 @@ import { getStaticMIDIPortInfo } from '../util.ts'
 export const makePortStateChangesStreamFactory = <
   THighLevelPortType extends MIDIPortType,
 >(
-  is: (
-    port: unknown,
-  ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
+  is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
 ) =>
   createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     port => ({
       tag: 'MIDIPortStateChange',
       eventListener: {
-        target: EffectfulMIDIPort.assumeImpl(port)._port,
+        target: EMIDIPort.assumeImpl(port)._port,
         type: 'statechange',
       },
       spanAttributes: {
@@ -56,7 +54,7 @@ export const makePortStateChangesStreamFactory = <
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makePortStateChangesStreamByPort =
-  makePortStateChangesStreamFactory(EffectfulMIDIPort.is)
+  makePortStateChangesStreamFactory(EMIDIPort.is)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -65,7 +63,7 @@ export const makePortStateChangesStreamByPort =
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeInputPortStateChangesStreamByPort =
-  makePortStateChangesStreamFactory(EffectfulMIDIInputPort.is)
+  makePortStateChangesStreamFactory(EMIDIInputPort.is)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -74,7 +72,7 @@ export const makeInputPortStateChangesStreamByPort =
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeOutputPortStateChangesStreamByPort =
-  makePortStateChangesStreamFactory(EffectfulMIDIOutputPort.is)
+  makePortStateChangesStreamFactory(EMIDIOutputPort.is)
 
 /**
  * A custom type is needed because the port type will be generic, but this is
@@ -102,7 +100,7 @@ export interface MakeStateChangesStreamPortFirst<
     E = never,
     R = never,
   >(
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
+    polymorphicPort: EMIDIPort.PolymorphicPort<E, R, TPortType>,
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): StateChangesStream<TOnNullStrategy, TPortType, E, R>
 }
@@ -126,7 +124,7 @@ export interface MakeStateChangesStreamPortLast<
      *
      */
     <TPortType extends THighLevelPortType, E = never, R = never>(
-      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
+      polymorphicPort: EMIDIPort.PolymorphicPort<E, R, TPortType>,
     ): StateChangesStream<TOnNullStrategy, TPortType, E, R>
   }
 }
@@ -142,7 +140,7 @@ export interface StateChangesStream<
   R = never,
 > extends BuiltStream<
     'MIDIPortStateChange',
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    EMIDIPort.EMIDIPort<TPortType>,
     {
       readonly newState: {
         readonly ofDevice: MIDIPortDeviceState

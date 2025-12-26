@@ -26,8 +26,8 @@ export {
   AllPortsRecord,
   assert,
   type DualSendMIDIMessageFromAccess,
-  EffectfulMIDIAccess,
-  type EffectfulMIDIAccessInstance,
+  EMIDIAccess,
+  type EMIDIAccessInstance,
   getAllPortsRecord,
   getInputPortById,
   getInputPortsRecord,
@@ -55,4 +55,4 @@ export {
   send,
   type TargetPortSelector,
   type TypeId,
-} from './internal/EffectfulMIDIAccess.ts'
+} from './internal/EMIDIAccess.ts'

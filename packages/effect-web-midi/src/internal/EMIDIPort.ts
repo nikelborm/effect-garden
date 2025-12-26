@@ -12,34 +12,32 @@ import {
 } from './util.ts'
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIPort} instances
+ * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
  * from other objects at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for(
-  '@nikelborm/effect-web-midi/EffectfulMIDIPort',
-)
+const TypeId: unique symbol = Symbol.for('@nikelborm/effect-web-midi/EMIDIPort')
 
 /**
- * Unique symbol used for distinguishing {@linkcode EffectfulMIDIPort} instances
+ * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
  * from other objects at both runtime and type-level
  */
 export type TypeId = typeof TypeId
 
 /**
- * Prototype of all {@linkcode EffectfulMIDIPort} instances
+ * Prototype of all {@linkcode EMIDIPort} instances
  * @internal
  */
 const CommonProto = {
-  _tag: 'EffectfulMIDIPort' as const,
+  _tag: 'EMIDIPort' as const,
 
   [TypeId]: TypeId,
 
-  [Hash.symbol](this: EffectfulMIDIPortImpl) {
+  [Hash.symbol](this: EMIDIPortImpl) {
     return Hash.string(this.id)
   },
 
-  [Equal.symbol](this: EffectfulMIDIPortImpl, that: Equal.Equal) {
+  [Equal.symbol](this: EMIDIPortImpl, that: Equal.Equal) {
     return 'id' in that && this.id === that.id
   },
 
@@ -48,13 +46,13 @@ const CommonProto = {
     return Pipeable.pipeArguments(this, arguments)
   },
 
-  toString(this: EffectfulMIDIPortImpl) {
+  toString(this: EMIDIPortImpl) {
     return Inspectable.format(this.toJSON())
   },
 
-  toJSON(this: EffectfulMIDIPortImpl) {
+  toJSON(this: EMIDIPortImpl) {
     return {
-      _id: 'EffectfulMIDIPort',
+      _id: 'EMIDIPort',
       id: this.id,
       name: this.name,
       manufacturer: this.manufacturer,
@@ -63,7 +61,7 @@ const CommonProto = {
     }
   },
 
-  [Inspectable.NodeInspectSymbol](this: EffectfulMIDIPortImpl) {
+  [Inspectable.NodeInspectSymbol](this: EMIDIPortImpl) {
     return this.toJSON()
   },
 
@@ -82,15 +80,14 @@ const CommonProto = {
   get type() {
     return assumeImpl(this)._port.type
   },
-} satisfies EffectfulMIDIPort
+} satisfies EMIDIPort
 
 /**
  * Thin wrapper around {@linkcode MIDIPort} instance. Will be seen in all
  * external code.
  */
-export interface EffectfulMIDIPort<
-  TMIDIPortType extends MIDIPortType = MIDIPortType,
-> extends Equal.Equal,
+export interface EMIDIPort<TMIDIPortType extends MIDIPortType = MIDIPortType>
+  extends Equal.Equal,
     Pipeable.Pipeable,
     Inspectable.Inspectable,
     Pick<MIDIPort, 'version' | 'name' | 'manufacturer'> {
@@ -101,7 +98,7 @@ export interface EffectfulMIDIPort<
    */
   readonly id: MIDIPortId<TMIDIPortType>
   readonly [TypeId]: TypeId
-  readonly _tag: 'EffectfulMIDIPort'
+  readonly _tag: 'EMIDIPort'
   readonly type: TMIDIPortType
 }
 
@@ -110,10 +107,10 @@ export interface EffectfulMIDIPort<
  * actual field storing it.
  * @internal
  */
-export interface EffectfulMIDIPortImpl<
+export interface EMIDIPortImpl<
   TPort extends MIDIPort = MIDIPort,
   TPortType extends MIDIPortType = MIDIPortType,
-> extends EffectfulMIDIPort<TPortType> {
+> extends EMIDIPort<TPortType> {
   readonly _port: TPort
 }
 
@@ -129,9 +126,9 @@ export const makeImpl = <
   port: NoInfer<TPort>,
   type: TPortType,
   ClassToAssertInheritance: new (...args: unknown[]) => TPort,
-): EffectfulMIDIPortImpl<TPort, TPortType> => {
+): EMIDIPortImpl<TPort, TPortType> => {
   if (port.type !== type || !(port instanceof ClassToAssertInheritance))
-    throw new Error(`EffectfulMIDIPort constructor accepts only ${type} ports`)
+    throw new Error(`EMIDIPort constructor accepts only ${type} ports`)
 
   const instance = Object.create(CommonProto)
   instance._port = port
@@ -139,34 +136,32 @@ export const makeImpl = <
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIPort and casts it to internal
+ * Asserts an object to be valid EMIDIPort and casts it to internal
  * implementation type
  *
  * @internal
  */
 const assertImpl = (port: unknown) => {
-  if (!isGeneralImpl(port))
-    throw new Error('Failed to cast to EffectfulMIDIPort')
+  if (!isGeneralImpl(port)) throw new Error('Failed to cast to EMIDIPort')
   return port
 }
 
 /**
- * Asserts an object to be valid EffectfulMIDIPort
+ * Asserts an object to be valid EMIDIPort
  */
-export const assert: (port: unknown) => EffectfulMIDIPort = assertImpl
+export const assert: (port: unknown) => EMIDIPort = assertImpl
 
 /**
  * @internal
  */
-export const assumeImpl = (port: EffectfulMIDIPort) =>
-  port as EffectfulMIDIPortImpl
+export const assumeImpl = (port: EMIDIPort) => port as EMIDIPortImpl
 
 /**
  *
  *
  * @internal
  */
-const isGeneralImpl = (port: unknown): port is EffectfulMIDIPortImpl =>
+const isGeneralImpl = (port: unknown): port is EMIDIPortImpl =>
   typeof port === 'object' &&
   port !== null &&
   Object.getPrototypeOf(port) === CommonProto &&
@@ -184,7 +179,7 @@ export type PolymorphicPort<
   EPort,
   RPort,
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, EPort, RPort>
+> = PolymorphicEffect<EMIDIPort<TMIDIPortType>, EPort, RPort>
 
 /**
  *
@@ -192,10 +187,10 @@ export type PolymorphicPort<
  */
 export type PolymorphicPortClean<
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, never, never>
+> = PolymorphicEffect<EMIDIPort<TMIDIPortType>, never, never>
 
-export type ExtractTypeFromPort<TPort extends EffectfulMIDIPort> =
-  TPort extends EffectfulMIDIPort<infer TPortType> ? TPortType : never
+export type ExtractTypeFromPort<TPort extends EMIDIPort> =
+  TPort extends EMIDIPort<infer TPortType> ? TPortType : never
 
 /**
  *
@@ -207,7 +202,7 @@ export const isImplOfSpecificType =
     type: TPortType,
     ClassToAssertInheritance: new (...args: unknown[]) => TPort,
   ) =>
-  (port: unknown): port is EffectfulMIDIPortImpl<TPort, TPortType> => {
+  (port: unknown): port is EMIDIPortImpl<TPort, TPortType> => {
     if (!ClassToAssertInheritance)
       throw new Error(
         'Called in a context where ClassToAssertInheritance is falsy, probably on a platform where MIDI APIs are not supported, like node.js or bun',
@@ -224,4 +219,4 @@ export const isImplOfSpecificType =
  *
  *
  */
-export const is: (port: unknown) => port is EffectfulMIDIPort = isGeneralImpl
+export const is: (port: unknown) => port is EMIDIPort = isGeneralImpl

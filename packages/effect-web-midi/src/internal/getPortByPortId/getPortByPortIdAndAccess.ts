@@ -3,10 +3,10 @@
 
 import * as Effect from 'effect/Effect'
 import { dual, flow } from 'effect/Function'
-import * as EffectfulMIDIAccess from '../EffectfulMIDIAccess.ts'
-import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
-import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
-import type * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import * as EMIDIAccess from '../EMIDIAccess.ts'
+import * as EMIDIInputPort from '../EMIDIInputPort.ts'
+import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
+import type * as EMIDIPort from '../EMIDIPort.ts'
 import { PortNotFoundError } from '../errors.ts'
 import type { FallbackOnUnknownOrAny, MIDIPortId } from '../util.ts'
 
@@ -25,14 +25,14 @@ export const getPortByIdAndRemap = <
   onInputFound: (
     rawInputPort: MIDIInput,
   ) => Effect.Effect<
-    EffectfulMIDIPort.EffectfulMIDIPort<AInputPortType>,
+    EMIDIPort.EMIDIPort<AInputPortType>,
     EInputPort,
     RInputPort
   >
   onOutputFound: (
     rawOutputPort: MIDIOutput,
   ) => Effect.Effect<
-    EffectfulMIDIPort.EffectfulMIDIPort<AOutputPortType>,
+    EMIDIPort.EMIDIPort<AOutputPortType>,
     EOutputPort,
     ROutputPort
   >
@@ -45,8 +45,8 @@ export const getPortByIdAndRemap = <
   RInputPort | ROutputPort
 > =>
   dual(2, (polymorphicAccess, portId) =>
-    Effect.flatMap(EffectfulMIDIAccess.resolve(polymorphicAccess), e => {
-      const rawAccess = EffectfulMIDIAccess.assumeImpl(e)._access
+    Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), e => {
+      const rawAccess = EMIDIAccess.assumeImpl(e)._access
 
       let rawPort: MIDIOutput | MIDIInput | undefined =
         rawAccess.inputs.get(portId)
@@ -78,8 +78,8 @@ export const getPortByIdAndRemap = <
  * soundness
  */
 export const getPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: flow(EffectfulMIDIInputPort.make, Effect.succeed),
-  onOutputFound: flow(EffectfulMIDIOutputPort.make, Effect.succeed),
+  onInputFound: flow(EMIDIInputPort.make, Effect.succeed),
+  onOutputFound: flow(EMIDIOutputPort.make, Effect.succeed),
 })
 
 /**
@@ -87,7 +87,7 @@ export const getPortByPortIdAndAccess = getPortByIdAndRemap({
  *
  */
 export const getInputPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: flow(EffectfulMIDIInputPort.make, Effect.succeed),
+  onInputFound: flow(EMIDIInputPort.make, Effect.succeed),
   onOutputFound: rawOutputPort =>
     Effect.dieMessage(
       `Assertion failed: getInputPortById found output port with the id=${rawOutputPort.id}`,
@@ -103,7 +103,7 @@ export const getOutputPortByPortIdAndAccess = getPortByIdAndRemap({
     Effect.dieMessage(
       `Assertion failed: getOutputPortById found output port with the id=${rawInputPort.id}`,
     ),
-  onOutputFound: flow(EffectfulMIDIOutputPort.make, Effect.succeed),
+  onOutputFound: flow(EMIDIOutputPort.make, Effect.succeed),
 })
 
 export interface GetPortById<
@@ -114,7 +114,7 @@ export interface GetPortById<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortId<
-    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
+    EMIDIPort.EMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -130,7 +130,7 @@ export interface GetPortByIdAccessFirst<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessFirst<
-    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
+    EMIDIPort.EMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -146,7 +146,7 @@ export interface GetPortByIdAccessLast<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLast<
-    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
+    EMIDIPort.EMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -161,7 +161,7 @@ export interface GetPortByIdAccessLastSecondHalf<
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLastSecondHalf<
-    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
+    EMIDIPort.EMIDIPort<TReturnedPortType>,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
     TAdditionalError | PortNotFoundError,
@@ -177,7 +177,7 @@ export interface AcquiredPort<
   TAdditionalError,
   TAdditionalRequirement,
 > extends AcquiredThing<
-    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
+    EMIDIPort.EMIDIPort<TReturnedPortType>,
     TAccessGettingError,
     TAccessGettingRequirement,
     TAccessGettingFallbackError,
@@ -227,7 +227,7 @@ export interface GetThingByPortIdAccessFirst<
    *
    */
   <TAccessGettingError = never, TAccessGettingRequirement = never>(
-    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<
       TAccessGettingError,
       TAccessGettingRequirement
     >,
@@ -278,7 +278,7 @@ export interface GetThingByPortIdAccessLastSecondHalf<
    *
    */
   <TAccessGettingError = never, TAccessGettingRequirement = never>(
-    polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<
       TAccessGettingError,
       TAccessGettingRequirement
     >,

@@ -1,5 +1,5 @@
 import * as Effect from 'effect/Effect'
-import type * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
+import type * as EMIDIPort from '../../EMIDIPort.ts'
 import type { MIDIPortMutableProperty } from '../matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
 
@@ -12,7 +12,7 @@ const getMutableProperty =
     property: TMIDIPortMutableProperty,
   ) =>
   <E = never, R = never>(
-    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TMIDIPortType>,
+    polymorphicPort: EMIDIPort.PolymorphicPort<E, R, TMIDIPortType>,
   ) =>
     Effect.isEffect(polymorphicPort)
       ? Effect.map(polymorphicPort, getValueInRawPortFieldUnsafe(property))

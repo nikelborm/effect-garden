@@ -3,10 +3,10 @@ import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import {
-  type EffectfulMIDIAccessInstance,
+  type EMIDIAccessInstance,
   getAllPortsRecord,
   type PolymorphicAccessInstance,
-} from '../../EffectfulMIDIAccess.ts'
+} from '../../EMIDIAccess.ts'
 import { PortNotFoundError } from '../../errors.ts'
 import type { MIDIBothPortId, PolymorphicEffect } from '../../util.ts'
 import {
@@ -22,7 +22,7 @@ const getPortByIdGeneric2 =
     ) => Effect.Effect<T, E, R>,
   ) =>
   <A, E2, R2, TE = never, TR = never>(
-    polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+    polymorphicAccess: PolymorphicEffect<EMIDIAccessInstance, TE, TR>,
     transformPortEffect: (
       effect: Effect.Effect<
         T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
@@ -54,7 +54,7 @@ const getPortByIdGeneric2 =
  *
  */
 export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
-  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  polymorphicAccess: PolymorphicEffect<EMIDIAccessInstance, TE, TR>,
   portId: MIDIBothPortId,
 ) =>
   getPortByIdGeneric2(getAllPortsRecord)(
@@ -73,7 +73,7 @@ export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
  *
  */
 export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
-  polymorphicAccess: PolymorphicEffect<EffectfulMIDIAccessInstance, TE, TR>,
+  polymorphicAccess: PolymorphicEffect<EMIDIAccessInstance, TE, TR>,
   portId: MIDIBothPortId,
 ) =>
   getPortByIdGeneric2(getAllPortsRecord)(

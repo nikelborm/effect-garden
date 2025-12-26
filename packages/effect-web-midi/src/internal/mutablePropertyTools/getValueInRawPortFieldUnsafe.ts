@@ -1,4 +1,4 @@
-import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import * as EMIDIPort from '../EMIDIPort.ts'
 import type { MIDIPortMutableProperty } from './matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 
 /**
@@ -8,5 +8,5 @@ export const getValueInRawPortFieldUnsafe =
   <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
     property: TMIDIPortMutableProperty,
   ) =>
-  (port: EffectfulMIDIPort.EffectfulMIDIPort) =>
-    EffectfulMIDIPort.assumeImpl(port)._port[property]
+  (port: EMIDIPort.EMIDIPort) =>
+    EMIDIPort.assumeImpl(port)._port[property]
