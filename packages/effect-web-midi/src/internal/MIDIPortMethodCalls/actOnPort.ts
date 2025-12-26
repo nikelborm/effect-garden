@@ -14,12 +14,24 @@ import {
   type GetPortByIdAccessFirst,
   type GetPortByIdAccessLast,
   type GetPortByIdAccessLastSecondHalf,
-  type PortTaken,
+  type AcquiredPort,
+  type AcquiredThing,
+  type GetThingByPortIdAccessLastSecondHalf,
+  type GetThingByPortIdAccessLast,
+  type GetThingByPortIdAccessFirst,
+  type GetThingByPortId,
 } from '../getPortByPortId/getPortByPortIdAndAccess.ts'
 import { makeMIDIPortMethodCallerFactory } from './makeMIDIPortMethodCallerFactory.ts'
-import type { MIDIBothPortId, MIDIPortId } from '../util.ts'
+import {
+  MIDIInputPortId,
+  MIDIOutputPortId,
+  type FallbackOnUnknownOrAny,
+  type MIDIBothPortId,
+  type MIDIPortId,
+} from '../util.ts'
 import * as Effect from 'effect/Effect'
-import type { PortNotFoundError } from '../errors.ts'
+import type { PortNotFoundError, UnavailablePortError } from '../errors.ts'
+import * as Brand from 'effect/Brand'
 
 export const actOnPort = <
   THighLevelPortType extends MIDIPortType,
@@ -31,7 +43,7 @@ export const actOnPort = <
     RPort
   >,
   EAccess extends
-    | (ReturnType<PortGetter> extends PortTaken<
+    | (ReturnType<PortGetter> extends AcquiredPort<
         APort,
         infer EAccess_,
         infer RAccess_,
@@ -42,7 +54,7 @@ export const actOnPort = <
         : never)
     | (ReturnType<PortGetter> extends infer SecondHalf extends
         GetPortByIdAccessLastSecondHalf<APort, EPort, RPort>
-        ? ReturnType<SecondHalf> extends PortTaken<
+        ? ReturnType<SecondHalf> extends AcquiredPort<
             APort,
             infer EAccess_,
             infer RAccess_,
@@ -53,7 +65,7 @@ export const actOnPort = <
           : never
         : never),
   RAccess extends
-    | (ReturnType<PortGetter> extends PortTaken<
+    | (ReturnType<PortGetter> extends AcquiredPort<
         APort,
         infer EAccess_,
         infer RAccess_,
@@ -64,7 +76,7 @@ export const actOnPort = <
         : never)
     | (ReturnType<PortGetter> extends infer SecondHalf extends
         GetPortByIdAccessLastSecondHalf<APort, EPort, RPort>
-        ? ReturnType<SecondHalf> extends PortTaken<
+        ? ReturnType<SecondHalf> extends AcquiredPort<
             APort,
             infer EAccess_,
             infer RAccess_,
@@ -113,8 +125,8 @@ export const actOnPort = <
 
 export interface ActOnPortAccessFirst<
   THighLevelPortType extends MIDIPortType,
-  EPort,
-  RPort,
+  TAdditionalError,
+  TAdditionalRequirement,
 > {
   /**
    *
@@ -128,15 +140,15 @@ export interface ActOnPortAccessFirst<
     portId: MIDIPortId<THighLevelPortType>,
   ): Effect.Effect<
     EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
-    EPort | AccessE | PortNotFoundError,
-    RPort | AccessR
+    TAdditionalError | AccessE | PortNotFoundError,
+    TAdditionalRequirement | AccessR
   >
 }
 
 export interface ActOnPortAccessLast<
   THighLevelPortType extends MIDIPortType,
-  EPort,
-  RPort,
+  TAdditionalError,
+  TAdditionalRequirement,
 > {
   /**
    *
@@ -156,8 +168,209 @@ export interface ActOnPortAccessLast<
       >,
     ): Effect.Effect<
       EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
-      EPort | EAccess | PortNotFoundError,
-      RPort | RAccess
+      TAdditionalError | EAccess | PortNotFoundError,
+      TAdditionalRequirement | RAccess
     >
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+export const actOnPort2 = <
+  TPortTypeReturnedFromAccess extends TPortTypeSupportedInActing,
+  TPortTypeSupportedInActing extends MIDIPortType,
+  TPortGettingError = never,
+  TPortGettingRequirement = never,
+  // biome-ignore lint/suspicious/noExplicitAny: fuck it
+  TActResult = any,
+  TPortActingError = never,
+  TPortActingRequirement = never,
+>(
+  portGetterFromAccessAndPortId: {
+    /**
+     *
+     *
+     */
+    (
+      accessPolymorphic: EffectfulMIDIAccess.PolymorphicAccessInstanceClean,
+      portId: MIDIPortId<TPortTypeReturnedFromAccess>,
+    ): Effect.Effect<
+      EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeReturnedFromAccess>,
+      TPortGettingError,
+      TPortGettingRequirement
+    >
+    /**
+     *
+     *
+     */
+    (
+      portId: MIDIPortId<TPortTypeReturnedFromAccess>,
+    ): {
+      /**
+       *
+       *
+       */
+      (
+        accessPolymorphic: EffectfulMIDIAccess.PolymorphicAccessInstanceClean,
+      ): Effect.Effect<
+        EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeReturnedFromAccess>,
+        TPortGettingError,
+        TPortGettingRequirement
+      >
+    }
+  },
+  act: (
+    portPolymorphic: EffectfulMIDIPort.PolymorphicPortClean<TPortTypeSupportedInActing>,
+  ) => Effect.Effect<TActResult, TPortActingError, TPortActingRequirement>,
+): ChainAccessWithPortId<
+  TPortType,
+  never,
+  never,
+  TPortGettingError | TPortActingError,
+  TPortGettingRequirement | TPortActingRequirement
+> => {
+  return ((portId: any) => (accessPolymorphic: any) => {
+    const eff = Effect.gen(function* () {
+      const access = yield* EffectfulMIDIAccess.resolve(accessPolymorphic)
+
+      const port = yield* portGetterFromAccessAndPortId(access, portId)
+
+      const actEffect = act(
+        port as unknown as EffectfulMIDIPort.EffectfulMIDIPort<TPortTypeSupportedInActing>,
+      )
+
+      yield* actEffect
+
+      return access
+    })
+    return eff
+  }) as any
+}
+
+const asd = actOnPort2(
+  {} as any as GetPortById<'input', never, never, never, never>,
+  // GetPortById<'input', never, never>, that comes from function like getInputPortByPortIdAndAccess
+  // {
+  //   <
+  //     TAccessGettingError extends never = never,
+  //     TAccessGettingRequirement extends never = never,
+  //   >(
+  //     polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+  //       TAccessGettingError,
+  //       TAccessGettingRequirement
+  //     >,
+  //     portId: MIDIPortId<'input'>,
+  //   ): Effect.Effect<
+  //     EffectfulMIDIPort.EffectfulMIDIPort<'input'>,
+  //     TAccessGettingError | PortNotFoundError,
+  //     TAccessGettingRequirement
+  //   >
+  // } & {
+  //   /**
+  //    *
+  //    *
+  //    */
+  //   (
+  //     portId: MIDIPortId<'input'>,
+  //   ): {
+  //     /**
+  //      *
+  //      *
+  //      */
+  //     <TAccessGettingError = never, TAccessGettingRequirement = never>(
+  //       polymorphicAccess: EffectfulMIDIAccess.PolymorphicAccessInstance<
+  //         TAccessGettingError,
+  //         TAccessGettingRequirement
+  //       >,
+  //     ): Effect.Effect<
+  //       EffectfulMIDIPort.EffectfulMIDIPort<'input'>,
+  //       TAccessGettingError | PortNotFoundError,
+  //       TAccessGettingRequirement
+  //     >
+  //   }
+  // },
+  (() => {}) as any as <E = never, R = never>(
+    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<never, never, 'input'>,
+  ) => Effect.Effect<
+    EffectfulMIDIPort.EffectfulMIDIPort<'input'>,
+    UnavailablePortError | never,
+    never
+  >,
+)
+
+export interface ChainAccessWithPortId<
+  TPortType extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends GetThingByPortId<
+    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    TPortType,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  > {}
+
+export interface ChainAccessWithPortIdAccessFirst<
+  TPortType extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends GetThingByPortIdAccessFirst<
+    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    TPortType,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  > {}
+
+export interface ChainAccessWithPortIdAccessLast<
+  TPortType extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends GetThingByPortIdAccessLast<
+    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    TPortType,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  > {}
+
+export interface ChainAccessWithPortIdAccessLastSecondHalf<
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends GetThingByPortIdAccessLastSecondHalf<
+    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  > {}
+
+export interface AcquiredAccess<
+  TAccessGettingError,
+  TAccessGettingRequirement,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends AcquiredThing<
+    EffectfulMIDIAccess.EffectfulMIDIAccessInstance,
+    TAccessGettingError,
+    TAccessGettingRequirement,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  > {}

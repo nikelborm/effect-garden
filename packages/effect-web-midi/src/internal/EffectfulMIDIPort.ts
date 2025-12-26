@@ -189,6 +189,17 @@ export type PolymorphicPort<
 /**
  *
  *
+ */
+export type PolymorphicPortClean<
+  TMIDIPortType extends MIDIPortType = MIDIPortType,
+> = PolymorphicEffect<EffectfulMIDIPort<TMIDIPortType>, never, never>
+
+export type ExtractTypeFromPort<TPort extends EffectfulMIDIPort> =
+  TPort extends EffectfulMIDIPort<infer TPortType> ? TPortType : never
+
+/**
+ *
+ *
  * @internal
  */
 export const isImplOfSpecificType =

@@ -57,6 +57,13 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
 
 export type PolymorphicEffect<A, E, R> = A | Effect.Effect<A, E, R>
 
+export type FallbackOnUnknownOrAny<TCandidate, Fallback> =
+  unknown extends TCandidate
+    ? TCandidate extends unknown
+      ? Fallback
+      : TCandidate
+    : TCandidate
+
 export const polymorphicCheckInDual =
   (is: (arg: unknown) => boolean) => (arg: IArguments) =>
     Effect.isEffect(arg[0]) || is(arg[0])

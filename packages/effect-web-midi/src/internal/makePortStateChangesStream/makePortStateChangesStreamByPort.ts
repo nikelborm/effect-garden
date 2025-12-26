@@ -46,6 +46,7 @@ export const makePortStateChangesStreamFactory = <
             } as const)
           : null,
       }) as const,
+    // TODO: check this type is actually needed
   ) as DualMakeStateChangesStream<THighLevelPortType>
 
 /**

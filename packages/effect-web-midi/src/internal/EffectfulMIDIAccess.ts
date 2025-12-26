@@ -332,11 +332,17 @@ export const resolve = <E = never, R = never>(
  *
  *
  */
-export type PolymorphicAccessInstance<E = never, R = never> = PolymorphicEffect<
+export type PolymorphicAccessInstance<E, R> = PolymorphicEffect<
   EffectfulMIDIAccessInstance,
   E,
   R
 >
+
+/**
+ *
+ *
+ */
+export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<never, never>
 
 /**
  *

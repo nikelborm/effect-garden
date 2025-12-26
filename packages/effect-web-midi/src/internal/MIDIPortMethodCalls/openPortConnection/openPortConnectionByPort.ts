@@ -1,3 +1,4 @@
+import type * as Effect from 'effect/Effect'
 import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'

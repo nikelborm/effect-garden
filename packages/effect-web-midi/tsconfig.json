@@ -3,7 +3,8 @@
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
-    "baseUrl": "./"
+    "baseUrl": "./",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"]
   },
   "include": ["**/*.ts"],
   "exclude": [
