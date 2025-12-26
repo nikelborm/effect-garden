@@ -1,4 +1,3 @@
-import type * as Effect from 'effect/Effect'
 import * as EffectfulMIDIInputPort from '../../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../../EffectfulMIDIOutputPort.ts'
 import * as EffectfulMIDIPort from '../../EffectfulMIDIPort.ts'
@@ -30,6 +29,10 @@ export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
  */
 export const openPortConnectionByPort = makePortConnectionOpener(
   EffectfulMIDIPort.is,
+)
+
+const ass = openPortConnectionByPort(
+  {} as EffectfulMIDIPort.PolymorphicPort<'1', '2', 'output'>,
 )
 
 /**

@@ -6,6 +6,7 @@ import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
+  type FallbackOnUnknownOrAny,
   type MIDIBothPortId,
 } from '../util.ts'
 
@@ -21,26 +22,15 @@ export const makeMIDIPortMethodCallerFactory =
     is: (
       port: unknown,
     ) => port is EffectfulMIDIPort.EffectfulMIDIPort<THighLevelPortType>,
-  ): {
-    /**
-     * @returns An effect with the same port for easier chaining of operations
-     */
-    <TPortType extends THighLevelPortType, E = never, R = never>(
-      polymorphicPort: EffectfulMIDIPort.PolymorphicPort<E, R, TPortType>,
-    ): Effect.Effect<
-      EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
-      TError | E,
-      R
-    >
-  } =>
+  ): TouchPort<TError, never, never, THighLevelPortType> =>
     Effect.fn(`EffectfulMIDIPort.${method}`)(function* <
       TPortType extends THighLevelPortType,
-      EPort = never,
-      RPort = never,
+      TPortGettingError = never,
+      TPortGettingRequirement = never,
     >(
       polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
-        EPort,
-        RPort,
+        TPortGettingError,
+        TPortGettingRequirement,
         TPortType
       >,
     ) {
@@ -49,7 +39,11 @@ export const makeMIDIPortMethodCallerFactory =
         is as unknown as (
           port: unknown,
         ) => port is EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
-      )
+      ) as Effect.Effect<
+        EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+        TError | FallbackOnUnknownOrAny<TPortGettingError, never>,
+        FallbackOnUnknownOrAny<TPortGettingRequirement, never>
+      >
 
       yield* Effect.annotateCurrentSpan({
         method,
@@ -63,3 +57,33 @@ export const makeMIDIPortMethodCallerFactory =
 
       return port
     })
+
+type TouchPort<
+  TError,
+  TPortGettingFallbackError,
+  TPortGettingFallbackRequirement,
+  THighLevelPortType extends MIDIPortType,
+> = {
+  /**
+   * @returns An effect with the same port for easier chaining of operations
+   */
+  <
+    TPortType extends THighLevelPortType,
+    TPortGettingError = never,
+    TPortGettingRequirement = never,
+  >(
+    polymorphicPort: EffectfulMIDIPort.PolymorphicPort<
+      TPortGettingError,
+      TPortGettingRequirement,
+      TPortType
+    >,
+  ): Effect.Effect<
+    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    | FallbackOnUnknownOrAny<TPortGettingError, TPortGettingFallbackError>
+    | TError,
+    FallbackOnUnknownOrAny<
+      TPortGettingRequirement,
+      TPortGettingFallbackRequirement
+    >
+  >
+}

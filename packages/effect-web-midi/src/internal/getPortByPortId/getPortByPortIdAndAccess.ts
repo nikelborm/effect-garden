@@ -6,15 +6,9 @@ import { dual, flow } from 'effect/Function'
 import * as EffectfulMIDIAccess from '../EffectfulMIDIAccess.ts'
 import * as EffectfulMIDIInputPort from '../EffectfulMIDIInputPort.ts'
 import * as EffectfulMIDIOutputPort from '../EffectfulMIDIOutputPort.ts'
+import type * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
 import { PortNotFoundError } from '../errors.ts'
-import {
-  MIDIBothPortId,
-  MIDIInputPortId,
-  MIDIOutputPortId,
-  type FallbackOnUnknownOrAny,
-  type MIDIPortId,
-} from '../util.ts'
-import * as EffectfulMIDIPort from '../EffectfulMIDIPort.ts'
+import type { FallbackOnUnknownOrAny, MIDIPortId } from '../util.ts'
 
 /**
  *
@@ -25,7 +19,6 @@ export const getPortByIdAndRemap = <
   EOutputPort,
   RInputPort,
   ROutputPort,
-  TTypeOfPortId extends AInputPortType | AOutputPortType,
   AInputPortType extends 'input' = never,
   AOutputPortType extends 'output' = never,
 >(handlers: {
@@ -45,7 +38,7 @@ export const getPortByIdAndRemap = <
   >
 }): GetPortById<
   AInputPortType | AOutputPortType,
-  TTypeOfPortId,
+  AInputPortType | AOutputPortType,
   never,
   never,
   EInputPort | EOutputPort,
@@ -114,7 +107,7 @@ export const getOutputPortByPortIdAndAccess = getPortByIdAndRemap({
 })
 
 export interface GetPortById<
-  TReturnedPortType extends MIDIPortType,
+  TReturnedPortType extends TTypeOfPortId,
   TTypeOfPortId extends MIDIPortType,
   TAccessGettingFallbackError,
   TAccessGettingFallbackRequirement,
@@ -130,14 +123,14 @@ export interface GetPortById<
   > {}
 
 export interface GetPortByIdAccessFirst<
-  TPortType extends MIDIPortType,
+  TReturnedPortType extends TTypeOfPortId,
   TTypeOfPortId extends MIDIPortType,
   TAccessGettingFallbackError,
   TAccessGettingFallbackRequirement,
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessFirst<
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -146,14 +139,14 @@ export interface GetPortByIdAccessFirst<
   > {}
 
 export interface GetPortByIdAccessLast<
-  TPortType extends MIDIPortType,
+  TReturnedPortType extends TTypeOfPortId,
   TTypeOfPortId extends MIDIPortType,
   TAccessGettingFallbackError,
   TAccessGettingFallbackRequirement,
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLast<
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
@@ -162,13 +155,13 @@ export interface GetPortByIdAccessLast<
   > {}
 
 export interface GetPortByIdAccessLastSecondHalf<
-  TPortType extends MIDIPortType,
+  TReturnedPortType extends MIDIPortType,
   TAccessGettingFallbackError,
   TAccessGettingFallbackRequirement,
   TAdditionalError,
   TAdditionalRequirement,
 > extends GetThingByPortIdAccessLastSecondHalf<
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
     TAdditionalError | PortNotFoundError,
@@ -176,7 +169,7 @@ export interface GetPortByIdAccessLastSecondHalf<
   > {}
 
 export interface AcquiredPort<
-  TPortType extends MIDIPortType,
+  TReturnedPortType extends MIDIPortType,
   TAccessGettingError,
   TAccessGettingRequirement,
   TAccessGettingFallbackError,
@@ -184,7 +177,7 @@ export interface AcquiredPort<
   TAdditionalError,
   TAdditionalRequirement,
 > extends AcquiredThing<
-    EffectfulMIDIPort.EffectfulMIDIPort<TPortType>,
+    EffectfulMIDIPort.EffectfulMIDIPort<TReturnedPortType>,
     TAccessGettingError,
     TAccessGettingRequirement,
     TAccessGettingFallbackError,
@@ -311,9 +304,7 @@ export interface AcquiredThing<
 > extends Effect.Effect<
     TSuccess,
     | FallbackOnUnknownOrAny<TAccessGettingError, TAccessGettingFallbackError>
-    | TAdditionalError
-    // TODO: Ensure PortNotFoundError is needed here
-    | PortNotFoundError,
+    | TAdditionalError,
     | FallbackOnUnknownOrAny<
         TAccessGettingRequirement,
         TAccessGettingFallbackRequirement
