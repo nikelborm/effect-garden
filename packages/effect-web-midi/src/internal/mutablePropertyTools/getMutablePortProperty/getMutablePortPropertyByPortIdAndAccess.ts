@@ -1,3 +1,4 @@
+import type * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
@@ -13,7 +14,6 @@ import {
   getPortConnectionStateByPort,
   getPortDeviceStateByPort,
 } from './getMutablePortPropertyByPort.ts'
-import * as Brand from 'effect/Brand'
 
 const getPortByIdGeneric2 =
   <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(

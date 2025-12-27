@@ -6,7 +6,6 @@ import * as EMIDIPort from '../EMIDIPort.ts'
 import {
   fromPolymorphic,
   getStaticMIDIPortInfo,
-  type FallbackOnUnknownOrAny,
   type MIDIBothPortId,
 } from '../util.ts'
 
@@ -20,7 +19,7 @@ export const makeMIDIPortMethodCallerFactory =
   ) =>
   <THighLevelPortType extends MIDIPortType>(
     is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
-  ): TouchPort<TError, never, never, THighLevelPortType> =>
+  ): TouchPort<TError, never, THighLevelPortType> =>
     Effect.fn(`EMIDIPort.${method}`)(function* <
       TPortType extends THighLevelPortType,
       TPortGettingError = never,
@@ -37,11 +36,7 @@ export const makeMIDIPortMethodCallerFactory =
         is as unknown as (
           port: unknown,
         ) => port is EMIDIPort.EMIDIPort<TPortType>,
-      ) as Effect.Effect<
-        EMIDIPort.EMIDIPort<TPortType>,
-        TError | FallbackOnUnknownOrAny<TPortGettingError, never>,
-        FallbackOnUnknownOrAny<TPortGettingRequirement, never>
-      >
+      )
 
       yield* Effect.annotateCurrentSpan({
         method,
@@ -56,12 +51,11 @@ export const makeMIDIPortMethodCallerFactory =
       return port
     })
 
-type TouchPort<
-  TError,
-  TPortGettingFallbackError,
-  TPortGettingFallbackRequirement,
+export interface TouchPort<
+  TAdditionalError,
+  TAdditionalRequirement,
   THighLevelPortType extends MIDIPortType,
-> = {
+> {
   /**
    * @returns An effect with the same port for easier chaining of operations
    */
@@ -77,11 +71,7 @@ type TouchPort<
     >,
   ): Effect.Effect<
     EMIDIPort.EMIDIPort<TPortType>,
-    | FallbackOnUnknownOrAny<TPortGettingError, TPortGettingFallbackError>
-    | TError,
-    FallbackOnUnknownOrAny<
-      TPortGettingRequirement,
-      TPortGettingFallbackRequirement
-    >
+    TPortGettingError | TAdditionalError,
+    TPortGettingRequirement | TAdditionalRequirement
   >
 }

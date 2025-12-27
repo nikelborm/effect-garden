@@ -41,7 +41,7 @@ export const getPortByIdAndRemap = <
   AInputPortType | AOutputPortType,
   never,
   never,
-  EInputPort | EOutputPort,
+  PortNotFoundError | EInputPort | EOutputPort,
   RInputPort | ROutputPort
 > =>
   dual(2, (polymorphicAccess, portId) =>
