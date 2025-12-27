@@ -35,20 +35,20 @@ const makeImpl = (rawInput: MIDIInput): EMIDIInputImpl =>
  *
  * @internal
  */
-const assertImpl = (inputPort: unknown) => {
-  if (!isImpl(inputPort)) throw new Error('Failed to cast to EMIDIInputImpl')
-  return inputPort
+const assertImpl = (input: unknown) => {
+  if (!isImpl(input)) throw new Error('Failed to cast to EMIDIInputImpl')
+  return input
 }
 
 /**
  * Asserts an object to be valid EMIDIInput
  */
-export const assert: (inputPort: unknown) => EMIDIInput = assertImpl
+export const assert: (input: unknown) => EMIDIInput = assertImpl
 
 /**
  * @internal
  */
-const assumeImpl = (inputPort: EMIDIInput) => inputPort as EMIDIInputImpl
+const assumeImpl = (input: EMIDIInput) => input as EMIDIInputImpl
 
 /**
  *
@@ -62,14 +62,14 @@ export const make: (rawInput: MIDIInput) => EMIDIInput = makeImpl
  *
  * @internal
  */
-const isImpl: (inputPort: unknown) => inputPort is EMIDIInputImpl =
+const isImpl: (input: unknown) => input is EMIDIInputImpl =
   EMIDIPort.isImplOfSpecificType('input', globalThis.MIDIInput)
 
 /**
  *
  *
  */
-export const is: (inputPort: unknown) => inputPort is EMIDIInput = isImpl
+export const is: (input: unknown) => input is EMIDIInput = isImpl
 
 /**
  * [MIDIMessageEvent MDN
@@ -82,15 +82,15 @@ export const is: (inputPort: unknown) => inputPort is EMIDIInput = isImpl
 export const makeMessagesStream =
   Create.createStreamMakerFrom<MIDIInputEventMap>()(
     is,
-    inputPort => ({
+    input => ({
       tag: 'MIDIMessage',
       eventListener: {
-        target: assumeImpl(inputPort)._port,
+        target: assumeImpl(input)._port,
         type: 'midimessage',
       },
       spanAttributes: {
         spanTargetName: 'MIDI port',
-        port: Util.getStaticMIDIPortInfo(inputPort),
+        port: Util.getStaticMIDIPortInfo(input),
       },
       nullableFieldName: 'data',
     }),

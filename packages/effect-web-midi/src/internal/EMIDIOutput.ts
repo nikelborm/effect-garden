@@ -36,22 +36,22 @@ const makeImpl = (rawOutput: MIDIOutput): EMIDIOutputImpl =>
  *
  * @internal
  */
-const assertImpl = (outputPort: unknown) => {
-  if (!isImpl(outputPort))
+const assertImpl = (output: unknown) => {
+  if (!isImpl(output))
     throw new Error('Assertion failed: Not a EMIDIOutputImpl')
-  return outputPort
+  return output
 }
 
 /**
  * Asserts an object to be valid EMIDIOutput
  */
-export const assert: (outputPort: unknown) => EMIDIOutput = assertImpl
+export const assert: (output: unknown) => EMIDIOutput = assertImpl
 
 /**
  * Casts
  * @internal
  */
-const assumeImpl = (outputPort: EMIDIOutput) => outputPort as EMIDIOutputImpl
+const assumeImpl = (output: EMIDIOutput) => output as EMIDIOutputImpl
 
 /**
  *
@@ -68,7 +68,7 @@ const isImpl = EMIDIPort.isImplOfSpecificType('output', globalThis.MIDIOutput)
 /**
  *
  */
-export const is: (outputPort: unknown) => outputPort is EMIDIOutput = isImpl
+export const is: (output: unknown) => output is EMIDIOutput = isImpl
 
 /**
  *
@@ -98,16 +98,16 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
   Util.polymorphicCheckInDual(is),
   Effect.fn('EMIDIOutput.send')(
     function* (polymorphicOutput, midiMessage, timestamp) {
-      const outputPort = yield* resolve(polymorphicOutput)
+      const output = yield* resolve(polymorphicOutput)
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
         timestamp,
-        port: Util.getStaticMIDIPortInfo(outputPort),
+        port: Util.getStaticMIDIPortInfo(output),
       })
 
       yield* Effect.try({
-        try: () => assumeImpl(outputPort)._port.send(midiMessage, timestamp),
+        try: () => assumeImpl(output)._port.send(midiMessage, timestamp),
         catch: Errors.remapErrorByName(
           {
             NotAllowedError: Errors.CantSendSysexMessagesError,
@@ -119,11 +119,11 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
             TypeError: Errors.MalformedMidiMessageError,
           },
           'EMIDIOutput.send error handling absurd',
-          { portId: outputPort.id, midiMessage: [...midiMessage] },
+          { portId: output.id, midiMessage: [...midiMessage] },
         ),
       })
 
-      return outputPort as EMIDIOutput
+      return output as EMIDIOutput
     },
   ),
 )
@@ -144,17 +144,17 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
   E = never,
   R = never,
 >(polymorphicOutput: PolymorphicOutput<E, R>) {
-  const outputPort = yield* resolve(polymorphicOutput)
+  const output = yield* resolve(polymorphicOutput)
 
   yield* Effect.annotateCurrentSpan({
-    port: Util.getStaticMIDIPortInfo(outputPort),
+    port: Util.getStaticMIDIPortInfo(output),
   })
 
   yield* Effect.try({
     // @ts-expect-error even though `.clear` is in spec, the API is not
     // supported in at least 2 major browsers, hence doesn't meet the condition
     // to be included into TS's DOM types
-    try: () => assumeImpl(outputPort)._port.clear(),
+    try: () => assumeImpl(output)._port.clear(),
     catch: Errors.remapErrorByName(
       {
         // TODO: test this
@@ -163,11 +163,11 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
         NotSupportedError: Errors.ClearingSendingQueueIsNotSupportedError,
       },
       'EMIDIOutput.clear error handling absurd',
-      { portId: outputPort.id },
+      { portId: output.id },
     ),
   })
 
-  return outputPort
+  return output
 })
 
 /**
