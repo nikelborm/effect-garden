@@ -1,27 +1,22 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import {
-  type BuiltStream,
-  createStreamMakerFrom,
-  type OnNullStrategy,
-  type StreamMakerOptions,
-} from '../createStreamMakerFrom.ts'
+import * as Create from '../createStreamMakerFrom.ts'
 import * as EMIDIInputPort from '../EMIDIInputPort.ts'
 import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
 import * as EMIDIPort from '../EMIDIPort.ts'
-import { getStaticMIDIPortInfo } from '../util.ts'
+import * as Util from '../util.ts'
 
 /**
  *
  * @internal
  */
-export const makePortStateChangesStreamFactory = <
+const makePortStateChangesStreamFactory = <
   THighLevelPortType extends MIDIPortType,
 >(
   is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
 ) =>
-  createStreamMakerFrom<MIDIPortEventMap>()(
+  Create.createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     port => ({
       tag: 'MIDIPortStateChange',
@@ -31,7 +26,7 @@ export const makePortStateChangesStreamFactory = <
       },
       spanAttributes: {
         spanTargetName: 'MIDI port',
-        port: getStaticMIDIPortInfo(port),
+        port: Util.getStaticMIDIPortInfo(port),
       },
       nullableFieldName: 'port',
     }),
@@ -96,12 +91,12 @@ export interface MakeStateChangesStreamPortFirst<
    */
   <
     TPortType extends THighLevelPortType,
-    const TOnNullStrategy extends OnNullStrategy = undefined,
+    const TOnNullStrategy extends Create.OnNullStrategy = undefined,
     E = never,
     R = never,
   >(
     polymorphicPort: EMIDIPort.PolymorphicPort<E, R, TPortType>,
-    options?: StreamMakerOptions<TOnNullStrategy>,
+    options?: Create.StreamMakerOptions<TOnNullStrategy>,
   ): StateChangesStream<TOnNullStrategy, TPortType, E, R>
 }
 
@@ -116,8 +111,8 @@ export interface MakeStateChangesStreamPortLast<
    * @param options Passing a value of a `boolean` type is equivalent to setting `options.capture`
    * property
    */
-  <const TOnNullStrategy extends OnNullStrategy = undefined>(
-    options?: StreamMakerOptions<TOnNullStrategy>,
+  <const TOnNullStrategy extends Create.OnNullStrategy = undefined>(
+    options?: Create.StreamMakerOptions<TOnNullStrategy>,
   ): {
     /**
      *
@@ -134,11 +129,11 @@ export interface MakeStateChangesStreamPortLast<
  * not possible if using just {@linkcode createStreamMakerFrom}
  */
 export interface StateChangesStream<
-  TOnNullStrategy extends OnNullStrategy,
+  TOnNullStrategy extends Create.OnNullStrategy,
   TPortType extends MIDIPortType,
   E = never,
   R = never,
-> extends BuiltStream<
+> extends Create.BuiltStream<
     'MIDIPortStateChange',
     EMIDIPort.EMIDIPort<TPortType>,
     {

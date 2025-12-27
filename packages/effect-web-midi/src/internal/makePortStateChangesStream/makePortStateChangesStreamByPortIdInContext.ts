@@ -1,46 +1,35 @@
-import type {
-  OnNullStrategy,
-  StreamMakerOptions,
-} from '../createStreamMakerFrom.ts'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-  getPortByPortIdInContext,
-} from '../getPortByPortId/getPortByPortIdInContext.ts'
-import type {
-  MIDIBothPortId,
-  MIDIInputPortId,
-  MIDIOutputPortId,
-} from '../util.ts'
-import {
-  makeInputPortStateChangesStreamByPort,
-  makeOutputPortStateChangesStreamByPort,
-  makePortStateChangesStreamByPort,
-} from './makePortStateChangesStreamByPort.ts'
+import type * as Create from '../createStreamMakerFrom.ts'
+import * as Get from '../getPortByPortId/getPortByPortIdInContext.ts'
+import type * as Util from '../util.ts'
+import * as Make from './makePortStateChangesStreamByPort.ts'
 
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
 export const makePortStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
+  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: MIDIBothPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
-) => makePortStateChangesStreamByPort(getPortByPortIdInContext(id), options)
+  id: Util.MIDIBothPortId,
+  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+) =>
+  Make.makePortStateChangesStreamByPort(
+    Get.getPortByPortIdInContext(id),
+    options,
+  )
 
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
 export const makeInputPortStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
+  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: MIDIInputPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
+  id: Util.MIDIInputPortId,
+  options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  makeInputPortStateChangesStreamByPort(
-    getInputPortByPortIdInContext(id),
+  Make.makeInputPortStateChangesStreamByPort(
+    Get.getInputPortByPortIdInContext(id),
     options,
   )
 
@@ -49,12 +38,12 @@ export const makeInputPortStateChangesStreamByPortIdInContext = <
  * `options.capture` property
  */
 export const makeOutputPortStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
+  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: MIDIOutputPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
+  id: Util.MIDIOutputPortId,
+  options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  makeOutputPortStateChangesStreamByPort(
-    getOutputPortByPortIdInContext(id),
+  Make.makeOutputPortStateChangesStreamByPort(
+    Get.getOutputPortByPortIdInContext(id),
     options,
   )

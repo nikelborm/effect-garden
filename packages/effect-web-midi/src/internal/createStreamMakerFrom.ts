@@ -3,16 +3,12 @@
 
 import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
-import type { EMIDIAccessInstance } from './EMIDIAccess.ts'
-import type { EMIDIInputPort } from './EMIDIInputPort.ts'
-import type { EMIDIOutputPort } from './EMIDIOutputPort.ts'
-import {
-  fromPolymorphic,
-  type PolymorphicEffect,
-  polymorphicCheckInDual,
-} from './util.ts'
+import type * as EMIDIAccess from './EMIDIAccess.ts'
+import type * as EMIDIInputPort from './EMIDIInputPort.ts'
+import type * as EMIDIOutputPort from './EMIDIOutputPort.ts'
+import * as Util from './util.ts'
 
 // TODO: make an experiment to see if listeners are automatically removed on disconnect
 
@@ -54,8 +50,8 @@ const validOnNullStrategies = new Set([
  *   success channel of the stream
  *
  * - `buildConfig` - Function that makes config out of an effectful version
- *   (e.g. {@linkcode EMIDIAccessInstance}, {@linkcode EMIDIInputPort},
- *   {@linkcode EMIDIOutputPort}) of a MIDI object.
+ *   (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInputPort.EMIDIInputPort},
+ *   {@linkcode EMIDIOutputPort.EMIDIOutputPort}) of a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
  *   selected field to an extension of the object inside stream's success
@@ -77,8 +73,8 @@ export const createStreamMakerFrom =
    * success channel of the stream
    *
    * @param buildConfig Function that makes config out of an effectful version
-   * (e.g. {@linkcode EMIDIAccessInstance}, {@linkcode EMIDIInputPort},
-   * {@linkcode EMIDIOutputPort}) of a MIDI object.
+   * (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInputPort.EMIDIInputPort},
+   * {@linkcode EMIDIOutputPort.EMIDIOutputPort}) of a MIDI object.
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
    * event's selected field (`nullableFieldName`) to an extension of the object
@@ -116,11 +112,11 @@ export const createStreamMakerFrom =
       fieldValue: TEventTypeToEventValueMap[TSelectedEventType][TNullableFieldName],
     ) => TContainerWithNullableFields,
   ): DualStreamMaker<TCameFrom, TTag, TContainerWithNullableFields> =>
-    dual<
+    EFunction.dual<
       MakeStreamTargetLast<TCameFrom, TTag, TContainerWithNullableFields>,
       MakeStreamTargetFirst<TCameFrom, TTag, TContainerWithNullableFields>
     >(
-      polymorphicCheckInDual(isSelf),
+      Util.polymorphicCheckInDual(isSelf),
       (cameFromPolymorphic, options) =>
         Effect.gen(function* () {
           const onNullStrategy = ((
@@ -135,7 +131,10 @@ export const createStreamMakerFrom =
               `Invalid strategy to handle nullish values: ${onNullStrategy}`,
             )
 
-          const cameFrom = yield* fromPolymorphic(cameFromPolymorphic, isSelf)
+          const cameFrom = yield* Util.fromPolymorphic(
+            cameFromPolymorphic,
+            isSelf,
+          )
 
           const {
             tag,
@@ -364,7 +363,7 @@ export interface MakeStreamTargetFirst<
     R = never,
     const TOnNullStrategy extends OnNullStrategy = undefined,
   >(
-    polymorphicEventTargetWrapper: PolymorphicEffect<TCameFrom, E, R>,
+    polymorphicEventTargetWrapper: Util.PolymorphicEffect<TCameFrom, E, R>,
     options?: StreamMakerOptions<TOnNullStrategy>,
   ): BuiltStream<
     TTag,
@@ -402,7 +401,7 @@ export interface MakeStreamTargetLast<
      * channel object
      */
     <E = never, R = never>(
-      polymorphicEventTargetWrapper: PolymorphicEffect<TCameFrom, E, R>,
+      polymorphicEventTargetWrapper: Util.PolymorphicEffect<TCameFrom, E, R>,
     ): BuiltStream<
       TTag,
       TCameFrom,

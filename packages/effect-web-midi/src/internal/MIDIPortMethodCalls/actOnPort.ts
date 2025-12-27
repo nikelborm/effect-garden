@@ -2,16 +2,17 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
-import type {
-  GetPortById,
-  GetThingByPortId,
-} from '../getPortByPortId/getPortByPortIdAndAccess.ts'
-import type { MIDIPortId } from '../util.ts'
-import type { TouchPort } from './makeMIDIPortMethodCallerFactory.ts'
+import type * as Get from '../getPortByPortId/getPortByPortIdAndAccess.ts'
+import type * as Util from '../util.ts'
+import type * as Make from './makeMIDIPortMethodCallerFactory.ts'
 
+/**
+ *
+ * @internal
+ */
 export const actOnPort = <
   TTypeOfPortId extends MIDIPortType,
   TPortTypeReturnedFromAccess extends TPortTypeSupportedInActing &
@@ -22,7 +23,7 @@ export const actOnPort = <
   TPortActingError = never,
   TPortActingRequirement = never,
 >(
-  portGetterFromAccessAndPortId: GetPortById<
+  portGetterFromAccessAndPortId: Get.GetPortById<
     TPortTypeReturnedFromAccess,
     TTypeOfPortId,
     never,
@@ -30,12 +31,12 @@ export const actOnPort = <
     TPortGettingError,
     TPortGettingRequirement
   >,
-  act: TouchPort<
+  act: Make.TouchPort<
     TPortActingError,
     TPortActingRequirement,
     TPortTypeSupportedInActing
   >,
-): GetThingByPortId<
+): EMIDIAccess.GetThingByPortId<
   EMIDIAccess.EMIDIAccessInstance,
   TPortTypeReturnedFromAccess,
   never,
@@ -43,7 +44,7 @@ export const actOnPort = <
   TPortGettingError | TPortActingError,
   TPortGettingRequirement | TPortActingRequirement
 > =>
-  dual(
+  EFunction.dual(
     2,
     (polymorphicAccess, portId) =>
       Effect.gen(function* () {
@@ -51,7 +52,7 @@ export const actOnPort = <
 
         const port = yield* portGetterFromAccessAndPortId(
           access,
-          portId as unknown as MIDIPortId<TTypeOfPortId>,
+          portId as unknown as Util.MIDIPortId<TTypeOfPortId>,
         )
 
         const actEffect = act(

@@ -6,6 +6,8 @@ import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFact
 
 /**
  * @internal
+ *
+ * exported for acquire-release
  */
 export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
   'open',

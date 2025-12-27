@@ -92,7 +92,11 @@
             "skipLeadingPath": [] // other pattern specific configs
           }
         ],
-        "importAliases": { "Array": "EArray", "String": "EString" }
+        "importAliases": {
+          "Array": "EArray",
+          "String": "EString",
+          "Function": "EFunction"
+        }
       }
     ]
   }

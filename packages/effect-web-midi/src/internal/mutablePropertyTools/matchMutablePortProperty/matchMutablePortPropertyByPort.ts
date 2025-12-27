@@ -2,38 +2,38 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
 import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
-import { fromPolymorphic, polymorphicCheckInDual } from '../../util.ts'
-import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
+import * as Util from '../../util.ts'
+import * as Get from '../getValueInRawPortFieldUnsafe.ts'
 
 /**
  * @internal
  */
-export const matchMutableMIDIPortProperty = <
+const matchMutableMIDIPortProperty = <
   const TMIDIPortProperty extends MIDIPortMutableProperty,
   THighLevelPortType extends MIDIPortType,
 >(
   property: TMIDIPortProperty,
   is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
 ): DualMatchPortState<THighLevelPortType, TMIDIPortProperty> =>
-  dual<
+  EFunction.dual<
     MatchStatePortLast<THighLevelPortType, TMIDIPortProperty>,
     MatchStatePortFirst<THighLevelPortType, TMIDIPortProperty>
   >(
-    polymorphicCheckInDual(is),
+    Util.polymorphicCheckInDual(is),
     Effect.fn(function* (polymorphicPort, config) {
-      const port = yield* fromPolymorphic(
+      const port = yield* Util.fromPolymorphic(
         polymorphicPort,
         is as (
           port: unknown,
         ) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
       )
 
-      const state = getValueInRawPortFieldUnsafe(property)(port)
+      const state = Get.getValueInRawPortFieldUnsafe(property)(port)
 
       for (const [stateCase, stateCallback] of Record.toEntries(config))
         if (state === stateCase)

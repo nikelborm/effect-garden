@@ -11,7 +11,7 @@ import * as O from '../openPortConnection/openPortConnectionByPort.ts'
 /**
  * @internal
  */
-export const makeConnectionAcquirerReleaser =
+const makeConnectionAcquirerReleaser =
   <THighLevelPortType extends MIDIPortType>(
     is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
   ): TouchPort<UnavailablePortError, Scope.Scope, THighLevelPortType> =>

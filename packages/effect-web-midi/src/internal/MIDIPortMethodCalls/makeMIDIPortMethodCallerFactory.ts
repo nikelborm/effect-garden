@@ -3,11 +3,7 @@
 
 import * as Effect from 'effect/Effect'
 import * as EMIDIPort from '../EMIDIPort.ts'
-import {
-  fromPolymorphic,
-  getStaticMIDIPortInfo,
-  type MIDIBothPortId,
-} from '../util.ts'
+import * as Util from '../util.ts'
 
 /**
  * @internal
@@ -15,7 +11,7 @@ import {
 export const makeMIDIPortMethodCallerFactory =
   <TError = never>(
     method: 'close' | 'open',
-    mapError: (portId: MIDIBothPortId) => (err: unknown) => TError,
+    mapError: (portId: Util.MIDIBothPortId) => (err: unknown) => TError,
   ) =>
   <THighLevelPortType extends MIDIPortType>(
     is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
@@ -31,7 +27,7 @@ export const makeMIDIPortMethodCallerFactory =
         TPortType
       >,
     ) {
-      const port = yield* fromPolymorphic(
+      const port = yield* Util.fromPolymorphic(
         polymorphicPort,
         is as unknown as (
           port: unknown,
@@ -40,7 +36,7 @@ export const makeMIDIPortMethodCallerFactory =
 
       yield* Effect.annotateCurrentSpan({
         method,
-        port: getStaticMIDIPortInfo(port),
+        port: Util.getStaticMIDIPortInfo(port),
       })
 
       yield* Effect.tryPromise({

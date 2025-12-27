@@ -2,22 +2,10 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as EMIDIPort from './EMIDIPort.ts'
-import {
-  CantSendSysexMessagesError,
-  ClearingSendingQueueIsNotSupportedError,
-  DisconnectedPortError,
-  MalformedMidiMessageError,
-  remapErrorByName,
-} from './errors.ts'
-import {
-  fromPolymorphic,
-  getStaticMIDIPortInfo,
-  type PolymorphicEffect,
-  polymorphicCheckInDual,
-  type SentMessageEffectFrom,
-} from './util.ts'
+import * as Errors from './errors.ts'
+import * as Util from './util.ts'
 
 /**
  * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all
@@ -90,7 +78,7 @@ export const is: (outputPort: unknown) => outputPort is EMIDIOutputPort = isImpl
  */
 const resolve = <E = never, R = never>(
   polymorphicPort: PolymorphicOutputPort<E, R>,
-) => fromPolymorphic(polymorphicPort, is)
+) => Util.fromPolymorphic(polymorphicPort, is)
 
 /**
  * If `midiMessage` is a System Exclusive message, and the `MIDIAccess` did not
@@ -104,11 +92,11 @@ const resolve = <E = never, R = never>(
  *
  * @returns An effect with the same port for easier chaining of operations
  */
-export const send: DualSendMIDIMessageFromPort = dual<
+export const send: DualSendMIDIMessageFromPort = EFunction.dual<
   SendMIDIMessagePortLast,
   SendMIDIMessagePortFirst
 >(
-  polymorphicCheckInDual(is),
+  Util.polymorphicCheckInDual(is),
   Effect.fn('EMIDIOutputPort.send')(
     function* (polymorphicOutputPort, midiMessage, timestamp) {
       const outputPort = yield* resolve(polymorphicOutputPort)
@@ -116,20 +104,20 @@ export const send: DualSendMIDIMessageFromPort = dual<
       yield* Effect.annotateCurrentSpan({
         midiMessage,
         timestamp,
-        port: getStaticMIDIPortInfo(outputPort),
+        port: Util.getStaticMIDIPortInfo(outputPort),
       })
 
       yield* Effect.try({
         try: () => assumeImpl(outputPort)._port.send(midiMessage, timestamp),
-        catch: remapErrorByName(
+        catch: Errors.remapErrorByName(
           {
-            NotAllowedError: CantSendSysexMessagesError,
+            NotAllowedError: Errors.CantSendSysexMessagesError,
             // InvalidAccessError is kept for compatibility reason
             // (https://github.com/WebAudio/web-midi-api/pull/278):
-            InvalidAccessError: CantSendSysexMessagesError,
+            InvalidAccessError: Errors.CantSendSysexMessagesError,
 
-            InvalidStateError: DisconnectedPortError,
-            TypeError: MalformedMidiMessageError,
+            InvalidStateError: Errors.DisconnectedPortError,
+            TypeError: Errors.MalformedMidiMessageError,
           },
           'EMIDIOutputPort.send error handling absurd',
           { portId: outputPort.id, midiMessage: [...midiMessage] },
@@ -159,19 +147,21 @@ export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
 >(polymorphicOutputPort: PolymorphicOutputPort<E, R>) {
   const outputPort = yield* resolve(polymorphicOutputPort)
 
-  yield* Effect.annotateCurrentSpan({ port: getStaticMIDIPortInfo(outputPort) })
+  yield* Effect.annotateCurrentSpan({
+    port: Util.getStaticMIDIPortInfo(outputPort),
+  })
 
   yield* Effect.try({
     // @ts-expect-error even though `.clear` is in spec, the API is not
     // supported in at least 2 major browsers, hence doesn't meet the condition
     // to be included into TS's DOM types
     try: () => assumeImpl(outputPort)._port.clear(),
-    catch: remapErrorByName(
+    catch: Errors.remapErrorByName(
       {
         // TODO: test this
         // most likely it would be something like `TypeError: Undefined is not a function`
-        TypeError: ClearingSendingQueueIsNotSupportedError,
-        NotSupportedError: ClearingSendingQueueIsNotSupportedError,
+        TypeError: Errors.ClearingSendingQueueIsNotSupportedError,
+        NotSupportedError: Errors.ClearingSendingQueueIsNotSupportedError,
       },
       'EMIDIOutputPort.clear error handling absurd',
       { portId: outputPort.id },
@@ -185,7 +175,7 @@ export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
  *
  *
  */
-export type PolymorphicOutputPort<E, R> = PolymorphicEffect<
+export type PolymorphicOutputPort<E, R> = Util.PolymorphicEffect<
   EMIDIOutputPort,
   E,
   R
@@ -230,4 +220,4 @@ export interface SendMIDIMessagePortFirst {
  *
  */
 export interface SentMessageEffectFromPort<E = never, R = never>
-  extends SentMessageEffectFrom<EMIDIOutputPort, E, R> {}
+  extends Util.SentMessageEffectFrom<EMIDIOutputPort, E, R> {}

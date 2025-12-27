@@ -5,11 +5,7 @@ import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import {
-  MIDIBothPortId,
-  type MIDIPortId,
-  type PolymorphicEffect,
-} from './util.ts'
+import * as Util from './util.ts'
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
@@ -66,7 +62,7 @@ const CommonProto = {
   },
 
   get id() {
-    return MIDIBothPortId(assumeImpl(this)._port.id)
+    return Util.MIDIBothPortId(assumeImpl(this)._port.id)
   },
   get name() {
     return assumeImpl(this)._port.name
@@ -96,7 +92,7 @@ export interface EMIDIPort<TMIDIPortType extends MIDIPortType = MIDIPortType>
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
    */
-  readonly id: MIDIPortId<TMIDIPortType>
+  readonly id: Util.MIDIPortId<TMIDIPortType>
   readonly [TypeId]: TypeId
   readonly _tag: 'EMIDIPort'
   readonly type: TMIDIPortType
@@ -179,7 +175,7 @@ export type PolymorphicPort<
   EPort,
   RPort,
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = PolymorphicEffect<EMIDIPort<TMIDIPortType>, EPort, RPort>
+> = Util.PolymorphicEffect<EMIDIPort<TMIDIPortType>, EPort, RPort>
 
 /**
  *
@@ -187,7 +183,7 @@ export type PolymorphicPort<
  */
 export type PolymorphicPortClean<
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = PolymorphicEffect<EMIDIPort<TMIDIPortType>, never, never>
+> = Util.PolymorphicEffect<EMIDIPort<TMIDIPortType>, never, never>
 
 export type ExtractTypeFromPort<TPort extends EMIDIPort> =
   TPort extends EMIDIPort<infer TPortType> ? TPortType : never

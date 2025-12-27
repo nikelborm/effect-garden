@@ -1,24 +1,10 @@
 import type * as Effect from 'effect/Effect'
 import type * as EMIDIAccess from '../../EMIDIAccess.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import type { PortNotFoundError } from '../../errors.ts'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-  getPortByPortIdInContext,
-} from '../../getPortByPortId/getPortByPortIdInContext.ts'
-import type { MIDIPortId } from '../../util.ts'
-import {
-  type DualMatchPortState,
-  type MIDIPortMutableProperty,
-  matchInputPortConnectionStateByPort,
-  matchInputPortDeviceStateByPort,
-  matchOutputPortConnectionStateByPort,
-  matchOutputPortDeviceStateByPort,
-  matchPortConnectionStateByPort,
-  matchPortDeviceStateByPort,
-  type StateCaseToHandlerMap,
-} from './matchMutablePortPropertyByPort.ts'
+import type * as Errors from '../../errors.ts'
+import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
+import type * as Util from '../../util.ts'
+import * as Match from './matchMutablePortPropertyByPort.ts'
 
 /**
  * @internal
@@ -26,25 +12,25 @@ import {
 const makeMatcherTakingPortIds =
   <
     THighLevelPortType extends MIDIPortType,
-    TMIDIPortProperty extends MIDIPortMutableProperty,
+    TMIDIPortProperty extends Match.MIDIPortMutableProperty,
   >(
-    match: DualMatchPortState<THighLevelPortType, TMIDIPortProperty>,
+    match: Match.DualMatchPortState<THighLevelPortType, TMIDIPortProperty>,
     getPort: (
-      id: MIDIPortId<THighLevelPortType>,
+      id: Util.MIDIPortId<THighLevelPortType>,
     ) => Effect.Effect<
       EMIDIPort.EMIDIPort<NoInfer<THighLevelPortType>>,
-      PortNotFoundError,
+      Errors.PortNotFoundError,
       EMIDIAccess.EMIDIAccess
     >,
   ) =>
   <
-    TStateCaseToHandlerMap extends StateCaseToHandlerMap<
+    TStateCaseToHandlerMap extends Match.StateCaseToHandlerMap<
       TMIDIPortProperty,
       THighLevelPortType,
       TStateCaseToHandlerMap
     >,
   >(
-    id: MIDIPortId<THighLevelPortType>,
+    id: Util.MIDIPortId<THighLevelPortType>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ) =>
     match(getPort(id), stateCaseToHandlerMap)
@@ -52,47 +38,52 @@ const makeMatcherTakingPortIds =
 /**
  *
  */
-export const matchPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  matchPortConnectionStateByPort,
-  getPortByPortIdInContext,
+export const matchPortConnectionStateByPortIdInContext =
+  makeMatcherTakingPortIds(
+    Match.matchPortConnectionStateByPort,
+    Get.getPortByPortIdInContext,
+  )
+
+/**
+ *
+ */
+export const matchInputPortConnectionStateByPortIdInContext =
+  makeMatcherTakingPortIds(
+    Match.matchInputPortConnectionStateByPort,
+    Get.getInputPortByPortIdInContext,
+  )
+
+/**
+ *
+ */
+export const matchOutputPortConnectionStateByPortIdInContext =
+  makeMatcherTakingPortIds(
+    Match.matchOutputPortConnectionStateByPort,
+    Get.getOutputPortByPortIdInContext,
+  )
+
+/**
+ *
+ */
+export const matchPortDeviceStateByPortIdInContext = makeMatcherTakingPortIds(
+  Match.matchPortDeviceStateByPort,
+  Get.getPortByPortIdInContext,
 )
 
 /**
  *
  */
-export const matchInputPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  matchInputPortConnectionStateByPort,
-  getInputPortByPortIdInContext,
-)
+export const matchInputPortDeviceStateByPortIdInContext =
+  makeMatcherTakingPortIds(
+    Match.matchInputPortDeviceStateByPort,
+    Get.getInputPortByPortIdInContext,
+  )
 
 /**
  *
  */
-export const matchOutputPortConnectionStateByPortId = makeMatcherTakingPortIds(
-  matchOutputPortConnectionStateByPort,
-  getOutputPortByPortIdInContext,
-)
-
-/**
- *
- */
-export const matchPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  matchPortDeviceStateByPort,
-  getPortByPortIdInContext,
-)
-
-/**
- *
- */
-export const matchInputPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  matchInputPortDeviceStateByPort,
-  getInputPortByPortIdInContext,
-)
-
-/**
- *
- */
-export const matchOutputPortDeviceStateByPortId = makeMatcherTakingPortIds(
-  matchOutputPortDeviceStateByPort,
-  getOutputPortByPortIdInContext,
-)
+export const matchOutputPortDeviceStateByPortIdInContext =
+  makeMatcherTakingPortIds(
+    Match.matchOutputPortDeviceStateByPort,
+    Get.getOutputPortByPortIdInContext,
+  )

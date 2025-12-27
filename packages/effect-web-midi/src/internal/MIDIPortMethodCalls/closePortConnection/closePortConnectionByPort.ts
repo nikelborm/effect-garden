@@ -8,6 +8,8 @@ import * as F from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**
  * @internal
+ *
+ * exported for acquire-release
  */
 export const makePortConnectionCloser = F.makeMIDIPortMethodCallerFactory(
   'close',

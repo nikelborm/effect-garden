@@ -1,58 +1,45 @@
-import { flow } from 'effect/Function'
-import {
-  isConnectionClosed,
-  isConnectionOpen,
-  isConnectionPending,
-  isDeviceConnected,
-  isDeviceDisconnected,
-} from '../../util.ts'
-import {
-  getInputPortConnectionStateByPort,
-  getInputPortDeviceStateByPort,
-  getOutputPortConnectionStateByPort,
-  getOutputPortDeviceStateByPort,
-  getPortConnectionStateByPort,
-  getPortDeviceStateByPort,
-} from '../getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import * as EFunction from 'effect/Function'
+import * as Util from '../../util.ts'
+import * as Get from '../getMutablePortProperty/getMutablePortPropertyByPort.ts'
 
 /**
  *
  */
-export const isPortDeviceConnectedByPort = flow(
-  getPortDeviceStateByPort,
-  isDeviceConnected,
+export const isPortDeviceConnectedByPort = EFunction.flow(
+  Get.getPortDeviceStateByPort,
+  Util.isDeviceConnected,
 )
 
 /**
  *
  */
-export const isPortDeviceDisconnectedByPort = flow(
-  getPortDeviceStateByPort,
-  isDeviceDisconnected,
+export const isPortDeviceDisconnectedByPort = EFunction.flow(
+  Get.getPortDeviceStateByPort,
+  Util.isDeviceDisconnected,
 )
 
 /**
  *
  */
-export const isPortConnectionOpenByPort = flow(
-  getPortConnectionStateByPort,
-  isConnectionOpen,
+export const isPortConnectionOpenByPort = EFunction.flow(
+  Get.getPortConnectionStateByPort,
+  Util.isConnectionOpen,
 )
 
 /**
  *
  */
-export const isPortConnectionPendingByPort = flow(
-  getPortConnectionStateByPort,
-  isConnectionPending,
+export const isPortConnectionPendingByPort = EFunction.flow(
+  Get.getPortConnectionStateByPort,
+  Util.isConnectionPending,
 )
 
 /**
  *
  */
-export const isPortConnectionClosedByPort = flow(
-  getPortConnectionStateByPort,
-  isConnectionClosed,
+export const isPortConnectionClosedByPort = EFunction.flow(
+  Get.getPortConnectionStateByPort,
+  Util.isConnectionClosed,
 )
 
 //////////////////////////////
@@ -60,41 +47,41 @@ export const isPortConnectionClosedByPort = flow(
 /**
  *
  */
-export const isInputPortDeviceConnectedByPort = flow(
-  getInputPortDeviceStateByPort,
-  isDeviceConnected,
+export const isInputPortDeviceConnectedByPort = EFunction.flow(
+  Get.getInputPortDeviceStateByPort,
+  Util.isDeviceConnected,
 )
 
 /**
  *
  */
-export const isInputPortDeviceDisconnectedByPort = flow(
-  getInputPortDeviceStateByPort,
-  isDeviceDisconnected,
+export const isInputPortDeviceDisconnectedByPort = EFunction.flow(
+  Get.getInputPortDeviceStateByPort,
+  Util.isDeviceDisconnected,
 )
 
 /**
  *
  */
-export const isInputPortConnectionOpenByPort = flow(
-  getInputPortConnectionStateByPort,
-  isConnectionOpen,
+export const isInputPortConnectionOpenByPort = EFunction.flow(
+  Get.getInputPortConnectionStateByPort,
+  Util.isConnectionOpen,
 )
 
 /**
  *
  */
-export const isInputPortConnectionPendingByPort = flow(
-  getInputPortConnectionStateByPort,
-  isConnectionPending,
+export const isInputPortConnectionPendingByPort = EFunction.flow(
+  Get.getInputPortConnectionStateByPort,
+  Util.isConnectionPending,
 )
 
 /**
  *
  */
-export const isInputPortConnectionClosedByPort = flow(
-  getInputPortConnectionStateByPort,
-  isConnectionClosed,
+export const isInputPortConnectionClosedByPort = EFunction.flow(
+  Get.getInputPortConnectionStateByPort,
+  Util.isConnectionClosed,
 )
 
 //////////////////////////////
@@ -102,39 +89,39 @@ export const isInputPortConnectionClosedByPort = flow(
 /**
  *
  */
-export const isOutputPortDeviceConnectedByPort = flow(
-  getOutputPortDeviceStateByPort,
-  isDeviceConnected,
+export const isOutputPortDeviceConnectedByPort = EFunction.flow(
+  Get.getOutputPortDeviceStateByPort,
+  Util.isDeviceConnected,
 )
 
 /**
  *
  */
-export const isOutputPortDeviceDisconnectedByPort = flow(
-  getOutputPortDeviceStateByPort,
-  isDeviceDisconnected,
+export const isOutputPortDeviceDisconnectedByPort = EFunction.flow(
+  Get.getOutputPortDeviceStateByPort,
+  Util.isDeviceDisconnected,
 )
 
 /**
  *
  */
-export const isOutputPortConnectionOpenByPort = flow(
-  getOutputPortConnectionStateByPort,
-  isConnectionOpen,
+export const isOutputPortConnectionOpenByPort = EFunction.flow(
+  Get.getOutputPortConnectionStateByPort,
+  Util.isConnectionOpen,
 )
 
 /**
  *
  */
-export const isOutputPortConnectionPendingByPort = flow(
-  getOutputPortConnectionStateByPort,
-  isConnectionPending,
+export const isOutputPortConnectionPendingByPort = EFunction.flow(
+  Get.getOutputPortConnectionStateByPort,
+  Util.isConnectionPending,
 )
 
 /**
  *
  */
-export const isOutputPortConnectionClosedByPort = flow(
-  getOutputPortConnectionStateByPort,
-  isConnectionClosed,
+export const isOutputPortConnectionClosedByPort = EFunction.flow(
+  Get.getOutputPortConnectionStateByPort,
+  Util.isConnectionClosed,
 )

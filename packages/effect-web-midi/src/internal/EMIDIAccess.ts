@@ -5,7 +5,7 @@ import * as EArray from 'effect/Array'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-import { dual, flow, pipe } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Iterable from 'effect/Iterable'
@@ -18,38 +18,15 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
-import type {
-  OnNullStrategy,
-  StreamMakerOptions,
-} from './createStreamMakerFrom.ts'
-import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
+import * as Create from './createStreamMakerFrom.ts'
 import * as EMIDIInputPort from './EMIDIInputPort.ts'
 import * as EMIDIOutputPort from './EMIDIOutputPort.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
-import {
-  AbortError,
-  DisconnectedPortError,
-  MIDIAccessNotAllowedError,
-  MIDIAccessNotSupportedError,
-  remapErrorByName,
-  UnderlyingSystemError,
-} from './errors.ts'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-} from './getPortByPortId/getPortByPortIdInContext.ts'
+import * as Errors from './errors.ts'
+import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
 import { isOutputPortConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 import { getOutputPortDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
-import {
-  fromPolymorphic,
-  type MIDIBothPortId,
-  type MIDIInputPortId,
-  type MIDIOutputPortId,
-  type MIDIPortId,
-  type PolymorphicEffect,
-  polymorphicCheckInDual,
-  type SentMessageEffectFrom,
-} from './util.ts'
+import * as Util from './util.ts'
 
 // TODO: add stream of messages sent from this device to target midi device
 
@@ -137,7 +114,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode MIDIAccessNotAllowedError} error.
+   * {@linkcode Errors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested (and allowed), the system will throw
    * exceptions if the user tries to send `System Exclusive` messages, and will
@@ -155,7 +132,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode MIDIAccessNotAllowedError} error.
+   * {@linkcode Errors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
    * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc. would
@@ -319,13 +296,13 @@ export const is: (access: unknown) => access is EMIDIAccessInstance = isImpl
  */
 export const resolve = <E = never, R = never>(
   polymorphicAccess: PolymorphicAccessInstance<E, R>,
-) => fromPolymorphic(polymorphicAccess, is)
+) => Util.fromPolymorphic(polymorphicAccess, is)
 
 /**
  *
  *
  */
-export type PolymorphicAccessInstance<E, R> = PolymorphicEffect<
+export type PolymorphicAccessInstance<E, R> = Util.PolymorphicEffect<
   EMIDIAccessInstance,
   E,
   R
@@ -361,12 +338,15 @@ const getPortEntriesFromRawAccess =
   ) =>
   (rawAccess: MIDIAccess) =>
     Iterable.map(
-      rawAccess[key] as ReadonlyMap<MIDIPortId<TMIDIPortType>, TRawMIDIPort>,
+      rawAccess[key] as ReadonlyMap<
+        Util.MIDIPortId<TMIDIPortType>,
+        TRawMIDIPort
+      >,
       ([id, raw]) =>
-        [id as MIDIPortId<TMIDIPortType>, make(raw)] satisfies Types.TupleOf<
-          2,
-          unknown
-        >,
+        [
+          id as Util.MIDIPortId<TMIDIPortType>,
+          make(raw),
+        ] satisfies Types.TupleOf<2, unknown>,
     )
 
 /**
@@ -410,7 +390,7 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
   <E = never, R = never>(polymorphicAccess: PolymorphicAccessInstance<E, R>) =>
     Effect.map(
       resolve(polymorphicAccess),
-      flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
+      EFunction.flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
     ) as Effect.Effect<
       Types.UnionToIntersection<T extends unknown ? Record<T[0], T[1]> : never>,
       E,
@@ -474,7 +454,7 @@ export const AllPortsRecord = getAllPortsRecord(EMIDIAccess)
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeAllPortsStateChangesStream =
-  createStreamMakerFrom<MIDIPortEventMap>()(
+  Create.createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     access => ({
       tag: 'MIDIPortStateChange',
@@ -510,11 +490,11 @@ export const makeAllPortsStateChangesStream =
  * delivered, or all not delivered, as in ACID transactions. There's not even a
  * mechanism to remove a specific message (not all) from the sending queue
  */
-export const send: DualSendMIDIMessageFromAccess = dual<
+export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
   SendMIDIMessageAccessLast,
   SendMIDIMessageAccessFirst
 >(
-  polymorphicCheckInDual(is),
+  Util.polymorphicCheckInDual(is),
   Effect.fn('EMIDIAccess.send')(
     function* (polymorphicAccess, target, midiMessage, timestamp) {
       const access = yield* resolve(polymorphicAccess)
@@ -522,14 +502,14 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       const outputs = yield* getOutputPortsRecord(access)
 
       if (target === 'all existing outputs at effect execution')
-        return yield* pipe(
+        return yield* EFunction.pipe(
           Record.values(outputs),
           Effect.forEach(EMIDIOutputPort.send(midiMessage, timestamp)),
           Effect.as(access),
         )
 
       if (target === 'all open connections at effect execution')
-        return yield* pipe(
+        return yield* EFunction.pipe(
           Record.values(outputs),
           // TODO: maybe also do something about pending?
           Effect.filter(isOutputPortConnectionOpenByPort),
@@ -542,14 +522,14 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       // TODO: maybe since deviceState returns always connected devices we can
       // simplify this check by applying intersections and comparing lengths
 
-      const portsIdsToSend: MIDIOutputPortId[] = EArray.ensure(target)
+      const portsIdsToSend: Util.MIDIOutputPortId[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
-        pipe(
+        EFunction.pipe(
           Record.get(outputs, id),
           Option.match({
             onNone: () => Effect.succeed('disconnected' as const),
-            onSome: flow(getOutputPortDeviceStateByPort),
+            onSome: EFunction.flow(getOutputPortDeviceStateByPort),
           }),
           effect => Unify.unify(effect),
           Effect.map(state => ({ id, state })),
@@ -562,7 +542,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
       )
 
       if (Option.isSome(disconnectedDevice))
-        return yield* new DisconnectedPortError({
+        return yield* new Errors.DisconnectedPortError({
           portId: disconnectedDevice.value.id,
           cause: new DOMException(
             // TODO: make an experiment and paste the error text here
@@ -571,7 +551,7 @@ export const send: DualSendMIDIMessageFromAccess = dual<
           ) as DOMException & { name: 'InvalidStateError' },
         })
 
-      const sendToSome = (predicate: (id: MIDIOutputPortId) => boolean) =>
+      const sendToSome = (predicate: (id: Util.MIDIOutputPortId) => boolean) =>
         Effect.all(
           Record.reduce(
             outputs,
@@ -605,29 +585,32 @@ export const send: DualSendMIDIMessageFromAccess = dual<
  * `options.capture` property
  */
 export const makeMessagesStreamByPortId = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
+  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: MIDIInputPortId,
-  options?: StreamMakerOptions<TOnNullStrategy>,
+  id: Util.MIDIInputPortId,
+  options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  EMIDIInputPort.makeMessagesStream(getInputPortByPortIdInContext(id), options)
-
-/**
- *
- */
-export const sendToPortById = (
-  id: MIDIOutputPortId,
-  ...args: EMIDIOutputPort.SendFromPortArgs
-) =>
-  Effect.asVoid(
-    EMIDIOutputPort.send(getOutputPortByPortIdInContext(id), ...args),
+  EMIDIInputPort.makeMessagesStream(
+    GetPort.getInputPortByPortIdInContext(id),
+    options,
   )
 
 /**
  *
  */
-export const clearPortById = flow(
-  getOutputPortByPortIdInContext,
+export const sendToPortById = (
+  id: Util.MIDIOutputPortId,
+  ...args: EMIDIOutputPort.SendFromPortArgs
+) =>
+  Effect.asVoid(
+    EMIDIOutputPort.send(GetPort.getOutputPortByPortIdInContext(id), ...args),
+  )
+
+/**
+ *
+ */
+export const clearPortById = EFunction.flow(
+  GetPort.getOutputPortByPortIdInContext,
   EMIDIOutputPort.clear,
   Effect.asVoid,
 )
@@ -637,9 +620,9 @@ export const clearPortById = flow(
  * `options.capture` property
  */
 export const makeAllPortsStateChangesStreamFromContext = <
-  const TOnNullStrategy extends OnNullStrategy = undefined,
+  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  options?: StreamMakerOptions<TOnNullStrategy>,
+  options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) => makeAllPortsStateChangesStream(EMIDIAccess, options)
 
 /**
@@ -662,22 +645,22 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
 
   const rawAccess = yield* Effect.tryPromise({
     try: () => navigator.requestMIDIAccess(options),
-    catch: remapErrorByName(
+    catch: Errors.remapErrorByName(
       {
-        AbortError,
+        AbortError: Errors.AbortError,
 
-        InvalidStateError: UnderlyingSystemError,
+        InvalidStateError: Errors.UnderlyingSystemError,
 
-        NotAllowedError: MIDIAccessNotAllowedError,
+        NotAllowedError: Errors.MIDIAccessNotAllowedError,
         // SecurityError is kept for compatibility reason
         // (https://github.com/WebAudio/web-midi-api/pull/267):
-        SecurityError: MIDIAccessNotAllowedError,
+        SecurityError: Errors.MIDIAccessNotAllowedError,
 
-        NotSupportedError: MIDIAccessNotSupportedError,
+        NotSupportedError: Errors.MIDIAccessNotSupportedError,
         // For case when navigator doesn't exist
-        ReferenceError: MIDIAccessNotSupportedError,
+        ReferenceError: Errors.MIDIAccessNotSupportedError,
         // For case when navigator.requestMIDIAccess is undefined
-        TypeError: MIDIAccessNotSupportedError,
+        TypeError: Errors.MIDIAccessNotSupportedError,
       },
       'EMIDIAccess.request error handling absurd',
       { whileAskingForPermissions: options ?? {} },
@@ -687,7 +670,7 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
   // TODO: finish this
 
   const ref = yield* Ref.make(
-    SortedMap.empty<MIDIBothPortId, MIDIPortType>(Order.string),
+    SortedMap.empty<Util.MIDIBothPortId, MIDIPortType>(Order.string),
   )
 
   // return make(rawAccess, options, ref)
@@ -700,10 +683,10 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
  *
  * **Errors:**
  *
- * - {@linkcode AbortError} Argument x must be non-zero
- * - {@linkcode UnderlyingSystemError} Argument x must be non-zero
- * - {@linkcode MIDIAccessNotSupportedError} Argument x must be non-zero
- * - {@linkcode MIDIAccessNotAllowedError} Argument x must be non-zero
+ * - {@linkcode Errors.AbortError} Argument x must be non-zero
+ * - {@linkcode Errors.UnderlyingSystemError} Argument x must be non-zero
+ * - {@linkcode Errors.MIDIAccessNotSupportedError} Argument x must be non-zero
+ * - {@linkcode Errors.MIDIAccessNotAllowedError} Argument x must be non-zero
  *
  * @param config
  * @returns
@@ -735,13 +718,13 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
 })
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
-  extends SentMessageEffectFrom<EMIDIAccessInstance, E, R> {}
+  extends Util.SentMessageEffectFrom<EMIDIAccessInstance, E, R> {}
 
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
   | 'all open connections at effect execution'
-  | MIDIOutputPortId
-  | MIDIOutputPortId[]
+  | Util.MIDIOutputPortId
+  | Util.MIDIOutputPortId[]
 
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
@@ -780,3 +763,128 @@ export interface SendMIDIMessageAccessLast {
     ): SentMessageEffectFromAccess<E, R>
   }
 }
+
+export interface GetThingByPortId<
+  TSuccess,
+  TTypeOfPortId extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends GetThingByPortIdAccessFirst<
+      TSuccess,
+      TTypeOfPortId,
+      TAccessGettingFallbackError,
+      TAccessGettingFallbackRequirement,
+      TAdditionalError,
+      TAdditionalRequirement
+    >,
+    GetThingByPortIdAccessLast<
+      TSuccess,
+      TTypeOfPortId,
+      TAccessGettingFallbackError,
+      TAccessGettingFallbackRequirement,
+      TAdditionalError,
+      TAdditionalRequirement
+    > {}
+
+export interface GetThingByPortIdAccessFirst<
+  TSuccess,
+  TTypeOfPortId extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> {
+  /**
+   *
+   *
+   */
+  <TAccessGettingError = never, TAccessGettingRequirement = never>(
+    polymorphicAccess: PolymorphicAccessInstance<
+      TAccessGettingError,
+      TAccessGettingRequirement
+    >,
+    portId: Util.MIDIPortId<TTypeOfPortId>,
+  ): AcquiredThing<
+    TSuccess,
+    TAccessGettingError,
+    TAccessGettingRequirement,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  >
+}
+
+export interface GetThingByPortIdAccessLast<
+  TSuccess,
+  TTypeOfPortId extends MIDIPortType,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> {
+  /**
+   *
+   *
+   */
+  (
+    portId: Util.MIDIPortId<TTypeOfPortId>,
+  ): GetThingByPortIdAccessLastSecondHalf<
+    TSuccess,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  >
+}
+
+export interface GetThingByPortIdAccessLastSecondHalf<
+  TSuccess,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> {
+  /**
+   *
+   *
+   */
+  <TAccessGettingError = never, TAccessGettingRequirement = never>(
+    polymorphicAccess: PolymorphicAccessInstance<
+      TAccessGettingError,
+      TAccessGettingRequirement
+    >,
+  ): AcquiredThing<
+    TSuccess,
+    TAccessGettingError,
+    TAccessGettingRequirement,
+    TAccessGettingFallbackError,
+    TAccessGettingFallbackRequirement,
+    TAdditionalError,
+    TAdditionalRequirement
+  >
+}
+
+export interface AcquiredThing<
+  TSuccess,
+  TAccessGettingError,
+  TAccessGettingRequirement,
+  TAccessGettingFallbackError,
+  TAccessGettingFallbackRequirement,
+  TAdditionalError,
+  TAdditionalRequirement,
+> extends Effect.Effect<
+    TSuccess,
+    | Util.FallbackOnUnknownOrAny<
+        TAccessGettingError,
+        TAccessGettingFallbackError
+      >
+    | TAdditionalError,
+    | Util.FallbackOnUnknownOrAny<
+        TAccessGettingRequirement,
+        TAccessGettingFallbackRequirement
+      >
+    | TAdditionalRequirement
+  > {}

@@ -1,6 +1,6 @@
-import { createStreamMakerFrom } from './createStreamMakerFrom.ts'
+import * as Create from './createStreamMakerFrom.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
-import { getStaticMIDIPortInfo } from './util.ts'
+import * as Util from './util.ts'
 
 // TODO: implement scoping of midi access that will clean up all message queues
 // and streams, and remove listeners
@@ -82,16 +82,20 @@ export const is: (inputPort: unknown) => inputPort is EMIDIInputPort = isImpl
  * field equal to `null`, but when coming from the browser, they won't. The
  * default behavior is to defect on `null`.
  */
-export const makeMessagesStream = createStreamMakerFrom<MIDIInputEventMap>()(
-  is,
-  inputPort => ({
-    tag: 'MIDIMessage',
-    eventListener: { target: assumeImpl(inputPort)._port, type: 'midimessage' },
-    spanAttributes: {
-      spanTargetName: 'MIDI port',
-      port: getStaticMIDIPortInfo(inputPort),
-    },
-    nullableFieldName: 'data',
-  }),
-  midiMessage => ({ midiMessage }),
-)
+export const makeMessagesStream =
+  Create.createStreamMakerFrom<MIDIInputEventMap>()(
+    is,
+    inputPort => ({
+      tag: 'MIDIMessage',
+      eventListener: {
+        target: assumeImpl(inputPort)._port,
+        type: 'midimessage',
+      },
+      spanAttributes: {
+        spanTargetName: 'MIDI port',
+        port: Util.getStaticMIDIPortInfo(inputPort),
+      },
+      nullableFieldName: 'data',
+    }),
+    midiMessage => ({ midiMessage }),
+  )

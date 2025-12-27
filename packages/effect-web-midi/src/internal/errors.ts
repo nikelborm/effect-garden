@@ -1,15 +1,14 @@
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
-import type {
-  EMIDIAccessInstance,
-  RequestMIDIAccessOptions,
-} from './EMIDIAccess.ts'
-import { MIDIBothPortId } from './util.ts'
+import type * as EMIDIAccess from './EMIDIAccess.ts'
+import * as Util from './util.ts'
 
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-const PortId = Schema.fromBrand(MIDIBothPortId)(Schema.NonEmptyTrimmedString)
+const PortId = Schema.fromBrand(Util.MIDIBothPortId)(
+  Schema.NonEmptyTrimmedString,
+)
 
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,
@@ -150,8 +149,8 @@ export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysex
 
 /**
  * Thrown if the user, the system or their security settings denied the
- * application from creating an {@linkcode EMIDIAccessInstance} object
- * with the requested {@linkcode RequestMIDIAccessOptions|options}, or if the
+ * application from creating an {@linkcode EMIDIAccess.EMIDIAccessInstance} object
+ * with the requested {@linkcode EMIDIAccess.RequestMIDIAccessOptions|options}, or if the
  * document is not allowed to use the feature (for example, because of a
  * Permission Policy, or because the user previously denied a permission
  * request).
@@ -187,7 +186,7 @@ export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiM
  * Keep in mind that if port isn't found, it might not mean it's disconnected.
  * For example, virtual ports created by software won't show up in the list of
  * available inputs/outputs of MIDI Access handle with disabled
- * {@linkcode RequestMIDIAccessOptions.software} flag.
+ * {@linkcode EMIDIAccess.RequestMIDIAccessOptions.software} flag.
  */
 export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   'PortNotFound',

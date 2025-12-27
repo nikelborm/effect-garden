@@ -2,19 +2,18 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
-import { dual, flow } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
 import * as EMIDIInputPort from '../EMIDIInputPort.ts'
 import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
-import { PortNotFoundError } from '../errors.ts'
-import type { FallbackOnUnknownOrAny, MIDIPortId } from '../util.ts'
+import * as Errors from '../errors.ts'
 
 /**
  *
  * @internal
  */
-export const getPortByIdAndRemap = <
+const getPortByIdAndRemap = <
   EInputPort,
   EOutputPort,
   RInputPort,
@@ -41,10 +40,10 @@ export const getPortByIdAndRemap = <
   AInputPortType | AOutputPortType,
   never,
   never,
-  PortNotFoundError | EInputPort | EOutputPort,
+  Errors.PortNotFoundError | EInputPort | EOutputPort,
   RInputPort | ROutputPort
 > =>
-  dual(2, (polymorphicAccess, portId) =>
+  EFunction.dual(2, (polymorphicAccess, portId) =>
     Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), e => {
       const rawAccess = EMIDIAccess.assumeImpl(e)._access
 
@@ -57,13 +56,15 @@ export const getPortByIdAndRemap = <
 
       if (rawPort) return handlers.onOutputFound(rawPort)
 
-      return new PortNotFoundError({ portId }) as AcquiredThing<
+      return new Errors.PortNotFoundError({
+        portId,
+      }) as EMIDIAccess.AcquiredThing<
         EMIDIPort.EMIDIPort<AInputPortType | AOutputPortType>,
         never,
         never,
         never,
         never,
-        PortNotFoundError | EInputPort | EOutputPort,
+        Errors.PortNotFoundError | EInputPort | EOutputPort,
         RInputPort | ROutputPort
       >
     }),
@@ -78,8 +79,8 @@ export const getPortByIdAndRemap = <
  * soundness
  */
 export const getPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: flow(EMIDIInputPort.make, Effect.succeed),
-  onOutputFound: flow(EMIDIOutputPort.make, Effect.succeed),
+  onInputFound: EFunction.flow(EMIDIInputPort.make, Effect.succeed),
+  onOutputFound: EFunction.flow(EMIDIOutputPort.make, Effect.succeed),
 })
 
 /**
@@ -87,7 +88,7 @@ export const getPortByPortIdAndAccess = getPortByIdAndRemap({
  *
  */
 export const getInputPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: flow(EMIDIInputPort.make, Effect.succeed),
+  onInputFound: EFunction.flow(EMIDIInputPort.make, Effect.succeed),
   onOutputFound: rawOutputPort =>
     Effect.dieMessage(
       `Assertion failed: getInputPortById found output port with the id=${rawOutputPort.id}`,
@@ -103,7 +104,7 @@ export const getOutputPortByPortIdAndAccess = getPortByIdAndRemap({
     Effect.dieMessage(
       `Assertion failed: getOutputPortById found output port with the id=${rawInputPort.id}`,
     ),
-  onOutputFound: flow(EMIDIOutputPort.make, Effect.succeed),
+  onOutputFound: EFunction.flow(EMIDIOutputPort.make, Effect.succeed),
 })
 
 export interface GetPortById<
@@ -113,137 +114,11 @@ export interface GetPortById<
   TAccessGettingFallbackRequirement,
   TAdditionalError,
   TAdditionalRequirement,
-> extends GetThingByPortId<
+> extends EMIDIAccess.GetThingByPortId<
     EMIDIPort.EMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
-    TAdditionalError | PortNotFoundError,
+    TAdditionalError | Errors.PortNotFoundError,
     TAdditionalRequirement
-  > {}
-
-// =======================================
-// =======================================
-// =======================================
-
-export interface GetThingByPortId<
-  TSuccess,
-  TTypeOfPortId extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends GetThingByPortIdAccessFirst<
-      TSuccess,
-      TTypeOfPortId,
-      TAccessGettingFallbackError,
-      TAccessGettingFallbackRequirement,
-      TAdditionalError,
-      TAdditionalRequirement
-    >,
-    GetThingByPortIdAccessLast<
-      TSuccess,
-      TTypeOfPortId,
-      TAccessGettingFallbackError,
-      TAccessGettingFallbackRequirement,
-      TAdditionalError,
-      TAdditionalRequirement
-    > {}
-
-export interface GetThingByPortIdAccessFirst<
-  TSuccess,
-  TTypeOfPortId extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> {
-  /**
-   *
-   *
-   */
-  <TAccessGettingError = never, TAccessGettingRequirement = never>(
-    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<
-      TAccessGettingError,
-      TAccessGettingRequirement
-    >,
-    portId: MIDIPortId<TTypeOfPortId>,
-  ): AcquiredThing<
-    TSuccess,
-    TAccessGettingError,
-    TAccessGettingRequirement,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError,
-    TAdditionalRequirement
-  >
-}
-
-export interface GetThingByPortIdAccessLast<
-  TSuccess,
-  TTypeOfPortId extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> {
-  /**
-   *
-   *
-   */
-  (
-    portId: MIDIPortId<TTypeOfPortId>,
-  ): GetThingByPortIdAccessLastSecondHalf<
-    TSuccess,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError,
-    TAdditionalRequirement
-  >
-}
-
-export interface GetThingByPortIdAccessLastSecondHalf<
-  TSuccess,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> {
-  /**
-   *
-   *
-   */
-  <TAccessGettingError = never, TAccessGettingRequirement = never>(
-    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<
-      TAccessGettingError,
-      TAccessGettingRequirement
-    >,
-  ): AcquiredThing<
-    TSuccess,
-    TAccessGettingError,
-    TAccessGettingRequirement,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError,
-    TAdditionalRequirement
-  >
-}
-
-export interface AcquiredThing<
-  TSuccess,
-  TAccessGettingError,
-  TAccessGettingRequirement,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends Effect.Effect<
-    TSuccess,
-    | FallbackOnUnknownOrAny<TAccessGettingError, TAccessGettingFallbackError>
-    | TAdditionalError,
-    | FallbackOnUnknownOrAny<
-        TAccessGettingRequirement,
-        TAccessGettingFallbackRequirement
-      >
-    | TAdditionalRequirement
   > {}
