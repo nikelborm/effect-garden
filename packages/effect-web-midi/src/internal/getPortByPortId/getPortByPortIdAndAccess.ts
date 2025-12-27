@@ -57,13 +57,13 @@ export const getPortByIdAndRemap = <
 
       if (rawPort) return handlers.onOutputFound(rawPort)
 
-      return new PortNotFoundError({ portId }) as AcquiredPort<
-        AInputPortType | AOutputPortType,
+      return new PortNotFoundError({ portId }) as AcquiredThing<
+        EMIDIPort.EMIDIPort<AInputPortType | AOutputPortType>,
         never,
         never,
         never,
         never,
-        EInputPort | EOutputPort,
+        PortNotFoundError | EInputPort | EOutputPort,
         RInputPort | ROutputPort
       >
     }),
@@ -116,70 +116,6 @@ export interface GetPortById<
 > extends GetThingByPortId<
     EMIDIPort.EMIDIPort<TReturnedPortType>,
     TTypeOfPortId,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError | PortNotFoundError,
-    TAdditionalRequirement
-  > {}
-
-export interface GetPortByIdAccessFirst<
-  TReturnedPortType extends TTypeOfPortId,
-  TTypeOfPortId extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends GetThingByPortIdAccessFirst<
-    EMIDIPort.EMIDIPort<TReturnedPortType>,
-    TTypeOfPortId,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError | PortNotFoundError,
-    TAdditionalRequirement
-  > {}
-
-export interface GetPortByIdAccessLast<
-  TReturnedPortType extends TTypeOfPortId,
-  TTypeOfPortId extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends GetThingByPortIdAccessLast<
-    EMIDIPort.EMIDIPort<TReturnedPortType>,
-    TTypeOfPortId,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError | PortNotFoundError,
-    TAdditionalRequirement
-  > {}
-
-export interface GetPortByIdAccessLastSecondHalf<
-  TReturnedPortType extends MIDIPortType,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends GetThingByPortIdAccessLastSecondHalf<
-    EMIDIPort.EMIDIPort<TReturnedPortType>,
-    TAccessGettingFallbackError,
-    TAccessGettingFallbackRequirement,
-    TAdditionalError | PortNotFoundError,
-    TAdditionalRequirement
-  > {}
-
-export interface AcquiredPort<
-  TReturnedPortType extends MIDIPortType,
-  TAccessGettingError,
-  TAccessGettingRequirement,
-  TAccessGettingFallbackError,
-  TAccessGettingFallbackRequirement,
-  TAdditionalError,
-  TAdditionalRequirement,
-> extends AcquiredThing<
-    EMIDIPort.EMIDIPort<TReturnedPortType>,
-    TAccessGettingError,
-    TAccessGettingRequirement,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
     TAdditionalError | PortNotFoundError,
