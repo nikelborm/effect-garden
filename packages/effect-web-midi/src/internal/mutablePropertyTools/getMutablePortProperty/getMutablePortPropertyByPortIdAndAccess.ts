@@ -16,35 +16,36 @@ import {
 } from './getMutablePortPropertyByPort.ts'
 
 const getPortByIdGeneric2 =
-  <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(
-    getPortMap: <E = never, R = never>(
-      polymorphicAccess: PolymorphicAccessInstance<E, R>,
-    ) => Effect.Effect<T, E, R>,
-  ) =>
-  <A, E2, R2, TE = never, TR = never>(
-    polymorphicAccess: PolymorphicEffect<EMIDIAccessInstance, TE, TR>,
-    transformPortEffect: (
-      effect: Effect.Effect<
-        T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
-        TE | PortNotFoundError,
-        TR
-      >,
-    ) => Effect.Effect<A, E2, R2>,
-    id: Extract<keyof T, MIDIBothPortId>,
-  ) =>
-    pipe(
-      getPortMap(polymorphicAccess),
-      Effect.flatMap(
-        flow(
-          Record.get(id),
-          Option.match({
-            onNone: () => new PortNotFoundError({ portId: id }),
-            onSome: e => Effect.succeed(e),
-          }),
+  // biome-ignore lint/suspicious/noExplicitAny: I don't care
+    <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(
+      getPortMap: <E = never, R = never>(
+        polymorphicAccess: PolymorphicAccessInstance<E, R>,
+      ) => Effect.Effect<T, E, R>,
+    ) =>
+    <A, E2, R2, TE = never, TR = never>(
+      polymorphicAccess: PolymorphicEffect<EMIDIAccessInstance, TE, TR>,
+      transformPortEffect: (
+        effect: Effect.Effect<
+          T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
+          TE | PortNotFoundError,
+          TR
+        >,
+      ) => Effect.Effect<A, E2, R2>,
+      id: Extract<keyof T, MIDIBothPortId>,
+    ) =>
+      pipe(
+        getPortMap(polymorphicAccess),
+        Effect.flatMap(
+          flow(
+            Record.get(id),
+            Option.match({
+              onNone: () => new PortNotFoundError({ portId: id }),
+              onSome: e => Effect.succeed(e),
+            }),
+          ),
         ),
-      ),
-      transformPortEffect,
-    )
+        transformPortEffect,
+      )
 
 // TODO: Check if software synth devices access is present. Having desired
 // port absent in the record doesn't guarantee it's disconnected

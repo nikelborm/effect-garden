@@ -1,35 +1,27 @@
 import { flow } from 'effect/Function'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-  getPortByPortIdInContext,
-} from '../../getPortByPortId/getPortByPortIdInContext.ts'
-import {
-  acquireReleaseInputPortConnectionByPort,
-  acquireReleaseOutputPortConnectionByPort,
-  acquireReleasePortConnectionByPort,
-} from './acquireReleasePortConnectionByPort.ts'
+import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
+import * as Acquire from './acquireReleasePortConnectionByPort.ts'
 
 /**
  *
  */
 export const acquireReleasePortConnectionByPortIdInContext = flow(
-  getPortByPortIdInContext,
-  acquireReleasePortConnectionByPort,
+  Get.getPortByPortIdInContext,
+  Acquire.acquireReleasePortConnectionByPort,
 )
 
 /**
  *
  */
 export const acquireReleaseInputPortConnectionByPortIdInContext = flow(
-  getInputPortByPortIdInContext,
-  acquireReleaseInputPortConnectionByPort,
+  Get.getInputPortByPortIdInContext,
+  Acquire.acquireReleaseInputPortConnectionByPort,
 )
 
 /**
  *
  */
 export const acquireReleaseOutputPortConnectionByPortIdInContext = flow(
-  getOutputPortByPortIdInContext,
-  acquireReleaseOutputPortConnectionByPort,
+  Get.getOutputPortByPortIdInContext,
+  Acquire.acquireReleaseOutputPortConnectionByPort,
 )

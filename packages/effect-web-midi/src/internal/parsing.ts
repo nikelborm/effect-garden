@@ -103,15 +103,23 @@ function dataEntryParser(
   midiMessage: Uint8Array<ArrayBuffer>,
 ): ParsedMIDIMessages {
   const unknown = () => {
-    const { stackTraceLimit } = Error
-    Error.stackTraceLimit = 4
-    const stackHolder = {} as { stack: string }
-    Error.captureStackTrace(stackHolder)
-    Error.stackTraceLimit = stackTraceLimit
+    let stack = ''
+    if (
+      'stackTraceLimit' in Error &&
+      'captureStackTrace' in Error &&
+      typeof Error.captureStackTrace === 'function'
+    ) {
+      const { stackTraceLimit } = Error
+      Error.stackTraceLimit = 4
+      const stackHolder = {} as { stack: string }
+      Error.captureStackTrace(stackHolder)
+      Error.stackTraceLimit = stackTraceLimit
+      stack = stackHolder.stack ?? new Error().stack ?? ''
+    }
     const result = {
       _tag: 'Unknown Reply' as const,
       unexpectedData: midiMessage.toString(),
-      stack: stackHolder.stack,
+      stack,
     }
     return result
   }

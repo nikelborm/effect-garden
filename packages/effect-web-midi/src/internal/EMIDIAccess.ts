@@ -17,12 +17,7 @@ import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-} from './getPortByPortId/getPortByPortIdInContext.ts'
-import { isOutputPortConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
-import { getOutputPortDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import * as Unify from 'effect/Unify'
 import type {
   OnNullStrategy,
   StreamMakerOptions,
@@ -40,6 +35,12 @@ import {
   UnderlyingSystemError,
 } from './errors.ts'
 import {
+  getInputPortByPortIdInContext,
+  getOutputPortByPortIdInContext,
+} from './getPortByPortId/getPortByPortIdInContext.ts'
+import { isOutputPortConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
+import { getOutputPortDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import {
   fromPolymorphic,
   type MIDIBothPortId,
   type MIDIInputPortId,
@@ -49,7 +50,6 @@ import {
   polymorphicCheckInDual,
   type SentMessageEffectFrom,
 } from './util.ts'
-import * as Unify from 'effect/Unify'
 
 // TODO: add stream of messages sent from this device to target midi device
 

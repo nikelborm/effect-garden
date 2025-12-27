@@ -29,10 +29,6 @@ export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
  */
 export const openPortConnectionByPort = makePortConnectionOpener(EMIDIPort.is)
 
-const ass = openPortConnectionByPort(
-  {} as EMIDIPort.PolymorphicPort<'1', '2', 'output'>,
-)
-
 /**
  *
  */

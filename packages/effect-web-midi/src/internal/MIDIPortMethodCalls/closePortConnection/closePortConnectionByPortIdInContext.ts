@@ -1,35 +1,27 @@
 import { flow } from 'effect/Function'
-import {
-  getInputPortByPortIdInContext,
-  getOutputPortByPortIdInContext,
-  getPortByPortIdInContext,
-} from '../../getPortByPortId/getPortByPortIdInContext.ts'
-import {
-  closeInputPortConnectionByPort,
-  closeOutputPortConnectionByPort,
-  closePortConnectionByPort,
-} from './closePortConnectionByPort.ts'
+import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
+import * as Close from './closePortConnectionByPort.ts'
 
 /**
  *
  */
 export const closePortConnectionByPortIdInContext = flow(
-  getPortByPortIdInContext,
-  closePortConnectionByPort,
+  Get.getPortByPortIdInContext,
+  Close.closePortConnectionByPort,
 )
 
 /**
  *
  */
 export const closeInputPortConnectionByPortIdInContext = flow(
-  getInputPortByPortIdInContext,
-  closeInputPortConnectionByPort,
+  Get.getInputPortByPortIdInContext,
+  Close.closeInputPortConnectionByPort,
 )
 
 /**
  *
  */
 export const closeOutputPortConnectionByPortIdInContext = flow(
-  getOutputPortByPortIdInContext,
-  closeOutputPortConnectionByPort,
+  Get.getOutputPortByPortIdInContext,
+  Close.closeOutputPortConnectionByPort,
 )
