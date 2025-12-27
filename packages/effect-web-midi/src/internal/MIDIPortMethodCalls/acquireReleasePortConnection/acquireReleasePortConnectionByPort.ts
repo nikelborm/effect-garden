@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 import type * as Scope from 'effect/Scope'
-import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
-import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIInput from '../../EMIDIInput.ts'
+import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
 import type { UnavailablePortError } from '../../errors.ts'
 import * as C from '../closePortConnection/closePortConnectionByPort.ts'
@@ -33,11 +33,11 @@ export const acquireReleasePortConnectionByPort =
 /**
  *
  */
-export const acquireReleaseInputPortConnectionByPort =
-  makeConnectionAcquirerReleaser(EMIDIInputPort.is)
+export const acquireReleaseInputConnectionByPort =
+  makeConnectionAcquirerReleaser(EMIDIInput.is)
 
 /**
  *
  */
-export const acquireReleaseOutputPortConnectionByPort =
-  makeConnectionAcquirerReleaser(EMIDIOutputPort.is)
+export const acquireReleaseOutputConnectionByPort =
+  makeConnectionAcquirerReleaser(EMIDIOutput.is)

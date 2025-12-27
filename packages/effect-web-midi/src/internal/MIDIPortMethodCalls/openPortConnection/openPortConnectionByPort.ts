@@ -1,5 +1,5 @@
-import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
-import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIInput from '../../EMIDIInput.ts'
+import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
 import { remapErrorByName, UnavailablePortError } from '../../errors.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
@@ -34,13 +34,11 @@ export const openPortConnectionByPort = makePortConnectionOpener(EMIDIPort.is)
 /**
  *
  */
-export const openInputPortConnectionByPort = makePortConnectionOpener(
-  EMIDIInputPort.is,
-)
+export const openInputConnectionByPort = makePortConnectionOpener(EMIDIInput.is)
 
 /**
  *
  */
-export const openOutputPortConnectionByPort = makePortConnectionOpener(
-  EMIDIOutputPort.is,
+export const openOutputConnectionByPort = makePortConnectionOpener(
+  EMIDIOutput.is,
 )

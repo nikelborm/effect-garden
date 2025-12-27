@@ -13,15 +13,15 @@ export const closePortConnectionByPortIdInContext = flow(
 /**
  *
  */
-export const closeInputPortConnectionByPortIdInContext = flow(
-  Get.getInputPortByPortIdInContext,
-  Close.closeInputPortConnectionByPort,
+export const closeInputConnectionByPortIdInContext = flow(
+  Get.getInputByPortIdInContext,
+  Close.closeInputConnectionByPort,
 )
 
 /**
  *
  */
-export const closeOutputPortConnectionByPortIdInContext = flow(
-  Get.getOutputPortByPortIdInContext,
-  Close.closeOutputPortConnectionByPort,
+export const closeOutputConnectionByPortIdInContext = flow(
+  Get.getOutputByPortIdInContext,
+  Close.closeOutputConnectionByPort,
 )

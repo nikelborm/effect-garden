@@ -2,14 +2,14 @@
  * preserve JSDoc comments attached to the function signature */
 
 import {
-  getInputPortByPortIdAndAccess,
-  getOutputPortByPortIdAndAccess,
+  getInputByPortIdAndAccess,
+  getOutputByPortIdAndAccess,
   getPortByPortIdAndAccess,
 } from '../../getPortByPortId/getPortByPortIdAndAccess.ts'
 import { actOnPort } from '../actOnPort.ts'
 import {
-  closeInputPortConnectionByPort,
-  closeOutputPortConnectionByPort,
+  closeInputConnectionByPort,
+  closeOutputConnectionByPort,
   closePortConnectionByPort,
 } from './closePortConnectionByPort.ts'
 
@@ -24,15 +24,15 @@ export const closePortConnectionByPortIdAndAccess = actOnPort(
 /**
  *
  */
-export const closeInputPortConnectionByPortIdAndAccess = actOnPort(
-  getInputPortByPortIdAndAccess,
-  closeInputPortConnectionByPort,
+export const closeInputConnectionByPortIdAndAccess = actOnPort(
+  getInputByPortIdAndAccess,
+  closeInputConnectionByPort,
 )
 
 /**
  *
  */
-export const closeOutputPortConnectionByPortIdAndAccess = actOnPort(
-  getOutputPortByPortIdAndAccess,
-  closeOutputPortConnectionByPort,
+export const closeOutputConnectionByPortIdAndAccess = actOnPort(
+  getOutputByPortIdAndAccess,
+  closeOutputConnectionByPort,
 )

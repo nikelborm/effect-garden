@@ -13,15 +13,15 @@ export const acquireReleasePortConnectionByPortIdInContext = flow(
 /**
  *
  */
-export const acquireReleaseInputPortConnectionByPortIdInContext = flow(
-  Get.getInputPortByPortIdInContext,
-  Acquire.acquireReleaseInputPortConnectionByPort,
+export const acquireReleaseInputConnectionByPortIdInContext = flow(
+  Get.getInputByPortIdInContext,
+  Acquire.acquireReleaseInputConnectionByPort,
 )
 
 /**
  *
  */
-export const acquireReleaseOutputPortConnectionByPortIdInContext = flow(
-  Get.getOutputPortByPortIdInContext,
-  Acquire.acquireReleaseOutputPortConnectionByPort,
+export const acquireReleaseOutputConnectionByPortIdInContext = flow(
+  Get.getOutputByPortIdInContext,
+  Acquire.acquireReleaseOutputConnectionByPort,
 )

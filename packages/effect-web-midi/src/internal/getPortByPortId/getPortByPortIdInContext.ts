@@ -13,12 +13,12 @@ export const getPortByPortIdInContext = (id: Util.MIDIBothPortId) =>
  *
  *
  */
-export const getInputPortByPortIdInContext = (id: Util.MIDIInputPortId) =>
-  Get.getInputPortByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
+export const getInputByPortIdInContext = (id: Util.MIDIInputId) =>
+  Get.getInputByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
 /**
  *
  *
  */
-export const getOutputPortByPortIdInContext = (id: Util.MIDIOutputPortId) =>
-  Get.getOutputPortByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
+export const getOutputByPortIdInContext = (id: Util.MIDIOutputId) =>
+  Get.getOutputByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)

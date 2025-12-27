@@ -11,14 +11,14 @@ import * as Util from './util.ts'
  * Thin wrapper around {@linkcode MIDIOutput} instance. Will be seen in all
  * external code.
  */
-export interface EMIDIOutputPort extends EMIDIPort.EMIDIPort<'output'> {}
+export interface EMIDIOutput extends EMIDIPort.EMIDIPort<'output'> {}
 
 /**
  * Thin wrapper around {@linkcode MIDIOutput} instance giving access to the
  * actual field storing it.
  * @internal
  */
-interface EMIDIOutputPortImpl
+interface EMIDIOutputImpl
   extends EMIDIPort.EMIDIPortImpl<MIDIOutput, 'output'> {}
 
 /**
@@ -27,38 +27,37 @@ interface EMIDIOutputPortImpl
  *
  * @internal
  */
-const makeImpl = (rawOutputPort: MIDIOutput): EMIDIOutputPortImpl =>
-  EMIDIPort.makeImpl(rawOutputPort, 'output', globalThis.MIDIOutput)
+const makeImpl = (rawOutput: MIDIOutput): EMIDIOutputImpl =>
+  EMIDIPort.makeImpl(rawOutput, 'output', globalThis.MIDIOutput)
 
 /**
- * Asserts an object to be valid EMIDIOutputPort and casts it to
+ * Asserts an object to be valid EMIDIOutput and casts it to
  * internal implementation type
  *
  * @internal
  */
 const assertImpl = (outputPort: unknown) => {
   if (!isImpl(outputPort))
-    throw new Error('Assertion failed: Not a EMIDIOutputPortImpl')
+    throw new Error('Assertion failed: Not a EMIDIOutputImpl')
   return outputPort
 }
 
 /**
- * Asserts an object to be valid EMIDIOutputPort
+ * Asserts an object to be valid EMIDIOutput
  */
-export const assert: (outputPort: unknown) => EMIDIOutputPort = assertImpl
+export const assert: (outputPort: unknown) => EMIDIOutput = assertImpl
 
 /**
  * Casts
  * @internal
  */
-const assumeImpl = (outputPort: EMIDIOutputPort) =>
-  outputPort as EMIDIOutputPortImpl
+const assumeImpl = (outputPort: EMIDIOutput) => outputPort as EMIDIOutputImpl
 
 /**
  *
  * @internal
  */
-export const make: (rawOutputPort: MIDIOutput) => EMIDIOutputPort = makeImpl
+export const make: (rawOutput: MIDIOutput) => EMIDIOutput = makeImpl
 
 /**
  *
@@ -69,7 +68,7 @@ const isImpl = EMIDIPort.isImplOfSpecificType('output', globalThis.MIDIOutput)
 /**
  *
  */
-export const is: (outputPort: unknown) => outputPort is EMIDIOutputPort = isImpl
+export const is: (outputPort: unknown) => outputPort is EMIDIOutput = isImpl
 
 /**
  *
@@ -77,7 +76,7 @@ export const is: (outputPort: unknown) => outputPort is EMIDIOutputPort = isImpl
  * @internal
  */
 const resolve = <E = never, R = never>(
-  polymorphicPort: PolymorphicOutputPort<E, R>,
+  polymorphicPort: PolymorphicOutput<E, R>,
 ) => Util.fromPolymorphic(polymorphicPort, is)
 
 /**
@@ -97,9 +96,9 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
   SendMIDIMessagePortFirst
 >(
   Util.polymorphicCheckInDual(is),
-  Effect.fn('EMIDIOutputPort.send')(
-    function* (polymorphicOutputPort, midiMessage, timestamp) {
-      const outputPort = yield* resolve(polymorphicOutputPort)
+  Effect.fn('EMIDIOutput.send')(
+    function* (polymorphicOutput, midiMessage, timestamp) {
+      const outputPort = yield* resolve(polymorphicOutput)
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
@@ -119,12 +118,12 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
             InvalidStateError: Errors.DisconnectedPortError,
             TypeError: Errors.MalformedMidiMessageError,
           },
-          'EMIDIOutputPort.send error handling absurd',
+          'EMIDIOutput.send error handling absurd',
           { portId: outputPort.id, midiMessage: [...midiMessage] },
         ),
       })
 
-      return outputPort as EMIDIOutputPort
+      return outputPort as EMIDIOutput
     },
   ),
 )
@@ -135,17 +134,17 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
  * good state, and if the output port is in the middle of a sysex message, a
  * sysex termination byte (`0xf7`) will be sent.
  *
- * @param polymorphicOutputPort An effectful output port
+ * @param polymorphicOutput An effectful output port
  *
  * @returns An effect with the same port for easier chaining of operations
  * @experimental Supported only in Firefox. {@link https://caniuse.com/mdn-api_midioutput_clear|Can I use - MIDIOutput API: clear}
  * @see {@link https://www.w3.org/TR/webmidi/#dom-midioutput-clear|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/MIDIOutput/clear|MDN reference}
  */
-export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
+export const clear = Effect.fn('EMIDIOutput.clear')(function* <
   E = never,
   R = never,
->(polymorphicOutputPort: PolymorphicOutputPort<E, R>) {
-  const outputPort = yield* resolve(polymorphicOutputPort)
+>(polymorphicOutput: PolymorphicOutput<E, R>) {
+  const outputPort = yield* resolve(polymorphicOutput)
 
   yield* Effect.annotateCurrentSpan({
     port: Util.getStaticMIDIPortInfo(outputPort),
@@ -163,7 +162,7 @@ export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
         TypeError: Errors.ClearingSendingQueueIsNotSupportedError,
         NotSupportedError: Errors.ClearingSendingQueueIsNotSupportedError,
       },
-      'EMIDIOutputPort.clear error handling absurd',
+      'EMIDIOutput.clear error handling absurd',
       { portId: outputPort.id },
     ),
   })
@@ -175,11 +174,7 @@ export const clear = Effect.fn('EMIDIOutputPort.clear')(function* <
  *
  *
  */
-export type PolymorphicOutputPort<E, R> = Util.PolymorphicEffect<
-  EMIDIOutputPort,
-  E,
-  R
->
+export type PolymorphicOutput<E, R> = Util.PolymorphicEffect<EMIDIOutput, E, R>
 
 export type SendFromPortArgs = [
   midiMessage: Iterable<number>,
@@ -201,7 +196,7 @@ export interface SendMIDIMessagePortLast {
      *
      */
     <E = never, R = never>(
-      polymorphicOutputPort: PolymorphicOutputPort<E, R>,
+      polymorphicOutput: PolymorphicOutput<E, R>,
     ): SentMessageEffectFromPort<E, R>
   }
 }
@@ -211,7 +206,7 @@ export interface SendMIDIMessagePortFirst {
    *
    */
   <E = never, R = never>(
-    polymorphicOutputPort: PolymorphicOutputPort<E, R>,
+    polymorphicOutput: PolymorphicOutput<E, R>,
     ...args: SendFromPortArgs
   ): SentMessageEffectFromPort<E, R>
 }
@@ -220,4 +215,4 @@ export interface SendMIDIMessagePortFirst {
  *
  */
 export interface SentMessageEffectFromPort<E = never, R = never>
-  extends Util.SentMessageEffectFrom<EMIDIOutputPort, E, R> {}
+  extends Util.SentMessageEffectFrom<EMIDIOutput, E, R> {}

@@ -19,13 +19,13 @@ import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
 import * as Create from './createStreamMakerFrom.ts'
-import * as EMIDIInputPort from './EMIDIInputPort.ts'
-import * as EMIDIOutputPort from './EMIDIOutputPort.ts'
+import * as EMIDIInput from './EMIDIInput.ts'
+import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
 import * as Errors from './errors.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
-import { isOutputPortConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
-import { getOutputPortDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import { isOutputConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
+import { getOutputDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 import * as Util from './util.ts'
 
 // TODO: add stream of messages sent from this device to target midi device
@@ -135,7 +135,7 @@ export interface RequestMIDIAccessOptions {
    * {@linkcode Errors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
-   * {@linkcode getInputPortsRecord}, {@linkcode OutputPortsRecord}, etc. would
+   * {@linkcode getInputsRecord}, {@linkcode OutputsRecord}, etc. would
    * not include any software synthesizers.
    *
    * Note that may result in a two-step request procedure if software
@@ -353,18 +353,18 @@ const getPortEntriesFromRawAccess =
  *
  * @internal
  */
-const getInputPortEntriesFromRaw = getPortEntriesFromRawAccess(
+const getInputEntriesFromRaw = getPortEntriesFromRawAccess(
   'inputs',
-  EMIDIInputPort.make,
+  EMIDIInput.make,
 )
 
 /**
  *
  * @internal
  */
-const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
+const getOutputEntriesFromRaw = getPortEntriesFromRawAccess(
   'outputs',
-  EMIDIOutputPort.make,
+  EMIDIOutput.make,
 )
 
 /**
@@ -373,8 +373,8 @@ const getOutputPortEntriesFromRaw = getPortEntriesFromRawAccess(
  */
 const getAllPortsEntriesFromRaw = (rawAccess: MIDIAccess) =>
   Iterable.appendAll(
-    getInputPortEntriesFromRaw(rawAccess),
-    getOutputPortEntriesFromRaw(rawAccess),
+    getInputEntriesFromRaw(rawAccess),
+    getOutputEntriesFromRaw(rawAccess),
   )
 
 /**
@@ -407,8 +407,9 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
-export const getInputPortsRecord =
-  decorateToTakePolymorphicAccessAndReturnRecord(getInputPortEntriesFromRaw)
+export const getInputsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
+  getInputEntriesFromRaw,
+)
 
 /**
  * Because `MIDIOutputMap` can potentially be a mutable object, meaning new
@@ -420,8 +421,9 @@ export const getInputPortsRecord =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
-export const getOutputPortsRecord =
-  decorateToTakePolymorphicAccessAndReturnRecord(getOutputPortEntriesFromRaw)
+export const getOutputsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
+  getOutputEntriesFromRaw,
+)
 
 /**
  *
@@ -435,13 +437,13 @@ export const getAllPortsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
  *
  *
  */
-export const InputPortsRecord = getInputPortsRecord(EMIDIAccess)
+export const InputsRecord = getInputsRecord(EMIDIAccess)
 
 /**
  *
  *
  */
-export const OutputPortsRecord = getOutputPortsRecord(EMIDIAccess)
+export const OutputsRecord = getOutputsRecord(EMIDIAccess)
 
 /**
  *
@@ -478,9 +480,9 @@ export const makeAllPortsStateChangesStream =
           : null,
         port:
           rawPort instanceof globalThis.MIDIInput
-            ? EMIDIInputPort.make(rawPort)
+            ? EMIDIInput.make(rawPort)
             : rawPort instanceof globalThis.MIDIOutput
-              ? EMIDIOutputPort.make(rawPort)
+              ? EMIDIOutput.make(rawPort)
               : null,
       }) as const,
   )
@@ -499,12 +501,12 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
     function* (polymorphicAccess, target, midiMessage, timestamp) {
       const access = yield* resolve(polymorphicAccess)
 
-      const outputs = yield* getOutputPortsRecord(access)
+      const outputs = yield* getOutputsRecord(access)
 
       if (target === 'all existing outputs at effect execution')
         return yield* EFunction.pipe(
           Record.values(outputs),
-          Effect.forEach(EMIDIOutputPort.send(midiMessage, timestamp)),
+          Effect.forEach(EMIDIOutput.send(midiMessage, timestamp)),
           Effect.as(access),
         )
 
@@ -512,9 +514,9 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
         return yield* EFunction.pipe(
           Record.values(outputs),
           // TODO: maybe also do something about pending?
-          Effect.filter(isOutputPortConnectionOpenByPort),
+          Effect.filter(isOutputConnectionOpenByPort),
           Effect.flatMap(
-            Effect.forEach(EMIDIOutputPort.send(midiMessage, timestamp)),
+            Effect.forEach(EMIDIOutput.send(midiMessage, timestamp)),
           ),
           Effect.as(access),
         )
@@ -522,14 +524,14 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
       // TODO: maybe since deviceState returns always connected devices we can
       // simplify this check by applying intersections and comparing lengths
 
-      const portsIdsToSend: Util.MIDIOutputPortId[] = EArray.ensure(target)
+      const portsIdsToSend: Util.MIDIOutputId[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
         EFunction.pipe(
           Record.get(outputs, id),
           Option.match({
             onNone: () => Effect.succeed('disconnected' as const),
-            onSome: EFunction.flow(getOutputPortDeviceStateByPort),
+            onSome: EFunction.flow(getOutputDeviceStateByPort),
           }),
           effect => Unify.unify(effect),
           Effect.map(state => ({ id, state })),
@@ -551,11 +553,11 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
           ) as DOMException & { name: 'InvalidStateError' },
         })
 
-      const sendToSome = (predicate: (id: Util.MIDIOutputPortId) => boolean) =>
+      const sendToSome = (predicate: (id: Util.MIDIOutputId) => boolean) =>
         Effect.all(
           Record.reduce(
             outputs,
-            [] as EMIDIOutputPort.SentMessageEffectFromPort<never, never>[],
+            [] as EMIDIOutput.SentMessageEffectFromPort<never, never>[],
             // TODO: investigate what the fuck is going on, why the fuck can't I
             // make it a simple expression without either nesting it in
             // curly-braced function body or adding manual type-annotation
@@ -563,11 +565,11 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
               predicate(id)
                 ? [
                     ...acc,
-                    EMIDIOutputPort.send(
+                    EMIDIOutput.send(
                       port,
                       midiMessage,
                       timestamp,
-                    ) as EMIDIOutputPort.SentMessageEffectFromPort,
+                    ) as EMIDIOutput.SentMessageEffectFromPort,
                   ]
                 : acc,
           ),
@@ -587,31 +589,28 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
 export const makeMessagesStreamByPortId = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIInputPortId,
+  id: Util.MIDIInputId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  EMIDIInputPort.makeMessagesStream(
-    GetPort.getInputPortByPortIdInContext(id),
-    options,
-  )
+  EMIDIInput.makeMessagesStream(GetPort.getInputByPortIdInContext(id), options)
 
 /**
  *
  */
 export const sendToPortById = (
-  id: Util.MIDIOutputPortId,
-  ...args: EMIDIOutputPort.SendFromPortArgs
+  id: Util.MIDIOutputId,
+  ...args: EMIDIOutput.SendFromPortArgs
 ) =>
   Effect.asVoid(
-    EMIDIOutputPort.send(GetPort.getOutputPortByPortIdInContext(id), ...args),
+    EMIDIOutput.send(GetPort.getOutputByPortIdInContext(id), ...args),
   )
 
 /**
  *
  */
 export const clearPortById = EFunction.flow(
-  GetPort.getOutputPortByPortIdInContext,
-  EMIDIOutputPort.clear,
+  GetPort.getOutputByPortIdInContext,
+  EMIDIOutput.clear,
   Effect.asVoid,
 )
 
@@ -723,8 +722,8 @@ export interface SentMessageEffectFromAccess<E = never, R = never>
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
   | 'all open connections at effect execution'
-  | Util.MIDIOutputPortId
-  | Util.MIDIOutputPortId[]
+  | Util.MIDIOutputId
+  | Util.MIDIOutputId[]
 
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
@@ -732,7 +731,7 @@ export interface DualSendMIDIMessageFromAccess
 
 export type SendFromAccessArgs = [
   targetPortSelector: TargetPortSelector,
-  ...args: EMIDIOutputPort.SendFromPortArgs,
+  ...args: EMIDIOutput.SendFromPortArgs,
 ]
 
 export interface SendMIDIMessageAccessFirst {

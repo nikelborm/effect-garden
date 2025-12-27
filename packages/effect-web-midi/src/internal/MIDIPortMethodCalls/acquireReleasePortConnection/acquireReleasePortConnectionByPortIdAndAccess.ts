@@ -3,14 +3,14 @@
  * preserve JSDoc comments attached to the function signature */
 
 import {
-  getInputPortByPortIdAndAccess,
-  getOutputPortByPortIdAndAccess,
+  getInputByPortIdAndAccess,
+  getOutputByPortIdAndAccess,
   getPortByPortIdAndAccess,
 } from '../../getPortByPortId/getPortByPortIdAndAccess.ts'
 import { actOnPort } from '../actOnPort.ts'
 import {
-  acquireReleaseInputPortConnectionByPort,
-  acquireReleaseOutputPortConnectionByPort,
+  acquireReleaseInputConnectionByPort,
+  acquireReleaseOutputConnectionByPort,
   acquireReleasePortConnectionByPort,
 } from './acquireReleasePortConnectionByPort.ts'
 
@@ -25,15 +25,15 @@ export const acquireReleasePortConnectionByPortIdAndAccess = actOnPort(
 /**
  *
  */
-export const acquireReleaseInputPortConnectionByPortIdAndAccess = actOnPort(
-  getInputPortByPortIdAndAccess,
-  acquireReleaseInputPortConnectionByPort,
+export const acquireReleaseInputConnectionByPortIdAndAccess = actOnPort(
+  getInputByPortIdAndAccess,
+  acquireReleaseInputConnectionByPort,
 )
 
 /**
  *
  */
-export const acquireReleaseOutputPortConnectionByPortIdAndAccess = actOnPort(
-  getOutputPortByPortIdAndAccess,
-  acquireReleaseOutputPortConnectionByPort,
+export const acquireReleaseOutputConnectionByPortIdAndAccess = actOnPort(
+  getOutputByPortIdAndAccess,
+  acquireReleaseOutputConnectionByPort,
 )

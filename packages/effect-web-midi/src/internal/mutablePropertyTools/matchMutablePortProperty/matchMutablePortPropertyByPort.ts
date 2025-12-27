@@ -4,8 +4,8 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
-import * as EMIDIInputPort from '../../EMIDIInputPort.ts'
-import * as EMIDIOutputPort from '../../EMIDIOutputPort.ts'
+import * as EMIDIInput from '../../EMIDIInput.ts'
+import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
 import * as Util from '../../util.ts'
 import * as Get from '../getValueInRawPortFieldUnsafe.ts'
@@ -64,31 +64,33 @@ export const matchPortDeviceStateByPort = matchMutableMIDIPortProperty(
 /**
  *
  */
-export const matchInputPortConnectionStateByPort = matchMutableMIDIPortProperty(
+export const matchInputConnectionStateByPort = matchMutableMIDIPortProperty(
   'connection',
-  EMIDIInputPort.is,
+  EMIDIInput.is,
 )
 
 /**
  *
  */
-export const matchInputPortDeviceStateByPort = matchMutableMIDIPortProperty(
+export const matchInputDeviceStateByPort = matchMutableMIDIPortProperty(
   'state',
-  EMIDIInputPort.is,
+  EMIDIInput.is,
 )
 
 /**
  *
  */
-export const matchOutputPortConnectionStateByPort =
-  matchMutableMIDIPortProperty('connection', EMIDIOutputPort.is)
+export const matchOutputConnectionStateByPort = matchMutableMIDIPortProperty(
+  'connection',
+  EMIDIOutput.is,
+)
 
 /**
  *
  */
-export const matchOutputPortDeviceStateByPort = matchMutableMIDIPortProperty(
+export const matchOutputDeviceStateByPort = matchMutableMIDIPortProperty(
   'state',
-  EMIDIOutputPort.is,
+  EMIDIOutput.is,
 )
 
 export type MIDIPortMutableProperty = 'state' | 'connection'

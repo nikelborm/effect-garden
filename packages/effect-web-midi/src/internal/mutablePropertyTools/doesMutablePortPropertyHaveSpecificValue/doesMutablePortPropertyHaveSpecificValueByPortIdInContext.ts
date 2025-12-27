@@ -1,50 +1,50 @@
-// TODO: isInputPortConnectionClosedByPortIdInContext
-export const isInputPortConnectionClosedByPortIdInContext = () => {
+// TODO: isInputConnectionClosedByPortIdInContext
+export const isInputConnectionClosedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortConnectionOpenByPortIdInContext
-export const isInputPortConnectionOpenByPortIdInContext = () => {
+// TODO: isInputConnectionOpenByPortIdInContext
+export const isInputConnectionOpenByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortConnectionPendingByPortIdInContext
-export const isInputPortConnectionPendingByPortIdInContext = () => {
+// TODO: isInputConnectionPendingByPortIdInContext
+export const isInputConnectionPendingByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortDeviceConnectedByPortIdInContext
-export const isInputPortDeviceConnectedByPortIdInContext = () => {
+// TODO: isInputDeviceConnectedByPortIdInContext
+export const isInputDeviceConnectedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortDeviceDisconnectedByPortIdInContext
-export const isInputPortDeviceDisconnectedByPortIdInContext = () => {
+// TODO: isInputDeviceDisconnectedByPortIdInContext
+export const isInputDeviceDisconnectedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionClosedByPortIdInContext
-export const isOutputPortConnectionClosedByPortIdInContext = () => {
+// TODO: isOutputConnectionClosedByPortIdInContext
+export const isOutputConnectionClosedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionOpenByPortIdInContext
-export const isOutputPortConnectionOpenByPortIdInContext = () => {
+// TODO: isOutputConnectionOpenByPortIdInContext
+export const isOutputConnectionOpenByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionPendingByPortIdInContext
-export const isOutputPortConnectionPendingByPortIdInContext = () => {
+// TODO: isOutputConnectionPendingByPortIdInContext
+export const isOutputConnectionPendingByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortDeviceConnectedByPortIdInContext
-export const isOutputPortDeviceConnectedByPortIdInContext = () => {
+// TODO: isOutputDeviceConnectedByPortIdInContext
+export const isOutputDeviceConnectedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortDeviceDisconnectedByPortIdInContext
-export const isOutputPortDeviceDisconnectedByPortIdInContext = () => {
+// TODO: isOutputDeviceDisconnectedByPortIdInContext
+export const isOutputDeviceDisconnectedByPortIdInContext = () => {
   throw new Error('not implemented')
 }
 

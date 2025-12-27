@@ -4,8 +4,8 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
-import * as EMIDIInputPort from '../EMIDIInputPort.ts'
-import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
+import * as EMIDIInput from '../EMIDIInput.ts'
+import * as EMIDIOutput from '../EMIDIOutput.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
 import * as Errors from '../errors.ts'
 
@@ -14,34 +14,26 @@ import * as Errors from '../errors.ts'
  * @internal
  */
 const getPortByIdAndRemap = <
-  EInputPort,
-  EOutputPort,
-  RInputPort,
-  ROutputPort,
-  AInputPortType extends 'input' = never,
-  AOutputPortType extends 'output' = never,
+  EInput,
+  EOutput,
+  RInput,
+  ROutput,
+  AInputType extends 'input' = never,
+  AOutputType extends 'output' = never,
 >(handlers: {
   onInputFound: (
-    rawInputPort: MIDIInput,
-  ) => Effect.Effect<
-    EMIDIPort.EMIDIPort<AInputPortType>,
-    EInputPort,
-    RInputPort
-  >
+    rawInput: MIDIInput,
+  ) => Effect.Effect<EMIDIPort.EMIDIPort<AInputType>, EInput, RInput>
   onOutputFound: (
-    rawOutputPort: MIDIOutput,
-  ) => Effect.Effect<
-    EMIDIPort.EMIDIPort<AOutputPortType>,
-    EOutputPort,
-    ROutputPort
-  >
+    rawOutput: MIDIOutput,
+  ) => Effect.Effect<EMIDIPort.EMIDIPort<AOutputType>, EOutput, ROutput>
 }): GetPortById<
-  AInputPortType | AOutputPortType,
-  AInputPortType | AOutputPortType,
+  AInputType | AOutputType,
+  AInputType | AOutputType,
   never,
   never,
-  Errors.PortNotFoundError | EInputPort | EOutputPort,
-  RInputPort | ROutputPort
+  Errors.PortNotFoundError | EInput | EOutput,
+  RInput | ROutput
 > =>
   EFunction.dual(2, (polymorphicAccess, portId) =>
     Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), e => {
@@ -59,13 +51,13 @@ const getPortByIdAndRemap = <
       return new Errors.PortNotFoundError({
         portId,
       }) as EMIDIAccess.AcquiredThing<
-        EMIDIPort.EMIDIPort<AInputPortType | AOutputPortType>,
+        EMIDIPort.EMIDIPort<AInputType | AOutputType>,
         never,
         never,
         never,
         never,
-        Errors.PortNotFoundError | EInputPort | EOutputPort,
-        RInputPort | ROutputPort
+        Errors.PortNotFoundError | EInput | EOutput,
+        RInput | ROutput
       >
     }),
   )
@@ -73,25 +65,25 @@ const getPortByIdAndRemap = <
 /**
  *
  * If you want to ensure the type of returned port match the type of id, use
- * type-specific getters {@linkcode getInputPortByPortIdAndAccess} and
- * {@linkcode getOutputPortByPortIdAndAccess}, because in runtime, these branded
+ * type-specific getters {@linkcode getInputByPortIdAndAccess} and
+ * {@linkcode getOutputByPortIdAndAccess}, because in runtime, these branded
  * port IDs passed as function arguments, are just strings and cannot ensure
  * soundness
  */
 export const getPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: EFunction.flow(EMIDIInputPort.make, Effect.succeed),
-  onOutputFound: EFunction.flow(EMIDIOutputPort.make, Effect.succeed),
+  onInputFound: EFunction.flow(EMIDIInput.make, Effect.succeed),
+  onOutputFound: EFunction.flow(EMIDIOutput.make, Effect.succeed),
 })
 
 /**
  *
  *
  */
-export const getInputPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: EFunction.flow(EMIDIInputPort.make, Effect.succeed),
-  onOutputFound: rawOutputPort =>
+export const getInputByPortIdAndAccess = getPortByIdAndRemap({
+  onInputFound: EFunction.flow(EMIDIInput.make, Effect.succeed),
+  onOutputFound: rawOutput =>
     Effect.dieMessage(
-      `Assertion failed: getInputPortById found output port with the id=${rawOutputPort.id}`,
+      `Assertion failed: getInputById found output port with the id=${rawOutput.id}`,
     ),
 })
 
@@ -99,12 +91,12 @@ export const getInputPortByPortIdAndAccess = getPortByIdAndRemap({
  *
  *
  */
-export const getOutputPortByPortIdAndAccess = getPortByIdAndRemap({
-  onInputFound: rawInputPort =>
+export const getOutputByPortIdAndAccess = getPortByIdAndRemap({
+  onInputFound: rawInput =>
     Effect.dieMessage(
-      `Assertion failed: getOutputPortById found output port with the id=${rawInputPort.id}`,
+      `Assertion failed: getOutputById found output port with the id=${rawInput.id}`,
     ),
-  onOutputFound: EFunction.flow(EMIDIOutputPort.make, Effect.succeed),
+  onOutputFound: EFunction.flow(EMIDIOutput.make, Effect.succeed),
 })
 
 export interface GetPortById<

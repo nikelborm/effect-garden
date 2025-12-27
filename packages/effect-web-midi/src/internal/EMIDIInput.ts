@@ -11,15 +11,14 @@ import * as Util from './util.ts'
  * Thin wrapper around {@linkcode MIDIInput} instance. Will be seen in all
  * external code.
  */
-export interface EMIDIInputPort extends EMIDIPort.EMIDIPort<'input'> {}
+export interface EMIDIInput extends EMIDIPort.EMIDIPort<'input'> {}
 
 /**
  * Thin wrapper around {@linkcode MIDIInput} instance giving access to the
  * actual field storing it.
  * @internal
  */
-interface EMIDIInputPortImpl
-  extends EMIDIPort.EMIDIPortImpl<MIDIInput, 'input'> {}
+interface EMIDIInputImpl extends EMIDIPort.EMIDIPortImpl<MIDIInput, 'input'> {}
 
 /**
  * Validates the raw MIDI input port, and puts it into a field hidden from the
@@ -27,52 +26,50 @@ interface EMIDIInputPortImpl
  *
  * @internal
  */
-const makeImpl = (rawInputPort: MIDIInput): EMIDIInputPortImpl =>
-  EMIDIPort.makeImpl(rawInputPort, 'input', globalThis.MIDIInput)
+const makeImpl = (rawInput: MIDIInput): EMIDIInputImpl =>
+  EMIDIPort.makeImpl(rawInput, 'input', globalThis.MIDIInput)
 
 /**
- * Asserts an object to be valid EMIDIInputPort and casts it to internal
+ * Asserts an object to be valid EMIDIInput and casts it to internal
  * implementation type
  *
  * @internal
  */
 const assertImpl = (inputPort: unknown) => {
-  if (!isImpl(inputPort))
-    throw new Error('Failed to cast to EMIDIInputPortImpl')
+  if (!isImpl(inputPort)) throw new Error('Failed to cast to EMIDIInputImpl')
   return inputPort
 }
 
 /**
- * Asserts an object to be valid EMIDIInputPort
+ * Asserts an object to be valid EMIDIInput
  */
-export const assert: (inputPort: unknown) => EMIDIInputPort = assertImpl
+export const assert: (inputPort: unknown) => EMIDIInput = assertImpl
 
 /**
  * @internal
  */
-const assumeImpl = (inputPort: EMIDIInputPort) =>
-  inputPort as EMIDIInputPortImpl
-
-/**
- *
- *
- * @internal
- */
-export const make: (rawInputPort: MIDIInput) => EMIDIInputPort = makeImpl
+const assumeImpl = (inputPort: EMIDIInput) => inputPort as EMIDIInputImpl
 
 /**
  *
  *
  * @internal
  */
-const isImpl: (inputPort: unknown) => inputPort is EMIDIInputPortImpl =
+export const make: (rawInput: MIDIInput) => EMIDIInput = makeImpl
+
+/**
+ *
+ *
+ * @internal
+ */
+const isImpl: (inputPort: unknown) => inputPort is EMIDIInputImpl =
   EMIDIPort.isImplOfSpecificType('input', globalThis.MIDIInput)
 
 /**
  *
  *
  */
-export const is: (inputPort: unknown) => inputPort is EMIDIInputPort = isImpl
+export const is: (inputPort: unknown) => inputPort is EMIDIInput = isImpl
 
 /**
  * [MIDIMessageEvent MDN

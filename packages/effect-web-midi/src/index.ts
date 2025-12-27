@@ -1,6 +1,6 @@
 export * as EMIDIAccess from './EMIDIAccess.ts'
-export * as EMIDIInputPort from './EMIDIInputPort.ts'
-export * as EMIDIOutputPort from './EMIDIOutputPort.ts'
+export * as EMIDIInput from './EMIDIInput.ts'
+export * as EMIDIOutput from './EMIDIOutput.ts'
 export * as EMIDIPort from './EMIDIPort.ts'
 export * from './errors.ts'
 export * from './parsing.ts'

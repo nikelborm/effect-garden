@@ -88,22 +88,22 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
     portId,
   )
 
-// TODO: getInputPortConnectionStateByPortIdAndAccess
-export const getInputPortConnectionStateByPortIdAndAccess = () => {
+// TODO: getInputConnectionStateByPortIdAndAccess
+export const getInputConnectionStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getInputPortDeviceStateByPortIdAndAccess
-export const getInputPortDeviceStateByPortIdAndAccess = () => {
+// TODO: getInputDeviceStateByPortIdAndAccess
+export const getInputDeviceStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getOutputPortConnectionStateByPortIdAndAccess
-export const getOutputPortConnectionStateByPortIdAndAccess = () => {
+// TODO: getOutputConnectionStateByPortIdAndAccess
+export const getOutputConnectionStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getOutputPortDeviceStateByPortIdAndAccess
-export const getOutputPortDeviceStateByPortIdAndAccess = () => {
+// TODO: getOutputDeviceStateByPortIdAndAccess
+export const getOutputDeviceStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }

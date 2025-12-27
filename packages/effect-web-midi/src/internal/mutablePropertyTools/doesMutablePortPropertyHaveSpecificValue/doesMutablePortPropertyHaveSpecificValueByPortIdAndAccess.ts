@@ -1,50 +1,50 @@
-// TODO: isInputPortConnectionClosedByPortIdAndAccess
-export const isInputPortConnectionClosedByPortIdAndAccess = () => {
+// TODO: isInputConnectionClosedByPortIdAndAccess
+export const isInputConnectionClosedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortConnectionOpenByPortIdAndAccess
-export const isInputPortConnectionOpenByPortIdAndAccess = () => {
+// TODO: isInputConnectionOpenByPortIdAndAccess
+export const isInputConnectionOpenByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortConnectionPendingByPortIdAndAccess
-export const isInputPortConnectionPendingByPortIdAndAccess = () => {
+// TODO: isInputConnectionPendingByPortIdAndAccess
+export const isInputConnectionPendingByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortDeviceConnectedByPortIdAndAccess
-export const isInputPortDeviceConnectedByPortIdAndAccess = () => {
+// TODO: isInputDeviceConnectedByPortIdAndAccess
+export const isInputDeviceConnectedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isInputPortDeviceDisconnectedByPortIdAndAccess
-export const isInputPortDeviceDisconnectedByPortIdAndAccess = () => {
+// TODO: isInputDeviceDisconnectedByPortIdAndAccess
+export const isInputDeviceDisconnectedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionClosedByPortIdAndAccess
-export const isOutputPortConnectionClosedByPortIdAndAccess = () => {
+// TODO: isOutputConnectionClosedByPortIdAndAccess
+export const isOutputConnectionClosedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionOpenByPortIdAndAccess
-export const isOutputPortConnectionOpenByPortIdAndAccess = () => {
+// TODO: isOutputConnectionOpenByPortIdAndAccess
+export const isOutputConnectionOpenByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortConnectionPendingByPortIdAndAccess
-export const isOutputPortConnectionPendingByPortIdAndAccess = () => {
+// TODO: isOutputConnectionPendingByPortIdAndAccess
+export const isOutputConnectionPendingByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortDeviceConnectedByPortIdAndAccess
-export const isOutputPortDeviceConnectedByPortIdAndAccess = () => {
+// TODO: isOutputDeviceConnectedByPortIdAndAccess
+export const isOutputDeviceConnectedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: isOutputPortDeviceDisconnectedByPortIdAndAccess
-export const isOutputPortDeviceDisconnectedByPortIdAndAccess = () => {
+// TODO: isOutputDeviceDisconnectedByPortIdAndAccess
+export const isOutputDeviceDisconnectedByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 

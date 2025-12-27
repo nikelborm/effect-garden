@@ -47,19 +47,19 @@ export const matchPortConnectionStateByPortIdInContext =
 /**
  *
  */
-export const matchInputPortConnectionStateByPortIdInContext =
+export const matchInputConnectionStateByPortIdInContext =
   makeMatcherTakingPortIds(
-    Match.matchInputPortConnectionStateByPort,
-    Get.getInputPortByPortIdInContext,
+    Match.matchInputConnectionStateByPort,
+    Get.getInputByPortIdInContext,
   )
 
 /**
  *
  */
-export const matchOutputPortConnectionStateByPortIdInContext =
+export const matchOutputConnectionStateByPortIdInContext =
   makeMatcherTakingPortIds(
-    Match.matchOutputPortConnectionStateByPort,
-    Get.getOutputPortByPortIdInContext,
+    Match.matchOutputConnectionStateByPort,
+    Get.getOutputByPortIdInContext,
   )
 
 /**
@@ -73,17 +73,15 @@ export const matchPortDeviceStateByPortIdInContext = makeMatcherTakingPortIds(
 /**
  *
  */
-export const matchInputPortDeviceStateByPortIdInContext =
-  makeMatcherTakingPortIds(
-    Match.matchInputPortDeviceStateByPort,
-    Get.getInputPortByPortIdInContext,
-  )
+export const matchInputDeviceStateByPortIdInContext = makeMatcherTakingPortIds(
+  Match.matchInputDeviceStateByPort,
+  Get.getInputByPortIdInContext,
+)
 
 /**
  *
  */
-export const matchOutputPortDeviceStateByPortIdInContext =
-  makeMatcherTakingPortIds(
-    Match.matchOutputPortDeviceStateByPort,
-    Get.getOutputPortByPortIdInContext,
-  )
+export const matchOutputDeviceStateByPortIdInContext = makeMatcherTakingPortIds(
+  Match.matchOutputDeviceStateByPort,
+  Get.getOutputByPortIdInContext,
+)

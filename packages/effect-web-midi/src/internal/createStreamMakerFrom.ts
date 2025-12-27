@@ -6,8 +6,8 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 import type * as EMIDIAccess from './EMIDIAccess.ts'
-import type * as EMIDIInputPort from './EMIDIInputPort.ts'
-import type * as EMIDIOutputPort from './EMIDIOutputPort.ts'
+import type * as EMIDIInput from './EMIDIInput.ts'
+import type * as EMIDIOutput from './EMIDIOutput.ts'
 import * as Util from './util.ts'
 
 // TODO: make an experiment to see if listeners are automatically removed on disconnect
@@ -50,8 +50,8 @@ const validOnNullStrategies = new Set([
  *   success channel of the stream
  *
  * - `buildConfig` - Function that makes config out of an effectful version
- *   (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInputPort.EMIDIInputPort},
- *   {@linkcode EMIDIOutputPort.EMIDIOutputPort}) of a MIDI object.
+ *   (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInput.EMIDIInput},
+ *   {@linkcode EMIDIOutput.EMIDIOutput}) of a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
  *   selected field to an extension of the object inside stream's success
@@ -73,8 +73,8 @@ export const createStreamMakerFrom =
    * success channel of the stream
    *
    * @param buildConfig Function that makes config out of an effectful version
-   * (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInputPort.EMIDIInputPort},
-   * {@linkcode EMIDIOutputPort.EMIDIOutputPort}) of a MIDI object.
+   * (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInput.EMIDIInput},
+   * {@linkcode EMIDIOutput.EMIDIOutput}) of a MIDI object.
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
    * event's selected field (`nullableFieldName`) to an extension of the object

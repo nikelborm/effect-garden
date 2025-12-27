@@ -16,22 +16,22 @@ export const getPortDeviceStateByPortId = (id: Util.MIDIBothPortId) =>
 export const getPortConnectionStateByPortId = (id: Util.MIDIBothPortId) =>
   Get.getPortConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
-// TODO: getInputPortConnectionStateByPortId
-export const getInputPortConnectionStateByPortId = () => {
+// TODO: getInputConnectionStateByPortId
+export const getInputConnectionStateByPortId = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getInputPortDeviceStateByPortId
-export const getInputPortDeviceStateByPortId = () => {
+// TODO: getInputDeviceStateByPortId
+export const getInputDeviceStateByPortId = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getOutputPortConnectionStateByPortId
-export const getOutputPortConnectionStateByPortId = () => {
+// TODO: getOutputConnectionStateByPortId
+export const getOutputConnectionStateByPortId = () => {
   throw new Error('not implemented')
 }
 
-// TODO: getOutputPortDeviceStateByPortId
-export const getOutputPortDeviceStateByPortId = () => {
+// TODO: getOutputDeviceStateByPortId
+export const getOutputDeviceStateByPortId = () => {
   throw new Error('not implemented')
 }

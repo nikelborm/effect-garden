@@ -21,11 +21,11 @@ export type MIDIPortId<TPortType extends MIDIPortType> =
 export type MIDIBothPortId = MIDIPortId<MIDIPortType>
 export const MIDIBothPortId = Brand.nominal<MIDIBothPortId>()
 
-export type MIDIOutputPortId = MIDIPortId<'output'>
-export const MIDIOutputPortId = Brand.nominal<MIDIOutputPortId>()
+export type MIDIOutputId = MIDIPortId<'output'>
+export const MIDIOutputId = Brand.nominal<MIDIOutputId>()
 
-export type MIDIInputPortId = MIDIPortId<'input'>
-export const MIDIInputPortId = Brand.nominal<MIDIInputPortId>()
+export type MIDIInputId = MIDIPortId<'input'>
+export const MIDIInputId = Brand.nominal<MIDIInputId>()
 
 export const midiPortStaticFields = [
   'id',

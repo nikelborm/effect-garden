@@ -1,20 +1,20 @@
-// TODO: matchInputPortConnectionStateByPortIdAndAccess
-export const matchInputPortConnectionStateByPortIdAndAccess = () => {
+// TODO: matchInputConnectionStateByPortIdAndAccess
+export const matchInputConnectionStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: matchInputPortDeviceStateByPortIdAndAccess
-export const matchInputPortDeviceStateByPortIdAndAccess = () => {
+// TODO: matchInputDeviceStateByPortIdAndAccess
+export const matchInputDeviceStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: matchOutputPortConnectionStateByPortIdAndAccess
-export const matchOutputPortConnectionStateByPortIdAndAccess = () => {
+// TODO: matchOutputConnectionStateByPortIdAndAccess
+export const matchOutputConnectionStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: matchOutputPortDeviceStateByPortIdAndAccess
-export const matchOutputPortDeviceStateByPortIdAndAccess = () => {
+// TODO: matchOutputDeviceStateByPortIdAndAccess
+export const matchOutputDeviceStateByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 

@@ -1,10 +1,10 @@
-// TODO: makeInputPortStateChangesStreamByPortIdAndAccess
-export const makeInputPortStateChangesStreamByPortIdAndAccess = () => {
+// TODO: makeInputStateChangesStreamByPortIdAndAccess
+export const makeInputStateChangesStreamByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 
-// TODO: makeOutputPortStateChangesStreamByPortIdAndAccess
-export const makeOutputPortStateChangesStreamByPortIdAndAccess = () => {
+// TODO: makeOutputStateChangesStreamByPortIdAndAccess
+export const makeOutputStateChangesStreamByPortIdAndAccess = () => {
   throw new Error('not implemented')
 }
 

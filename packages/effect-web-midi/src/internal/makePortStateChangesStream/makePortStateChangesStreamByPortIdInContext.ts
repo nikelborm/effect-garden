@@ -22,14 +22,14 @@ export const makePortStateChangesStreamByPortIdInContext = <
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeInputPortStateChangesStreamByPortIdInContext = <
+export const makeInputStateChangesStreamByPortIdInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIInputPortId,
+  id: Util.MIDIInputId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  Make.makeInputPortStateChangesStreamByPort(
-    Get.getInputPortByPortIdInContext(id),
+  Make.makeInputStateChangesStreamByPort(
+    Get.getInputByPortIdInContext(id),
     options,
   )
 
@@ -37,13 +37,13 @@ export const makeInputPortStateChangesStreamByPortIdInContext = <
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeOutputPortStateChangesStreamByPortIdInContext = <
+export const makeOutputStateChangesStreamByPortIdInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIOutputPortId,
+  id: Util.MIDIOutputId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  Make.makeOutputPortStateChangesStreamByPort(
-    Get.getOutputPortByPortIdInContext(id),
+  Make.makeOutputStateChangesStreamByPort(
+    Get.getOutputByPortIdInContext(id),
     options,
   )

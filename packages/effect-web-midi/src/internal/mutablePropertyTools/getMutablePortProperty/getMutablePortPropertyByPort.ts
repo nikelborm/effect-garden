@@ -42,23 +42,22 @@ export const getPortConnectionStateByPort = getMutableProperty()('connection')
 /**
  *
  */
-export const getInputPortDeviceStateByPort =
-  getMutableProperty<'input'>()('state')
+export const getInputDeviceStateByPort = getMutableProperty<'input'>()('state')
 
 /**
  *
  */
-export const getInputPortConnectionStateByPort =
+export const getInputConnectionStateByPort =
   getMutableProperty<'input'>()('connection')
 
 /**
  *
  */
-export const getOutputPortDeviceStateByPort =
+export const getOutputDeviceStateByPort =
   getMutableProperty<'output'>()('state')
 
 /**
  *
  */
-export const getOutputPortConnectionStateByPort =
+export const getOutputConnectionStateByPort =
   getMutableProperty<'output'>()('connection')

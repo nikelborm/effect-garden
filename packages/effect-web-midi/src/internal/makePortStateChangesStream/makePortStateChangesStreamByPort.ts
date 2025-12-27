@@ -2,8 +2,8 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Create from '../createStreamMakerFrom.ts'
-import * as EMIDIInputPort from '../EMIDIInputPort.ts'
-import * as EMIDIOutputPort from '../EMIDIOutputPort.ts'
+import * as EMIDIInput from '../EMIDIInput.ts'
+import * as EMIDIOutput from '../EMIDIOutput.ts'
 import * as EMIDIPort from '../EMIDIPort.ts'
 import * as Util from '../util.ts'
 
@@ -57,8 +57,8 @@ export const makePortStateChangesStreamByPort =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-export const makeInputPortStateChangesStreamByPort =
-  makePortStateChangesStreamFactory(EMIDIInputPort.is)
+export const makeInputStateChangesStreamByPort =
+  makePortStateChangesStreamFactory(EMIDIInput.is)
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -66,8 +66,8 @@ export const makeInputPortStateChangesStreamByPort =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-export const makeOutputPortStateChangesStreamByPort =
-  makePortStateChangesStreamFactory(EMIDIOutputPort.is)
+export const makeOutputStateChangesStreamByPort =
+  makePortStateChangesStreamFactory(EMIDIOutput.is)
 
 /**
  * A custom type is needed because the port type will be generic, but this is
