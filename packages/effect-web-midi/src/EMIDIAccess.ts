@@ -58,7 +58,7 @@ export {
   type EMIDIInput,
   // is,
   // make,
-  makeMessagesStreamByInput as makeMessagesStream,
+  makeMessagesStreamByPort,
   // type PolymorphicInput,
   // type PolymorphicInputClean,
 } from './internal/EMIDIInput.ts'

@@ -592,7 +592,7 @@ export const makeMessagesStreamByInputId = <
   id: Util.MIDIInputId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  EMIDIInput.makeMessagesStreamByInput(
+  EMIDIInput.makeMessagesStreamByPort(
     GetPort.getInputByPortIdInContext(id),
     options,
   )

@@ -353,3 +353,4 @@ GetThingByPortId
 GetThingByPortIdAccessFirst
 GetThingByPortIdAccessLast
 GetThingByPortIdAccessLastSecondHalf
+makeMessagesStreamByInputId

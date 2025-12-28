@@ -1,16 +1,16 @@
-export {
-  type BuiltStream,
-  createStreamMakerFrom,
-  type DualStreamMaker,
-  type MakeStreamTargetFirst,
-  type MakeStreamTargetLast,
-  type OnNullStrategy,
-  type StreamError,
-  type StreamMakerOptions,
-  type StreamMakerOptionsObject,
-  type StreamMakerOptionsWellknown,
-  type StreamValue,
-} from './internal/createStreamMakerFrom.ts'
+// export {
+//   type BuiltStream,
+//   createStreamMakerFrom,
+//   type DualStreamMaker,
+//   type MakeStreamTargetFirst,
+//   type MakeStreamTargetLast,
+//   type OnNullStrategy,
+//   type StreamError,
+//   type StreamMakerOptions,
+//   type StreamMakerOptionsObject,
+//   type StreamMakerOptionsWellknown,
+//   type StreamValue,
+// } from './internal/createStreamMakerFrom.ts'
 export {
   type AcquiredThing,
   AllPortsRecord,
