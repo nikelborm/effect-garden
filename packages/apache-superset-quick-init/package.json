@@ -24,7 +24,6 @@
     "@effect/platform-node-shared": "catalog:",
     "@effect/vitest": "catalog:",
     "@nikelborm/git-dl": "workspace:*",
-    "@nikelborm/tsconfig": "workspace:*",
     "@octokit/core": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",
     "@rollup/plugin-json": "catalog:",

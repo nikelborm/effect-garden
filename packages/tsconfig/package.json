@@ -1,5 +1,6 @@
 {
   "name": "@nikelborm/tsconfig",
+  "version": "1.0.0",
   "exports": {
     "default": "./tsconfig.json"
   },

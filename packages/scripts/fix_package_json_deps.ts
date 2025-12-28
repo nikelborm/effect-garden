@@ -312,3 +312,5 @@ for (const { devDependencies } of myMonorepoPackages) {
 // "ts-namespace-import": "catalog:",
 // "ts-patch": "catalog:",
 // "typescript": "catalog:"
+
+// ensure version field is present everywhere as well as name
