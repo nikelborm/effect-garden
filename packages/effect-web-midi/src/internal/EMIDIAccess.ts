@@ -586,13 +586,21 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeMessagesStreamByPortId = <
+export const makeMessagesStreamByInputId = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
   id: Util.MIDIInputId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
-  EMIDIInput.makeMessagesStream(GetPort.getInputByPortIdInContext(id), options)
+  EMIDIInput.makeMessagesStreamByInput(
+    GetPort.getInputByPortIdInContext(id),
+    options,
+  )
+
+// TODO: makeMessagesStreamByInputIdAndAccess
+export const makeMessagesStreamByInputIdAndAccess = () => {
+  throw new Error('not implemented')
+}
 
 /**
  *

@@ -36,7 +36,7 @@ export {
   layerSystemExclusiveSupported,
   makeAllPortsStateChangesStream,
   makeAllPortsStateChangesStreamFromContext,
-  makeMessagesStreamByPortId,
+  makeMessagesStreamByInputId,
   OutputsRecord,
   type PolymorphicAccessInstance,
   type PolymorphicAccessInstanceClean,
@@ -87,19 +87,19 @@ export {
   type PolymorphicPortClean,
   type TypeId,
 } from './internal/EMIDIPort.ts'
-export {
-  AbortError,
-  CantSendSysexMessagesError,
-  ClearingSendingQueueIsNotSupportedError,
-  DisconnectedPortError,
-  MalformedMidiMessageError,
-  MIDIAccessNotAllowedError,
-  MIDIAccessNotSupportedError,
-  PortNotFoundError,
-  remapErrorByName,
-  UnavailablePortError,
-  UnderlyingSystemError,
-} from './internal/errors.ts'
+// export {
+//   AbortError,
+//   CantSendSysexMessagesError,
+//   ClearingSendingQueueIsNotSupportedError,
+//   DisconnectedPortError,
+//   MalformedMidiMessageError,
+//   MIDIAccessNotAllowedError,
+//   MIDIAccessNotSupportedError,
+//   PortNotFoundError,
+//   remapErrorByName,
+//   UnavailablePortError,
+//   UnderlyingSystemError,
+// } from './internal/errors.ts'
 export {
   type GetPortById,
   getInputByPortIdAndAccess as getInputByIdInPipe,

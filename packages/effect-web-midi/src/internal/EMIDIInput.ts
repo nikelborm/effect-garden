@@ -79,7 +79,7 @@ export const is: (input: unknown) => input is EMIDIInput = isImpl
  * field equal to `null`, but when coming from the browser, they won't. The
  * default behavior is to defect on `null`.
  */
-export const makeMessagesStream =
+export const makeMessagesStreamByPort =
   Create.createStreamMakerFrom<MIDIInputEventMap>()(
     is,
     input => ({

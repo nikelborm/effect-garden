@@ -36,7 +36,7 @@ export {
   layerSystemExclusiveSupported,
   makeAllPortsStateChangesStream,
   makeAllPortsStateChangesStreamFromContext,
-  makeMessagesStreamByPortId,
+  makeMessagesStreamByInputId,
   OutputsRecord,
   type PolymorphicAccessInstance,
   type PolymorphicAccessInstanceClean,
@@ -77,52 +77,52 @@ export {
   type SentMessageEffectFromPort,
   send,
 } from './internal/EMIDIOutput.ts'
-export type {
-  // assert,
-  // assumeImpl,
-  // type EMIDIPort,
-  // type EMIDIPortImpl,
-  // type ExtractTypeFromPort,
-  // is,
-  // isImplOfSpecificType,
-  // makeImpl,
-  // type PolymorphicPort,
-  // type PolymorphicPortClean,
-  TypeId,
-} from './internal/EMIDIPort.ts'
-export {
-  AbortError,
-  CantSendSysexMessagesError,
-  ClearingSendingQueueIsNotSupportedError,
-  DisconnectedPortError,
-  MalformedMidiMessageError,
-  MIDIAccessNotAllowedError,
-  MIDIAccessNotSupportedError,
-  PortNotFoundError,
-  remapErrorByName,
-  UnavailablePortError,
-  UnderlyingSystemError,
-} from './internal/errors.ts'
+// export {
+//   assert,
+//   assumeImpl,
+//   type EMIDIPort,
+//   type EMIDIPortImpl,
+//   type ExtractTypeFromPort,
+//   is,
+//   isImplOfSpecificType,
+//   makeImpl,
+//   type PolymorphicPort,
+//   type PolymorphicPortClean,
+//   type TypeId,
+// } from './internal/EMIDIPort.ts'
+// export {
+//   AbortError,
+//   CantSendSysexMessagesError,
+//   ClearingSendingQueueIsNotSupportedError,
+//   DisconnectedPortError,
+//   MalformedMidiMessageError,
+//   MIDIAccessNotAllowedError,
+//   MIDIAccessNotSupportedError,
+//   PortNotFoundError,
+//   remapErrorByName,
+//   UnavailablePortError,
+//   UnderlyingSystemError,
+// } from './internal/errors.ts'
 export {
   type GetPortById,
-  // getInputByPortIdAndAccess as getInputByIdInPipe,
-  getOutputByPortIdAndAccess as getOutputByIdInPipe,
-  getPortByPortIdAndAccess as getPortByIdInPipe,
+  // getInputByPortIdAndAccess,
+  getOutputByPortIdAndAccess as getByIdAndAccess,
+  // getPortByPortIdAndAccess,
 } from './internal/getPortByPortId/getPortByPortIdAndAccess.ts'
 export {
-  // getInputByPortIdInContext as getInputById,
-  getOutputByPortIdInContext as getOutputById,
-  getPortByPortIdInContext as getPortById,
+  // getInputByPortIdInContext,
+  getOutputByPortIdInContext as getById,
+  // getPortByPortIdInContext,
 } from './internal/getPortByPortId/getPortByPortIdInContext.ts'
 export {
   // acquireReleaseInputConnectionByPort,
-  acquireReleaseOutputConnectionByPort,
-  acquireReleasePortConnectionByPort,
+  acquireReleaseOutputConnectionByPort as acquireReleaseConnection,
+  // acquireReleasePortConnectionByPort,
 } from './internal/MIDIPortMethodCalls/acquireReleasePortConnection/acquireReleasePortConnectionByPort.ts'
 export {
-  // acquireReleaseInputConnectionByPortIdAndAccess as acquireReleaseInputConnectionByIdInPipe,
-  acquireReleaseOutputConnectionByPortIdAndAccess as acquireReleaseOutputConnectionByIdInPipe,
-  acquireReleasePortConnectionByPortIdAndAccess as acquireReleasePortConnectionByIdInPipe,
+  // acquireReleaseInputConnectionByPortIdAndAccess as acquireReleaseInputConnectionById,
+  acquireReleaseOutputConnectionByPortIdAndAccess as acquireReleaseOutputConnectionById,
+  acquireReleasePortConnectionByPortIdAndAccess as acquireReleasePortConnectionById,
 } from './internal/MIDIPortMethodCalls/acquireReleasePortConnection/acquireReleasePortConnectionByPortIdAndAccess.ts'
 export {
   // acquireReleaseInputConnectionByPortIdInContext as acquireReleaseInputConnectionById,
@@ -137,9 +137,9 @@ export {
   makePortConnectionCloser,
 } from './internal/MIDIPortMethodCalls/closePortConnection/closePortConnectionByPort.ts'
 export {
-  // closeInputConnectionByPortIdAndAccess as closeInputConnectionByIdInPipe,
-  closeOutputConnectionByPortIdAndAccess as closeOutputConnectionByIdInPipe,
-  closePortConnectionByPortIdAndAccess as closePortConnectionByIdInPipe,
+  // closeInputConnectionByPortIdAndAccess as closeInputConnectionById,
+  closeOutputConnectionByPortIdAndAccess as closeOutputConnectionById,
+  closePortConnectionByPortIdAndAccess as closePortConnectionById,
 } from './internal/MIDIPortMethodCalls/closePortConnection/closePortConnectionByPortIdAndAccess.ts'
 export {
   // closeInputConnectionByPortIdInContext as closeInputConnectionById,
@@ -157,9 +157,9 @@ export {
   openPortConnectionByPort,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPort.ts'
 export {
-  // openInputConnectionByPortIdAndAccess as openInputConnectionByIdInPipe,
-  openOutputConnectionByPortIdAndAccess as openOutputConnectionByIdInPipe,
-  openPortConnectionByPortIdAndAccess as openPortConnectionByIdInPipe,
+  // openInputConnectionByPortIdAndAccess as openInputConnectionById,
+  openOutputConnectionByPortIdAndAccess as openOutputConnectionById,
+  openPortConnectionByPortIdAndAccess as openPortConnectionById,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPortIdAndAccess.ts'
 export {
   // openInputConnectionByPortIdInContext as openInputConnectionById,
@@ -176,9 +176,9 @@ export {
   type StateChangesStream,
 } from './internal/makePortStateChangesStream/makePortStateChangesStreamByPort.ts'
 export {
-  // makeInputStateChangesStreamByPortIdAndAccess as makeInputStateChangesStreamByIdInPipe,
-  makeOutputStateChangesStreamByPortIdAndAccess as makeOutputStateChangesStreamByIdInPipe,
-  makePortStateChangesStreamByPortIdAndAccess as makePortStateChangesStreamByIdInPipe,
+  // makeInputStateChangesStreamByPortIdAndAccess as makeInputStateChangesStreamById,
+  makeOutputStateChangesStreamByPortIdAndAccess as makeOutputStateChangesStreamById,
+  makePortStateChangesStreamByPortIdAndAccess as makePortStateChangesStreamById,
 } from './internal/makePortStateChangesStream/makePortStateChangesStreamByPortIdAndAccess.ts'
 export {
   // makeInputStateChangesStreamByPortIdInContext as makeInputStateChangesStreamById,
@@ -203,21 +203,21 @@ export {
   isPortDeviceDisconnectedByPort,
 } from './internal/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 export {
-  // isInputConnectionClosedByPortIdAndAccess as isInputConnectionClosedByIdInPipe,
-  // isInputConnectionOpenByPortIdAndAccess as isInputConnectionOpenByIdInPipe,
-  // isInputConnectionPendingByPortIdAndAccess as isInputConnectionPendingByIdInPipe,
-  // isInputDeviceConnectedByPortIdAndAccess as isInputDeviceConnectedByIdInPipe,
-  // isInputDeviceDisconnectedByPortIdAndAccess as isInputDeviceDisconnectedByIdInPipe,
-  isOutputConnectionClosedByPortIdAndAccess as isOutputConnectionClosedByIdInPipe,
-  isOutputConnectionOpenByPortIdAndAccess as isOutputConnectionOpenByIdInPipe,
-  isOutputConnectionPendingByPortIdAndAccess as isOutputConnectionPendingByIdInPipe,
-  isOutputDeviceConnectedByPortIdAndAccess as isOutputDeviceConnectedByIdInPipe,
-  isOutputDeviceDisconnectedByPortIdAndAccess as isOutputDeviceDisconnectedByIdInPipe,
-  isPortConnectionClosedByPortIdAndAccess as isPortConnectionClosedByIdInPipe,
-  isPortConnectionOpenByPortIdAndAccess as isPortConnectionOpenByIdInPipe,
-  isPortConnectionPendingByPortIdAndAccess as isPortConnectionPendingByIdInPipe,
-  isPortDeviceConnectedByPortIdAndAccess as isPortDeviceConnectedByIdInPipe,
-  isPortDeviceDisconnectedByPortIdAndAccess as isPortDeviceDisconnectedByIdInPipe,
+  // isInputConnectionClosedByPortIdAndAccess as isInputConnectionClosedById,
+  // isInputConnectionOpenByPortIdAndAccess as isInputConnectionOpenById,
+  // isInputConnectionPendingByPortIdAndAccess as isInputConnectionPendingById,
+  // isInputDeviceConnectedByPortIdAndAccess as isInputDeviceConnectedById,
+  // isInputDeviceDisconnectedByPortIdAndAccess as isInputDeviceDisconnectedById,
+  isOutputConnectionClosedByPortIdAndAccess as isOutputConnectionClosedById,
+  isOutputConnectionOpenByPortIdAndAccess as isOutputConnectionOpenById,
+  isOutputConnectionPendingByPortIdAndAccess as isOutputConnectionPendingById,
+  isOutputDeviceConnectedByPortIdAndAccess as isOutputDeviceConnectedById,
+  isOutputDeviceDisconnectedByPortIdAndAccess as isOutputDeviceDisconnectedById,
+  isPortConnectionClosedByPortIdAndAccess as isPortConnectionClosedById,
+  isPortConnectionOpenByPortIdAndAccess as isPortConnectionOpenById,
+  isPortConnectionPendingByPortIdAndAccess as isPortConnectionPendingById,
+  isPortDeviceConnectedByPortIdAndAccess as isPortDeviceConnectedById,
+  isPortDeviceDisconnectedByPortIdAndAccess as isPortDeviceDisconnectedById,
 } from './internal/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPortIdAndAccess.ts'
 export {
   // isInputConnectionClosedByPortIdInContext as isInputConnectionClosedById,
@@ -245,12 +245,12 @@ export {
   getPortDeviceStateByPort,
 } from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 export {
-  // getInputConnectionStateByPortIdAndAccess as getInputConnectionStateByIdInPipe,
-  // getInputDeviceStateByPortIdAndAccess as getInputDeviceStateByIdInPipe,
-  getOutputConnectionStateByPortIdAndAccess as getOutputConnectionStateByIdInPipe,
-  getOutputDeviceStateByPortIdAndAccess as getOutputDeviceStateByIdInPipe,
-  getPortConnectionStateByPortIdAndAccess as getPortConnectionStateByIdInPipe,
-  getPortDeviceStateByPortIdAndAccess as getPortDeviceStateByIdInPipe,
+  // getInputConnectionStateByPortIdAndAccess as getInputConnectionStateById,
+  // getInputDeviceStateByPortIdAndAccess as getInputDeviceStateById,
+  getOutputConnectionStateByPortIdAndAccess as getOutputConnectionStateById,
+  getOutputDeviceStateByPortIdAndAccess as getOutputDeviceStateById,
+  getPortConnectionStateByPortIdAndAccess as getPortConnectionStateById,
+  getPortDeviceStateByPortIdAndAccess as getPortDeviceStateById,
 } from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPortIdAndAccess.ts'
 export {
   // getInputConnectionStateByPortId as getInputConnectionStateById,
@@ -278,12 +278,12 @@ export {
   type StateCaseToHandlerMap,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 export {
-  // matchInputConnectionStateByPortIdAndAccess as matchInputConnectionStateByIdInPipe,
-  // matchInputDeviceStateByPortIdAndAccess as matchInputDeviceStateByIdInPipe,
-  matchOutputConnectionStateByPortIdAndAccess as matchOutputConnectionStateByIdInPipe,
-  matchOutputDeviceStateByPortIdAndAccess as matchOutputDeviceStateByIdInPipe,
-  matchPortConnectionStateByPortIdAndAccess as matchPortConnectionStateBydInPipe,
-  matchPortDeviceStateByPortIdAndAccess as matchPortDeviceStateByIdInPipe,
+  // matchInputConnectionStateByPortIdAndAccess as matchInputConnectionStateById,
+  // matchInputDeviceStateByPortIdAndAccess as matchInputDeviceStateById,
+  matchOutputConnectionStateByPortIdAndAccess as matchOutputConnectionStateById,
+  matchOutputDeviceStateByPortIdAndAccess as matchOutputDeviceStateById,
+  matchPortConnectionStateByPortIdAndAccess as matchPortConnectionStateByd,
+  matchPortDeviceStateByPortIdAndAccess as matchPortDeviceStateById,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPortIdAndAccess.ts'
 export {
   // matchInputConnectionStateByPortIdInContext as matchInputConnectionStateById,
