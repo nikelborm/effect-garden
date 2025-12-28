@@ -1,16 +1,3 @@
-// export {
-//   type BuiltStream,
-//   createStreamMakerFrom,
-//   type DualStreamMaker,
-//   type MakeStreamTargetFirst,
-//   type MakeStreamTargetLast,
-//   type OnNullStrategy,
-//   type StreamError,
-//   type StreamMakerOptions,
-//   type StreamMakerOptionsObject,
-//   type StreamMakerOptionsWellknown,
-//   type StreamValue,
-// } from './internal/createStreamMakerFrom.ts'
 export {
   // type AcquiredThing,
   // AllPortsRecord,
@@ -248,7 +235,6 @@ export {
   // getPortConnectionStateByPortId,
   // getPortDeviceStateByPortId,
 } from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPortIdInContext.ts'
-// export { getValueInRawPortFieldUnsafe } from './internal/mutablePropertyTools/getValueInRawPortFieldUnsafe.ts'
 export {
   // type DualMatchPortState,
   // type MatcherConfigPlain,
@@ -281,34 +267,3 @@ export {
   // matchPortConnectionStateByPortIdInContext,
   // matchPortDeviceStateByPortIdInContext,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPortIdInContext.ts'
-// export {
-//   type ControlChange,
-//   type NotePress,
-//   type NoteRelease,
-//   type ParsedMIDIMessages,
-//   type PitchBendChange,
-//   type TouchpadPositionUpdate,
-//   type TouchpadRelease,
-//   type UnknownReply,
-//   withParsedDataField,
-//   withTouchpadPositionUpdates,
-// } from './internal/parsing.ts'
-// export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
-// export {
-//   type FallbackOnUnknownOrAny,
-//   fromPolymorphic,
-//   getStaticMIDIPortInfo,
-//   type IsEqualFlag,
-//   isCertainConnectionState,
-//   isCertainDeviceState,
-//   isConnectionClosed,
-//   isConnectionOpen,
-//   isConnectionPending,
-//   isDeviceConnected,
-//   isDeviceDisconnected,
-//   type MIDIPortStaticFields,
-//   midiPortStaticFields,
-//   type PolymorphicEffect,
-//   polymorphicCheckInDual,
-//   type SentMessageEffectFrom,
-// } from './internal/util.ts'

@@ -1,8 +1,8 @@
 import type * as EMIDIInput from '../../EMIDIInput.ts'
 import type * as EMIDIOutput from '../../EMIDIOutput.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import type * as Create from '../createStreamMakerFrom.ts'
 import * as Get from '../getPortByPortId/getPortByPortIdInContext.ts'
+import type * as StreamMaker from '../StreamMaker.ts'
 import * as Make from './makePortStateChangesStreamByPort.ts'
 
 /**
@@ -10,10 +10,10 @@ import * as Make from './makePortStateChangesStreamByPort.ts'
  * `options.capture` property
  */
 export const makePortStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
+  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
 >(
   id: EMIDIPort.BothId,
-  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makePortStateChangesStreamByPort(
     Get.getPortByPortIdInContext(id),
@@ -25,10 +25,10 @@ export const makePortStateChangesStreamByPortIdInContext = <
  * `options.capture` property
  */
 export const makeInputStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
+  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
 >(
   id: EMIDIInput.Id,
-  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makeInputStateChangesStreamByPort(
     Get.getInputByPortIdInContext(id),
@@ -40,10 +40,10 @@ export const makeInputStateChangesStreamByPortIdInContext = <
  * `options.capture` property
  */
 export const makeOutputStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
+  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
 >(
   id: EMIDIOutput.Id,
-  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makeOutputStateChangesStreamByPort(
     Get.getOutputByPortIdInContext(id),

@@ -18,7 +18,6 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
-import * as Create from './createStreamMakerFrom.ts'
 import * as EMIDIInput from './EMIDIInput.ts'
 import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
@@ -26,6 +25,7 @@ import * as Errors from './errors.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
 import { isOutputConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 import { getOutputDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import * as StreamMaker from './StreamMaker.ts'
 import * as Util from './util.ts'
 
 // TODO: add stream of messages sent from this device to target midi device
@@ -453,7 +453,7 @@ export const AllPortsRecord = getAllPortsRecord(EMIDIAccess)
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
 export const makeAllPortsStateChangesStream =
-  Create.createStreamMakerFrom<MIDIPortEventMap>()(
+  StreamMaker.createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     access => ({
       tag: 'MIDIPortStateChange',
@@ -584,10 +584,10 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
  * `options.capture` property
  */
 export const makeMessagesStreamByInputId = <
-  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
+  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
 >(
   id: EMIDIInput.Id,
-  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EMIDIInput.makeMessagesStreamByPort(
     GetPort.getInputByPortIdInContext(id),
@@ -624,9 +624,9 @@ export const clearPortById = EFunction.flow(
  * `options.capture` property
  */
 export const makeAllPortsStateChangesStreamInContext = <
-  const TOnNullStrategy extends Create.OnNullStrategy = undefined,
+  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
 >(
-  options?: Create.StreamMakerOptions<TOnNullStrategy>,
+  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
 ) => makeAllPortsStateChangesStream(EMIDIAccess, options)
 
 /**

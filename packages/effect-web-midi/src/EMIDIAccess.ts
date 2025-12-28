@@ -1,17 +1,4 @@
 export {
-  type BuiltStream,
-  createStreamMakerFrom,
-  type DualStreamMaker,
-  type MakeStreamTargetFirst,
-  type MakeStreamTargetLast,
-  type OnNullStrategy,
-  type StreamError,
-  type StreamMakerOptions,
-  type StreamMakerOptionsObject,
-  type StreamMakerOptionsWellknown,
-  type StreamValue,
-} from './internal/createStreamMakerFrom.ts'
-export {
   type AcquiredThing,
   AllPortsRecord,
   assert,
@@ -54,30 +41,30 @@ export {
   type TargetPortSelector,
   type TypeId,
 } from './internal/EMIDIAccess.ts'
-export {
-  // assert,
-  type EMIDIInput,
-  // is,
-  // make,
-  makeMessagesStreamByPort,
-  // type PolymorphicInput,
-  // type PolymorphicInputClean,
-} from './internal/EMIDIInput.ts'
-export {
-  // assert,
-  clear,
-  type DualSendMIDIMessageFromPort,
-  type EMIDIOutput,
-  // is,
-  make,
-  // type PolymorphicOutput,
-  // type PolymorphicOutputClean,
-  type SendFromPortArgs,
-  type SendMIDIMessagePortFirst,
-  type SendMIDIMessagePortLast,
-  type SentMessageEffectFromPort,
-  // send,
-} from './internal/EMIDIOutput.ts'
+// export {
+//   assert,
+//   type EMIDIInput,
+//   is,
+//   make,
+//   makeMessagesStreamByPort,
+//   type PolymorphicInput,
+//   type PolymorphicInputClean,
+// } from './internal/EMIDIInput.ts'
+// export {
+//   assert,
+//   clear,
+//   type DualSendMIDIMessageFromPort,
+//   type EMIDIOutput,
+//   is,
+//   make,
+//   type PolymorphicOutput,
+//   type PolymorphicOutputClean,
+//   type SendFromPortArgs,
+//   type SendMIDIMessagePortFirst,
+//   type SendMIDIMessagePortLast,
+//   type SentMessageEffectFromPort,
+//   send,
+// } from './internal/EMIDIOutput.ts'
 // export {
 //   assert,
 //   assumeImpl,
@@ -250,7 +237,6 @@ export {
   getPortConnectionStateByPortId as getPortConnectionStateById,
   getPortDeviceStateByPortId as getPortDeviceStateById,
 } from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPortIdInContext.ts'
-export { getValueInRawPortFieldUnsafe } from './internal/mutablePropertyTools/getValueInRawPortFieldUnsafe.ts'
 export {
   type DualMatchPortState,
   type MatcherConfigPlain,
@@ -283,34 +269,3 @@ export {
   matchPortConnectionStateByPortIdInContext as matchPortConnectionStateById,
   matchPortDeviceStateByPortIdInContext as matchPortDeviceStateByPortId,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPortIdInContext.ts'
-// export {
-//   type ControlChange,
-//   type NotePress,
-//   type NoteRelease,
-//   type ParsedMIDIMessages,
-//   type PitchBendChange,
-//   type TouchpadPositionUpdate,
-//   type TouchpadRelease,
-//   type UnknownReply,
-//   withParsedDataField,
-//   withTouchpadPositionUpdates,
-// } from './internal/parsing.ts'
-// export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
-export {
-  type FallbackOnUnknownOrAny,
-  fromPolymorphic,
-  getStaticMIDIPortInfo,
-  type IsEqualFlag,
-  isCertainConnectionState,
-  isCertainDeviceState,
-  isConnectionClosed,
-  isConnectionOpen,
-  isConnectionPending,
-  isDeviceConnected,
-  isDeviceDisconnected,
-  type MIDIPortStaticFields,
-  midiPortStaticFields,
-  type PolymorphicEffect,
-  polymorphicCheckInDual,
-  type SentMessageEffectFrom,
-} from './internal/util.ts'

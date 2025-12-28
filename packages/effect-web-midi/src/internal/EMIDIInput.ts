@@ -1,6 +1,6 @@
 import * as Brand from 'effect/Brand'
-import * as Create from './createStreamMakerFrom.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
+import * as StreamMaker from './StreamMaker.ts'
 import * as Util from './util.ts'
 
 // TODO: implement scoping of midi access that will clean up all message queues
@@ -81,7 +81,7 @@ export const is: (input: unknown) => input is EMIDIInput = isImpl
  * default behavior is to defect on `null`.
  */
 export const makeMessagesStreamByPort =
-  Create.createStreamMakerFrom<MIDIInputEventMap>()(
+  StreamMaker.createStreamMakerFrom<MIDIInputEventMap>()(
     is,
     input => ({
       tag: 'MIDIMessage',

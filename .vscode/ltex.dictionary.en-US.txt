@@ -359,3 +359,6 @@ targetPortSelector
 TargetPortSelector
 makeAllPortsStateChangesStreamInContext
 BothId
+const
+makeMessagesStreamByInputIdAndAccess
+makeMessagesStreamByPort

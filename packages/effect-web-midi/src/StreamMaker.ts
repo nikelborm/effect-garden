@@ -9,4 +9,4 @@ export type {
   StreamMakerOptionsObject,
   StreamMakerOptionsWellknown,
   StreamValue,
-} from './internal/createStreamMakerFrom.ts'
+} from './internal/StreamMaker.ts'
