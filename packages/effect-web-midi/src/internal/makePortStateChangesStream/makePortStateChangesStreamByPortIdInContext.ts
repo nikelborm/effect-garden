@@ -1,6 +1,8 @@
+import type * as EMIDIInput from '../../EMIDIInput.ts'
+import type * as EMIDIOutput from '../../EMIDIOutput.ts'
+import type * as EMIDIPort from '../../EMIDIPort.ts'
 import type * as Create from '../createStreamMakerFrom.ts'
 import * as Get from '../getPortByPortId/getPortByPortIdInContext.ts'
-import type * as Util from '../util.ts'
 import * as Make from './makePortStateChangesStreamByPort.ts'
 
 /**
@@ -10,7 +12,7 @@ import * as Make from './makePortStateChangesStreamByPort.ts'
 export const makePortStateChangesStreamByPortIdInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIBothPortId,
+  id: EMIDIPort.BothId,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makePortStateChangesStreamByPort(
@@ -25,7 +27,7 @@ export const makePortStateChangesStreamByPortIdInContext = <
 export const makeInputStateChangesStreamByPortIdInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIInputId,
+  id: EMIDIInput.Id,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makeInputStateChangesStreamByPort(
@@ -40,7 +42,7 @@ export const makeInputStateChangesStreamByPortIdInContext = <
 export const makeOutputStateChangesStreamByPortIdInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIOutputId,
+  id: EMIDIOutput.Id,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   Make.makeOutputStateChangesStreamByPort(

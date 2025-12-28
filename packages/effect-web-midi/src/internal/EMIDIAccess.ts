@@ -338,15 +338,12 @@ const getPortEntriesFromRawAccess =
   ) =>
   (rawAccess: MIDIAccess) =>
     Iterable.map(
-      rawAccess[key] as ReadonlyMap<
-        Util.MIDIPortId<TMIDIPortType>,
-        TRawMIDIPort
-      >,
+      rawAccess[key] as ReadonlyMap<EMIDIPort.Id<TMIDIPortType>, TRawMIDIPort>,
       ([id, raw]) =>
-        [
-          id as Util.MIDIPortId<TMIDIPortType>,
-          make(raw),
-        ] satisfies Types.TupleOf<2, unknown>,
+        [id as EMIDIPort.Id<TMIDIPortType>, make(raw)] satisfies Types.TupleOf<
+          2,
+          unknown
+        >,
     )
 
 /**
@@ -524,7 +521,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
       // TODO: maybe since deviceState returns always connected devices we can
       // simplify this check by applying intersections and comparing lengths
 
-      const portsIdsToSend: Util.MIDIOutputId[] = EArray.ensure(target)
+      const portsIdsToSend: EMIDIOutput.Id[] = EArray.ensure(target)
 
       const deviceStatusesEffect = portsIdsToSend.map(id =>
         EFunction.pipe(
@@ -553,7 +550,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
           ) as DOMException & { name: 'InvalidStateError' },
         })
 
-      const sendToSome = (predicate: (id: Util.MIDIOutputId) => boolean) =>
+      const sendToSome = (predicate: (id: EMIDIOutput.Id) => boolean) =>
         Effect.all(
           Record.reduce(
             outputs,
@@ -589,7 +586,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
 export const makeMessagesStreamByInputId = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
-  id: Util.MIDIInputId,
+  id: EMIDIInput.Id,
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
 ) =>
   EMIDIInput.makeMessagesStreamByPort(
@@ -606,7 +603,7 @@ export const makeMessagesStreamByInputIdAndAccess = () => {
  *
  */
 export const sendToPortById = (
-  id: Util.MIDIOutputId,
+  id: EMIDIOutput.Id,
   ...args: EMIDIOutput.SendFromPortArgs
 ) =>
   Effect.asVoid(
@@ -677,7 +674,7 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
   // TODO: finish this
 
   const ref = yield* Ref.make(
-    SortedMap.empty<Util.MIDIBothPortId, MIDIPortType>(Order.string),
+    SortedMap.empty<EMIDIPort.BothId, MIDIPortType>(Order.string),
   )
 
   // return make(rawAccess, options, ref)
@@ -730,8 +727,8 @@ export interface SentMessageEffectFromAccess<E = never, R = never>
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'
   | 'all open connections at effect execution'
-  | Util.MIDIOutputId
-  | Util.MIDIOutputId[]
+  | EMIDIOutput.Id
+  | EMIDIOutput.Id[]
 
 export interface DualSendMIDIMessageFromAccess
   extends SendMIDIMessageAccessFirst,
@@ -812,7 +809,7 @@ export interface GetThingByPortIdAccessFirst<
       TAccessGettingError,
       TAccessGettingRequirement
     >,
-    portId: Util.MIDIPortId<TTypeOfPortId>,
+    id: EMIDIPort.Id<TTypeOfPortId>,
   ): AcquiredThing<
     TSuccess,
     TAccessGettingError,
@@ -837,7 +834,7 @@ export interface GetThingByPortIdAccessLast<
    *
    */
   (
-    portId: Util.MIDIPortId<TTypeOfPortId>,
+    id: EMIDIPort.Id<TTypeOfPortId>,
   ): GetThingByPortIdAccessLastSecondHalf<
     TSuccess,
     TAccessGettingFallbackError,

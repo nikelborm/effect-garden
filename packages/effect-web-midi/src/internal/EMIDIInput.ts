@@ -1,3 +1,4 @@
+import * as Brand from 'effect/Brand'
 import * as Create from './createStreamMakerFrom.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
 import * as Util from './util.ts'
@@ -108,3 +109,6 @@ export type PolymorphicInput<E, R> = EMIDIPort.PolymorphicPort<E, R, 'input'>
  *
  */
 export type PolymorphicInputClean = EMIDIPort.PolymorphicPortClean<'input'>
+
+export type Id = EMIDIPort.Id<'input'>
+export const Id = Brand.nominal<Id>()

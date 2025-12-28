@@ -1,31 +1,11 @@
-import * as Brand from 'effect/Brand'
+import * as EArray from 'effect/Array'
+import type * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Record from 'effect/Record'
+import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
-import type {
-  CantSendSysexMessagesError,
-  DisconnectedPortError,
-  MalformedMidiMessageError,
-} from './errors.ts'
-
-/**
- * Unique identifier of the MIDI port.
- *
- * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
- */
-export type MIDIPortId<TPortType extends MIDIPortType> =
-  // for distribution
-  TPortType extends MIDIPortType
-    ? string & Brand.Brand<'MIDIPortId'> & Brand.Brand<TPortType>
-    : never
-
-export type MIDIBothPortId = MIDIPortId<MIDIPortType>
-export const MIDIBothPortId = Brand.nominal<MIDIBothPortId>()
-
-export type MIDIOutputId = MIDIPortId<'output'>
-export const MIDIOutputId = Brand.nominal<MIDIOutputId>()
-
-export type MIDIInputId = MIDIPortId<'input'>
-export const MIDIInputId = Brand.nominal<MIDIInputId>()
+import type * as Errors from './errors.ts'
 
 export const midiPortStaticFields = [
   'id',
@@ -49,9 +29,9 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
   extends Effect.Effect<
     Self,
     | E
-    | CantSendSysexMessagesError
-    | MalformedMidiMessageError
-    | DisconnectedPortError,
+    | Errors.CantSendSysexMessagesError
+    | Errors.MalformedMidiMessageError
+    | Errors.DisconnectedPortError,
     R
   > {}
 
@@ -118,3 +98,55 @@ export const isDeviceDisconnected = isCertainDeviceState('disconnected')
 export const isConnectionOpen = isCertainConnectionState('open')
 export const isConnectionPending = isCertainConnectionState('pending')
 export const isConnectionClosed = isCertainConnectionState('closed')
+
+export const mapToGlidingStringLogOfLimitedEntriesCount =
+  <A>(
+    windowSize: number,
+    show: 'latestFirst' | 'oldestFirst',
+    objectify: (current: NoInfer<A>) => object,
+  ) =>
+  <E, R>(self: Stream.Stream<A, E, R>) => {
+    if (windowSize < 1) throw new Error('Window size should be greater than 0')
+
+    return Stream.mapAccum(
+      self,
+      { text: '', entrySizeLog: [] as number[] },
+      ({ entrySizeLog: oldLog, text: oldText }, current) => {
+        const currMapped =
+          EFunction.pipe(
+            objectify(current),
+            Record.toEntries,
+            EArray.map(EArray.join(': ')),
+            EArray.join(', '),
+          ) + '\n'
+
+        const potentiallyShiftedLog =
+          oldLog.length >= windowSize
+            ? oldLog.slice(...(show === 'latestFirst' ? [0, -1] : [1]))
+            : oldLog
+
+        const potentiallyShiftedText =
+          oldLog.length >= windowSize
+            ? oldText.slice(
+                ...(show === 'latestFirst'
+                  ? // biome-ignore lint/style/noNonNullAssertion: oldLog guaranteed to have at least one element by oldLog.length >= windowSize
+                    [0, -oldLog.at(-1)!]
+                  : // biome-ignore lint/style/noNonNullAssertion: oldLog guaranteed to have at least one element by oldLog.length >= windowSize
+                    [oldLog.at(0)!]),
+              )
+            : oldText
+
+        const text =
+          show === 'latestFirst'
+            ? currMapped + potentiallyShiftedText
+            : potentiallyShiftedText + currMapped
+
+        const entrySizeLog =
+          show === 'latestFirst'
+            ? [currMapped.length, ...potentiallyShiftedLog]
+            : [...potentiallyShiftedLog, currMapped.length]
+
+        return [{ text, entrySizeLog }, text]
+      },
+    )
+  }

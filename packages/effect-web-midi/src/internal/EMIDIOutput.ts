@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
+import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as EMIDIPort from './EMIDIPort.ts'
@@ -222,3 +223,6 @@ export interface SendMIDIMessagePortFirst {
  */
 export interface SentMessageEffectFromPort<E = never, R = never>
   extends Util.SentMessageEffectFrom<EMIDIOutput, E, R> {}
+
+export type Id = EMIDIPort.Id<'output'>
+export const Id = Brand.nominal<Id>()

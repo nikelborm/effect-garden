@@ -3,7 +3,6 @@ import type * as EMIDIAccess from '../../EMIDIAccess.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
 import type * as Errors from '../../errors.ts'
 import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
-import type * as Util from '../../util.ts'
 import * as Match from './matchMutablePortPropertyByPort.ts'
 
 /**
@@ -16,7 +15,7 @@ const makeMatcherTakingPortIds =
   >(
     match: Match.DualMatchPortState<THighLevelPortType, TMIDIPortProperty>,
     getPort: (
-      id: Util.MIDIPortId<THighLevelPortType>,
+      id: EMIDIPort.Id<THighLevelPortType>,
     ) => Effect.Effect<
       EMIDIPort.EMIDIPort<NoInfer<THighLevelPortType>>,
       Errors.PortNotFoundError,
@@ -30,7 +29,7 @@ const makeMatcherTakingPortIds =
       TStateCaseToHandlerMap
     >,
   >(
-    id: Util.MIDIPortId<THighLevelPortType>,
+    id: EMIDIPort.Id<THighLevelPortType>,
     stateCaseToHandlerMap: TStateCaseToHandlerMap,
   ) =>
     match(getPort(id), stateCaseToHandlerMap)

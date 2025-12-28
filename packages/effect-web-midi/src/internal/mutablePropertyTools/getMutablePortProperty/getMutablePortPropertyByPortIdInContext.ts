@@ -1,19 +1,19 @@
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
-import type * as Util from '../../util.ts'
+import type * as EMIDIPort from '../../EMIDIPort.ts'
 import * as Get from './getMutablePortPropertyByPortIdAndAccess.ts'
 
 /**
  *
  *
  */
-export const getPortDeviceStateByPortId = (id: Util.MIDIBothPortId) =>
+export const getPortDeviceStateByPortId = (id: EMIDIPort.BothId) =>
   Get.getPortDeviceStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
 /**
  *
  *
  */
-export const getPortConnectionStateByPortId = (id: Util.MIDIBothPortId) =>
+export const getPortConnectionStateByPortId = (id: EMIDIPort.BothId) =>
   Get.getPortConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
 // TODO: getInputConnectionStateByPortId

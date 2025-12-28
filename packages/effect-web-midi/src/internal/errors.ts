@@ -1,14 +1,12 @@
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 import type * as EMIDIAccess from './EMIDIAccess.ts'
-import * as Util from './util.ts'
+import * as EMIDIPort from './EMIDIPort.ts'
 
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-const PortId = Schema.fromBrand(Util.MIDIBothPortId)(
-  Schema.NonEmptyTrimmedString,
-)
+const PortId = Schema.fromBrand(EMIDIPort.BothId)(Schema.NonEmptyTrimmedString)
 
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,

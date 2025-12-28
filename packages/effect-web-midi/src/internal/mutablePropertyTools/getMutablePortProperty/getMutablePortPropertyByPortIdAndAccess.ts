@@ -4,6 +4,7 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
+import type * as EMIDIPort from '../../EMIDIPort.ts'
 import * as Errors from '../../errors.ts'
 import type * as Util from '../../util.ts'
 import * as Get from './getMutablePortPropertyByPort.ts'
@@ -28,15 +29,15 @@ const getPortByIdGeneric2 =
           TR
         >,
       ) => Effect.Effect<A, E2, R2>,
-      id: Extract<keyof T, Util.MIDIBothPortId>,
+      portId: Extract<keyof T, EMIDIPort.BothId>,
     ) =>
       EFunction.pipe(
         getPortMap(polymorphicAccess),
         Effect.flatMap(
           EFunction.flow(
-            Record.get(id),
+            Record.get(portId),
             Option.match({
-              onNone: () => new Errors.PortNotFoundError({ portId: id }),
+              onNone: () => new Errors.PortNotFoundError({ portId }),
               onSome: e => Effect.succeed(e),
             }),
           ),
@@ -57,7 +58,7 @@ export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
     TE,
     TR
   >,
-  portId: Util.MIDIBothPortId,
+  id: EMIDIPort.BothId,
 ) =>
   getPortByIdGeneric2(EMIDIAccess.getAllPortsRecord)(
     polymorphicAccess,
@@ -67,7 +68,7 @@ export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
         Effect.succeed('disconnected' as const),
       ),
     ),
-    portId,
+    id,
   )
 
 /**
@@ -80,12 +81,12 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
     TE,
     TR
   >,
-  portId: Util.MIDIBothPortId,
+  id: EMIDIPort.BothId,
 ) =>
   getPortByIdGeneric2(EMIDIAccess.getAllPortsRecord)(
     polymorphicAccess,
     Get.getPortConnectionStateByPort,
-    portId,
+    id,
   )
 
 // TODO: getInputConnectionStateByPortIdAndAccess

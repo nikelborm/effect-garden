@@ -6,7 +6,6 @@ import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
 import type * as Get from '../getPortByPortId/getPortByPortIdAndAccess.ts'
-import type * as Util from '../util.ts'
 import type * as Make from './makeMIDIPortMethodCallerFactory.ts'
 
 /**
@@ -52,7 +51,7 @@ export const actOnPort = <
 
         const port = yield* portGetterFromAccessAndPortId(
           access,
-          portId as unknown as Util.MIDIPortId<TTypeOfPortId>,
+          portId as unknown as EMIDIPort.Id<TTypeOfPortId>,
         )
 
         const actEffect = act(

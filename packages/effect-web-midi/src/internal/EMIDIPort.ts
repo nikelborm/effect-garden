@@ -1,11 +1,12 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
+import * as Brand from 'effect/Brand'
 import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import * as Util from './util.ts'
+import type * as Util from './util.ts'
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
@@ -62,7 +63,7 @@ const CommonProto = {
   },
 
   get id() {
-    return Util.MIDIBothPortId(assumeImpl(this)._port.id)
+    return BothId(assumeImpl(this)._port.id)
   },
   get name() {
     return assumeImpl(this)._port.name
@@ -92,7 +93,7 @@ export interface EMIDIPort<TMIDIPortType extends MIDIPortType = MIDIPortType>
    *
    * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
    */
-  readonly id: Util.MIDIPortId<TMIDIPortType>
+  readonly id: Id<TMIDIPortType>
   readonly [TypeId]: TypeId
   readonly _tag: 'EMIDIPort'
   readonly type: TMIDIPortType
@@ -216,3 +217,17 @@ export const isImplOfSpecificType =
  *
  */
 export const is: (port: unknown) => port is EMIDIPort = isGeneralImpl
+
+/**
+ * Unique identifier of the MIDI port.
+ *
+ * [MDN Reference](https://developer.mozilla.org/docs/Web/API/MIDIPort/id)
+ */
+export type Id<TPortType extends MIDIPortType> =
+  // for distribution
+  TPortType extends MIDIPortType
+    ? string & Brand.Brand<'MIDIPortId'> & Brand.Brand<TPortType>
+    : never
+
+export type BothId = Id<MIDIPortType>
+export const BothId = Brand.nominal<BothId>()

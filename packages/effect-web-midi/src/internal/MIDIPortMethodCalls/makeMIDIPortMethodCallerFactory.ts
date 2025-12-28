@@ -11,7 +11,7 @@ import * as Util from '../util.ts'
 export const makeMIDIPortMethodCallerFactory =
   <TError = never>(
     method: 'close' | 'open',
-    mapError: (portId: Util.MIDIBothPortId) => (err: unknown) => TError,
+    mapError: (id: EMIDIPort.BothId) => (err: unknown) => TError,
   ) =>
   <THighLevelPortType extends MIDIPortType>(
     is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
