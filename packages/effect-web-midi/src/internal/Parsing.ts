@@ -22,9 +22,13 @@ export const withParsedDataField = <
 ) =>
   Stream.map(self, ({ midiMessage, ...obj }) => ({
     ...obj,
+    _tag: 'ParsedMIDIMessage' as const,
     midiMessage: dataEntryParser(midiMessage),
   })) as Stream.Stream<
-    Omit<A, 'midiMessage'> & { readonly midiMessage: ParsedMIDIMessages },
+    Omit<A, 'midiMessage' | '_tag'> & {
+      readonly _tag: 'ParsedMIDIMessage'
+      readonly midiMessage: ParsedMIDIMessages
+    },
     E,
     R
   >

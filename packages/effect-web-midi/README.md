@@ -41,25 +41,85 @@ const globalDataDumpRequest = new Uint8Array([
   0x1f, 0x0e, 0x00, 0xf7,
 ]);
 
-const _MIDIDeviceConnectionEventsStringLog = EMIDIAccess.request().pipe(
+const _MIDIDeviceConnectionEventsStringLog = pipe(
+  EMIDIAccess.request(),
+  //          ⬆️ Effect.Effect<
+  //               EMIDIAccess.EMIDIAccessInstance,
+  //               | AbortError
+  //               | UnderlyingSystemError
+  //               | MIDIAccessNotSupportedError
+  //               | MIDIAccessNotAllowedError,
+  //               never
+  //             >
   Effect.catchTag(
     'MIDIAccessNotSupportedError',
     flow(Console.log, Effect.andThen(Effect.never))
   ),
   EMIDIAccess.makeAllPortsStateChangesStream(),
+  //          ⬆️ Stream.Stream<
+  //               {
+  //                 readonly _tag: "MIDIPortStateChange";
+  //                 readonly cameFrom: EMIDIAccess.EMIDIAccessInstance;
+  //                 readonly capturedAt: Date;
+  //                 readonly newState: {
+  //                   readonly ofDevice: MIDIPortDeviceState;
+  //                   readonly ofConnection: MIDIPortConnectionState;
+  //                 };
+  //                 readonly port: EMIDIOutput.EMIDIOutput | EMIDIInput.EMIDIInput;
+  //               },
+  //               | AbortError
+  //               | UnderlyingSystemError
+  //               | MIDIAccessNotAllowedError,
+  //               never
+  //             >
   Util.mapToGlidingStringLogOfLimitedEntriesCount(50, 'latestFirst', (_) => ({
     time: _.capturedAt.toISOString(),
     id: _.port.id.slice(-10),
     device: _.newState.ofDevice.padStart(12),
     connection: _.newState.ofConnection.padStart(7),
   }))
+  // ⬆️ Stream.Stream<
+  //      string,
+  //      | AbortError
+  //      | UnderlyingSystemError
+  //      | MIDIAccessNotAllowedError,
+  //      never
+  //    >
 );
 
 const MIDIMessageEventsStringLog = pipe(
+  // if the ID below turned out to be output's, it would cause defect (by design)
+  // because messages can only come from inputs
   EMIDIInput.makeMessagesStreamById(nanoPadInputId),
-  // if the ID above turned out to be output's, it would cause defect (by design)
+  //         ⬆️ Stream.Stream<
+  //              {
+  //                readonly _tag: "MIDIMessage";
+  //                readonly cameFrom: EMIDIInput.EMIDIInput;
+  //                readonly capturedAt: Date;
+  //                readonly midiMessage: Uint8Array<ArrayBuffer>;
+  //              },
+  //              PortNotFoundError,
+  //              EMIDIAccess.EMIDIAccess
+  //            >
   Parsing.withParsedDataField,
+  //      ⬆️ Stream.Stream<
+  //           {
+  //             readonly _tag: "ParsedMIDIMessage";
+  //             readonly cameFrom: EMIDIInput.EMIDIInput;
+  //             readonly capturedAt: Date;
+  //             readonly midiMessage: | NoteRelease
+  //                                   | NotePress
+  //                                   | UnknownReply
+  //                                   | ControlChange
+  //                                   | TouchpadRelease
+  //                                   | PitchBendChange
+  //           },
+  //           PortNotFoundError,
+  //           EMIDIAccess.EMIDIAccess
+  //         >
   Parsing.withTouchpadPositionUpdates,
+  //      ⬆️ adds new member to the midiMessage union inferred from
+  //         ControlChange, PitchBendChange, and TouchpadRelease
   Stream.filter(
     (a) =>
       a.midiMessage._tag === 'Touchpad Position Update' ||
@@ -76,6 +136,7 @@ const MIDIMessageEventsStringLog = pipe(
       ...current.midiMessage,
     })
   ),
+  // ⬆️ Stream.Stream<string, PortNotFoundError, EMIDIAccess.EMIDIAccess>
   Stream.catchTag('PortNotFound', (err) =>
     Stream.fromEffect(
       EMIDIPort.FullRecord.pipe(
@@ -93,27 +154,43 @@ const MIDIMessageEventsStringLog = pipe(
       )
     )
   ),
+  // ⬆️ Stream.Stream<string, never, EMIDIAccess.EMIDIAccess>
   Stream.provideLayer(EMIDIAccess.layerSystemExclusiveSupported),
+  // ⬆️ Stream.Stream<
+  //   string,
+  //   | AbortError
+  //   | UnderlyingSystemError
+  //   | MIDIAccessNotSupportedError
+  //   | MIDIAccessNotAllowedError,
+  //   never
+  // >
   Stream.catchTag('MIDIAccessNotSupportedError', (e) =>
     Stream.succeed(e.cause.message)
   )
+  // ⬆️ Stream.Stream<
+  //   string,
+  //   | AbortError
+  //   | UnderlyingSystemError
+  //   | MIDIAccessNotAllowedError,
+  //   never
+  // >
 );
 
 const dumpRequester = Atom.fn(() =>
   EMIDIAccess.send(
     EMIDIAccess.request({ sysex: true }),
-    // ^ Effect.Effect<
-    //       EMIDIAccess.EMIDIAccessInstance,
-    //       | AbortError
-    //       | UnderlyingSystemError
-    //       | MIDIAccessNotAllowedError
-    //       | MIDIAccessNotSupportedError,
-    //       never
-    //   >
+    //          ⬆️ Effect.Effect<
+    //                 EMIDIAccess.EMIDIAccessInstance,
+    //                 | AbortError
+    //                 | UnderlyingSystemError
+    //                 | MIDIAccessNotAllowedError
+    //                 | MIDIAccessNotSupportedError,
+    //                 never
+    //             >
     nanoPadOutputId,
-    // ^ string & Brand<"MIDIPortId"> & Brand<"output">
+    // ⬆️ string & Brand<"MIDIPortId"> & Brand<"output">
     globalDataDumpRequest
-    // ^ Uint8Array<ArrayBuffer>
+    // ⬆️ Uint8Array<ArrayBuffer>
   )
 );
 
@@ -132,12 +209,10 @@ export default function Home() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          console.log('hex', new FormData(event.target as any).get('hex'));
           mutate();
         }}
       >
-        <input type='text' name='hex' />
-        <input type='submit' value='send' />
+        <input type='submit' value='dump' />
       </form>
 
       {Result.match(text, {
