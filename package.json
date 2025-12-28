@@ -1,7 +1,7 @@
 {
   "name": "@nikelborm/effect-garden",
   "version": "1.0.0",
-  "devDependencies": {
+  "dependencies": {
     "@biomejs/biome": "^2.3.8",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
