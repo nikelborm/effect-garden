@@ -3,7 +3,7 @@
 
 import * as Effect from 'effect/Effect'
 import * as EMIDIPort from '../EMIDIPort.ts'
-import * as Util from '../util.ts'
+import * as Util from '../Util.ts'
 
 /**
  * @internal

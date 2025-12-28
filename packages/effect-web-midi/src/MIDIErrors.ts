@@ -10,4 +10,4 @@ export {
   // remapErrorByName,
   UnavailablePortError,
   UnderlyingSystemError,
-} from './internal/errors.ts'
+} from './internal/EMIDIErrors.ts'

@@ -1,5 +1,7 @@
 export {
   type ControlChange,
+  isControlChange,
+  isPitchBendChange,
   type NotePress,
   type NoteRelease,
   type ParsedMIDIMessages,
@@ -9,4 +11,4 @@ export {
   type UnknownReply,
   withParsedDataField,
   withTouchpadPositionUpdates,
-} from './internal/parsing.ts'
+} from './internal/Parsing.ts'

@@ -5,7 +5,7 @@ import * as EMIDIInput from '../EMIDIInput.ts'
 import * as EMIDIOutput from '../EMIDIOutput.ts'
 import * as EMIDIPort from '../EMIDIPort.ts'
 import * as StreamMaker from '../StreamMaker.ts'
-import * as Util from '../util.ts'
+import * as Util from '../Util.ts'
 
 /**
  *

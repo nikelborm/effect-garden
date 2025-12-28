@@ -1,7 +1,7 @@
 import type * as Effect from 'effect/Effect'
 import type * as EMIDIAccess from '../../EMIDIAccess.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import type * as Errors from '../../errors.ts'
+import type * as Errors from '../../EMIDIErrors.ts'
 import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
 import * as Match from './matchMutablePortPropertyByPort.ts'
 

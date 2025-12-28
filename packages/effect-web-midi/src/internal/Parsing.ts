@@ -54,36 +54,26 @@ export const withTouchpadPositionUpdates = <
 > =>
   Stream.mapAccum(
     self,
-    { x: 0, y: 0, seenPressedTouchpadEventsInARow: 0 },
+    { x: null as number | null, y: null as number | null },
     (ctx, current) => {
       const { midiMessage, ...rest } = current
-      const select = <T>(control: T, pitch: T, previous: T) =>
-        ({
-          'Control Change': control,
-          'Pitch Bend Change': pitch,
-          'Touchpad Release': 0, // resets everything
-        })[midiMessage._tag as string] ?? previous
-
-      const position = {
-        x: select(ctx.x, (midiMessage as PitchBendChange).value, ctx.x),
-        y: select((midiMessage as ControlChange).value, ctx.y, ctx.y),
-      }
-
-      const seenPressedTouchpadEventsInARow = select(
-        ctx.seenPressedTouchpadEventsInARow + 1,
-        ctx.seenPressedTouchpadEventsInARow + 1,
-        ctx.seenPressedTouchpadEventsInARow,
-      )
+      const state = isControlChange(midiMessage)
+        ? { ...ctx, y: midiMessage.value }
+        : isPitchBendChange(midiMessage)
+          ? { ...ctx, x: midiMessage.value }
+          : midiMessage._tag === 'Touchpad Release'
+            ? { x: null, y: null }
+            : ctx
 
       return [
-        { ...position, seenPressedTouchpadEventsInARow },
-        seenPressedTouchpadEventsInARow > 1 &&
-        (position.x !== ctx.x || position.y !== ctx.y)
+        state,
+        state.x !== null && state.y !== null
           ? Stream.make(current, {
               ...rest,
               midiMessage: {
                 _tag: 'Touchpad Position Update' as const,
-                ...position,
+                x: state.x,
+                y: state.y,
               } satisfies TouchpadPositionUpdate,
             })
           : Stream.succeed(current),
@@ -174,6 +164,12 @@ function dataEntryParser(
   }
   return unknown()
 }
+
+export const isControlChange = (e: { _tag: string }): e is ControlChange =>
+  e._tag === 'Control Change'
+
+export const isPitchBendChange = (e: { _tag: string }): e is PitchBendChange =>
+  e._tag === 'Pitch Bend Change'
 
 export interface NoteRelease
   extends Readonly<{ _tag: 'Note Release'; channel: number; note: number }> {}

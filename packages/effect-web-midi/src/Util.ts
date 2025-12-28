@@ -16,4 +16,4 @@ export {
   type PolymorphicEffect,
   // polymorphicCheckInDual,
   type SentMessageEffectFrom,
-} from './internal/util.ts'
+} from './internal/Util.ts'

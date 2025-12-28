@@ -1,7 +1,7 @@
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
-import { remapErrorByName, UnavailablePortError } from '../../errors.ts'
+import { remapErrorByName, UnavailablePortError } from '../../EMIDIErrors.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**

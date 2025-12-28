@@ -1,7 +1,7 @@
 import * as Brand from 'effect/Brand'
 import * as EMIDIPort from './EMIDIPort.ts'
 import * as StreamMaker from './StreamMaker.ts'
-import * as Util from './util.ts'
+import * as Util from './Util.ts'
 
 // TODO: implement scoping of midi access that will clean up all message queues
 // and streams, and remove listeners

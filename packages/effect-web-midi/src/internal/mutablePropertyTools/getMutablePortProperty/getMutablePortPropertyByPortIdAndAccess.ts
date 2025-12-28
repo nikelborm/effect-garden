@@ -5,8 +5,8 @@ import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import * as Errors from '../../errors.ts'
-import type * as Util from '../../util.ts'
+import * as Errors from '../../EMIDIErrors.ts'
+import type * as Util from '../../Util.ts'
 import * as Get from './getMutablePortPropertyByPort.ts'
 
 const getPortByIdGeneric2 =

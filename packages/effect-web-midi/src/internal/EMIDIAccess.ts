@@ -21,12 +21,12 @@ import * as Unify from 'effect/Unify'
 import * as EMIDIInput from './EMIDIInput.ts'
 import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
-import * as Errors from './errors.ts'
+import * as Errors from './EMIDIErrors.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
 import { isOutputConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 import { getOutputDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 import * as StreamMaker from './StreamMaker.ts'
-import * as Util from './util.ts'
+import * as Util from './Util.ts'
 
 // TODO: add stream of messages sent from this device to target midi device
 

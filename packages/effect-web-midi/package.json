@@ -1,6 +1,6 @@
 {
   "name": "effect-web-midi",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "description": "Effect WEB MIDI",
   "license": "MIT",
@@ -59,6 +59,7 @@
       "types": "./dist-types/src/*.d.ts",
       "default": "./dist/src/*.js"
     },
+    "./internal/*": null,
     "./package.json": "./package.json"
   },
   "author": {

@@ -1,5 +1,5 @@
 import * as EFunction from 'effect/Function'
-import * as Util from '../../util.ts'
+import * as Util from '../../Util.ts'
 import * as Get from '../getMutablePortProperty/getMutablePortPropertyByPort.ts'
 
 /**

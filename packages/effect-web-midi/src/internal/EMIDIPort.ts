@@ -6,7 +6,7 @@ import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import type * as Util from './util.ts'
+import type * as Util from './Util.ts'
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances

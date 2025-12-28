@@ -7,7 +7,7 @@ import * as EMIDIAccess from '../EMIDIAccess.ts'
 import * as EMIDIInput from '../EMIDIInput.ts'
 import * as EMIDIOutput from '../EMIDIOutput.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
-import * as Errors from '../errors.ts'
+import * as Errors from '../EMIDIErrors.ts'
 
 /**
  *
@@ -83,7 +83,7 @@ export const getInputByPortIdAndAccess = getPortByIdAndRemap({
   onInputFound: EFunction.flow(EMIDIInput.make, Effect.succeed),
   onOutputFound: rawOutput =>
     Effect.dieMessage(
-      `Assertion failed: getInputById found output port with the id=${rawOutput.id}`,
+      `Assertion failed: getInputById expected id=${rawOutput.id} to point at input, but it points at output instead`,
     ),
 })
 
@@ -94,7 +94,7 @@ export const getInputByPortIdAndAccess = getPortByIdAndRemap({
 export const getOutputByPortIdAndAccess = getPortByIdAndRemap({
   onInputFound: rawInput =>
     Effect.dieMessage(
-      `Assertion failed: getOutputById found output port with the id=${rawInput.id}`,
+      `Assertion failed: getOutputById expected id=${rawInput.id} to point at output, but it points at input instead`,
     ),
   onOutputFound: EFunction.flow(EMIDIOutput.make, Effect.succeed),
 })
