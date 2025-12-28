@@ -354,3 +354,7 @@ GetThingByPortIdAccessFirst
 GetThingByPortIdAccessLast
 GetThingByPortIdAccessLastSecondHalf
 makeMessagesStreamByInputId
+sendInContext
+targetPortSelector
+TargetPortSelector
+makeAllPortsStateChangesStreamInContext

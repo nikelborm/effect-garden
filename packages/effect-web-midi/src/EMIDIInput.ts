@@ -35,7 +35,7 @@ export {
   // layerSystemExclusiveAndSoftwareSynthSupported,
   // layerSystemExclusiveSupported,
   // makeAllPortsStateChangesStream,
-  // makeAllPortsStateChangesStreamFromContext,
+  // makeAllPortsStateChangesStreamInContext,
   makeMessagesStreamByInputId as makeMessagesStreamById,
   makeMessagesStreamByInputIdAndAccess as makeMessagesStreamByIdAndAccess,
   // OutputsRecord,
@@ -49,9 +49,9 @@ export {
   // type SendMIDIMessageAccessLast,
   // type SentMessageEffectFromAccess,
   // send,
-  // sendFromContext,
+  // sendInContext,
   // sendToPortById,
-  type TargetPortSelector,
+  // type TargetPortSelector,
   // type TypeId,
 } from './internal/EMIDIAccess.ts'
 export {
@@ -91,19 +91,6 @@ export {
 //   type PolymorphicPortClean,
 //   type TypeId,
 // } from './internal/EMIDIPort.ts'
-// export {
-//   AbortError,
-//   CantSendSysexMessagesError,
-//   ClearingSendingQueueIsNotSupportedError,
-//   DisconnectedPortError,
-//   MalformedMidiMessageError,
-//   MIDIAccessNotAllowedError,
-//   MIDIAccessNotSupportedError,
-//   PortNotFoundError,
-//   remapErrorByName,
-//   UnavailablePortError,
-//   UnderlyingSystemError,
-// } from './internal/errors.ts'
 export {
   // type GetPortById,
   getInputByPortIdAndAccess as getByIdAndAccess,

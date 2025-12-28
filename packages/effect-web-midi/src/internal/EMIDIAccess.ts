@@ -626,7 +626,7 @@ export const clearPortById = EFunction.flow(
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeAllPortsStateChangesStreamFromContext = <
+export const makeAllPortsStateChangesStreamInContext = <
   const TOnNullStrategy extends Create.OnNullStrategy = undefined,
 >(
   options?: Create.StreamMakerOptions<TOnNullStrategy>,
@@ -636,7 +636,7 @@ export const makeAllPortsStateChangesStreamFromContext = <
  *
  *
  */
-export const sendFromContext = (...args: SendFromAccessArgs) =>
+export const sendInContext = (...args: SendFromAccessArgs) =>
   Effect.asVoid(send(EMIDIAccess, ...args))
 
 /**

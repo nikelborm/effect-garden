@@ -35,20 +35,21 @@ export {
   layerSystemExclusiveAndSoftwareSynthSupported,
   layerSystemExclusiveSupported,
   makeAllPortsStateChangesStream,
-  makeAllPortsStateChangesStreamFromContext,
+  makeAllPortsStateChangesStreamInContext,
   makeMessagesStreamByInputId,
+  makeMessagesStreamByInputIdAndAccess,
   OutputsRecord,
   type PolymorphicAccessInstance,
   type PolymorphicAccessInstanceClean,
   type RequestMIDIAccessOptions,
   request,
-  resolve,
+  // resolve,
   type SendFromAccessArgs,
   type SendMIDIMessageAccessFirst,
   type SendMIDIMessageAccessLast,
   type SentMessageEffectFromAccess,
   send,
-  sendFromContext,
+  sendInContext,
   sendToPortById,
   type TargetPortSelector,
   type TypeId,
@@ -90,19 +91,6 @@ export {
 //   type PolymorphicPortClean,
 //   type TypeId,
 // } from './internal/EMIDIPort.ts'
-// export {
-//   AbortError,
-//   CantSendSysexMessagesError,
-//   ClearingSendingQueueIsNotSupportedError,
-//   DisconnectedPortError,
-//   MalformedMidiMessageError,
-//   MIDIAccessNotAllowedError,
-//   MIDIAccessNotSupportedError,
-//   PortNotFoundError,
-//   remapErrorByName,
-//   UnavailablePortError,
-//   UnderlyingSystemError,
-// } from './internal/errors.ts'
 export {
   type GetPortById,
   getInputByPortIdAndAccess as getInputByIdInPipe,
@@ -293,19 +281,19 @@ export {
   matchPortConnectionStateByPortIdInContext as matchPortConnectionStateById,
   matchPortDeviceStateByPortIdInContext as matchPortDeviceStateByPortId,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPortIdInContext.ts'
-export {
-  type ControlChange,
-  type NotePress,
-  type NoteRelease,
-  type ParsedMIDIMessages,
-  type PitchBendChange,
-  type TouchpadPositionUpdate,
-  type TouchpadRelease,
-  type UnknownReply,
-  withParsedDataField,
-  withTouchpadPositionUpdates,
-} from './internal/parsing.ts'
-export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
+// export {
+//   type ControlChange,
+//   type NotePress,
+//   type NoteRelease,
+//   type ParsedMIDIMessages,
+//   type PitchBendChange,
+//   type TouchpadPositionUpdate,
+//   type TouchpadRelease,
+//   type UnknownReply,
+//   withParsedDataField,
+//   withTouchpadPositionUpdates,
+// } from './internal/parsing.ts'
+// export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
 export {
   type FallbackOnUnknownOrAny,
   fromPolymorphic,

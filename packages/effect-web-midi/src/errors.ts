@@ -7,6 +7,7 @@ export {
   MIDIAccessNotAllowedError,
   MIDIAccessNotSupportedError,
   PortNotFoundError,
+  // remapErrorByName,
   UnavailablePortError,
   UnderlyingSystemError,
 } from './internal/errors.ts'
