@@ -1,23 +1,28 @@
 {
-  "name": "@nikelborm/effect-web-midi",
+  "name": "effect-web-midi",
   "version": "0.1.0",
   "type": "module",
-  "description": "Effect MIDI",
+  "description": "Effect WEB MIDI",
   "license": "MIT",
   "scripts": {
     "build": "tspc",
     "dev": "tspc --watch"
   },
   "files": [
-    "dist",
+    ".github/FUNDING.yml",
     "dist-types",
-    "src",
+    "dist",
     "index.ts",
-    "package.json"
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
   ],
   "dependencies": {
     "effect": "catalog:"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-midi",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -33,12 +38,28 @@
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
   },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "exports": {
-    "types": "./dist-types/index.d.ts",
-    "default": "./dist/index.js"
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./package.json": "./package.json"
   },
   "author": {
     "name": "nikelborm",

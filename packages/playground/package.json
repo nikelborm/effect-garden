@@ -19,7 +19,7 @@
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/effect-schema-i18n": "workspace:*",
-    "@nikelborm/effect-web-midi": "workspace:*",
+    "effect-web-midi": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/scripts": "workspace:*",

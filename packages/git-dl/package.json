@@ -58,7 +58,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/git-dl.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -68,7 +68,7 @@
     "gdl": "dist/git-dl.js"
   },
   "bugs": {
-    "url": "https://github.com/nikelborm/git-dl/issues",
+    "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
   },
   "files": [
@@ -84,7 +84,7 @@
     "errors.ts",
     "index.ts"
   ],
-  "homepage": "https://github.com/nikelborm/git-dl#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden#readme",
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",

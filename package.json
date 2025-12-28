@@ -14,7 +14,7 @@
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/github-extract-issues": "workspace:*",
-    "@nikelborm/effect-web-midi": "workspace:*",
+    "effect-web-midi": "workspace:*",
     "@nikelborm/effect-landscape": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",

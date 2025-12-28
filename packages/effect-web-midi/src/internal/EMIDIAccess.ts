@@ -58,9 +58,7 @@ import * as Util from './util.ts'
  * instances from other objects at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for(
-  '@nikelborm/effect-web-midi/EMIDIAccessInstance',
-)
+const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIAccessInstance')
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
@@ -79,7 +77,7 @@ export type TypeId = typeof TypeId
  *
  * @example
  * ```ts
- * import { EMIDIAccess } from '@nikelborm/effect-web-midi'
+ * import { EMIDIAccess } from 'effect-web-midi'
  * import * as Effect from 'effect/Effect'
  *
  * const program = Effect.gen(function* () {
@@ -102,9 +100,10 @@ export type TypeId = typeof TypeId
  *
  * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
  */
-export class EMIDIAccess extends Context.Tag(
-  '@nikelborm/effect-web-midi/EMIDIAccess',
-)<EMIDIAccess, EMIDIAccessInstance>() {}
+export class EMIDIAccess extends Context.Tag('effect-web-midi/EMIDIAccess')<
+  EMIDIAccess,
+  EMIDIAccessInstance
+>() {}
 
 export interface RequestMIDIAccessOptions {
   /**

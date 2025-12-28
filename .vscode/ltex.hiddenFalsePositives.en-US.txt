@@ -1,7 +1,7 @@
 {"rule":"LC_AFTER_PERIOD","sentence":"^\\QIt's taken from the\n{@linkcode MIDIPort.connection|connection} read-only property of the\n{@linkcode MIDIPort} interface ([MDN\nReference](https://developer.mozilla.org/docs/Web/API/MIDIPort/connection)).\\E$"}
 {"rule":"LC_AFTER_PERIOD","sentence":"^\\QIt's taken from the {@linkcode MIDIPort.state|state}\nread-only property of the {@linkcode MIDIPort} interface ([MDN\nReference](https://developer.mozilla.org/docs/Web/API/MIDIPort/state)).\\E$"}
 {"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QA tag that allows to provide\n{@linkcode EMIDIAccessInstance|access instance} once with e.g.\n{@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc. and reuse\nit anywhere, instead of repeatedly {@linkcode request}ing it.\\E$"}
-{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\Qimport { EMIDIAccess } from '@nikelborm/effect-web-midi'\nimport * as Effect from 'effect/Effect'\\E$"}
+{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\Qimport { EMIDIAccess } from 'effect-web-midi'\nimport * as Effect from 'effect/Effect'\\E$"}
 {"rule":"SENTENCE_WHITESPACE","sentence":"^\\QEffect<\n//      void,\n//      | AbortError\n//      | UnderlyingSystemError\n//      | MIDIAccessNotAllowedError\n//      | MIDIAccessNotSupportedError\n//      never\n//    >\\E$"}
 {"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\Qconst program = Effect.gen(function* () {\n//  ^ Effect.\\E$"}
 {"rule":"SENTENCE_WHITESPACE","sentence":"^\\QEMIDIAccess\n//    ^ EMIDIAccessInstance\\E$"}

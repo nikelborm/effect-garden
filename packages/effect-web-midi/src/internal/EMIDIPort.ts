@@ -13,7 +13,7 @@ import type * as Util from './util.ts'
  * from other objects at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for('@nikelborm/effect-web-midi/EMIDIPort')
+const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIPort')
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
