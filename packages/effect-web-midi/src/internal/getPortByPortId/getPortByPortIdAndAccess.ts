@@ -64,7 +64,7 @@ const getPortByIdAndRemap = <
 
 /**
  *
- * If you want to ensure the type of returned port match the type of id, use
+ * If you want to ensure the type of returned port match the type of ID, use
  * type-specific getters {@linkcode getInputByPortIdAndAccess} and
  * {@linkcode getOutputByPortIdAndAccess}, because in runtime, these branded
  * port IDs passed as function arguments, are just strings and cannot ensure

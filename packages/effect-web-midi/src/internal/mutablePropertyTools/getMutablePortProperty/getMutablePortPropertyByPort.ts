@@ -1,14 +1,14 @@
 import * as Effect from 'effect/Effect'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import type { MIDIPortMutableProperty } from '../matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
+import type * as Match from '../matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 
 /**
  * @internal
  */
 const getMutableProperty =
   <TMIDIPortType extends MIDIPortType>() =>
-  <const TMIDIPortMutableProperty extends MIDIPortMutableProperty>(
+  <const TMIDIPortMutableProperty extends Match.MIDIPortMutableProperty>(
     property: TMIDIPortMutableProperty,
   ) =>
   <E = never, R = never>(
