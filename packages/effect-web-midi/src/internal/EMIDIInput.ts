@@ -96,3 +96,15 @@ export const makeMessagesStream =
     }),
     midiMessage => ({ midiMessage }),
   )
+
+/**
+ *
+ *
+ */
+export type PolymorphicInput<E, R> = EMIDIPort.PolymorphicPort<E, R, 'input'>
+
+/**
+ *
+ *
+ */
+export type PolymorphicInputClean = EMIDIPort.PolymorphicPortClean<'input'>

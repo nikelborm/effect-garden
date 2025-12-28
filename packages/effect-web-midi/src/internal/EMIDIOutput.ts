@@ -174,7 +174,13 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
  *
  *
  */
-export type PolymorphicOutput<E, R> = Util.PolymorphicEffect<EMIDIOutput, E, R>
+export type PolymorphicOutput<E, R> = EMIDIPort.PolymorphicPort<E, R, 'output'>
+
+/**
+ *
+ *
+ */
+export type PolymorphicOutputClean = EMIDIPort.PolymorphicPortClean<'output'>
 
 export type SendFromPortArgs = [
   midiMessage: Iterable<number>,

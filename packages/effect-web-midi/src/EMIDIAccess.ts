@@ -1,4 +1,125 @@
 export {
+  type BuiltStream,
+  createStreamMakerFrom,
+  type DualStreamMaker,
+  type MakeStreamTargetFirst,
+  type MakeStreamTargetLast,
+  type OnNullStrategy,
+  type StreamError,
+  type StreamMakerOptions,
+  type StreamMakerOptionsObject,
+  type StreamMakerOptionsWellknown,
+  type StreamValue,
+} from './internal/createStreamMakerFrom.ts'
+export {
+  type AcquiredThing,
+  AllPortsRecord,
+  assert,
+  // assumeImpl,
+  clearPortById,
+  type DualSendMIDIMessageFromAccess,
+  EMIDIAccess,
+  type EMIDIAccessInstance,
+  type GetThingByPortId,
+  type GetThingByPortIdAccessFirst,
+  type GetThingByPortIdAccessLast,
+  type GetThingByPortIdAccessLastSecondHalf,
+  getAllPortsRecord,
+  getInputsRecord,
+  getOutputsRecord,
+  InputsRecord,
+  is,
+  layer,
+  layerMostRestricted,
+  layerSoftwareSynthSupported,
+  layerSystemExclusiveAndSoftwareSynthSupported,
+  layerSystemExclusiveSupported,
+  makeAllPortsStateChangesStream,
+  makeAllPortsStateChangesStreamFromContext,
+  makeMessagesStreamByPortId,
+  OutputsRecord,
+  type PolymorphicAccessInstance,
+  type PolymorphicAccessInstanceClean,
+  type RequestMIDIAccessOptions,
+  request,
+  resolve,
+  type SendFromAccessArgs,
+  type SendMIDIMessageAccessFirst,
+  type SendMIDIMessageAccessLast,
+  type SentMessageEffectFromAccess,
+  send,
+  sendFromContext,
+  sendToPortById,
+  type TargetPortSelector,
+  type TypeId,
+} from './internal/EMIDIAccess.ts'
+export {
+  // assert,
+  type EMIDIInput,
+  // is,
+  // make,
+  makeMessagesStream,
+  // type PolymorphicInput,
+  // type PolymorphicInputClean,
+} from './internal/EMIDIInput.ts'
+export {
+  // assert,
+  clear,
+  type DualSendMIDIMessageFromPort,
+  type EMIDIOutput,
+  // is,
+  make,
+  // type PolymorphicOutput,
+  // type PolymorphicOutputClean,
+  type SendFromPortArgs,
+  type SendMIDIMessagePortFirst,
+  type SendMIDIMessagePortLast,
+  type SentMessageEffectFromPort,
+  // send,
+} from './internal/EMIDIOutput.ts'
+// export {
+//   assert,
+//   assumeImpl,
+//   type EMIDIPort,
+//   type EMIDIPortImpl,
+//   type ExtractTypeFromPort,
+//   is,
+//   isImplOfSpecificType,
+//   makeImpl,
+//   type PolymorphicPort,
+//   type PolymorphicPortClean,
+//   type TypeId,
+// } from './internal/EMIDIPort.ts'
+export {
+  AbortError,
+  CantSendSysexMessagesError,
+  ClearingSendingQueueIsNotSupportedError,
+  DisconnectedPortError,
+  MalformedMidiMessageError,
+  MIDIAccessNotAllowedError,
+  MIDIAccessNotSupportedError,
+  PortNotFoundError,
+  remapErrorByName,
+  UnavailablePortError,
+  UnderlyingSystemError,
+} from './internal/errors.ts'
+export {
+  type GetPortById,
+  getInputByPortIdAndAccess as getInputByIdInPipe,
+  getOutputByPortIdAndAccess as getOutputByIdInPipe,
+  getPortByPortIdAndAccess as getPortByIdInPipe,
+} from './internal/getPortByPortId/getPortByPortIdAndAccess.ts'
+export {
+  getInputByPortIdInContext as getInputById,
+  getOutputByPortIdInContext as getOutputById,
+  getPortByPortIdInContext as getPortById,
+} from './internal/getPortByPortId/getPortByPortIdInContext.ts'
+export {
+  acquireReleaseInputConnectionByPort,
+  acquireReleaseOutputConnectionByPort,
+  acquireReleasePortConnectionByPort,
+} from './internal/MIDIPortMethodCalls/acquireReleasePortConnection/acquireReleasePortConnectionByPort.ts'
+export {
   acquireReleaseInputConnectionByPortIdAndAccess as acquireReleaseInputConnectionByIdInPipe,
   acquireReleaseOutputConnectionByPortIdAndAccess as acquireReleaseOutputConnectionByIdInPipe,
   acquireReleasePortConnectionByPortIdAndAccess as acquireReleasePortConnectionByIdInPipe,
@@ -8,6 +129,13 @@ export {
   acquireReleaseOutputConnectionByPortIdInContext as acquireReleaseOutputConnectionById,
   acquireReleasePortConnectionByPortIdInContext as acquireReleasePortConnectionById,
 } from './internal/MIDIPortMethodCalls/acquireReleasePortConnection/acquireReleasePortConnectionByPortIdInContext.ts'
+export { actOnPort } from './internal/MIDIPortMethodCalls/actOnPort.ts'
+export {
+  closeInputConnectionByPort,
+  closeOutputConnectionByPort,
+  closePortConnectionByPort,
+  makePortConnectionCloser,
+} from './internal/MIDIPortMethodCalls/closePortConnection/closePortConnectionByPort.ts'
 export {
   closeInputConnectionByPortIdAndAccess as closeInputConnectionByIdInPipe,
   closeOutputConnectionByPortIdAndAccess as closeOutputConnectionByIdInPipe,
@@ -19,6 +147,16 @@ export {
   closePortConnectionByPortIdInContext as closePortConnectionById,
 } from './internal/MIDIPortMethodCalls/closePortConnection/closePortConnectionByPortIdInContext.ts'
 export {
+  makeMIDIPortMethodCallerFactory,
+  type TouchPort,
+} from './internal/MIDIPortMethodCalls/makeMIDIPortMethodCallerFactory.ts'
+export {
+  makePortConnectionOpener,
+  openInputConnectionByPort,
+  openOutputConnectionByPort,
+  openPortConnectionByPort,
+} from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPort.ts'
+export {
   openInputConnectionByPortIdAndAccess as openInputConnectionByIdInPipe,
   openOutputConnectionByPortIdAndAccess as openOutputConnectionByIdInPipe,
   openPortConnectionByPortIdAndAccess as openPortConnectionByIdInPipe,
@@ -29,16 +167,14 @@ export {
   openPortConnectionByPortIdInContext as openPortConnectionById,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPortIdInContext.ts'
 export {
-  getInputByPortIdInContext as getInputById,
-  getOutputByPortIdInContext as getOutputById,
-  getPortByPortIdInContext as getPortById,
-} from './internal/getPortByPortId/getPortByPortIdInContext.ts'
-export {
-  type GetPortById,
-  getInputByPortIdAndAccess as getInputByIdInPipe,
-  getOutputByPortIdAndAccess as getOutputByIdInPipe,
-  getPortByPortIdAndAccess as getPortByIdInPipe,
-} from './internal/getPortByPortId/getPortByPortIdAndAccess.ts'
+  type DualMakeStateChangesStream,
+  type MakeStateChangesStreamPortFirst,
+  type MakeStateChangesStreamPortLast,
+  makeInputStateChangesStreamByPort,
+  makeOutputStateChangesStreamByPort,
+  makePortStateChangesStreamByPort,
+  type StateChangesStream,
+} from './internal/makePortStateChangesStream/makePortStateChangesStreamByPort.ts'
 export {
   makeInputStateChangesStreamByPortIdAndAccess as makeInputStateChangesStreamByIdInPipe,
   makeOutputStateChangesStreamByPortIdAndAccess as makeOutputStateChangesStreamByIdInPipe,
@@ -49,6 +185,23 @@ export {
   makeOutputStateChangesStreamByPortIdInContext as makeOutputStateChangesStreamById,
   makePortStateChangesStreamByPortIdInContext as makePortStateChangesStreamById,
 } from './internal/makePortStateChangesStream/makePortStateChangesStreamByPortIdInContext.ts'
+export {
+  isInputConnectionClosedByPort,
+  isInputConnectionOpenByPort,
+  isInputConnectionPendingByPort,
+  isInputDeviceConnectedByPort,
+  isInputDeviceDisconnectedByPort,
+  isOutputConnectionClosedByPort,
+  isOutputConnectionOpenByPort,
+  isOutputConnectionPendingByPort,
+  isOutputDeviceConnectedByPort,
+  isOutputDeviceDisconnectedByPort,
+  isPortConnectionClosedByPort,
+  isPortConnectionOpenByPort,
+  isPortConnectionPendingByPort,
+  isPortDeviceConnectedByPort,
+  isPortDeviceDisconnectedByPort,
+} from './internal/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 export {
   isInputConnectionClosedByPortIdAndAccess as isInputConnectionClosedByIdInPipe,
   isInputConnectionOpenByPortIdAndAccess as isInputConnectionOpenByIdInPipe,
@@ -84,6 +237,14 @@ export {
   isPortDeviceDisconnectedByPortIdInContext as isPortDeviceDisconnectedById,
 } from './internal/mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPortIdInContext.ts'
 export {
+  getInputConnectionStateByPort,
+  getInputDeviceStateByPort,
+  getOutputConnectionStateByPort,
+  getOutputDeviceStateByPort,
+  getPortConnectionStateByPort,
+  getPortDeviceStateByPort,
+} from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+export {
   getInputConnectionStateByPortIdAndAccess as getInputConnectionStateByIdInPipe,
   getInputDeviceStateByPortIdAndAccess as getInputDeviceStateByIdInPipe,
   getOutputConnectionStateByPortIdAndAccess as getOutputConnectionStateByIdInPipe,
@@ -99,21 +260,22 @@ export {
   getPortConnectionStateByPortId as getPortConnectionStateById,
   getPortDeviceStateByPortId as getPortDeviceStateById,
 } from './internal/mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPortIdInContext.ts'
+export { getValueInRawPortFieldUnsafe } from './internal/mutablePropertyTools/getValueInRawPortFieldUnsafe.ts'
 export {
   type DualMatchPortState,
-  type MIDIPortMutableProperty,
+  type MatcherConfigPlain,
   type MatchResult,
   type MatchStatePortFirst,
   type MatchStatePortLast,
-  type MatcherConfigPlain,
-  type PortStateHandler,
-  type StateCaseToHandlerMap,
+  type MIDIPortMutableProperty,
   matchInputConnectionStateByPort,
   matchInputDeviceStateByPort,
   matchOutputConnectionStateByPort,
   matchOutputDeviceStateByPort,
   matchPortConnectionStateByPort,
   matchPortDeviceStateByPort,
+  type PortStateHandler,
+  type StateCaseToHandlerMap,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPort.ts'
 export {
   matchInputConnectionStateByPortIdAndAccess as matchInputConnectionStateByIdInPipe,
@@ -131,39 +293,38 @@ export {
   matchPortConnectionStateByPortIdInContext as matchPortConnectionStateById,
   matchPortDeviceStateByPortIdInContext as matchPortDeviceStateByPortId,
 } from './internal/mutablePropertyTools/matchMutablePortProperty/matchMutablePortPropertyByPortIdInContext.ts'
-
 export {
-  AllPortsRecord,
-  assert,
-  type DualSendMIDIMessageFromAccess,
-  EMIDIAccess,
-  type EMIDIAccessInstance,
-  getAllPortsRecord,
-  getInputsRecord,
-  getOutputsRecord,
-  InputsRecord,
-  is,
-  layer,
-  layerMostRestricted,
-  layerSoftwareSynthSupported,
-  layerSystemExclusiveAndSoftwareSynthSupported,
-  layerSystemExclusiveSupported,
-  makeAllPortsStateChangesStream,
-  OutputsRecord,
-  type PolymorphicAccessInstance,
-  type RequestMIDIAccessOptions,
-  request,
-  type SendFromAccessArgs,
-  type SendMIDIMessageAccessFirst,
-  type SendMIDIMessageAccessLast,
-  type SentMessageEffectFromAccess,
-  send,
-  type TargetPortSelector,
-  type TypeId,
-  type PolymorphicAccessInstanceClean,
-  clearPortById,
-  makeAllPortsStateChangesStreamFromContext,
-  makeMessagesStreamByPortId,
-  sendFromContext,
-  sendToPortById,
-} from './internal/EMIDIAccess.ts'
+  type ControlChange,
+  type NotePress,
+  type NoteRelease,
+  type ParsedMIDIMessages,
+  type PitchBendChange,
+  type TouchpadPositionUpdate,
+  type TouchpadRelease,
+  type UnknownReply,
+  withParsedDataField,
+  withTouchpadPositionUpdates,
+} from './internal/parsing.ts'
+export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
+export {
+  type FallbackOnUnknownOrAny,
+  fromPolymorphic,
+  getStaticMIDIPortInfo,
+  type IsEqualFlag,
+  isCertainConnectionState,
+  isCertainDeviceState,
+  isConnectionClosed,
+  isConnectionOpen,
+  isConnectionPending,
+  isDeviceConnected,
+  isDeviceDisconnected,
+  MIDIBothPortId,
+  MIDIInputId,
+  MIDIOutputId,
+  type MIDIPortId,
+  type MIDIPortStaticFields,
+  midiPortStaticFields,
+  type PolymorphicEffect,
+  polymorphicCheckInDual,
+  type SentMessageEffectFrom,
+} from './internal/util.ts'
