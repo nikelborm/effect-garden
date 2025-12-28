@@ -352,7 +352,7 @@
   "catalog": {
     "@effect/cli": "^0.73.0",
     "@effect/experimental": "^0.58.0",
-    "@effect/language-service": "^0.62.0",
+    "@effect/language-service": "^0.63.0",
     "@effect/opentelemetry": "^0.60.0",
     "@effect/platform": "^0.94.0",
     "@effect/platform-browser": "^0.74.0",
@@ -487,7 +487,7 @@
 
     "@effect/experimental": ["@effect/experimental@0.58.0", "", { "dependencies": { "uuid": "^11.0.3" }, "peerDependencies": { "@effect/platform": "^0.94.0", "effect": "^3.19.13", "ioredis": "^5", "lmdb": "^3" }, "optionalPeers": ["ioredis", "lmdb"] }, "sha512-IEP9sapjF6rFy5TkoqDPc86st/fnqUfjT7Xa3pWJrFGr1hzaMXHo+mWsYOZS9LAOVKnpHuVziDK97EP5qsCHVA=="],
 
-    "@effect/language-service": ["@effect/language-service@0.62.5", "", { "bin": { "effect-language-service": "cli.js" } }, "sha512-vCMZkqbE8bQ4cmksrj2HLVhYXL6B0bs7uulALgVh6Hh46/V2WrcExgx6DTr0BE6nwBuecqbd4xWjEoPSwI8bPw=="],
+    "@effect/language-service": ["@effect/language-service@0.63.0", "", { "bin": { "effect-language-service": "cli.js" } }, "sha512-ATeSq70sLmEIniZzmAdveADgaUFBpVRsKvdFnIewkw6xLV6Misf1h6C1YDIT9xwkB/Ut0GqOZ2qw5/Ufk+bB2A=="],
 
     "@effect/opentelemetry": ["@effect/opentelemetry@0.60.0", "", { "peerDependencies": { "@effect/platform": "^0.94.0", "@opentelemetry/api": "^1.9", "@opentelemetry/resources": "^2.0.0", "@opentelemetry/sdk-logs": ">=0.203.0 <0.300.0", "@opentelemetry/sdk-metrics": "^2.0.0", "@opentelemetry/sdk-trace-base": "^2.0.0", "@opentelemetry/sdk-trace-node": "^2.0.0", "@opentelemetry/sdk-trace-web": "^2.0.0", "@opentelemetry/semantic-conventions": "^1.33.0", "effect": "^3.19.13" }, "optionalPeers": ["@opentelemetry/api", "@opentelemetry/resources", "@opentelemetry/sdk-logs", "@opentelemetry/sdk-metrics", "@opentelemetry/sdk-trace-base", "@opentelemetry/sdk-trace-node", "@opentelemetry/sdk-trace-web"] }, "sha512-YaKCKdtvzQ+efMCSg7f9583zxQU1TSyPSiTn4D8tnd/+okxuYrz2/RKbb+7qAUT1cajV6UIcdX/1lSLJi8uIew=="],
 

@@ -37,7 +37,7 @@
     "effect-errors": "^1.10.17",
     "@effect/platform-browser": "^0.74.0",
     "effect": "^3.19.13",
-    "@effect/language-service": "^0.62.0",
+    "@effect/language-service": "^0.63.0",
     "tsafe": "^1.8.5",
     "@vitest/coverage-v8": "^4.0.15",
     "vitest": "^4.0.15",
