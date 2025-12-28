@@ -1,3 +1,4 @@
+export { mapToGlidingStringLogOfLimitedEntriesCount } from './internal/rendering.ts'
 export {
   getStaticMIDIPortInfo,
   MIDIBothPortId,
