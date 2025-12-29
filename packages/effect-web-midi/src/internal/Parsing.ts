@@ -189,14 +189,15 @@ function dataEntryParser(
   return unknown()
 }
 
-export const isControlChange = (e: { _tag: string }): e is ControlChange =>
-  e._tag === 'Control Change'
+export interface UnknownReply
+  extends Readonly<{
+    _tag: 'Unknown Reply'
+    unexpectedData: string
+    stack: string
+  }> {}
 
-export const isPitchBendChange = (e: { _tag: string }): e is PitchBendChange =>
-  e._tag === 'Pitch Bend Change'
-
-export interface NoteRelease
-  extends Readonly<{ _tag: 'Note Release'; channel: number; note: number }> {}
+export const isUnknownReply = (e: { _tag: string }): e is UnknownReply =>
+  e._tag === 'Unknown Reply'
 
 export interface NotePress
   extends Readonly<{
@@ -206,6 +207,9 @@ export interface NotePress
     velocity: number
   }> {}
 
+export const isNotePress = (e: { _tag: string }): e is NotePress =>
+  e._tag === 'Note Press'
+
 export interface ChannelPressure
   extends Readonly<{
     _tag: 'Channel Pressure'
@@ -213,12 +217,14 @@ export interface ChannelPressure
     velocity: number
   }> {}
 
-export interface UnknownReply
-  extends Readonly<{
-    _tag: 'Unknown Reply'
-    unexpectedData: string
-    stack: string
-  }> {}
+export const isChannelPressure = (e: { _tag: string }): e is ChannelPressure =>
+  e._tag === 'Channel Pressure'
+
+export interface NoteRelease
+  extends Readonly<{ _tag: 'Note Release'; channel: number; note: number }> {}
+
+export const isNoteRelease = (e: { _tag: string }): e is NoteRelease =>
+  e._tag === 'Note Release'
 
 export interface ControlChange
   extends Readonly<{
@@ -228,8 +234,14 @@ export interface ControlChange
     value: number
   }> {}
 
+export const isControlChange = (e: { _tag: string }): e is ControlChange =>
+  e._tag === 'Control Change'
+
 export interface TouchpadRelease
   extends Readonly<{ _tag: 'Touchpad Release'; channel: number }> {}
+
+export const isTouchpadRelease = (e: { _tag: string }): e is TouchpadRelease =>
+  e._tag === 'Touchpad Release'
 
 export interface PitchBendChange
   extends Readonly<{
@@ -238,9 +250,16 @@ export interface PitchBendChange
     value: number
   }> {}
 
+export const isPitchBendChange = (e: { _tag: string }): e is PitchBendChange =>
+  e._tag === 'Pitch Bend Change'
+
 export interface TouchpadPositionUpdate
   extends Readonly<{
     _tag: 'Touchpad Position Update'
     x: number
     y: number
   }> {}
+
+export const isTouchpadPositionUpdate = (e: {
+  _tag: string
+}): e is TouchpadPositionUpdate => e._tag === 'Touchpad Position Update'
