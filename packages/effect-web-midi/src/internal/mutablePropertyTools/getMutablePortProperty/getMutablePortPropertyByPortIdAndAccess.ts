@@ -91,20 +91,20 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
 
 // TODO: getInputConnectionStateByPortIdAndAccess
 export const getInputConnectionStateByPortIdAndAccess = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getInputDeviceStateByPortIdAndAccess
 export const getInputDeviceStateByPortIdAndAccess = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputConnectionStateByPortIdAndAccess
 export const getOutputConnectionStateByPortIdAndAccess = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputDeviceStateByPortIdAndAccess
 export const getOutputDeviceStateByPortIdAndAccess = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }

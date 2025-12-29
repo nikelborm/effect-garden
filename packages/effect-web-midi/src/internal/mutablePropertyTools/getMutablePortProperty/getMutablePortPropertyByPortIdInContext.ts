@@ -18,20 +18,20 @@ export const getPortConnectionStateByPortId = (id: EMIDIPort.BothId) =>
 
 // TODO: getInputConnectionStateByPortId
 export const getInputConnectionStateByPortId = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getInputDeviceStateByPortId
 export const getInputDeviceStateByPortId = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputConnectionStateByPortId
 export const getOutputConnectionStateByPortId = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputDeviceStateByPortId
 export const getOutputDeviceStateByPortId = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }

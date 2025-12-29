@@ -595,7 +595,7 @@ export const makeMessagesStreamByInputId = <
 
 // TODO: makeMessagesStreamByInputIdAndAccess
 export const makeMessagesStreamByInputIdAndAccess = () => {
-  throw new Error('not implemented')
+  throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 /**
