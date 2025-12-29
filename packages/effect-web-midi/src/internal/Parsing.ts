@@ -118,8 +118,8 @@ function dataEntryParser(
     return result
   }
   if (midiMessage.length !== 3) return unknown()
-  const first = midiMessage.at(0)
-  if (first === undefined) return unknown()
+  const status = midiMessage.at(0)
+  if (status === undefined) return unknown()
 
   const second = midiMessage.at(1)
   if (second === undefined) return unknown()
@@ -127,8 +127,8 @@ function dataEntryParser(
   const third = midiMessage.at(2)
   if (third === undefined) return unknown()
 
-  const code = first >> 4
-  const channel = first & 0b1111
+  const code = status >> 4
+  const channel = status & 0b1111
 
   if (code === 0x8) {
     if (third !== 0x40) return unknown()
@@ -140,7 +140,12 @@ function dataEntryParser(
   }
 
   if (code === 0x9) {
-    if (third === 0) return unknown()
+    if (third === 0)
+      return {
+        _tag: 'Note Release',
+        channel,
+        note: second,
+      }
     return {
       _tag: 'Note Press',
       channel,
