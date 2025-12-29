@@ -1,74 +1,131 @@
-// TODO: isInputConnectionClosedByPortIdInContext
-export const isInputConnectionClosedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+import * as EFunction from 'effect/Function'
+import * as Get from '../../getPortByPortId/getPortByPortIdInContext.ts'
+import * as Check from './doesMutablePortPropertyHaveSpecificValueByPort.ts'
 
-// TODO: isInputConnectionOpenByPortIdInContext
-export const isInputConnectionOpenByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const closePortConnectionByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isInputConnectionPendingByPortIdInContext
-export const isInputConnectionPendingByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isInputConnectionClosedByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isInputDeviceConnectedByPortIdInContext
-export const isInputDeviceConnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isInputConnectionOpenByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isInputDeviceDisconnectedByPortIdInContext
-export const isInputDeviceDisconnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isInputConnectionPendingByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isOutputConnectionClosedByPortIdInContext
-export const isOutputConnectionClosedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isInputDeviceConnectedByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isOutputConnectionOpenByPortIdInContext
-export const isOutputConnectionOpenByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isInputDeviceDisconnectedByPortIdInContext = EFunction.flow(
+  Get.getInputByPortIdInContext,
+  Check.isInputConnectionClosedByPort,
+)
 
-// TODO: isOutputConnectionPendingByPortIdInContext
-export const isOutputConnectionPendingByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isOutputConnectionClosedByPortIdInContext = EFunction.flow(
+  Get.getOutputByPortIdInContext,
+  Check.isOutputConnectionClosedByPort,
+)
 
-// TODO: isOutputDeviceConnectedByPortIdInContext
-export const isOutputDeviceConnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isOutputConnectionOpenByPortIdInContext = EFunction.flow(
+  Get.getOutputByPortIdInContext,
+  Check.isOutputConnectionClosedByPort,
+)
 
-// TODO: isOutputDeviceDisconnectedByPortIdInContext
-export const isOutputDeviceDisconnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isOutputConnectionPendingByPortIdInContext = EFunction.flow(
+  Get.getOutputByPortIdInContext,
+  Check.isOutputConnectionClosedByPort,
+)
 
-// TODO: isPortConnectionClosedByPortIdInContext
-export const isPortConnectionClosedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isOutputDeviceConnectedByPortIdInContext = EFunction.flow(
+  Get.getOutputByPortIdInContext,
+  Check.isOutputConnectionClosedByPort,
+)
 
-// TODO: isPortConnectionOpenByPortIdInContext
-export const isPortConnectionOpenByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isOutputDeviceDisconnectedByPortIdInContext = EFunction.flow(
+  Get.getOutputByPortIdInContext,
+  Check.isOutputConnectionClosedByPort,
+)
 
-// TODO: isPortConnectionPendingByPortIdInContext
-export const isPortConnectionPendingByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isPortConnectionClosedByPortIdInContext = EFunction.flow(
+  Get.getPortByPortIdInContext,
+  Check.isPortConnectionClosedByPort,
+)
 
-// TODO: isPortDeviceConnectedByPortIdInContext
-export const isPortDeviceConnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isPortConnectionOpenByPortIdInContext = EFunction.flow(
+  Get.getPortByPortIdInContext,
+  Check.isPortConnectionClosedByPort,
+)
 
-// TODO: isPortDeviceDisconnectedByPortIdInContext
-export const isPortDeviceDisconnectedByPortIdInContext = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ */
+export const isPortConnectionPendingByPortIdInContext = EFunction.flow(
+  Get.getPortByPortIdInContext,
+  Check.isPortConnectionClosedByPort,
+)
+
+/**
+ *
+ */
+export const isPortDeviceConnectedByPortIdInContext = EFunction.flow(
+  Get.getPortByPortIdInContext,
+  Check.isPortConnectionClosedByPort,
+)
+
+/**
+ *
+ */
+export const isPortDeviceDisconnectedByPortIdInContext = EFunction.flow(
+  Get.getPortByPortIdInContext,
+  Check.isPortConnectionClosedByPort,
+)
