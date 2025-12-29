@@ -365,3 +365,9 @@ makeMessagesStreamByPort
 @file
 nanoPAD
 DevX
+acquireReleasePortConnection
+closePortConnection
+matchMutablePortProperty
+getMutablePortProperty
+doesMutablePortPropertyHaveSpecificValue
+openPortConnection
