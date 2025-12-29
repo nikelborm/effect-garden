@@ -90,6 +90,7 @@ export type ParsedMIDIMessages =
   | NotePress
   | UnknownReply
   | ControlChange
+  | ChannelPressure
   | TouchpadRelease
   | PitchBendChange
 
@@ -117,18 +118,30 @@ function dataEntryParser(
     }
     return result
   }
-  if (midiMessage.length !== 3) return unknown()
+
   const status = midiMessage.at(0)
   if (status === undefined) return unknown()
 
   const second = midiMessage.at(1)
   if (second === undefined) return unknown()
 
-  const third = midiMessage.at(2)
-  if (third === undefined) return unknown()
-
   const code = status >> 4
   const channel = status & 0b1111
+
+  if (midiMessage.length === 2) {
+    if (code === 0xd) {
+      return {
+        _tag: 'Channel Pressure',
+        channel,
+        velocity: second,
+      }
+    }
+  }
+
+  if (midiMessage.length !== 3) return unknown()
+
+  const third = midiMessage.at(2)
+  if (third === undefined) return unknown()
 
   if (code === 0x8) {
     if (third !== 0x40) return unknown()
@@ -169,8 +182,10 @@ function dataEntryParser(
 
     if (second === third)
       return { _tag: 'Pitch Bend Change', channel, value: second }
+
     return unknown()
   }
+
   return unknown()
 }
 
@@ -188,6 +203,13 @@ export interface NotePress
     _tag: 'Note Press'
     channel: number
     note: number
+    velocity: number
+  }> {}
+
+export interface ChannelPressure
+  extends Readonly<{
+    _tag: 'Channel Pressure'
+    channel: number
     velocity: number
   }> {}
 
