@@ -42,8 +42,11 @@ const globalDataDumpRequest = new Uint8Array([
 ]);
 
 const _MIDIDeviceConnectionEventsStringLog = pipe(
+  // The lib supports both ways of working with access. You can either work with
+  // its instance directly, or provide it through DI. All of the functions have
+  // equivalents supporting both approaches. In this case we work with it directly
   EMIDIAccess.request(),
-  //          ⬆️ Effect.Effect<
+  //          ⬆️ Effect<
   //               EMIDIAccess.EMIDIAccessInstance,
   //               | AbortError
   //               | UnderlyingSystemError
@@ -55,8 +58,12 @@ const _MIDIDeviceConnectionEventsStringLog = pipe(
     'MIDIAccessNotSupportedError',
     flow(Console.log, Effect.andThen(Effect.never))
   ),
+  // notice that function below consumed access. It can consume access
+  // regardless if it's wrapped in effect or not. It also has both
+  // data-first and data-last signatures supported. Every function in this lib
+  // conforms that rule
   EMIDIAccess.makeAllPortsStateChangesStream(),
-  //          ⬆️ Stream.Stream<
+  //          ⬆️ Stream<
   //               {
   //                 readonly _tag: "MIDIPortStateChange";
   //                 readonly cameFrom: EMIDIAccess.EMIDIAccessInstance;
@@ -65,20 +72,21 @@ const _MIDIDeviceConnectionEventsStringLog = pipe(
   //                   readonly ofDevice: MIDIPortDeviceState;
   //                   readonly ofConnection: MIDIPortConnectionState;
   //                 };
-  //                 readonly port: EMIDIOutput.EMIDIOutput | EMIDIInput.EMIDIInput;
+  //                 readonly port: EMIDIOutput | EMIDIInput;
   //               },
   //               | AbortError
   //               | UnderlyingSystemError
   //               | MIDIAccessNotAllowedError,
   //               never
   //             >
+  // This is just a helper to render a list of objects to a string in nice-ish way
   Util.mapToGlidingStringLogOfLimitedEntriesCount(50, 'latestFirst', (_) => ({
     time: _.capturedAt.toISOString(),
     id: _.port.id.slice(-10),
     device: _.newState.ofDevice.padStart(12),
     connection: _.newState.ofConnection.padStart(7),
   }))
-  // ⬆️ Stream.Stream<
+  // ⬆️ Stream<
   //      string,
   //      | AbortError
   //      | UnderlyingSystemError
@@ -88,24 +96,26 @@ const _MIDIDeviceConnectionEventsStringLog = pipe(
 );
 
 const MIDIMessageEventsStringLog = pipe(
-  // if the ID below turned out to be output's, it would cause defect (by design)
-  // because messages can only come from inputs
+  // if the ID below turned out to be output's, it would cause defect (by design),
+  // because messages can only come from inputs. Notice that instead of demanding
+  // access from arguments, this particular method expects it to be provided in
+  // requirements.
   EMIDIInput.makeMessagesStreamById(nanoPadInputId),
-  //         ⬆️ Stream.Stream<
+  //         ⬆️ Stream<
   //              {
   //                readonly _tag: "MIDIMessage";
-  //                readonly cameFrom: EMIDIInput.EMIDIInput;
+  //                readonly cameFrom: EMIDIInput;
   //                readonly capturedAt: Date;
   //                readonly midiMessage: Uint8Array<ArrayBuffer>;
   //              },
   //              PortNotFoundError,
-  //              EMIDIAccess.EMIDIAccess
+  //              EMIDIAccess
   //            >
   Parsing.withParsedDataField,
-  //      ⬆️ Stream.Stream<
+  //      ⬆️ Stream<
   //           {
   //             readonly _tag: "ParsedMIDIMessage";
-  //             readonly cameFrom: EMIDIInput.EMIDIInput;
+  //             readonly cameFrom: EMIDIInput;
   //             readonly capturedAt: Date;
   //             readonly midiMessage: | NoteRelease
   //                                   | NotePress
@@ -115,11 +125,11 @@ const MIDIMessageEventsStringLog = pipe(
   //                                   | PitchBendChange
   //           },
   //           PortNotFoundError,
-  //           EMIDIAccess.EMIDIAccess
+  //           EMIDIAccess
   //         >
+  // function below adds new member to the midiMessage union inferred from
+  // ControlChange, PitchBendChange, and TouchpadRelease
   Parsing.withTouchpadPositionUpdates,
-  //      ⬆️ adds new member to the midiMessage union inferred from
-  //         ControlChange, PitchBendChange, and TouchpadRelease
   Stream.filter(
     (a) =>
       a.midiMessage._tag === 'Touchpad Position Update' ||
@@ -127,6 +137,7 @@ const MIDIMessageEventsStringLog = pipe(
       a.midiMessage._tag === 'Note Press' ||
       a.midiMessage._tag === 'Note Release'
   ),
+  // Just for the demo, show only select list of events
   Util.mapToGlidingStringLogOfLimitedEntriesCount(
     50,
     'latestFirst',
@@ -136,10 +147,19 @@ const MIDIMessageEventsStringLog = pipe(
       ...current.midiMessage,
     })
   ),
-  // ⬆️ Stream.Stream<string, PortNotFoundError, EMIDIAccess.EMIDIAccess>
+  // ⬆️ Stream<string, PortNotFoundError, EMIDIAccess>
   Stream.catchTag('PortNotFound', (err) =>
     Stream.fromEffect(
       EMIDIPort.FullRecord.pipe(
+        //      ⬆️ Effect<
+        //           {
+        //             [id: EMIDIPort.Id<'input'>]: EMIDIPort<'input'>
+        //           } & {
+        //             [id: EMIDIPort.Id<'output'>]: EMIDIPort<'output'>
+        //           },
+        //           never,
+        //           EMIDIAccess.EMIDIAccess
+        //         >
         Effect.map(
           Record.reduce(
             `Port with id=${err.portId} is not found. Currently available ports: \n`,
@@ -154,7 +174,7 @@ const MIDIMessageEventsStringLog = pipe(
       )
     )
   ),
-  // ⬆️ Stream.Stream<string, never, EMIDIAccess.EMIDIAccess>
+  // ⬆️ Stream.Stream<string, never, EMIDIAccess>
   Stream.provideLayer(EMIDIAccess.layerSystemExclusiveSupported),
   // ⬆️ Stream.Stream<
   //   string,
@@ -167,16 +187,11 @@ const MIDIMessageEventsStringLog = pipe(
   Stream.catchTag('MIDIAccessNotSupportedError', (e) =>
     Stream.succeed(e.cause.message)
   )
-  // ⬆️ Stream.Stream<
-  //   string,
-  //   | AbortError
-  //   | UnderlyingSystemError
-  //   | MIDIAccessNotAllowedError,
-  //   never
-  // >
 );
 
 const dumpRequester = Atom.fn(() =>
+  // A particular example of methods flexibility. Here EMIDIAccess.send is a
+  // data-first signature and accepts EMIDIAccess wrapped by Effect
   EMIDIAccess.send(
     EMIDIAccess.request({ sysex: true }),
     //          ⬆️ Effect.Effect<
