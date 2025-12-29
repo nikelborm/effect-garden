@@ -184,7 +184,7 @@ export type PolymorphicPort<
  */
 export type PolymorphicPortClean<
   TMIDIPortType extends MIDIPortType = MIDIPortType,
-> = Util.PolymorphicEffect<EMIDIPort<TMIDIPortType>, never, never>
+> = PolymorphicPort<never, never, TMIDIPortType>
 
 export type ExtractTypeFromPort<TPort extends EMIDIPort> =
   TPort extends EMIDIPort<infer TPortType> ? TPortType : never

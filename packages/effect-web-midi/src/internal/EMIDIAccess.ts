@@ -18,13 +18,13 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
+import * as EMIDIErrors from './EMIDIErrors.ts'
 import * as EMIDIInput from './EMIDIInput.ts'
 import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
-import * as Errors from './EMIDIErrors.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
-import { isOutputConnectionOpenByPort } from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
-import { getOutputDeviceStateByPort } from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
+import * as Check from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
+import * as GetProperty from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 import * as StreamMaker from './StreamMaker.ts'
 import * as Util from './Util.ts'
 
@@ -113,7 +113,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode Errors.MIDIAccessNotAllowedError} error.
+   * {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested (and allowed), the system will throw
    * exceptions if the user tries to send `System Exclusive` messages, and will
@@ -131,7 +131,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode Errors.MIDIAccessNotAllowedError} error.
+   * {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
    * {@linkcode getInputsRecord}, {@linkcode OutputsRecord}, etc. would
@@ -510,7 +510,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
         return yield* EFunction.pipe(
           Record.values(outputs),
           // TODO: maybe also do something about pending?
-          Effect.filter(isOutputConnectionOpenByPort),
+          Effect.filter(Check.isOutputConnectionOpenByPort),
           Effect.flatMap(
             Effect.forEach(EMIDIOutput.send(midiMessage, timestamp)),
           ),
@@ -527,7 +527,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
           Record.get(outputs, id),
           Option.match({
             onNone: () => Effect.succeed('disconnected' as const),
-            onSome: EFunction.flow(getOutputDeviceStateByPort),
+            onSome: EFunction.flow(GetProperty.getOutputDeviceStateByPort),
           }),
           effect => Unify.unify(effect),
           Effect.map(state => ({ id, state })),
@@ -540,7 +540,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
       )
 
       if (Option.isSome(disconnectedDevice))
-        return yield* new Errors.DisconnectedPortError({
+        return yield* new EMIDIErrors.DisconnectedPortError({
           portId: disconnectedDevice.value.id,
           cause: new DOMException(
             // TODO: make an experiment and paste the error text here
@@ -648,22 +648,22 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
 
   const rawAccess = yield* Effect.tryPromise({
     try: () => navigator.requestMIDIAccess(options),
-    catch: Errors.remapErrorByName(
+    catch: EMIDIErrors.remapErrorByName(
       {
-        AbortError: Errors.AbortError,
+        AbortError: EMIDIErrors.AbortError,
 
-        InvalidStateError: Errors.UnderlyingSystemError,
+        InvalidStateError: EMIDIErrors.UnderlyingSystemError,
 
-        NotAllowedError: Errors.MIDIAccessNotAllowedError,
+        NotAllowedError: EMIDIErrors.MIDIAccessNotAllowedError,
         // SecurityError is kept for compatibility reason
         // (https://github.com/WebAudio/web-midi-api/pull/267):
-        SecurityError: Errors.MIDIAccessNotAllowedError,
+        SecurityError: EMIDIErrors.MIDIAccessNotAllowedError,
 
-        NotSupportedError: Errors.MIDIAccessNotSupportedError,
+        NotSupportedError: EMIDIErrors.MIDIAccessNotSupportedError,
         // For case when navigator doesn't exist
-        ReferenceError: Errors.MIDIAccessNotSupportedError,
+        ReferenceError: EMIDIErrors.MIDIAccessNotSupportedError,
         // For case when navigator.requestMIDIAccess is undefined
-        TypeError: Errors.MIDIAccessNotSupportedError,
+        TypeError: EMIDIErrors.MIDIAccessNotSupportedError,
       },
       'EMIDIAccess.request error handling absurd',
       { whileAskingForPermissions: options ?? {} },
@@ -686,10 +686,10 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
  *
  * **Errors:**
  *
- * - {@linkcode Errors.AbortError} Argument x must be non-zero
- * - {@linkcode Errors.UnderlyingSystemError} Argument x must be non-zero
- * - {@linkcode Errors.MIDIAccessNotSupportedError} Argument x must be non-zero
- * - {@linkcode Errors.MIDIAccessNotAllowedError} Argument x must be non-zero
+ * - {@linkcode EMIDIErrors.AbortError} Argument x must be non-zero
+ * - {@linkcode EMIDIErrors.UnderlyingSystemError} Argument x must be non-zero
+ * - {@linkcode EMIDIErrors.MIDIAccessNotSupportedError} Argument x must be non-zero
+ * - {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} Argument x must be non-zero
  *
  * @param config
  * @returns

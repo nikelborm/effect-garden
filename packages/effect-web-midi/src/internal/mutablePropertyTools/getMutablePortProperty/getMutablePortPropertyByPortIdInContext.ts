@@ -1,4 +1,6 @@
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
+import type * as EMIDIInput from '../../EMIDIInput.ts'
+import type * as EMIDIOutput from '../../EMIDIOutput.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
 import * as Get from './getMutablePortPropertyByPortIdAndAccess.ts'
 
@@ -16,22 +18,30 @@ export const getPortDeviceStateByPortId = (id: EMIDIPort.BothId) =>
 export const getPortConnectionStateByPortId = (id: EMIDIPort.BothId) =>
   Get.getPortConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
-// TODO: getInputConnectionStateByPortId
-export const getInputConnectionStateByPortId = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ *
+ */
+export const getInputDeviceStateByPortId = (id: EMIDIInput.Id) =>
+  Get.getInputDeviceStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
-// TODO: getInputDeviceStateByPortId
-export const getInputDeviceStateByPortId = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ *
+ */
+export const getInputConnectionStateByPortId = (id: EMIDIInput.Id) =>
+  Get.getInputConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
-// TODO: getOutputConnectionStateByPortId
-export const getOutputConnectionStateByPortId = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ *
+ */
+export const getOutputDeviceStateByPortId = (id: EMIDIOutput.Id) =>
+  Get.getOutputDeviceStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)
 
-// TODO: getOutputDeviceStateByPortId
-export const getOutputDeviceStateByPortId = () => {
-  throw new Error('Not implemented 😿  YET!! 🤩')
-}
+/**
+ *
+ *
+ */
+export const getOutputConnectionStateByPortId = (id: EMIDIOutput.Id) =>
+  Get.getOutputConnectionStateByPortIdAndAccess(EMIDIAccess.EMIDIAccess, id)

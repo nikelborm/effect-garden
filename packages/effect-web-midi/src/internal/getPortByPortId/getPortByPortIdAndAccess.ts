@@ -4,10 +4,10 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
+import * as EMIDIErrors from '../EMIDIErrors.ts'
 import * as EMIDIInput from '../EMIDIInput.ts'
 import * as EMIDIOutput from '../EMIDIOutput.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
-import * as Errors from '../EMIDIErrors.ts'
 
 /**
  *
@@ -32,7 +32,7 @@ const getPortByIdAndRemap = <
   AInputType | AOutputType,
   never,
   never,
-  Errors.PortNotFoundError | EInput | EOutput,
+  EMIDIErrors.PortNotFoundError | EInput | EOutput,
   RInput | ROutput
 > =>
   EFunction.dual(2, (polymorphicAccess, portId) =>
@@ -48,7 +48,7 @@ const getPortByIdAndRemap = <
 
       if (rawPort) return handlers.onOutputFound(rawPort)
 
-      return new Errors.PortNotFoundError({
+      return new EMIDIErrors.PortNotFoundError({
         portId,
       }) as EMIDIAccess.AcquiredThing<
         EMIDIPort.EMIDIPort<AInputType | AOutputType>,
@@ -56,7 +56,7 @@ const getPortByIdAndRemap = <
         never,
         never,
         never,
-        Errors.PortNotFoundError | EInput | EOutput,
+        EMIDIErrors.PortNotFoundError | EInput | EOutput,
         RInput | ROutput
       >
     }),
@@ -111,6 +111,6 @@ export interface GetPortById<
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
-    TAdditionalError | Errors.PortNotFoundError,
+    TAdditionalError | EMIDIErrors.PortNotFoundError,
     TAdditionalRequirement
   > {}

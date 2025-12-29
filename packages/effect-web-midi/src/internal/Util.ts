@@ -5,7 +5,7 @@ import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
-import type * as Errors from './EMIDIErrors.ts'
+import type * as EMIDIErrors from './EMIDIErrors.ts'
 
 export const midiPortStaticFields = [
   'id',
@@ -29,9 +29,9 @@ export interface SentMessageEffectFrom<Self, E = never, R = never>
   extends Effect.Effect<
     Self,
     | E
-    | Errors.CantSendSysexMessagesError
-    | Errors.MalformedMidiMessageError
-    | Errors.DisconnectedPortError,
+    | EMIDIErrors.CantSendSysexMessagesError
+    | EMIDIErrors.MalformedMidiMessageError
+    | EMIDIErrors.DisconnectedPortError,
     R
   > {}
 

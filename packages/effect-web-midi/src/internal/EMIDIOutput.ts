@@ -4,8 +4,8 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+import * as EMIDIErrors from './EMIDIErrors.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
-import * as Errors from './EMIDIErrors.ts'
 import * as Util from './Util.ts'
 
 /**
@@ -109,15 +109,15 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
 
       yield* Effect.try({
         try: () => assumeImpl(output)._port.send(midiMessage, timestamp),
-        catch: Errors.remapErrorByName(
+        catch: EMIDIErrors.remapErrorByName(
           {
-            NotAllowedError: Errors.CantSendSysexMessagesError,
+            NotAllowedError: EMIDIErrors.CantSendSysexMessagesError,
             // InvalidAccessError is kept for compatibility reason
             // (https://github.com/WebAudio/web-midi-api/pull/278):
-            InvalidAccessError: Errors.CantSendSysexMessagesError,
+            InvalidAccessError: EMIDIErrors.CantSendSysexMessagesError,
 
-            InvalidStateError: Errors.DisconnectedPortError,
-            TypeError: Errors.MalformedMidiMessageError,
+            InvalidStateError: EMIDIErrors.DisconnectedPortError,
+            TypeError: EMIDIErrors.MalformedMidiMessageError,
           },
           'EMIDIOutput.send error handling absurd',
           { portId: output.id, midiMessage: [...midiMessage] },
@@ -156,12 +156,12 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
     // supported in at least 2 major browsers, hence doesn't meet the condition
     // to be included into TS's DOM types
     try: () => assumeImpl(output)._port.clear(),
-    catch: Errors.remapErrorByName(
+    catch: EMIDIErrors.remapErrorByName(
       {
         // TODO: test this
         // most likely it would be something like `TypeError: Undefined is not a function`
-        TypeError: Errors.ClearingSendingQueueIsNotSupportedError,
-        NotSupportedError: Errors.ClearingSendingQueueIsNotSupportedError,
+        TypeError: EMIDIErrors.ClearingSendingQueueIsNotSupportedError,
+        NotSupportedError: EMIDIErrors.ClearingSendingQueueIsNotSupportedError,
       },
       'EMIDIOutput.clear error handling absurd',
       { portId: output.id },

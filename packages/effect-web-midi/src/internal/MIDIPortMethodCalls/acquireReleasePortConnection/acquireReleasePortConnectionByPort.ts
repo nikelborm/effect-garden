@@ -1,12 +1,12 @@
 import * as Effect from 'effect/Effect'
 import type * as Scope from 'effect/Scope'
+import type * as EMIDIErrors from '../../EMIDIErrors.ts'
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
-import type { UnavailablePortError } from '../../EMIDIErrors.ts'
-import * as C from '../closePortConnection/closePortConnectionByPort.ts'
+import * as Close from '../closePortConnection/closePortConnectionByPort.ts'
 import type { TouchPort } from '../makeMIDIPortMethodCallerFactory.ts'
-import * as O from '../openPortConnection/openPortConnectionByPort.ts'
+import * as Open from '../openPortConnection/openPortConnectionByPort.ts'
 
 /**
  * @internal
@@ -14,14 +14,18 @@ import * as O from '../openPortConnection/openPortConnectionByPort.ts'
 const makeConnectionAcquirerReleaser =
   <THighLevelPortType extends MIDIPortType>(
     is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
-  ): TouchPort<UnavailablePortError, Scope.Scope, THighLevelPortType> =>
+  ): TouchPort<
+    EMIDIErrors.UnavailablePortError,
+    Scope.Scope,
+    THighLevelPortType
+  > =>
   /**
    * @returns An effect with the same port for easier chaining of operations
    */
   port =>
     Effect.acquireRelease(
-      O.makePortConnectionOpener(is)(port),
-      C.makePortConnectionCloser(is),
+      Open.makePortConnectionOpener(is)(port),
+      Close.makePortConnectionCloser(is),
     )
 
 /**

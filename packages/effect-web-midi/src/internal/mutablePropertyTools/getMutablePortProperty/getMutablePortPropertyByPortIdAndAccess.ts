@@ -4,11 +4,13 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
+import * as EMIDIErrors from '../../EMIDIErrors.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import * as Errors from '../../EMIDIErrors.ts'
-import type * as Util from '../../Util.ts'
 import * as Get from './getMutablePortPropertyByPort.ts'
 
+/**
+ * @internal
+ */
 const getPortByIdGeneric2 =
   // biome-ignore lint/suspicious/noExplicitAny: I don't care
     <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(
@@ -17,15 +19,11 @@ const getPortByIdGeneric2 =
       ) => Effect.Effect<T, E, R>,
     ) =>
     <A, E2, R2, TE = never, TR = never>(
-      polymorphicAccess: Util.PolymorphicEffect<
-        EMIDIAccess.EMIDIAccessInstance,
-        TE,
-        TR
-      >,
+      polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<TE, TR>,
       transformPortEffect: (
         effect: Effect.Effect<
           T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
-          TE | Errors.PortNotFoundError,
+          TE | EMIDIErrors.PortNotFoundError,
           TR
         >,
       ) => Effect.Effect<A, E2, R2>,
@@ -37,7 +35,7 @@ const getPortByIdGeneric2 =
           EFunction.flow(
             Record.get(portId),
             Option.match({
-              onNone: () => new Errors.PortNotFoundError({ portId }),
+              onNone: () => new EMIDIErrors.PortNotFoundError({ portId }),
               onSome: e => Effect.succeed(e),
             }),
           ),
@@ -53,11 +51,7 @@ const getPortByIdGeneric2 =
  *
  */
 export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
-  polymorphicAccess: Util.PolymorphicEffect<
-    EMIDIAccess.EMIDIAccessInstance,
-    TE,
-    TR
-  >,
+  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<TE, TR>,
   id: EMIDIPort.BothId,
 ) =>
   getPortByIdGeneric2(EMIDIAccess.getAllPortsRecord)(
@@ -76,11 +70,7 @@ export const getPortDeviceStateByPortIdAndAccess = <TE = never, TR = never>(
  *
  */
 export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
-  polymorphicAccess: Util.PolymorphicEffect<
-    EMIDIAccess.EMIDIAccessInstance,
-    TE,
-    TR
-  >,
+  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<TE, TR>,
   id: EMIDIPort.BothId,
 ) =>
   getPortByIdGeneric2(EMIDIAccess.getAllPortsRecord)(
@@ -90,21 +80,25 @@ export const getPortConnectionStateByPortIdAndAccess = <TE = never, TR = never>(
   )
 
 // TODO: getInputConnectionStateByPortIdAndAccess
-export const getInputConnectionStateByPortIdAndAccess = () => {
+export const getInputConnectionStateByPortIdAndAccess = (
+  ..._args: unknown[]
+) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getInputDeviceStateByPortIdAndAccess
-export const getInputDeviceStateByPortIdAndAccess = () => {
+export const getInputDeviceStateByPortIdAndAccess = (..._args: unknown[]) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputConnectionStateByPortIdAndAccess
-export const getOutputConnectionStateByPortIdAndAccess = () => {
+export const getOutputConnectionStateByPortIdAndAccess = (
+  ..._args: unknown[]
+) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputDeviceStateByPortIdAndAccess
-export const getOutputDeviceStateByPortIdAndAccess = () => {
+export const getOutputDeviceStateByPortIdAndAccess = (..._args: unknown[]) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }

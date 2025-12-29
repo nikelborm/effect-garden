@@ -1,7 +1,7 @@
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
-import { remapErrorByName, UnavailablePortError } from '../../EMIDIErrors.ts'
+import * as EMIDIErrors from '../../EMIDIErrors.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**
@@ -12,14 +12,14 @@ import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFact
 export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
   'open',
   portId =>
-    remapErrorByName(
+    EMIDIErrors.remapErrorByName(
       {
-        NotAllowedError: UnavailablePortError,
+        NotAllowedError: EMIDIErrors.UnavailablePortError,
         // InvalidAccessError is kept for compatibility reason
         // (https://github.com/WebAudio/web-midi-api/pull/278):
-        InvalidAccessError: UnavailablePortError,
+        InvalidAccessError: EMIDIErrors.UnavailablePortError,
 
-        InvalidStateError: UnavailablePortError,
+        InvalidStateError: EMIDIErrors.UnavailablePortError,
       },
       'MIDI port open error handling absurd',
       { portId },
