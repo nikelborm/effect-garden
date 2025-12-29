@@ -133,12 +133,12 @@ export {
   // openPortConnectionByPort,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPort.ts'
 export {
-  openInputConnectionByPortIdAndAccess as openConnectionById,
+  openInputConnectionByPortIdAndAccess as openConnectionByIdAndAccess,
   // openOutputConnectionByPortIdAndAccess,
   // openPortConnectionByPortIdAndAccess,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPortIdAndAccess.ts'
 export {
-  openInputConnectionByPortIdInContext as openConnectionByIdAndAccess,
+  openInputConnectionByPortIdInContext as openConnectionById,
   // openOutputConnectionByPortIdInContext,
   // openPortConnectionByPortIdInContext,
 } from './internal/MIDIPortMethodCalls/openPortConnection/openPortConnectionByPortIdInContext.ts'
