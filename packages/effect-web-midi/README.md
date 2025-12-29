@@ -249,3 +249,7 @@ const Wrapper = styled.div`
   color: wheat;
 `;
 ```
+
+<img width="1567" height="946" alt="Screenshot From 2025-12-29 01-46-34" src="https://github.com/user-attachments/assets/7411d393-0ef4-485a-954d-0d8d4e56a42e" />
+
+![photo_2025-11-17_22-00-08](https://github.com/user-attachments/assets/e45ead32-6675-4fed-aff3-aeb416ba8ead)
