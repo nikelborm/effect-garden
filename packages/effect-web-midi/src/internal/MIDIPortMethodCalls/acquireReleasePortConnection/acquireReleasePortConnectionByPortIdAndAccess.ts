@@ -2,38 +2,30 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import {
-  getInputByPortIdAndAccess,
-  getOutputByPortIdAndAccess,
-  getPortByPortIdAndAccess,
-} from '../../getPortByPortId/getPortByPortIdAndAccess.ts'
+import * as Get from '../../getPortByPortId/getPortByPortIdAndAccess.ts'
 import { actOnPort } from '../actOnPort.ts'
-import {
-  acquireReleaseInputConnectionByPort,
-  acquireReleaseOutputConnectionByPort,
-  acquireReleasePortConnectionByPort,
-} from './acquireReleasePortConnectionByPort.ts'
+import * as AR from './acquireReleasePortConnectionByPort.ts'
 
 /**
  *
  */
 export const acquireReleasePortConnectionByPortIdAndAccess = actOnPort(
-  getPortByPortIdAndAccess,
-  acquireReleasePortConnectionByPort,
+  Get.getPortByPortIdAndAccess,
+  AR.acquireReleasePortConnectionByPort,
 )
 
 /**
  *
  */
 export const acquireReleaseInputConnectionByPortIdAndAccess = actOnPort(
-  getInputByPortIdAndAccess,
-  acquireReleaseInputConnectionByPort,
+  Get.getInputByPortIdAndAccess,
+  AR.acquireReleaseInputConnectionByPort,
 )
 
 /**
  *
  */
 export const acquireReleaseOutputConnectionByPortIdAndAccess = actOnPort(
-  getOutputByPortIdAndAccess,
-  acquireReleaseOutputConnectionByPort,
+  Get.getOutputByPortIdAndAccess,
+  AR.acquireReleaseOutputConnectionByPort,
 )

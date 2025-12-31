@@ -2,7 +2,7 @@
   "name": "@nikelborm/effect-garden",
   "version": "1.0.0",
   "dependencies": {
-    "@biomejs/biome": "^2.3.8",
+    "@biomejs/biome": "catalog:",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
@@ -18,7 +18,7 @@
     "@nikelborm/effect-landscape": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",
-    "turbo": "^2.6.3"
+    "turbo": "catalog:"
   },
   "catalog": {
     "@effect/cli": "^0.73.0",
@@ -63,7 +63,21 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "rollup": "^4.53.3",
-    "rollup-plugin-visualizer": "^6.0.5"
+    "rollup-plugin-visualizer": "^6.0.5",
+    "@effect-atom/atom-react": "^0.4.4",
+    "@linaria/core": "^6.3.0",
+    "@linaria/react": "^6.3.0",
+    "@wyw-in-js/babel-preset": "^0.8.1",
+    "turbo": "^2.6.3",
+    "next": "16.1.1",
+    "next-with-linaria": "^1.3.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "@biomejs/biome": "2.3.10",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0"
   },
   "packageManager": "bun@1.3.0",
   "patchedDependencies": {

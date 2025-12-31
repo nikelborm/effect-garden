@@ -22,7 +22,7 @@ export const actOnPort = <
   TPortActingError = never,
   TPortActingRequirement = never,
 >(
-  portGetterFromAccessAndPortId: Get.GetPortById<
+  getPortFromAccessAndPortId: Get.GetPortById<
     TPortTypeReturnedFromAccess,
     TTypeOfPortId,
     never,
@@ -49,7 +49,7 @@ export const actOnPort = <
       Effect.gen(function* () {
         const access = yield* EMIDIAccess.resolve(polymorphicAccess)
 
-        const port = yield* portGetterFromAccessAndPortId(
+        const port = yield* getPortFromAccessAndPortId(
           access,
           portId as unknown as EMIDIPort.Id<TTypeOfPortId>,
         )

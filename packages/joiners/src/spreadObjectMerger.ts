@@ -6,6 +6,7 @@
 // Maybe move some of my tests there
 
 // TODO: compare with https://github.com/poteat/scopey since it uses merging by overriding fields
+// https://github.com/voodoocreation/ts-deepmerge
 
 // import type { Merge as MagicGeneric } from 'type-fest';
 import type { At as GetNthCharacter } from 'ts-toolbelt/out/String/At.d.ts'

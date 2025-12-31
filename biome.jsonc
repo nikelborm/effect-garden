@@ -1,7 +1,20 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
   "files": {
-    "includes": ["**", "!**/dist", "!**/dist-types"]
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!node_modules",
+      "!.next",
+      "!**/dist",
+      "!**/dist-types",
+      "!build"
+    ]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
   },
   "formatter": {
     "indentStyle": "space",
@@ -20,7 +33,24 @@
       "quoteStyle": "single"
     }
   },
-  "linter": { "rules": { "style": { "useTemplate": "off" } } }
+  "linter": {
+    "rules": {
+      "style": {
+        "useTemplate": "off"
+      }
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
   // implement the same kind of import sorting as in here:
   // https://github.com/jpb06/effect-errors/blob/0fb8790c5e0a9a7b13536abb413210a734f6313c/biome.json#L231
 }

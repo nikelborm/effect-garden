@@ -1,51 +1,70 @@
-import type * as EMIDIInput from '../../EMIDIInput.ts'
-import type * as EMIDIOutput from '../../EMIDIOutput.ts'
+/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
+ * preserve JSDoc comments attached to the function signature */
+
 import type * as EMIDIPort from '../../EMIDIPort.ts'
-import * as Get from '../getPortByPortId/getPortByPortIdInContext.ts'
+import * as EMIDIAccess from '../EMIDIAccess.ts'
+import type * as EMIDIErrors from '../EMIDIErrors.ts'
 import type * as StreamMaker from '../StreamMaker.ts'
-import * as Make from './makePortStateChangesStreamByPort.ts'
+import * as Make from './makePortStateChangesStreamByPortIdAndAccess.ts'
+
+const wrap =
+  <
+    TTypeOfPortId extends MIDIPortType,
+    TPortGettingError,
+    TPortGettingRequirement,
+  >(
+    makeStream: Make.MakePortStateChangesStreamByIdAndAccess<
+      TTypeOfPortId,
+      TPortGettingError,
+      TPortGettingRequirement
+    >,
+  ): MakePortStateChangesStreamByPortIdInContext<
+    TTypeOfPortId,
+    TPortGettingError,
+    TPortGettingRequirement
+  > =>
+  (id, options) =>
+    makeStream(EMIDIAccess.EMIDIAccess, id, options)
 
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makePortStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
->(
-  id: EMIDIPort.BothId,
-  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
-) =>
-  Make.makePortStateChangesStreamByPort(
-    Get.getPortByPortIdInContext(id),
-    options,
-  )
+export const makePortStateChangesStreamByPortIdInContext = wrap(
+  Make.makePortStateChangesStreamByPortIdAndAccess,
+)
 
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeInputStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
->(
-  id: EMIDIInput.Id,
-  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
-) =>
-  Make.makeInputStateChangesStreamByPort(
-    Get.getInputByPortIdInContext(id),
-    options,
-  )
+export const makeInputStateChangesStreamByPortIdInContext = wrap(
+  Make.makeInputStateChangesStreamByPortIdAndAccess,
+)
 
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeOutputStateChangesStreamByPortIdInContext = <
-  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
->(
-  id: EMIDIOutput.Id,
-  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
-) =>
-  Make.makeOutputStateChangesStreamByPort(
-    Get.getOutputByPortIdInContext(id),
-    options,
-  )
+export const makeOutputStateChangesStreamByPortIdInContext = wrap(
+  Make.makeOutputStateChangesStreamByPortIdAndAccess,
+)
+
+interface MakePortStateChangesStreamByPortIdInContext<
+  TTypeOfPortId extends MIDIPortType,
+  TPortGettingError,
+  TPortGettingRequirement,
+> {
+  /**
+   *
+   */
+  <const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined>(
+    id: EMIDIPort.Id<TTypeOfPortId>,
+    options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
+  ): EMIDIPort.StateChangesStream<
+    TOnNullStrategy,
+    TTypeOfPortId,
+    TPortGettingError | EMIDIErrors.PortNotFoundError,
+    TPortGettingRequirement | EMIDIAccess.EMIDIAccess
+  >
+}

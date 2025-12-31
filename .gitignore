@@ -3,6 +3,8 @@ _
 .stryker-tmp
 .turbo
 .vscode/settings.json
+.next
+next-env.d.ts
 apache-superset-quick-init*.tgz
 backend_secrets.py
 backend-nestjs

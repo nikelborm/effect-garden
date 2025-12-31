@@ -18,15 +18,9 @@ export const makeMIDIPortMethodCallerFactory =
   ): TouchPort<TError, never, THighLevelPortType> =>
     Effect.fn(`EMIDIPort.${method}`)(function* <
       TPortType extends THighLevelPortType,
-      TPortGettingError = never,
-      TPortGettingRequirement = never,
-    >(
-      polymorphicPort: EMIDIPort.PolymorphicPort<
-        TPortGettingError,
-        TPortGettingRequirement,
-        TPortType
-      >,
-    ) {
+      E = never,
+      R = never,
+    >(polymorphicPort: EMIDIPort.PolymorphicPort<E, R, TPortType>) {
       const port = yield* Util.fromPolymorphic(
         polymorphicPort,
         is as unknown as (

@@ -11,7 +11,7 @@ import * as Util from '../Util.ts'
  *
  * @internal
  */
-const makePortStateChangesStreamFactory = <
+export const makePortStateChangesStreamFactory = <
   THighLevelPortType extends MIDIPortType,
 >(
   is: (port: unknown) => port is EMIDIPort.EMIDIPort<THighLevelPortType>,
@@ -40,7 +40,7 @@ const makePortStateChangesStreamFactory = <
           : null,
       }) as const,
     // TODO: check this type is actually needed
-  ) as DualMakeStateChangesStream<THighLevelPortType>
+  ) as DualMakeStateChangesStreamByPort<THighLevelPortType>
 
 /**
  * Function to create a stream of remapped {@linkcode MIDIConnectionEvent}s
@@ -71,16 +71,16 @@ export const makeOutputStateChangesStreamByPort =
 
 /**
  * A custom type is needed because the port type will be generic, but this is
- * not possible if using just {@linkcode createStreamMakerFrom}
+ * not possible if using just {@linkcode StreamMaker.createStreamMakerFrom}
  */
-export interface DualMakeStateChangesStream<
+export interface DualMakeStateChangesStreamByPort<
   THighLevelPortType extends MIDIPortType = MIDIPortType,
 > extends MakeStateChangesStreamPortFirst<THighLevelPortType>,
     MakeStateChangesStreamPortLast<THighLevelPortType> {}
 
 /**
  * A custom type is needed because the port type will be generic, but this is
- * not possible if using just {@linkcode createStreamMakerFrom}
+ * not possible if using just {@linkcode StreamMaker.createStreamMakerFrom}
  */
 export interface MakeStateChangesStreamPortFirst<
   THighLevelPortType extends MIDIPortType = MIDIPortType,
@@ -102,7 +102,7 @@ export interface MakeStateChangesStreamPortFirst<
 
 /**
  * A custom type is needed because the port type will be generic, but this is
- * not possible if using just {@linkcode createStreamMakerFrom}
+ * not possible if using just {@linkcode StreamMaker.createStreamMakerFrom}
  */
 export interface MakeStateChangesStreamPortLast<
   THighLevelPortType extends MIDIPortType = MIDIPortType,
@@ -126,7 +126,7 @@ export interface MakeStateChangesStreamPortLast<
 
 /**
  * A custom type is needed because the port type will be generic, but this is
- * not possible if using just {@linkcode createStreamMakerFrom}
+ * not possible if using just {@linkcode StreamMaker.createStreamMakerFrom}
  */
 export interface StateChangesStream<
   TOnNullStrategy extends StreamMaker.OnNullStrategy,
