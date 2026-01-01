@@ -211,3 +211,6 @@ export default function Home() {
 const Wrapper = styled.div`
   color: wheat;
 `
+const Button = styled.button`
+
+`
