@@ -260,6 +260,7 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [ast-grep](https://github.com/ast-grep/ast-grep)
 - [facebook/jscodeshift](https://github.com/facebook/jscodeshift)
 - https://code.lol/post/programming/towards-declarative-ast-transformation/
+- [JoshuaKGoldberg/ts-api-utils](https://github.com/JoshuaKGoldberg/ts-api-utils)
 
 https://github.com/unjs/magicast
 

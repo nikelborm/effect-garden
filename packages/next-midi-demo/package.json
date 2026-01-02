@@ -10,6 +10,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@effect-atom/atom": "^0.4.11",
     "@effect-atom/atom-react": "catalog:",
     "@linaria/core": "catalog:",
     "@linaria/react": "catalog:",
