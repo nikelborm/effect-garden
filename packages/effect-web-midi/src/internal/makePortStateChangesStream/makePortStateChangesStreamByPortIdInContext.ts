@@ -3,7 +3,7 @@
 
 import type * as EMIDIPort from '../../EMIDIPort.ts'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
-import type * as EMIDIErrors from '../EMIDIErrors.ts'
+import type * as MIDIErrors from '../MIDIErrors.ts'
 import type * as StreamMaker from '../StreamMaker.ts'
 import * as Make from './makePortStateChangesStreamByPortIdAndAccess.ts'
 
@@ -64,7 +64,7 @@ interface MakePortStateChangesStreamByPortIdInContext<
   ): EMIDIPort.StateChangesStream<
     TOnNullStrategy,
     TTypeOfPortId,
-    TPortGettingError | EMIDIErrors.PortNotFoundError,
+    TPortGettingError | MIDIErrors.PortNotFoundError,
     TPortGettingRequirement | EMIDIAccess.EMIDIAccess
   >
 }

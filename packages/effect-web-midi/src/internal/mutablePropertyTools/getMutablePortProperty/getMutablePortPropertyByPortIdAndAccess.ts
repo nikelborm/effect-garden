@@ -4,10 +4,10 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 import * as EMIDIAccess from '../../EMIDIAccess.ts'
-import * as EMIDIErrors from '../../EMIDIErrors.ts'
 import type * as EMIDIInput from '../../EMIDIInput.ts'
 import type * as EMIDIOutput from '../../EMIDIOutput.ts'
 import type * as EMIDIPort from '../../EMIDIPort.ts'
+import * as MIDIErrors from '../../MIDIErrors.ts'
 import * as Get from './getMutablePortPropertyByPort.ts'
 
 /**
@@ -25,7 +25,7 @@ const getPortByIdGeneric2 =
       transformPortEffect: (
         effect: Effect.Effect<
           T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
-          E | EMIDIErrors.PortNotFoundError,
+          E | MIDIErrors.PortNotFoundError,
           R
         >,
       ) => Effect.Effect<A, E2, R2>,
@@ -37,7 +37,7 @@ const getPortByIdGeneric2 =
           EFunction.flow(
             Record.get(portId),
             Option.match({
-              onNone: () => new EMIDIErrors.PortNotFoundError({ portId }),
+              onNone: () => new MIDIErrors.PortNotFoundError({ portId }),
               onSome: e => Effect.succeed(e),
             }),
           ),

@@ -5,7 +5,7 @@ import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 export const [
   midiInputThroughPort0,
   launchpadInputDAW,
-  launchpadInputMidi,
+  launchpadInputMIDI,
   nanoPadInputId,
 ] = Tuple.map(
   [
@@ -20,7 +20,7 @@ export const [
 export const [
   midiOutputThroughPort0,
   launchpadOutputDAW,
-  launchpadOutputMidi,
+  launchpadOutputMIDI,
   nanoPadOutputId,
 ] = Tuple.map(
   [

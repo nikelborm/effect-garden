@@ -4,8 +4,8 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
-import * as EMIDIErrors from './EMIDIErrors.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
+import * as MIDIErrors from './MIDIErrors.ts'
 import * as Util from './Util.ts'
 
 /**
@@ -109,15 +109,15 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
 
       yield* Effect.try({
         try: () => assumeImpl(output)._port.send(midiMessage, timestamp),
-        catch: EMIDIErrors.remapErrorByName(
+        catch: MIDIErrors.remapErrorByName(
           {
-            NotAllowedError: EMIDIErrors.CantSendSysexMessagesError,
+            NotAllowedError: MIDIErrors.CannotSendSysexMessageError,
             // InvalidAccessError is kept for compatibility reason
             // (https://github.com/WebAudio/web-midi-api/pull/278):
-            InvalidAccessError: EMIDIErrors.CantSendSysexMessagesError,
+            InvalidAccessError: MIDIErrors.CannotSendSysexMessageError,
 
-            InvalidStateError: EMIDIErrors.DisconnectedPortError,
-            TypeError: EMIDIErrors.MalformedMidiMessageError,
+            InvalidStateError: MIDIErrors.CannotSendToDisconnectedPortError,
+            TypeError: MIDIErrors.MalformedMIDIMessageError,
           },
           'EMIDIOutput.send error handling absurd',
           { portId: output.id, midiMessage: [...midiMessage] },
@@ -156,12 +156,12 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
     // supported in at least 2 major browsers, hence doesn't meet the condition
     // to be included into TS's DOM types
     try: () => assumeImpl(output)._port.clear(),
-    catch: EMIDIErrors.remapErrorByName(
+    catch: MIDIErrors.remapErrorByName(
       {
         // TODO: test this
         // most likely it would be something like `TypeError: Undefined is not a function`
-        TypeError: EMIDIErrors.ClearingSendingQueueIsNotSupportedError,
-        NotSupportedError: EMIDIErrors.ClearingSendingQueueIsNotSupportedError,
+        TypeError: MIDIErrors.ClearingSendingQueueIsNotSupportedError,
+        NotSupportedError: MIDIErrors.ClearingSendingQueueIsNotSupportedError,
       },
       'EMIDIOutput.clear error handling absurd',
       { portId: output.id },

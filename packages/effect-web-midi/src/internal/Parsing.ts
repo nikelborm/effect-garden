@@ -20,7 +20,7 @@ export const withParsedDataField = <A extends MIDIMessage, E, R>(
   Stream.map(self, ({ midiMessage, ...obj }) => ({
     ...obj,
     _tag: 'ParsedMIDIMessage',
-    midiMessage: parseMidiMessagePayload(midiMessage),
+    midiMessage: parseMIDIMessagePayload(midiMessage),
   }))
 
 /**
@@ -102,7 +102,7 @@ export interface ParsedMIDIMessage<
   readonly midiMessage: Payload
 }
 
-function parseMidiMessagePayload(
+function parseMIDIMessagePayload(
   rawPayload: Uint8Array<ArrayBuffer>,
 ): DefaultParsedMIDIMessagePayload {
   const unknown = () => {

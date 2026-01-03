@@ -1,13 +1,13 @@
 export {
+  // remapErrorByName,
   AbortError,
-  CantSendSysexMessagesError,
+  CannotOpenUnavailablePortError,
+  CannotSendSysexMessageError,
+  CannotSendToDisconnectedPortError,
   ClearingSendingQueueIsNotSupportedError,
-  DisconnectedPortError,
-  MalformedMidiMessageError,
+  MalformedMIDIMessageError,
   MIDIAccessNotAllowedError,
   MIDIAccessNotSupportedError,
   PortNotFoundError,
-  // remapErrorByName,
-  UnavailablePortError,
   UnderlyingSystemError,
-} from './internal/EMIDIErrors.ts'
+} from './internal/MIDIErrors.ts'

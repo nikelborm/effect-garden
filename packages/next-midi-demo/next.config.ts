@@ -1,4 +1,12 @@
+import withSerwistInit from '@serwist/next'
+import { pipe } from 'effect/Function'
 import withLinaria, { type LinariaConfig } from 'next-with-linaria'
+
+const withSerwist = withSerwistInit({
+  swSrc: 'src/sw.mts', // Your worker source
+  swDest: 'public/sw.js', // Where the compiled worker goes
+  disable: process.env.NODE_ENV === 'development',
+})
 
 const nextConfig: LinariaConfig = {
   /* config options here */
@@ -17,4 +25,4 @@ const nextConfig: LinariaConfig = {
   // linaria: {}
 }
 
-export default withLinaria(nextConfig)
+export default pipe(nextConfig, withLinaria, withSerwist)

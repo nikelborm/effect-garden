@@ -39,7 +39,11 @@ const midiAccessFailureFields = {
  */
 export class AbortError extends Schema.TaggedError<AbortError>()('AbortError', {
   cause: ErrorSchema(Schema.Literal('AbortError')),
-}) {}
+}) {
+  override get message() {
+    return `MIDI access request was interrupted by user navigation, likely because the page was closed`
+  }
+}
 
 /**
  * Thrown if the underlying system raises any errors when trying to open the
@@ -55,7 +59,11 @@ export class UnderlyingSystemError extends Schema.TaggedError<UnderlyingSystemEr
     cause: ErrorSchema(Schema.Literal('InvalidStateError')),
     ...midiAccessFailureFields,
   },
-) {}
+) {
+  override get message() {
+    return `Underlying system (OS/browser) raised an error when attempting to open the port`
+  }
+}
 
 /**
  * Thrown if the MIDI API, or a certain configuration of it is not supported by
@@ -73,7 +81,11 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
     ),
     ...midiAccessFailureFields,
   },
-) {}
+) {
+  override get message() {
+    return `This platform doesn't support Web MIDI API`
+  }
+}
 
 /**
  * Thrown on platforms where `.clear()` method of output ports is not supported
@@ -89,7 +101,11 @@ export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<
     cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')),
     portId: PortId,
   },
-) {}
+) {
+  override get message() {
+    return `This platform doesn't support "MIDIOutput.prototype.clear()" method`
+  }
+}
 
 /**
  * Thrown when attempt to open the port failed because it is unavailable (e.g.
@@ -100,8 +116,8 @@ export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<
  *
  * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#invalidaccesserror|InvalidAccessError}, {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}, {@link https://webidl.spec.whatwg.org/#invalidstateerror|InvalidStateError}
  */
-export class UnavailablePortError extends Schema.TaggedError<UnavailablePortError>()(
-  'UnavailablePortError',
+export class CannotOpenUnavailablePortError extends Schema.TaggedError<CannotOpenUnavailablePortError>()(
+  'CannotOpenUnavailablePortError',
   {
     cause: ErrorSchema(
       Schema.Literal(
@@ -112,7 +128,11 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
     ),
     portId: PortId,
   },
-) {}
+) {
+  override get message() {
+    return `Cannot open an unavailable port. This might happen when it's already in use by another process or is disconnected`
+  }
+}
 
 /**
  * Thrown when `.send` operation was called on a disconnected port.
@@ -121,13 +141,17 @@ export class UnavailablePortError extends Schema.TaggedError<UnavailablePortErro
  *
  * @see {@link https://webidl.spec.whatwg.org/#invalidaccesserror|Web IDL spec}
  */
-export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortError>()(
-  'DisconnectedPortError',
+export class CannotSendToDisconnectedPortError extends Schema.TaggedError<CannotSendToDisconnectedPortError>()(
+  'CannotSendToDisconnectedPortError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidStateError')),
     portId: PortId,
   },
-) {}
+) {
+  override get message() {
+    return `Cannot send a MIDI message to a disconnected port`
+  }
+}
 
 /**
  * Thrown when trying to send system exclusive message from the access handle,
@@ -137,13 +161,17 @@ export class DisconnectedPortError extends Schema.TaggedError<DisconnectedPortEr
  *
  * @see Web IDL specs: {@link https://webidl.spec.whatwg.org/#invalidaccesserror|InvalidAccessError}, {@link https://webidl.spec.whatwg.org/#notallowederror|NotAllowedError}
  */
-export class CantSendSysexMessagesError extends Schema.TaggedError<CantSendSysexMessagesError>()(
-  'CantSendSysexMessagesError',
+export class CannotSendSysexMessageError extends Schema.TaggedError<CannotSendSysexMessageError>()(
+  'CannotSendSysexMessageError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidAccessError', 'NotAllowedError')),
     portId: PortId,
   },
-) {}
+) {
+  override get message() {
+    return `Cannot send a system exclusive MIDI message from a MIDI access handle that wasn't permitted to send such messages`
+  }
+}
 
 /**
  * Thrown if the user, the system or their security settings denied the
@@ -163,7 +191,11 @@ export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotA
     cause: ErrorSchema(Schema.Literal('NotAllowedError', 'SecurityError')),
     ...midiAccessFailureFields,
   },
-) {}
+) {
+  override get message() {
+    return `Request to use Web MIDI API with specific options was rejected by the user or their security settings`
+  }
+}
 
 /**
  * Thrown when data to be sent is not a valid sequence or does not contain a
@@ -171,14 +203,18 @@ export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotA
  *
  * Wraps `TypeError`
  */
-export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiMessageError>()(
-  'MalformedMidiMessageError',
+export class MalformedMIDIMessageError extends Schema.TaggedError<MalformedMIDIMessageError>()(
+  'MalformedMIDIMessageError',
   {
     cause: ErrorSchema(Schema.Literal('TypeError')),
     portId: PortId,
     midiMessage: Schema.Array(Schema.Int),
   },
-) {}
+) {
+  override get message() {
+    return `Attempted to send invalid MIDI message (${this.midiMessage.length} bytes)`
+  }
+}
 
 /**
  * Keep in mind that if port isn't found, it might not mean it's disconnected.
@@ -189,7 +225,11 @@ export class MalformedMidiMessageError extends Schema.TaggedError<MalformedMidiM
 export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   'PortNotFound',
   { portId: PortId },
-) {}
+) {
+  override get message() {
+    return `Port with specific ID wasn't found`
+  }
+}
 
 /**
  *

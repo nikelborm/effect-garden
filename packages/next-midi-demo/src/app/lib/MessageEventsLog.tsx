@@ -13,10 +13,10 @@ import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
-import { launchpadInputMidi } from './ports.ts'
+import { launchpadInputMIDI } from './ports.ts'
 
 const MIDIMessageEventsStringLog = pipe(
-  EMIDIInput.makeMessagesStreamById(launchpadInputMidi, {}),
+  EMIDIInput.makeMessagesStreamById(launchpadInputMIDI, {}),
   Parsing.withParsedDataField,
   Parsing.withTouchpadPositionUpdates,
   Stream.filter(Predicate.or(Parsing.isChannelPressure, Parsing.isNotePress)),

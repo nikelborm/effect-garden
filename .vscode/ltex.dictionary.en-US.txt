@@ -65,7 +65,7 @@ vibecoding
 CantSendSysexMessagesError
 ClearingSendingQueueIsNotSupportedError
 DisconnectedPortError
-MalformedMidiMessageError
+MalformedMIDIMessageError
 PortNotFoundError
 remapErrorByName
 UnavailablePortError
@@ -371,4 +371,7 @@ matchMutablePortProperty
 getMutablePortProperty
 doesMutablePortPropertyHaveSpecificValue
 openPortConnection
-EMIDIErrors
+MIDIErrors
+/noUnusedVariables
+StreamMaker
+midiNoteIndex

@@ -1,6 +1,7 @@
 export {
-  type FallbackOnUnknownOrAny,
   // fromPolymorphic,
+  // polymorphicCheckInDual,
+  type FallbackOnUnknownOrAny,
   getStaticMIDIPortInfo,
   type IsEqualFlag,
   isCertainConnectionState,
@@ -14,6 +15,5 @@ export {
   mapToGlidingStringLogOfLimitedEntriesCount,
   midiPortStaticFields,
   type PolymorphicEffect,
-  // polymorphicCheckInDual,
   type SentMessageEffectFrom,
 } from './internal/Util.ts'

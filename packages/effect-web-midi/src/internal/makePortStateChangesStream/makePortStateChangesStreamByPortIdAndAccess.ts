@@ -3,9 +3,9 @@
 
 import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
-import type * as EMIDIErrors from '../EMIDIErrors.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
 import * as Get from '../getPortByPortId/getPortByPortIdAndAccess.ts'
+import type * as MIDIErrors from '../MIDIErrors.ts'
 import type * as StreamMaker from '../StreamMaker.ts'
 import * as Util from '../Util.ts'
 import * as Make from './makePortStateChangesStreamByPort.ts'
@@ -99,7 +99,7 @@ export interface MakePortStateChangesStreamByIdAccessFirst<
   ): Make.StateChangesStream<
     TOnNullStrategy,
     TTypeOfPortId,
-    EMIDIErrors.PortNotFoundError | TAccessError | TPortGettingError,
+    MIDIErrors.PortNotFoundError | TAccessError | TPortGettingError,
     TAccessRequirement | TPortGettingRequirement
   >
 }
@@ -127,7 +127,7 @@ export interface MakePortStateChangesStreamByIdAccessLast<
     ): Make.StateChangesStream<
       TOnNullStrategy,
       TTypeOfPortId,
-      EMIDIErrors.PortNotFoundError | TAccessError | TPortGettingError,
+      MIDIErrors.PortNotFoundError | TAccessError | TPortGettingError,
       TAccessRequirement | TPortGettingRequirement
     >
   }

@@ -4,10 +4,10 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as EMIDIAccess from '../EMIDIAccess.ts'
-import * as EMIDIErrors from '../EMIDIErrors.ts'
 import * as EMIDIInput from '../EMIDIInput.ts'
 import * as EMIDIOutput from '../EMIDIOutput.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
+import * as MIDIErrors from '../MIDIErrors.ts'
 
 /**
  *
@@ -32,12 +32,12 @@ const getPortByIdAndRemap = <
   AInputType | AOutputType,
   never,
   never,
-  EMIDIErrors.PortNotFoundError | EInput | EOutput,
+  MIDIErrors.PortNotFoundError | EInput | EOutput,
   RInput | ROutput
 > =>
   EFunction.dual(2, (polymorphicAccess, portId) =>
-    Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), e => {
-      const rawAccess = EMIDIAccess.assumeImpl(e)._access
+    Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), access => {
+      const rawAccess = EMIDIAccess.assumeImpl(access)._access
 
       let rawPort: MIDIOutput | MIDIInput | undefined =
         rawAccess.inputs.get(portId)
@@ -48,7 +48,7 @@ const getPortByIdAndRemap = <
 
       if (rawPort) return handlers.onOutputFound(rawPort)
 
-      return new EMIDIErrors.PortNotFoundError({
+      return new MIDIErrors.PortNotFoundError({
         portId,
       }) as EMIDIAccess.AcquiredThing<
         EMIDIPort.EMIDIPort<AInputType | AOutputType>,
@@ -56,7 +56,7 @@ const getPortByIdAndRemap = <
         never,
         never,
         never,
-        EMIDIErrors.PortNotFoundError | EInput | EOutput,
+        MIDIErrors.PortNotFoundError | EInput | EOutput,
         RInput | ROutput
       >
     }),
@@ -111,6 +111,6 @@ export interface GetPortById<
     TTypeOfPortId,
     TAccessGettingFallbackError,
     TAccessGettingFallbackRequirement,
-    TAdditionalError | EMIDIErrors.PortNotFoundError,
+    TAdditionalError | MIDIErrors.PortNotFoundError,
     TAdditionalRequirement
   > {}

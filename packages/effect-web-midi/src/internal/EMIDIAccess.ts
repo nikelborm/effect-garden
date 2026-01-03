@@ -18,11 +18,11 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
-import * as EMIDIErrors from './EMIDIErrors.ts'
 import * as EMIDIInput from './EMIDIInput.ts'
 import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
+import * as MIDIErrors from './MIDIErrors.ts'
 import * as Check from './mutablePropertyTools/doesMutablePortPropertyHaveSpecificValue/doesMutablePortPropertyHaveSpecificValueByPort.ts'
 import * as GetProperty from './mutablePropertyTools/getMutablePortProperty/getMutablePortPropertyByPort.ts'
 import * as StreamMaker from './StreamMaker.ts'
@@ -113,7 +113,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} error.
+   * {@linkcode MIDIErrors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested (and allowed), the system will throw
    * exceptions if the user tries to send `System Exclusive` messages, and will
@@ -131,7 +131,7 @@ export interface RequestMIDIAccessOptions {
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
-   * {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} error.
+   * {@linkcode MIDIErrors.MIDIAccessNotAllowedError} error.
    *
    * If this support is not requested, {@linkcode AllPortsRecord},
    * {@linkcode getInputsRecord}, {@linkcode OutputsRecord}, etc. would
@@ -540,7 +540,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
       )
 
       if (Option.isSome(disconnectedDevice))
-        return yield* new EMIDIErrors.DisconnectedPortError({
+        return yield* new MIDIErrors.CannotSendToDisconnectedPortError({
           portId: disconnectedDevice.value.id,
           cause: new DOMException(
             // TODO: make an experiment and paste the error text here
@@ -648,22 +648,22 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
 
   const rawAccess = yield* Effect.tryPromise({
     try: () => navigator.requestMIDIAccess(options),
-    catch: EMIDIErrors.remapErrorByName(
+    catch: MIDIErrors.remapErrorByName(
       {
-        AbortError: EMIDIErrors.AbortError,
+        AbortError: MIDIErrors.AbortError,
 
-        InvalidStateError: EMIDIErrors.UnderlyingSystemError,
+        InvalidStateError: MIDIErrors.UnderlyingSystemError,
 
-        NotAllowedError: EMIDIErrors.MIDIAccessNotAllowedError,
+        NotAllowedError: MIDIErrors.MIDIAccessNotAllowedError,
         // SecurityError is kept for compatibility reason
         // (https://github.com/WebAudio/web-midi-api/pull/267):
-        SecurityError: EMIDIErrors.MIDIAccessNotAllowedError,
+        SecurityError: MIDIErrors.MIDIAccessNotAllowedError,
 
-        NotSupportedError: EMIDIErrors.MIDIAccessNotSupportedError,
+        NotSupportedError: MIDIErrors.MIDIAccessNotSupportedError,
         // For case when navigator doesn't exist
-        ReferenceError: EMIDIErrors.MIDIAccessNotSupportedError,
+        ReferenceError: MIDIErrors.MIDIAccessNotSupportedError,
         // For case when navigator.requestMIDIAccess is undefined
-        TypeError: EMIDIErrors.MIDIAccessNotSupportedError,
+        TypeError: MIDIErrors.MIDIAccessNotSupportedError,
       },
       'EMIDIAccess.request error handling absurd',
       { whileAskingForPermissions: options ?? {} },
@@ -686,10 +686,10 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
  *
  * **Errors:**
  *
- * - {@linkcode EMIDIErrors.AbortError} Argument x must be non-zero
- * - {@linkcode EMIDIErrors.UnderlyingSystemError} Argument x must be non-zero
- * - {@linkcode EMIDIErrors.MIDIAccessNotSupportedError} Argument x must be non-zero
- * - {@linkcode EMIDIErrors.MIDIAccessNotAllowedError} Argument x must be non-zero
+ * - {@linkcode MIDIErrors.AbortError} Description
+ * - {@linkcode MIDIErrors.UnderlyingSystemError} Description
+ * - {@linkcode MIDIErrors.MIDIAccessNotSupportedError} Description
+ * - {@linkcode MIDIErrors.MIDIAccessNotAllowedError} Description
  *
  * @param config
  * @returns

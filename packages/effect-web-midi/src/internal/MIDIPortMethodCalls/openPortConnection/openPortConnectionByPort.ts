@@ -1,7 +1,7 @@
-import * as EMIDIErrors from '../../EMIDIErrors.ts'
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'
+import * as MIDIErrors from '../../MIDIErrors.ts'
 import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFactory.ts'
 
 /**
@@ -12,14 +12,18 @@ import { makeMIDIPortMethodCallerFactory } from '../makeMIDIPortMethodCallerFact
 export const makePortConnectionOpener = makeMIDIPortMethodCallerFactory(
   'open',
   portId =>
-    EMIDIErrors.remapErrorByName(
+    MIDIErrors.remapErrorByName(
       {
-        NotAllowedError: EMIDIErrors.UnavailablePortError,
+        NotAllowedError: MIDIErrors.CannotOpenUnavailablePortError,
         // InvalidAccessError is kept for compatibility reason
         // (https://github.com/WebAudio/web-midi-api/pull/278):
-        InvalidAccessError: EMIDIErrors.UnavailablePortError,
+        InvalidAccessError: MIDIErrors.CannotOpenUnavailablePortError,
 
-        InvalidStateError: EMIDIErrors.UnavailablePortError,
+        // InvalidStateError is not mentioned in the list of possible failures
+        // of `.open()` method in the specification, but given `.send()` throws
+        // `InvalidStateError`, when the port is "disconnected", this remapping
+        // wouldn't hurt
+        InvalidStateError: MIDIErrors.CannotOpenUnavailablePortError,
       },
       'MIDI port open error handling absurd',
       { portId },
