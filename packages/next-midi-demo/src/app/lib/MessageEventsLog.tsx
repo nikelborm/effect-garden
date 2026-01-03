@@ -54,7 +54,7 @@ const MIDIMessageEventsStringLog = pipe(
   ),
 )
 
-const StringLogAtom = Atom.make(MIDIMessageEventsStringLog).pipe(Atom.keepAlive)
+const StringLogAtom = Atom.make(MIDIMessageEventsStringLog)
 
 export const MessageEventsLog = () => {
   const text = useAtomValue(StringLogAtom)
