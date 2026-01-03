@@ -5,18 +5,29 @@ import { css } from '@linaria/core'
 import { styled } from '@linaria/react'
 import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
-import { ExampleSelect } from './lib/MIDIDeviceSelect.tsx'
+import {
+  MIDIDeviceSelect,
+  readonlySelectedId,
+} from './lib/MIDIDeviceSelect.tsx'
 import { RequestDumpButton } from './lib/RequestDumpButton.tsx'
 import { midiToNoteName } from './midiToNoteName.ts'
+import { Atom, Result } from '@effect-atom/atom'
+import { useAtomValue } from '@effect-atom/atom-react'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
+import * as Effect from 'effect/Effect'
+import * as Either from 'effect/Either'
 
 const ROWS = 8
 const COLUMNS = 8
 
 export default function Home() {
+  const selectedId = useAtomValue(readonlySelectedId)
+
   return (
-    <Wrapper>
-      <ExampleSelect />
-      {/* <ButtonGrid>
+    <>
+      <ButtonGrid>
         {Array.from({ length: ROWS * COLUMNS }).map((_, i) => (
           <Button
             // biome-ignore lint/suspicious/noArrayIndexKey: explanation
@@ -25,19 +36,20 @@ export default function Home() {
             // isExternallyActive={true}
             type="button"
           >
-            {midiToNoteName(i)}
+            {Either.getOrThrow(midiToNoteName(i))}
           </Button>
         ))}
       </ButtonGrid>
       <Separator />
-      <RequestDumpButton />
       <Header>Connection events</Header>
       <ConnectionEventsLog />
       <Separator />
       <Header>Message events</Header>
+      <RequestDumpButton />
+      <MIDIDeviceSelect />
       <MessageEventsLog />
-      <Separator /> */}
-    </Wrapper>
+      <Separator />
+    </>
   )
 }
 
@@ -67,7 +79,7 @@ const ButtonGrid = styled.div`
 `
 
 const Wrapper = styled.div`
-  /* color: wheat; */
+  color: wheat;
 `
 
 const Button = styled(BaseButton)<{ isExternallyActive?: boolean | undefined }>`

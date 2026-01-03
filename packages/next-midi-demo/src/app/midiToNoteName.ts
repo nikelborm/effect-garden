@@ -46,5 +46,7 @@ export class InvalidMIDINote extends Schema.TaggedError<InvalidMIDINote>()(
   'InvalidMIDINote',
   {},
 ) {
-  override message = 'MIDI note must be between 0 and 127'
+  override get message() {
+    return 'MIDI note must be between 0 and 127'
+  }
 }

@@ -349,49 +349,66 @@ const getPortEntriesFromRawAccess =
  *
  * @internal
  */
-const getInputEntriesFromRaw = getPortEntriesFromRawAccess(
-  'inputs',
-  EMIDIInput.make,
-)
+const getInputEntriesFromRaw: {
+  (rawAccess: MIDIAccess): Iterable<InputRecordEntry>
+} = getPortEntriesFromRawAccess('inputs', EMIDIInput.make)
 
 /**
  *
  * @internal
  */
-const getOutputEntriesFromRaw = getPortEntriesFromRawAccess(
-  'outputs',
-  EMIDIOutput.make,
-)
+const getOutputEntriesFromRaw: {
+  (rawAccess: MIDIAccess): Iterable<OutputRecordEntry>
+} = getPortEntriesFromRawAccess('outputs', EMIDIOutput.make)
 
 /**
  *
  * @internal
  */
-const getAllPortsEntriesFromRaw = (rawAccess: MIDIAccess) =>
-  Iterable.appendAll(
-    getInputEntriesFromRaw(rawAccess),
-    getOutputEntriesFromRaw(rawAccess),
-  )
+const getAllPortsEntriesFromRaw: {
+  (rawAccess: MIDIAccess): Iterable<InputRecordEntry | OutputRecordEntry>
+} = raw =>
+  Iterable.appendAll(getInputEntriesFromRaw(raw), getOutputEntriesFromRaw(raw))
 
 /**
  *
- * @param accessor
+ * @param getRecordEntriesFromRawAccess
  * @returns
  * @internal
  */
-const decorateToTakePolymorphicAccessAndReturnRecord =
-  <T extends [string, unknown]>(
-    accessor: (rawAccess: MIDIAccess) => Iterable<T>,
-  ) =>
-  <E = never, R = never>(polymorphicAccess: PolymorphicAccessInstance<E, R>) =>
+const decorateToTakePolymorphicAccessAndReturnRecord = <
+  T extends UnknownEntriesUnion,
+>(
+  getRecordEntriesFromRawAccess: (rawAccess: MIDIAccess) => Iterable<T>,
+) =>
+  (polymorphicAccess =>
     Effect.map(
       resolve(polymorphicAccess),
-      EFunction.flow(assumeImpl, e => e._access, accessor, Record.fromEntries),
-    ) as Effect.Effect<
-      Types.UnionToIntersection<T extends unknown ? Record<T[0], T[1]> : never>,
-      E,
-      R
-    >
+      EFunction.flow(
+        assumeImpl,
+        impl => impl._access,
+        getRecordEntriesFromRawAccess,
+        Record.fromEntries,
+      ),
+    )) as GetPortRecordFromPolymorphicAccess<T>
+
+export interface GetPortRecordFromPolymorphicAccess<
+  RecordEntries extends UnknownEntriesUnion,
+> {
+  /**
+   *
+   */
+  <E = never, R = never>(
+    polymorphicAccess: PolymorphicAccessInstance<E, R>,
+  ): Effect.Effect<EntriesToRecord<RecordEntries>, E, R>
+}
+
+type EntriesToRecord<Entries extends UnknownEntriesUnion> =
+  Types.UnionToIntersection<
+    Entries extends unknown ? Record<Entries[0], Entries[1]> : never
+  >
+
+type UnknownEntriesUnion = [string, unknown]
 
 /**
  * Because `MIDIInputMap` can potentially be a mutable object, meaning new
@@ -403,9 +420,10 @@ const decorateToTakePolymorphicAccessAndReturnRecord =
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
  */
-export const getInputsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
-  getInputEntriesFromRaw,
-)
+export const getInputsRecord: GetPortRecordFromPolymorphicAccess<InputRecordEntry> =
+  decorateToTakePolymorphicAccessAndReturnRecord(getInputEntriesFromRaw)
+
+type InputRecordEntry = [EMIDIInput.Id, EMIDIInput.EMIDIInput]
 
 /**
  * Because `MIDIOutputMap` can potentially be a mutable object, meaning new
@@ -417,35 +435,57 @@ export const getInputsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
  * [MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
  */
-export const getOutputsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
-  getOutputEntriesFromRaw,
-)
+export const getOutputsRecord: GetPortRecordFromPolymorphicAccess<OutputRecordEntry> =
+  decorateToTakePolymorphicAccessAndReturnRecord(getOutputEntriesFromRaw)
+
+type OutputRecordEntry = [EMIDIOutput.Id, EMIDIOutput.EMIDIOutput]
 
 /**
  *
  *
  */
-export const getAllPortsRecord = decorateToTakePolymorphicAccessAndReturnRecord(
-  getAllPortsEntriesFromRaw,
-)
+export const getAllPortsRecord: GetPortRecordFromPolymorphicAccess<AllPortEntryUnion> =
+  decorateToTakePolymorphicAccessAndReturnRecord(getAllPortsEntriesFromRaw)
+
+type AllPortEntryUnion = InputRecordEntry | OutputRecordEntry
+
+export interface InputsRecordInContextEffect
+  extends Effect.Effect<EMIDIInput.InputIdToInstanceMap, never, EMIDIAccess> {}
 
 /**
  *
  *
  */
-export const InputsRecord = getInputsRecord(EMIDIAccess)
+export const InputsRecord: InputsRecordInContextEffect =
+  getInputsRecord(EMIDIAccess)
+
+export interface OutputsRecordInContextEffect
+  extends Effect.Effect<
+    EMIDIOutput.OutputIdToInstanceMap,
+    never,
+    EMIDIAccess
+  > {}
 
 /**
  *
  *
  */
-export const OutputsRecord = getOutputsRecord(EMIDIAccess)
+export const OutputsRecord: OutputsRecordInContextEffect =
+  getOutputsRecord(EMIDIAccess)
+
+export interface AllPortsRecordInContextEffect
+  extends Effect.Effect<
+    EMIDIInput.InputIdToInstanceMap & EMIDIOutput.OutputIdToInstanceMap,
+    never,
+    EMIDIAccess
+  > {}
 
 /**
  *
  *
  */
-export const AllPortsRecord = getAllPortsRecord(EMIDIAccess)
+export const AllPortsRecord: AllPortsRecordInContextEffect =
+  getAllPortsRecord(EMIDIAccess)
 
 /**
  * [MIDIConnectionEvent MDN

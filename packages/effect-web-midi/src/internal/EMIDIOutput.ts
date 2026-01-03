@@ -226,3 +226,5 @@ export interface SentMessageEffectFromPort<E = never, R = never>
 
 export type Id = EMIDIPort.Id<'output'>
 export const Id = Brand.nominal<Id>()
+
+export interface OutputIdToInstanceMap extends Record<Id, EMIDIOutput> {}

@@ -45,6 +45,7 @@ export {
   assert,
   type EMIDIInput,
   Id,
+  type InputIdToInstanceMap as IdToInstanceMap,
   is,
   // make,
   makeMessagesStreamByPort as makeMessagesStream,

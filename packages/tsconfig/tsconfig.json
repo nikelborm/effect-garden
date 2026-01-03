@@ -82,7 +82,7 @@
         "completions": true,
         "multipleEffectCheck": true,
         "transform": "@effect/language-service/transform",
-        "namespaceImportPackages": ["effect", "@effect/*"],
+        "namespaceImportPackages": ["effect", "@effect/*", "effect-web-midi"],
         "topLevelNamedReexports": "follow",
         "quickinfoMaximumLength": 1000,
         "keyPatterns": [

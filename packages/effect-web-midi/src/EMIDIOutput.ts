@@ -55,6 +55,7 @@ export {
   type DualSendMIDIMessageFromPort,
   type EMIDIOutput,
   Id,
+  type OutputIdToInstanceMap as IdToInstanceMap,
   is,
   // make,
   type PolymorphicOutput,

@@ -1,52 +1,106 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
+import { Atom, Result, useAtomSet, useAtomValue } from '@effect-atom/atom-react'
 import { css } from '@linaria/core'
 import { styled } from '@linaria/react'
-import EMIDIAccess from 'effect-web-midi/EMIDIAccess'
-import * as AtomReact from '@effect-atom/atom-react'
+import * as EArray from 'effect/Array'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Record from 'effect/Record'
+import * as EString from 'effect/String'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import type * as React from 'react'
 
-// AtomReact.AtomHttpApi
+const FullRecordAtom = Atom.make(
+  () =>
+    EMIDIAccess.AllPortsRecord.pipe(
+      // Effect.tap(Effect.sleep(Duration.seconds(5))),
+      // Effect.tap(Console.log),
+      Effect.provide(EMIDIAccess.layerMostRestricted),
+    ),
+  { initialValue: {} },
+).pipe(Atom.withServerValueInitial)
 
-export const MIDIDeviceSelect = () => {}
+const selectedId = Atom.make(null as EMIDIPort.BothId | null)
 
-const fonts = [
-  { label: 'Select font', value: null },
-  { label: 'Sans-serif', value: 'sans' },
-  { label: 'Serif', value: 'serif' },
-  { label: 'Monospace', value: 'mono' },
-  { label: 'Cursive', value: 'cursive' },
-]
+export const readonlySelectedId = Atom.make(get => get(selectedId))
 
-export function ExampleSelect() {
-  return (
-    <SelectRoot items={fonts}>
-      <SelectTrigger>
-        <SelectValue />
-        <SelectIcon>
-          <ChevronUpDownIcon />
-        </SelectIcon>
-      </SelectTrigger>
-      <SelectPortal>
-        <SelectPositioner sideOffset={8}>
-          <SelectPopup>
-            <SelectScrollUpArrow />
-            <SelectList>
-              {fonts.map(({ label, value }) => (
-                <SelectItem key={label} value={value}>
-                  <SelectItemIndicator>
-                    <SelectItemIndicatorIcon />
-                  </SelectItemIndicator>
-                  <SelectItemText>{label}</SelectItemText>
-                </SelectItem>
-              ))}
-            </SelectList>
-            <SelectScrollDownArrow />
-          </SelectPopup>
-        </SelectPositioner>
-      </SelectPortal>
-    </SelectRoot>
-  )
+export const MIDIDeviceSelect = () => {
+  const FullRecordResult = useAtomValue(FullRecordAtom)
+
+  const setSelectedId = useAtomSet(selectedId)
+
+  return Result.matchWithWaiting(FullRecordResult, {
+    onDefect: defect => {
+      throw defect
+    },
+    onError: (error, _) => <span>Error: {error._tag}</span>,
+    onWaiting: _ => (
+      <SelectRoot disabled>
+        <SelectTrigger>
+          <MonoPre>Loading ports...</MonoPre>
+        </SelectTrigger>
+      </SelectRoot>
+    ),
+    onSuccess: ({ value: portMap }) => (
+      <SelectRoot<EMIDIPort.BothId | null>
+        onValueChange={e => {
+          setSelectedId(e)
+        }}
+        items={EFunction.pipe(
+          portMap,
+          Record.values,
+          EArray.map(port => ({
+            label: <PortLabel port={port} />,
+            value: port.id,
+          })),
+          EArray.append({
+            label: <MonoPre>Select port ID</MonoPre>,
+            value: null,
+          }),
+        )}
+      >
+        <SelectTrigger>
+          <SelectValue />
+          <SelectIcon>
+            <ChevronUpDownIcon />
+          </SelectIcon>
+        </SelectTrigger>
+        <SelectPortal>
+          <SelectPositioner sideOffset={8}>
+            <SelectPopup>
+              <SelectScrollUpArrow />
+              <SelectList>
+                {EArray.map(Record.values(portMap), port => (
+                  <SelectItem key={port.id} value={port.id}>
+                    <SelectItemIndicator>
+                      <SelectItemIndicatorIcon />
+                    </SelectItemIndicator>
+                    <SelectItemText>
+                      <PortLabel port={port} />
+                    </SelectItemText>
+                  </SelectItem>
+                ))}
+              </SelectList>
+              <SelectScrollDownArrow />
+            </SelectPopup>
+          </SelectPositioner>
+        </SelectPortal>
+      </SelectRoot>
+    ),
+  })
 }
+
+const PortLabel = ({ port }: { port: EMIDIPort.EMIDIPort }) => (
+  <MonoPre>
+    {EString.capitalize(port.type.padEnd(6))} {port.name} id=
+    {port.id.slice(-10)}
+  </MonoPre>
+)
+const MonoPre = styled.pre`
+ display: inline;
+  font-family: monospace;
+`
 
 function ChevronUpDownIcon(props: React.ComponentProps<'svg'>) {
   return (
@@ -104,9 +158,13 @@ export const SelectTrigger = styled(BaseSelect.Trigger)`
   min-width: 9rem;
 
   @media (hover: hover) {
-    &:hover {
+    &:hover:not([data-disabled]) {
       background-color: var(--color-gray-100);
     }
+  }
+
+  &[data-disabled] {
+    color: var(--color-gray-500);
   }
 
   &[data-popup-open] {

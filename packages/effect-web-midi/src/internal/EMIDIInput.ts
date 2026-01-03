@@ -112,3 +112,5 @@ export type PolymorphicInputClean = EMIDIPort.PolymorphicPortClean<'input'>
 
 export type Id = EMIDIPort.Id<'input'>
 export const Id = Brand.nominal<Id>()
+
+export interface InputIdToInstanceMap extends Record<Id, EMIDIInput> {}
