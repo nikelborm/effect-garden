@@ -475,7 +475,7 @@ export const OutputsRecord: OutputsRecordInContextEffect =
 
 export interface AllPortsRecordInContextEffect
   extends Effect.Effect<
-    EMIDIInput.InputIdToInstanceMap & EMIDIOutput.OutputIdToInstanceMap,
+    EMIDIPort.BothIdToBothInstanceMap,
     never,
     EMIDIAccess
   > {}

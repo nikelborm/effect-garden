@@ -6,6 +6,8 @@ import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
+import type * as EMIDIInput from './EMIDIInput.ts'
+import type * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as Util from './Util.ts'
 
 /**
@@ -231,3 +233,6 @@ export type Id<TPortType extends MIDIPortType> =
 
 export type BothId = Id<MIDIPortType>
 export const BothId = Brand.nominal<BothId>()
+
+export type BothIdToBothInstanceMap = EMIDIInput.InputIdToInstanceMap &
+  EMIDIOutput.OutputIdToInstanceMap

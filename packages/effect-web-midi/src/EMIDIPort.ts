@@ -62,19 +62,20 @@ export {
 //   send,
 // } from './internal/EMIDIOutput.ts'
 export {
+  // assumeImpl,
+  // type EMIDIPortImpl,
+  // isImplOfSpecificType,
+  // makeImpl,
   assert,
   BothId,
-  // assumeImpl,
   type EMIDIPort,
-  // type EMIDIPortImpl,
   type ExtractTypeFromPort,
   type Id,
   is,
-  // isImplOfSpecificType,
-  // makeImpl,
   type PolymorphicPort,
   type PolymorphicPortClean,
   type TypeId,
+  type BothIdToBothInstanceMap as IdToInstanceMap,
 } from './internal/EMIDIPort.ts'
 export {
   // type GetPortById,

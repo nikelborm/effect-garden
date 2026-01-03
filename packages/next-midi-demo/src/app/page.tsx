@@ -28,7 +28,7 @@ export default function Home() {
         <Separator />
         <Header>Message events</Header>
         {/* <RequestDumpButton /> */}
-        <MIDIDeviceSelect />
+        Inputs: <MIDIDeviceSelect />
         <MessageEventsLog />
         <Separator />
       </Wrapper>

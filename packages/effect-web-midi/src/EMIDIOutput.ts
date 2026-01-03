@@ -50,14 +50,14 @@ export {
 //   type PolymorphicInputClean,
 // } from './internal/EMIDIInput.ts'
 export {
+  // make,
   assert,
   clear,
   type DualSendMIDIMessageFromPort,
   type EMIDIOutput,
   Id,
-  type OutputIdToInstanceMap as IdToInstanceMap,
   is,
-  // make,
+  type OutputIdToInstanceMap as IdToInstanceMap,
   type PolymorphicOutput,
   type PolymorphicOutputClean,
   type SendFromPortArgs,

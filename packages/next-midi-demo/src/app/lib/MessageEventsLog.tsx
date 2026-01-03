@@ -68,7 +68,9 @@ export const MessageEventsLog = () => {
       </>
     ),
     onInitial: e => (
-      <pre>No events happened yet. initial waiting: {e.waiting.toString()}</pre>
+      <pre>
+        No message events happened yet. initial waiting: {e.waiting.toString()}
+      </pre>
     ),
     onSuccess: s => <pre>{s.value}</pre>,
   })

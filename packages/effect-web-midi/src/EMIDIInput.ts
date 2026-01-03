@@ -42,12 +42,12 @@ export {
   // type TypeId,
 } from './internal/EMIDIAccess.ts'
 export {
+  // make,
   assert,
   type EMIDIInput,
   Id,
   type InputIdToInstanceMap as IdToInstanceMap,
   is,
-  // make,
   makeMessagesStreamByPort as makeMessagesStream,
   type PolymorphicInput,
   type PolymorphicInputClean,

@@ -10,10 +10,6 @@ import * as Util from 'effect-web-midi/Util'
 
 const MIDIDeviceConnectionEventsStringLog = pipe(
   EMIDIAccess.request(),
-  Effect.catchTag(
-    'MIDIAccessNotSupportedError',
-    flow(Console.log, Effect.andThen(Effect.never)),
-  ),
   EMIDIAccess.makeAllPortsStateChangesStream(),
   Util.mapToGlidingStringLogOfLimitedEntriesCount(50, 'latestFirst', _ => ({
     time: _.capturedAt.toISOString(),
@@ -25,6 +21,7 @@ const MIDIDeviceConnectionEventsStringLog = pipe(
 
 const StringLogAtom = Atom.make(MIDIDeviceConnectionEventsStringLog).pipe(
   Atom.keepAlive,
+  Atom.withServerValueInitial,
 )
 
 export const ConnectionEventsLog = () => {
@@ -39,7 +36,10 @@ export const ConnectionEventsLog = () => {
       </>
     ),
     onInitial: e => (
-      <pre>No events happened yet. initial waiting: {e.waiting.toString()}</pre>
+      <pre>
+        No connection events happened yet. initial waiting:{' '}
+        {e.waiting.toString()}
+      </pre>
     ),
     onSuccess: s => <pre>{s.value}</pre>,
   })
