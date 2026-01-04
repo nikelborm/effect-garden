@@ -1,29 +1,67 @@
+/** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 import { Button as BaseButton } from '@base-ui/react/button'
+import { useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import * as Either from 'effect/Either'
+import { flow } from 'effect/Function'
+import {
+  currentLayoutHeightAtom,
+  currentLayoutWidthAtom,
+  getCellOfCurrentLayoutAtom,
+} from './grid.ts'
 import { midiToNoteName } from './midiToNoteName.ts'
 
-const ROWS = 8
-const COLUMNS = 8
-
 export function MidiPadSlide() {
+  const currentLayoutWidth = useAtomValue(currentLayoutWidthAtom) ?? 0
+  const currentLayoutHeight = useAtomValue(currentLayoutHeightAtom) ?? 0
+
   return (
-    <ButtonGrid>
-      {Array.from({ length: ROWS * COLUMNS }).map((_, i) => (
-        <NeumorphicButton
-          // biome-ignore lint/suspicious/noArrayIndexKey: explanation
-          key={i}
-          data-midi-note={i}
-          // isExternallyActive={true}
-          type="button"
+    <ButtonGrid
+      role="grid"
+      aria-rowcount={currentLayoutHeight}
+      aria-colcount={currentLayoutWidth}
+    >
+      {Array.from({ length: currentLayoutHeight }, (_, currentRowIndex) => (
+        <DisplayContentsWrapper
+          // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
+          key={currentRowIndex}
+          role="row"
+          aria-rowindex={currentRowIndex}
         >
-          {Either.getOrThrow(midiToNoteName(i))}
-        </NeumorphicButton>
+          {Array.from(
+            { length: currentLayoutWidth },
+            (_, currentColumnIndex) => (
+              <NoteButton
+                // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
+                key={currentColumnIndex}
+                columnIndex={currentColumnIndex}
+                rowIndex={currentRowIndex}
+              />
+            ),
+          )}
+        </DisplayContentsWrapper>
       ))}
     </ButtonGrid>
   )
 }
+
+const NoteButton = flow(
+  getCellOfCurrentLayoutAtom,
+  atom => useAtomValue(atom),
+  cell =>
+    cell && (
+      <NeumorphicButton
+        data-midi-note={cell.noteIndex}
+        isExternallyActive={!!cell.activationReportedByDevice}
+        role="gridcell"
+        aria-colindex={cell.columnIndex}
+        type="button"
+      >
+        {Either.getOrThrow(midiToNoteName(cell.noteIndex))}
+      </NeumorphicButton>
+    ),
+)
 
 const ButtonGrid = styled.div`
   width: 100vw;
@@ -84,4 +122,8 @@ const NeumorphicButton = styled(BaseButton)<{
   &:active::before {
     opacity: 1;
   }
+`
+
+const DisplayContentsWrapper = styled.div`
+  display: contents;
 `
