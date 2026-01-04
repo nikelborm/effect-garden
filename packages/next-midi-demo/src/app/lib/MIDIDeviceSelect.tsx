@@ -51,8 +51,8 @@ const portMapAtom = Effect.gen(function* () {
   )
 }).pipe(
   Stream.unwrap,
-  Stream.provideLayer(EMIDIAccess.layerMostRestricted),
-  portMapUpdatesStream => Atom.make(portMapUpdatesStream),
+  Stream.provideLayer(EMIDIAccess.layerSoftwareSynthSupported),
+  updatesStream => Atom.make(updatesStream),
   Atom.debounce(Duration.millis(20)),
   Atom.withServerValueInitial,
 )
