@@ -9,11 +9,12 @@ import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
-import { readonlySelectedIdAtom } from './MIDIDeviceSelect.tsx'
 
 const makeStringLogAtom = Atom.family((inputId: EMIDIInput.Id | null) =>
   !inputId
-    ? Atom.make(Result.success('empty'))
+    ? Atom.make(
+        Result.success('Input id is not selected. No log entries to show'),
+      )
     : pipe(
         EMIDIInput.makeMessagesStreamById(inputId),
         Parsing.withParsedDataField,
@@ -42,8 +43,11 @@ const makeStringLogAtom = Atom.family((inputId: EMIDIInput.Id | null) =>
       ),
 )
 
-export const MessageEventsLog = () => {
-  const selectedId = useAtomValue(readonlySelectedIdAtom)
+export const MessageEventsLog = ({
+  selectedId = null,
+}: {
+  selectedId: EMIDIInput.Id | null
+}) => {
   const text = useAtomValue(makeStringLogAtom(selectedId))
 
   return Result.match(text, {

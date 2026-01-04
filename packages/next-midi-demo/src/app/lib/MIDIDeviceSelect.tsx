@@ -10,7 +10,8 @@ import * as Stream from 'effect/Stream'
 import * as EString from 'effect/String'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
-import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
+import * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import {
   ChevronUpDownSVG,
   SelectIcon,
@@ -27,7 +28,7 @@ import {
   SelectScrollUpArrow,
   SelectTrigger,
   SelectValue,
-} from './Select.tsx'
+} from '@/components/Select'
 
 type UpdatePortMapFn = (
   portMap: EMIDIPort.IdToInstanceMap,
@@ -58,21 +59,58 @@ const portMapAtom = Effect.gen(function* () {
   Atom.withServerValueInitial,
 )
 
-const selectedIdAtom = Atom.make(null as EMIDIInput.Id | null)
+const filteredPortAtom = Atom.family(
+  <T extends MIDIPortType | undefined = MIDIPortType>(showOnly: T) =>
+    Atom.make(
+      get =>
+        Effect.map(
+          get.result(portMapAtom),
+          EFunction.flow(
+            Record.values,
+            EArray.filter(port => !showOnly || port.type === showOnly),
+          ),
+        ) as MapPortTypeFilterArgToEffect<T>,
+    ),
+)
 
-export const readonlySelectedIdAtom = Atom.make(get => get(selectedIdAtom))
+type CleanupPortType<T extends MIDIPortType | undefined> = [T] extends ['input']
+  ? T
+  : [T] extends ['output']
+    ? T
+    : MIDIPortType
 
-export const MIDIDeviceSelect = ({
+type MapPortTypeFilterArgToPort<T extends MIDIPortType | undefined> =
+  EMIDIPort.EMIDIPort<CleanupPortType<T>>
+
+type MapPortTypeFilterArgToEffect<T extends MIDIPortType | undefined> =
+  Effect.Effect<
+    MapPortTypeFilterArgToPort<T>[],
+    | MIDIErrors.AbortError
+    | MIDIErrors.UnderlyingSystemError
+    | MIDIErrors.MIDIAccessNotSupportedError
+    | MIDIErrors.MIDIAccessNotAllowedError
+  >
+
+export const MIDIDeviceSelect = <
+  TPortType extends MIDIPortType | undefined = MIDIPortType,
+>({
+  selectedIdAtom,
   typeToShowExclusively,
 }: {
-  typeToShowExclusively?: 'input' | 'output' | undefined
+  typeToShowExclusively?: TPortType
+  selectedIdAtom: Atom.Writable<
+    EMIDIPort.Id<CleanupPortType<NoInfer<TPortType>>> | null,
+    EMIDIPort.Id<CleanupPortType<NoInfer<TPortType>>> | null
+  >
 }) => {
-  const portMapResult = useAtomValue(portMapAtom)
-  console.log('MIDIDeviceSelect rendered: ', portMapResult)
+  const filteredPortsResult = useAtomValue(
+    filteredPortAtom(typeToShowExclusively),
+  )
+  console.log('MIDIDeviceSelect rendered: ', filteredPortsResult)
 
   const setSelectedId = useAtomSet(selectedIdAtom)
 
-  return Result.matchWithError(portMapResult, {
+  return Result.matchWithError(filteredPortsResult, {
     onDefect: defect => {
       console.log('defect', defect)
       throw defect
@@ -85,13 +123,9 @@ export const MIDIDeviceSelect = ({
         </SelectTrigger>
       </SelectRoot>
     ),
-    onSuccess: ({ value: portMap }) => {
-      const filteredPorts = EArray.filter(
-        Record.values(portMap),
-        port => !typeToShowExclusively || port.type === typeToShowExclusively,
-      )
+    onSuccess: ({ value: filteredPorts }) => {
       return (
-        <SelectRoot<EMIDIInput.Id | null>
+        <SelectRoot<EMIDIPort.Id<CleanupPortType<TPortType>> | null>
           onValueChange={setSelectedId}
           name="select_port"
           items={EFunction.pipe(
