@@ -1,17 +1,14 @@
-import { Atom, Result, useAtomSet, useAtomValue } from '@effect-atom/atom-react'
+import {
+  type Atom,
+  Result,
+  useAtomSet,
+  useAtomValue,
+} from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import * as EArray from 'effect/Array'
-import * as Duration from 'effect/Duration'
-import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
-import * as Record from 'effect/Record'
-import * as Ref from 'effect/Ref'
-import * as Stream from 'effect/Stream'
 import * as EString from 'effect/String'
-import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
-import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
-import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
-import * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import {
   ChevronUpDownSVG,
   SelectIcon,
@@ -29,67 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/Select'
-
-type UpdatePortMapFn = (
-  portMap: EMIDIPort.IdToInstanceMap,
-) => EMIDIPort.IdToInstanceMap
-
-const portMapAtom = Effect.gen(function* () {
-  const initialValue = yield* EMIDIAccess.AllPortsRecord
-  const portsMapRef = yield* Ref.make(initialValue)
-
-  return Stream.concat(
-    Stream.succeed(initialValue),
-    Stream.mapEffect(
-      EMIDIAccess.makeAllPortsStateChangesStreamInContext(),
-      ({ port, newState }) =>
-        Ref.updateAndGet(
-          portsMapRef,
-          (newState.ofDevice === 'disconnected'
-            ? Record.remove(port.id)
-            : Record.set(port.id, port)) as UpdatePortMapFn,
-        ),
-    ),
-  )
-}).pipe(
-  Stream.unwrap,
-  Stream.provideLayer(EMIDIAccess.layerSoftwareSynthSupported),
-  updatesStream => Atom.make(updatesStream),
-  Atom.debounce(Duration.millis(20)),
-  Atom.withServerValueInitial,
-)
-
-const filteredPortAtom = Atom.family(
-  <T extends MIDIPortType | undefined = MIDIPortType>(showOnly: T) =>
-    Atom.make(
-      get =>
-        Effect.map(
-          get.result(portMapAtom),
-          EFunction.flow(
-            Record.values,
-            EArray.filter(port => !showOnly || port.type === showOnly),
-          ),
-        ) as MapPortTypeFilterArgToEffect<T>,
-    ),
-)
-
-type CleanupPortType<T extends MIDIPortType | undefined> = [T] extends ['input']
-  ? T
-  : [T] extends ['output']
-    ? T
-    : MIDIPortType
-
-type MapPortTypeFilterArgToPort<T extends MIDIPortType | undefined> =
-  EMIDIPort.EMIDIPort<CleanupPortType<T>>
-
-type MapPortTypeFilterArgToEffect<T extends MIDIPortType | undefined> =
-  Effect.Effect<
-    MapPortTypeFilterArgToPort<T>[],
-    | MIDIErrors.AbortError
-    | MIDIErrors.UnderlyingSystemError
-    | MIDIErrors.MIDIAccessNotSupportedError
-    | MIDIErrors.MIDIAccessNotAllowedError
-  >
+import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './grid.ts'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,
@@ -104,7 +41,7 @@ export const MIDIDeviceSelect = <
   >
 }) => {
   const filteredPortsResult = useAtomValue(
-    filteredPortAtom(typeToShowExclusively),
+    getPortsOfSpecificTypeAtom(typeToShowExclusively),
   )
   console.log('MIDIDeviceSelect rendered: ', filteredPortsResult)
 

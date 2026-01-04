@@ -36,7 +36,8 @@
   "linter": {
     "rules": {
       "style": {
-        "useTemplate": "off"
+        "useTemplate": "off",
+        "useShorthandFunctionType": "off"
       }
     },
     "domains": {
