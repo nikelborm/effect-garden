@@ -7,7 +7,7 @@ import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
 import {
   MIDIDeviceSelect,
-  readonlySelectedId,
+  readonlySelectedIdAtom,
 } from './lib/MIDIDeviceSelect.tsx'
 import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
 import { RequestDumpButton } from './lib/RequestDumpButton.tsx'
@@ -16,7 +16,7 @@ const ROWS = 8
 const COLUMNS = 8
 
 export default function Home() {
-  const selectedId = useAtomValue(readonlySelectedId)
+  const selectedId = useAtomValue(readonlySelectedIdAtom)
 
   return (
     <>
@@ -28,7 +28,7 @@ export default function Home() {
         <Separator />
         <Header>Message events</Header>
         {/* <RequestDumpButton /> */}
-        Inputs: <MIDIDeviceSelect />
+        Inputs: <MIDIDeviceSelect typeToShowExclusively="input" />
         <MessageEventsLog />
         <Separator />
       </Wrapper>

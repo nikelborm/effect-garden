@@ -9,6 +9,7 @@ import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 import * as EString from 'effect/String'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import {
   ChevronUpDownSVG,
@@ -57,9 +58,9 @@ const portMapAtom = Effect.gen(function* () {
   Atom.withServerValueInitial,
 )
 
-const selectedId = Atom.make(null as EMIDIPort.BothId | null)
+const selectedIdAtom = Atom.make(null as EMIDIInput.Id | null)
 
-export const readonlySelectedId = Atom.make(get => get(selectedId))
+export const readonlySelectedIdAtom = Atom.make(get => get(selectedIdAtom))
 
 export const MIDIDeviceSelect = ({
   typeToShowExclusively,
@@ -69,7 +70,7 @@ export const MIDIDeviceSelect = ({
   const portMapResult = useAtomValue(portMapAtom)
   console.log('MIDIDeviceSelect rendered: ', portMapResult)
 
-  const setSelectedId = useAtomSet(selectedId)
+  const setSelectedId = useAtomSet(selectedIdAtom)
 
   return Result.matchWithError(portMapResult, {
     onDefect: defect => {
@@ -90,7 +91,7 @@ export const MIDIDeviceSelect = ({
         port => !typeToShowExclusively || port.type === typeToShowExclusively,
       )
       return (
-        <SelectRoot<EMIDIPort.BothId | null>
+        <SelectRoot<EMIDIInput.Id | null>
           onValueChange={setSelectedId}
           name="select_port"
           items={EFunction.pipe(
