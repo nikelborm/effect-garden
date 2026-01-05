@@ -24,7 +24,8 @@
     "next-with-linaria": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "serwist": "^9.4.2"
+    "serwist": "^9.4.2",
+    "ts-key-not-enum": "workspace:*"
   },
   "devDependencies": {
     "@effect/language-service": "catalog:",

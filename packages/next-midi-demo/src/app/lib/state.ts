@@ -15,6 +15,7 @@ import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
+import * as Key from 'ts-key-not-enum'
 
 export const getMessagesLogAtom = Atom.family(
   (inputId: EMIDIInput.Id | null) =>
@@ -146,6 +147,27 @@ interface UpdatePortMapFn {
    */
   (portMap: EMIDIPort.IdToInstanceMap): EMIDIPort.IdToInstanceMap
 }
+
+export const keyDownEventsStream = Stream.fromEventListener<KeyboardEvent>(
+  document,
+  'keydown',
+  {
+    bufferSize: 0,
+  },
+).pipe(Stream.map(e => e.key))
+
+document.addEventListener('keydown', event => {
+  switch (event.key) {
+    case 'ArrowLeft':
+      // Your code for Left Arrow
+      console.log('Left arrow pressed')
+      break
+    case 'ArrowRight':
+      // Your code for Right Arrow
+      console.log('Right arrow pressed')
+      break
+  }
+})
 
 export const portMapAtom = Effect.gen(function* () {
   const initialValue = yield* EMIDIAccess.AllPortsRecord

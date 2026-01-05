@@ -3,7 +3,7 @@
 import { Result, useAtomValue } from '@effect-atom/atom-react'
 import * as Cause from 'effect/Cause'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
-import { getMessagesLogAtom } from './grid.ts'
+import { getMessagesLogAtom } from './state.ts'
 
 export const MessageEventsLog = ({
   selectedId = null,

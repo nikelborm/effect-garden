@@ -16,7 +16,7 @@
     "ts-toolbelt": "catalog:",
     "tsafe": "catalog:",
     "type-fest": "catalog:",
-    "zod": "^4.3.4",
+    "zod": "^4.3.5",
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",

@@ -36,3 +36,5 @@ tmp
 
 # temporarily
 fetch-github-folder_issues_data.json
+packages/ts-key-not-enum/report.json
+packages/ts-key-not-enum/mdast.json

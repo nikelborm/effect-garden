@@ -1,0 +1,101 @@
+{
+  "name": "ts-key-not-enum",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
+  "license": "MIT",
+  "scripts": {
+    "build": "tspc",
+    "prepack": "bun ./scrapeMDNForKeys.ts && rm -rf dist dist-types && ./node_modules/.bin/tspc",
+    "scrape": "bun ./scrapeMDNForKeys.ts",
+    "dev": "tspc --watch"
+  },
+  "files": [
+    ".github/FUNDING.yml",
+    "dist-types/index.d.ts",
+    "dist-types/index.d.ts.map",
+    "dist/index.js",
+    "dist/index.js.map",
+    "index.ts",
+    "package.json",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ],
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/unist": "^3.0.3",
+    "effect": "catalog:",
+    "effect-mdx": "^0.2.2",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:",
+    "unified": "^11.0.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.ts": "./*.ts",
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "keywords": [
+    "typescript",
+    "javascript",
+    "keycodes",
+    "key",
+    "enum",
+    "ts",
+    "event.which",
+    "event.key",
+    "event.keycode"
+  ],
+  "contributors": [
+    {
+      "name": "Nathan Friend",
+      "email": "hello@nathanfriend.io",
+      "url": "https://nathanfriend.io"
+    },
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "dependencies": {
+    "ts-pattern": "^5.9.0"
+  }
+}

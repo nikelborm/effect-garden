@@ -1,16 +1,15 @@
-/** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 import { Button as BaseButton } from '@base-ui/react/button'
 import { useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import * as Either from 'effect/Either'
 import { flow } from 'effect/Function'
+import { midiToNoteName } from './midiToNoteName.ts'
 import {
   currentLayoutHeightAtom,
   currentLayoutWidthAtom,
   getCellOfCurrentLayoutAtom,
-} from './grid.ts'
-import { midiToNoteName } from './midiToNoteName.ts'
+} from './state.ts'
 
 export function MidiPadSlide() {
   const currentLayoutWidth = useAtomValue(currentLayoutWidthAtom) ?? 0
@@ -57,6 +56,9 @@ const NoteButton = flow(
         role="gridcell"
         aria-colindex={cell.columnIndex}
         type="button"
+        aria-label={
+          Either.getOrThrow(midiToNoteName(cell.noteIndex)) + ' note button'
+        }
       >
         {Either.getOrThrow(midiToNoteName(cell.noteIndex))}
       </NeumorphicButton>
