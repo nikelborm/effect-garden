@@ -5,8 +5,8 @@ comparison of that property with non-printable values
 
 This is a rewrite of `ts-key-enum`
 ([GitHub](https://github.com/nfriend/ts-key-enum/),
-[NPM](https://www.npmjs.com/package/ts-key-enum)) originally made by
-Nathan Friend ([GitHub: @nfriend](https://github.com/nfriend/)).
+[NPM](https://www.npmjs.com/package/ts-key-enum)) originally made by Nathan
+Friend ([GitHub: @nfriend](https://github.com/nfriend/)).
 
 I brought a few improvements such as more robust scraping of keys with
 [Effect.ts](https://effect.website/), and instead of using `const enum`s my
