@@ -17,22 +17,17 @@ import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
-import * as NonPrintableKey from 'ts-key-not-enum'
-
-export type NonPrintableKeyboardKeys =
-  (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
-
-export type ValidKeyboardKey = string & Brand.Brand<'ValidKeyboardKey'>
-
-export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
-  // the second check is needed to ensure length of string of 1 Unicode
-  // character instead of checking for it to be 1 byte
-  key => key in NonPrintableKey || [...key].length === 1,
-  key =>
-    Brand.error(
-      `Expected "${key}" to be either a valid non-printable key name, or a single unicode symbol`,
-    ),
-)
+import {
+  MIDINoteId,
+  NotPressed,
+  RegisteredButtonID,
+  ValidKeyboardKey,
+  type NonPrintableKeyboardKeys,
+  type NoteCurrentPressure,
+  type NoteInitialVelocity,
+  type Pressed,
+  type PressedContinuously,
+} from './branded.ts'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,
@@ -82,59 +77,6 @@ export interface ButtonCoordinates {
   rowIndex: number
   columnIndex: number
 }
-
-export type MIDINoteId = number &
-  Brand.Brand<'MIDINoteId: integer in range 0-127'>
-
-export const MIDINoteId = Brand.refined<MIDINoteId>(
-  n => Number.isSafeInteger(n) && n >= 0 && n < 128,
-  n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
-)
-
-export type RegisteredButtonID = string &
-  Brand.Brand<'Registered button ID: non empty string'>
-
-export const RegisteredButtonID = Brand.refined<RegisteredButtonID>(
-  id => !!id.length,
-  () => Brand.error('Expected non empty string to make registered button id'),
-)
-
-export type Pressure = number & Brand.Brand<'Pressure: integer in range 1-127'>
-
-export const Pressure = Brand.refined<Pressure>(
-  n => Number.isSafeInteger(n) && n > 0 && n < 128,
-  n => Brand.error(`Expected ${n} to be an integer in range 1-127`),
-)
-
-export type NoteInitialVelocity = Pressure & Brand.Brand<'NoteInitialVelocity'>
-
-export const NoteInitialVelocity = Brand.all(
-  Pressure,
-  Brand.nominal<NoteInitialVelocity>(),
-)
-
-export type NoteCurrentPressure = Pressure & Brand.Brand<'NoteCurrentPressure'>
-
-export const NoteCurrentPressure = Brand.all(
-  Pressure,
-  Brand.nominal<NoteCurrentPressure>(),
-)
-
-export type NotPressed = 0 & Brand.Brand<'Not pressed'>
-export const NotPressed = 0 as NotPressed
-
-export type Pressed = 1 & Brand.Brand<'Pressed'>
-export const Pressed = 1 as Pressed
-
-export type PressedContinuously = 2 & Brand.Brand<'Pressed continuously'>
-export const PressedContinuously = 2 as PressedContinuously
-
-export const isNotPressed = (state: unknown): state is NotPressed =>
-  state === NotPressed
-export const isPressed = (state: unknown): state is Pressed => state === Pressed
-export const isPressedContinuously = (
-  state: unknown,
-): state is PressedContinuously => state === PressedContinuously
 
 interface AssignedKeyboardKeyInfo {
   assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
@@ -293,7 +235,7 @@ export const layoutStoreAtom = Atom.make<LayoutMap>(
   ]),
 ).pipe(Atom.withLabel('layoutStore'))
 
-const assertiveGetLayoutById = Atom.family((id: LayoutId) =>
+const assertiveGetLayoutAtomByLayoutId = Atom.family((id: LayoutId) =>
   Atom.make(get => {
     const layout = get(layoutStoreAtom).get(id)
 
@@ -306,10 +248,46 @@ const assertiveGetLayoutById = Atom.family((id: LayoutId) =>
   }),
 )
 
-const getVirtualMIDIPadButtonsStoreByLayoutId = Atom.family((id: LayoutId) =>
-  Atom.make(get => get(assertiveGetLayoutById(id)).virtualMIDIPadButtons),
+/**
+ * using null deselects it
+ */
+export const activeLayoutAtom = Atom.writable<
+  Option.Option<Layout>,
+  LayoutId | null
+>(
+  get => Option.some(get(assertiveGetLayoutAtomByLayoutId('main' as LayoutId))),
+  (ctx, activeLayoutId) => {
+    if (!activeLayoutId) return ctx.setSelf(Option.none())
+
+    ctx.set(focusedCellOfActiveLayoutAtom, Atom.Reset)
+    pipe(
+      activeLayoutId,
+      assertiveGetLayoutAtomByLayoutId,
+      ctx.get,
+      Option.some,
+      ctx.setSelf,
+    )
+  },
+).pipe(Atom.withLabel('activeLayoutId'))
+
+const getVirtualMIDIPadButtonsStoreByLayout = (layout: Layout) =>
+  layout.virtualMIDIPadButtons
+
+const getVirtualMIDIPadButtonsStoreByLayoutId = Atom.family(
+  (layoutId: LayoutId) =>
+    Atom.make(getAtomValue =>
+      pipe(
+        layoutId,
+        assertiveGetLayoutAtomByLayoutId,
+        getAtomValue,
+        getVirtualMIDIPadButtonsStoreByLayout,
+      ),
+    ),
 )
 
+const getVirtualMIDIPadButtonsStoreOfActiveLayout = Atom.make(get =>
+  Option.map(get(activeLayoutAtom), getVirtualMIDIPadButtonsStoreByLayout),
+)
 const assertiveGetButtonByIdAndVirtualMIDIPadButtonsMap = (
   buttonId: RegisteredButtonID,
   buttonStore: VirtualMIDIPadButtonsMap,
@@ -334,7 +312,7 @@ const assertiveGetButtonByIdAndLayoutId = Atom.family(
     ),
 )
 
-const assertiveGetButtonByIdOfActiveLayout = Atom.family(
+const assertiveGetButtonByIdInActiveLayout = Atom.family(
   (buttonId: RegisteredButtonID) =>
     Atom.make(get =>
       Option.map(get(activeLayoutAtom), layout =>
@@ -359,28 +337,6 @@ const getAssignedKeyboardKeyInfoByKeyboardKey = (
 //   }
 
 // const assertiveGet
-
-/**
- * using null deselects it
- */
-export const activeLayoutAtom = Atom.writable<
-  Option.Option<Layout>,
-  LayoutId | null
->(
-  get => Option.some(get(assertiveGetLayoutById('main' as LayoutId))),
-  (ctx, activeLayoutId) => {
-    if (!activeLayoutId) return ctx.setSelf(Option.none())
-
-    ctx.set(focusedCellOfActiveLayoutAtom, Atom.Reset)
-    pipe(
-      activeLayoutId,
-      assertiveGetLayoutById,
-      ctx.get,
-      Option.some,
-      ctx.setSelf,
-    )
-  },
-).pipe(Atom.withLabel('activeLayoutId'))
 
 export const registeredButtonIdsOfActiveLayoutAtom = Atom.make(get =>
   Option.map(
