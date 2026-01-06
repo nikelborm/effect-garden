@@ -35,6 +35,9 @@
   },
   "linter": {
     "rules": {
+      "correctness": {
+        "noChildrenProp": "info"
+      },
       "style": {
         "useTemplate": "off",
         "useShorthandFunctionType": "off"

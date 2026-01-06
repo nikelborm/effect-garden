@@ -16,6 +16,12 @@ different from using Typescript's `const enum` feature. Except it would work
 fine with `"erasableSyntaxOnly": true` in `tsconfig.json`, while `const enum`
 doesn't.
 
+## Additions (current or planned)
+
+1. More information is scraped from MDN
+2. Keys grouped by categories in certain files
+3. Exports of both constants and types
+
 ## Install
 
 ```sh

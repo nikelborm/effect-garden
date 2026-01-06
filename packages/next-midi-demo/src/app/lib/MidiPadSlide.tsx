@@ -3,67 +3,71 @@ import { Button as BaseButton } from '@base-ui/react/button'
 import { useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import * as Either from 'effect/Either'
-import { flow } from 'effect/Function'
+// import { flow } from 'effect/Function'
 import { midiToNoteName } from './midiToNoteName.ts'
 import {
-  currentLayoutHeightAtom,
-  currentLayoutWidthAtom,
-  getCellOfCurrentLayoutAtom,
+  activeLayoutHeightAtom,
+  activeLayoutWidthAtom,
+  getCellOfActiveLayoutByCellIdAtom,
+  keyboardNavigationAtom,
+  type RegisteredButtonID,
 } from './state.ts'
+import React from 'react'
+import * as Option from 'effect/Option'
 
 export function MidiPadSlide() {
-  const currentLayoutWidth = useAtomValue(currentLayoutWidthAtom) ?? 0
-  const currentLayoutHeight = useAtomValue(currentLayoutHeightAtom) ?? 0
+  const activeLayoutWidth = useAtomValue(activeLayoutWidthAtom) ?? 0
+  const activeLayoutHeight = useAtomValue(activeLayoutHeightAtom) ?? 0
+  const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
+  console.log('keyboardNavigation', keyboardNavigation)
 
   return (
     <ButtonGrid
       role="grid"
-      aria-rowcount={currentLayoutHeight}
-      aria-colcount={currentLayoutWidth}
+      aria-rowcount={activeLayoutHeight}
+      aria-colcount={activeLayoutWidth}
     >
-      {Array.from({ length: currentLayoutHeight }, (_, currentRowIndex) => (
+      {Array.from({ length: activeLayoutHeight }, (_, activeRowIndex) => (
         <DisplayContentsWrapper
           // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-          key={currentRowIndex}
+          key={activeRowIndex}
           role="row"
-          aria-rowindex={currentRowIndex}
+          aria-rowindex={activeRowIndex}
         >
-          {Array.from(
-            { length: currentLayoutWidth },
-            (_, currentColumnIndex) => (
-              <NoteButton
-                // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-                key={currentColumnIndex}
-                columnIndex={currentColumnIndex}
-                rowIndex={currentRowIndex}
-              />
-            ),
-          )}
+          {Array.from({ length: activeLayoutWidth }, (_, activeColumnIndex) => (
+            <NoteButton
+              // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
+              key={activeColumnIndex}
+              columnIndex={activeColumnIndex}
+              rowIndex={activeRowIndex}
+            />
+          ))}
         </DisplayContentsWrapper>
       ))}
     </ButtonGrid>
   )
 }
 
-const NoteButton = flow(
-  getCellOfCurrentLayoutAtom,
-  atom => useAtomValue(atom),
-  cell =>
-    cell && (
-      <NeumorphicButton
-        data-midi-note={cell.noteIndex}
-        isExternallyActive={!!cell.activationReportedByDevice}
-        role="gridcell"
-        aria-colindex={cell.columnIndex}
-        type="button"
-        aria-label={
-          Either.getOrThrow(midiToNoteName(cell.noteIndex)) + ' note button'
-        }
-      >
-        {Either.getOrThrow(midiToNoteName(cell.noteIndex))}
-      </NeumorphicButton>
-    ),
-)
+const NoteButton = (buttonId: RegisteredButtonID) =>
+  Option.match(useAtomValue(getCellOfActiveLayoutByCellIdAtom(buttonId)), {
+    onNone: () => {
+      throw new Error("There's no active layout")
+    },
+    onSome: cell => {
+      const noteName = Either.getOrThrow(midiToNoteName(cell.assignedMIDINote))
+      return (
+        <NeumorphicButton
+          data-midi-note={cell.assignedMIDINote}
+          data-is-externally-active={!!cell.activationReportedByDevice}
+          role="gridcell"
+          aria-colindex={cell.assignedMIDINote}
+          type="button"
+          aria-label={noteName + ' note button'}
+          children={noteName}
+        />
+      )
+    },
+  })
 
 const ButtonGrid = styled.div`
   width: 100vw;
@@ -86,7 +90,8 @@ const ButtonGrid = styled.div`
 `
 
 const NeumorphicButton = styled(BaseButton)<{
-  isExternallyActive?: boolean | undefined
+  'data-is-externally-active'?: boolean | undefined
+  'data-midi-note': number
 }>`
   border: none;
   border-radius: 23px;
@@ -114,7 +119,7 @@ const NeumorphicButton = styled(BaseButton)<{
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: -1;
     /* hidden by default */
-    opacity: ${({ isExternallyActive }) => (isExternallyActive ? 1 : 0)};
+    opacity: ${({ 'data-is-externally-active': isExternallyActive }) => (isExternallyActive ? 1 : 0)};
 
     // pressed
     background: linear-gradient(145deg, #596d61, #6a8174);
