@@ -1,5 +1,8 @@
-import { type Order, Predicate, SortedSet, Stream } from 'effect'
 import { dual } from 'effect/Function'
+import type * as Order from 'effect/Order'
+import * as Predicate from 'effect/Predicate'
+import * as SortedSet from 'effect/SortedSet'
+import * as Stream from 'effect/Stream'
 
 const isStream = (u: unknown): u is Stream.Stream<any> =>
   Predicate.hasProperty(u, Stream.StreamTypeId)

@@ -39,11 +39,25 @@
   "linter": {
     "rules": {
       "correctness": {
-        "noChildrenProp": "info"
+        "noChildrenProp": "info",
+        "useJsonImportAttributes": "error"
       },
       "style": {
         "useTemplate": "off",
-        "useShorthandFunctionType": "off"
+        "useShorthandFunctionType": "off",
+        "noImplicitBoolean": "error",
+        "noDefaultExport": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["effect", "@effect/*"],
+                "message": "Do not import from effect package directly. Use namespace imports instead"
+              }
+            ]
+          }
+        }
       }
     },
     "domains": {
