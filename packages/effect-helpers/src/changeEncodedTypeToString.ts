@@ -1,5 +1,4 @@
 import { identity, Option, Schema, type SchemaAST } from 'effect'
-
 import {
   getDefaultAnnotation,
   getDescriptionAnnotation,

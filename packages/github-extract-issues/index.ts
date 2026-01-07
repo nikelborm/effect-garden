@@ -4,7 +4,6 @@ import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import { BunContext } from '@effect/platform-bun'
 import '@total-typescript/ts-reset'
 
-import { Order } from 'effect'
 import {
   OctokitLayer,
   OctokitLayerLive,
@@ -12,6 +11,7 @@ import {
 } from 'effect-octokit-layer'
 
 import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
+import { Order } from 'effect'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'

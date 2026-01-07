@@ -1,5 +1,4 @@
 import { Either, ParseResult, type Schema, SchemaAST } from 'effect'
-
 import { dual } from 'effect/Function'
 
 import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts'

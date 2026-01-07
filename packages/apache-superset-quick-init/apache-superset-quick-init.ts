@@ -5,7 +5,6 @@ import {
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
 } from '@nikelborm/git-dl'
-import { Layer } from 'effect'
 import { prettyPrint } from 'effect-errors'
 
 import { CliConfig, Span } from '@effect/cli'
@@ -15,6 +14,7 @@ import { layer as NodeFileSystemLayer } from '@effect/platform-node-shared/NodeF
 import { layer as NodePathLayer } from '@effect/platform-node-shared/NodePath'
 import { runMain } from '@effect/platform-node-shared/NodeRuntime'
 import { layer as NodeTerminalLayer } from '@effect/platform-node-shared/NodeTerminal'
+import { Layer } from 'effect'
 import { catchAll, fail, provide, sandbox, withSpan } from 'effect/Effect'
 import { pipe } from 'effect/Function'
 

@@ -4,11 +4,14 @@
     "ignoreUnknown": true,
     "includes": [
       "**",
-      "!node_modules",
-      "!.next",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/gh-page",
       "!**/dist",
+      // TODO: remove later?
+      "!**/joiners",
       "!**/dist-types",
-      "!build"
+      "!**/build"
     ]
   },
   "vcs": {

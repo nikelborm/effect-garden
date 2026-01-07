@@ -1,5 +1,4 @@
 import { Effect, Predicate as P } from 'effect'
-
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 import { dual } from 'effect/Function'
 
