@@ -1,5 +1,6 @@
 import { strSnakeCase } from '@nevware21/ts-utils'
 import { foreignKey } from 'drizzle-orm/pg-core'
+
 import { addExtraConfig } from './addExtraConfig.ts'
 import type { ForeignTableColumnGetter } from './ForeignTableColumnGetter.ts'
 import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts'

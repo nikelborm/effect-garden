@@ -1,7 +1,9 @@
+import { downloadEntityFromRepo } from '@nikelborm/git-dl'
+
 import { FileSystem } from '@effect/platform/FileSystem'
 import { Path } from '@effect/platform/Path'
-import { downloadEntityFromRepo } from '@nikelborm/git-dl'
 import { all, fn } from 'effect/Effect'
+
 import { repo } from './repo.ts'
 
 export const downloadComposeFileAndAddNewNetworkToIt = fn(

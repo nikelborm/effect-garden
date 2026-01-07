@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.10/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
   "files": {
     "ignoreUnknown": true,
     "includes": [
@@ -49,12 +49,35 @@
     }
   },
   "assist": {
+    "enabled": true,
     "actions": {
       "source": {
-        "organizeImports": "on"
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              [":BUN:", ":NODE:"],
+              ":BLANK_LINE:",
+              ":URL:",
+              ":BLANK_LINE:",
+              [
+                ":PACKAGE:",
+                ":PACKAGE_WITH_PROTOCOL:",
+                "!effect/**",
+                "!effect",
+                "!@effect/**"
+              ],
+              ":BLANK_LINE:",
+              ["effect", "effect/**", "@effect/**"],
+              ":BLANK_LINE:",
+              ":URL:",
+              ":BLANK_LINE:",
+              ":PATH:"
+            ]
+          }
+        }
       }
     }
-  }
-  // implement the same kind of import sorting as in here:
+  } // implement the same kind of import sorting as in here:
   // https://github.com/jpb06/effect-errors/blob/0fb8790c5e0a9a7b13536abb413210a734f6313c/biome.json#L231
 }

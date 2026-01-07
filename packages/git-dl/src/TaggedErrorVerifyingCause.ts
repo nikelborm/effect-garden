@@ -1,7 +1,8 @@
+import type { Equals } from 'tsafe'
+
 import type { YieldableError } from 'effect/Cause'
 import { TaggedError } from 'effect/Data'
 import { isFunction } from 'effect/Predicate'
-import type { Equals } from 'tsafe'
 
 const removeLastIfItIsEmptyObject = (arr: Array<unknown>) =>
   Object.keys(arr.at(-1) ?? {}).length ? arr : arr.slice(0, -1)

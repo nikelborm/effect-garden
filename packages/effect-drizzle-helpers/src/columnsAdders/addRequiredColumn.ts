@@ -1,4 +1,5 @@
 import type { NotNull } from 'drizzle-orm'
+
 import {
   addRequiredColumns,
   type ColumnBuilderWithNotNullMethod,

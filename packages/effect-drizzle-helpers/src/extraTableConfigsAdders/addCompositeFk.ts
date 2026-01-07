@@ -1,6 +1,7 @@
 import { strSnakeCase } from '@nevware21/ts-utils'
 import type { AnyPgTable } from 'drizzle-orm/pg-core'
 import { foreignKey } from 'drizzle-orm/pg-core'
+
 import { addExtraConfig } from './addExtraConfig.ts'
 import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts'
 import { getCompressedIdentifierName } from './getCompressedIdentifierName.ts'

@@ -1,7 +1,9 @@
 import { RequestError } from '@octokit/request-error'
+
 import { UnknownException } from 'effect/Cause'
 import { gen, map, tryPromise } from 'effect/Effect'
 import { pipe } from 'effect/Function'
+
 import { CastToReadableStream } from './castToReadableStream.ts'
 import {
   GitHubApiGeneralUserError,

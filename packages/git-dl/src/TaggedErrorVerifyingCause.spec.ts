@@ -1,8 +1,10 @@
+import { outdent } from 'outdent'
+import { assert, type Equals } from 'tsafe'
+
 import { describe, it } from '@effect/vitest'
 import { right } from 'effect/Either'
 import { ParseError, Unexpected } from 'effect/ParseResult'
-import { outdent } from 'outdent'
-import { assert, type Equals } from 'tsafe'
+
 import { FailedToParseGitLFSInfoError } from './getPathContents/index.ts'
 import { InconsistentExpectedAndRealContentSizeError } from './getPathContents/parseGitLFSObjectEither.ts'
 import {

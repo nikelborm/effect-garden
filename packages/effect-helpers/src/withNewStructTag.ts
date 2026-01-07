@@ -1,5 +1,7 @@
 import { Schema } from 'effect'
+
 import { dual } from 'effect/Function'
+
 import { type GetFields, withNewStructFields } from './withNewStructFields.ts'
 import type { EnsureStruct } from './withOpenApiAnnotations.ts'
 

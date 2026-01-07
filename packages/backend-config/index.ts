@@ -1,4 +1,3 @@
-import { FileSystem } from '@effect/platform'
 import {
   Config,
   ConfigError,
@@ -10,6 +9,8 @@ import {
   Redacted,
   Schema,
 } from 'effect'
+
+import { FileSystem } from '@effect/platform'
 
 // ! Don't forget to update packages/backend/turbo.json and add new env variables there
 

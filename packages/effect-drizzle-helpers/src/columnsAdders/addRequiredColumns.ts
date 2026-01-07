@@ -1,5 +1,6 @@
 import type { NotNull } from 'drizzle-orm'
 import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+
 import type { AllowOnlyNonEmptyObjectsWithActualKeys } from './AllowOnlyValidColumnMaps.ts'
 import { addColumns } from './addColumns.ts'
 import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts'

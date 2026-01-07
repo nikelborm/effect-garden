@@ -1,7 +1,14 @@
 'use client'
+
 import { Atom, Result } from '@effect-atom/atom-react'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
+import * as Parsing from 'effect-web-midi/Parsing'
+import * as Util from 'effect-web-midi/Util'
+
 import * as EArray from 'effect/Array'
-import * as Brand from 'effect/Brand'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
@@ -11,23 +18,22 @@ import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
-import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
-import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
-import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
-import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
-import * as Parsing from 'effect-web-midi/Parsing'
-import * as Util from 'effect-web-midi/Util'
+
 import {
+  type LayoutId,
   MIDINoteId,
+  type NonPrintableKeyboardKeys,
   NotPressed,
   RegisteredButtonID,
   ValidKeyboardKey,
-  type NonPrintableKeyboardKeys,
-  type NoteCurrentPressure,
-  type NoteInitialVelocity,
-  type Pressed,
-  type PressedContinuously,
 } from './branded.ts'
+import type {
+  AssignedKeyboardKeyInfo,
+  Layout,
+  LayoutMap,
+  VirtualMIDIPadButton,
+  VirtualMIDIPadButtonsMap,
+} from './stateTypes.ts'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,
@@ -72,59 +78,6 @@ export const getMessagesLogAtom: (
         Atom.withServerValueInitial,
       ),
 )
-
-export interface ButtonCoordinates {
-  rowIndex: number
-  columnIndex: number
-}
-
-interface AssignedKeyboardKeyInfo {
-  assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
-  keyboardKeyPressState: NotPressed | Pressed
-}
-
-type MIDIDeviceNotePressInfo =
-  | { state: NotPressed }
-  | { state: Pressed; initialAcquiredVelocity: NoteInitialVelocity }
-  | {
-      state: PressedContinuously
-      initialAcquiredVelocity: NoteInitialVelocity
-      latestContinuousPressure: NoteCurrentPressure
-    }
-
-interface AssignedMIDIDeviceNote {
-  assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
-  midiPadPress: MIDIDeviceNotePressInfo
-}
-
-interface VirtualMIDIPadButton {
-  id: RegisteredButtonID
-  assignedMIDINote: MIDINoteId
-  assignedSound: unknown
-}
-
-type LayoutId = string & Brand.Brand<'LayoutId'>
-
-interface LayoutMap extends Map<LayoutId, Layout> {}
-
-export interface KeyboardKeyToVirtualMIDIPadButtonMap
-  extends Map<ValidKeyboardKey, AssignedKeyboardKeyInfo> {}
-
-export interface PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap
-  extends Map<MIDINoteId, AssignedMIDIDeviceNote> {}
-
-export interface VirtualMIDIPadButtonsMap
-  extends Map<RegisteredButtonID, VirtualMIDIPadButton> {}
-
-export interface Layout {
-  id: LayoutId
-  inputIdPreferences: EMIDIInput.Id[]
-  width: number
-  height: number
-  keyboardKeyToVirtualMIDIPadButtonMap: KeyboardKeyToVirtualMIDIPadButtonMap
-  physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap: PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap
-  virtualMIDIPadButtons: VirtualMIDIPadButtonsMap
-}
 
 export const makeKeyboardSliceMapAtom = <
   const SelectedKeys extends NonPrintableKeyboardKeys,
@@ -288,11 +241,17 @@ const getVirtualMIDIPadButtonsStoreByLayoutId = Atom.family(
 const getVirtualMIDIPadButtonsStoreOfActiveLayout = Atom.make(get =>
   Option.map(get(activeLayoutAtom), getVirtualMIDIPadButtonsStoreByLayout),
 )
+
 const assertiveGetButtonByIdAndVirtualMIDIPadButtonsMap = (
   buttonId: RegisteredButtonID,
   buttonStore: VirtualMIDIPadButtonsMap,
 ) => {
   const button = buttonStore.get(buttonId)
+  console.log({
+    buttonId,
+    buttonStore,
+    button,
+  })
 
   if (!button)
     throw new Error(
@@ -302,7 +261,7 @@ const assertiveGetButtonByIdAndVirtualMIDIPadButtonsMap = (
   return button
 }
 
-const assertiveGetButtonByIdAndLayoutId = Atom.family(
+export const assertiveGetButtonByIdAndLayoutId = Atom.family(
   ([buttonId, layoutId]: [buttonId: RegisteredButtonID, layoutId: LayoutId]) =>
     Atom.make(get =>
       assertiveGetButtonByIdAndVirtualMIDIPadButtonsMap(
@@ -312,7 +271,7 @@ const assertiveGetButtonByIdAndLayoutId = Atom.family(
     ),
 )
 
-const assertiveGetButtonByIdInActiveLayout = Atom.family(
+export const assertiveGetButtonByIdInActiveLayout = Atom.family(
   (buttonId: RegisteredButtonID) =>
     Atom.make(get =>
       Option.map(get(activeLayoutAtom), layout =>
@@ -324,7 +283,7 @@ const assertiveGetButtonByIdInActiveLayout = Atom.family(
     ),
 )
 
-const getAssignedKeyboardKeyInfoByKeyboardKey = (
+export const getAssignedKeyboardKeyInfoByKeyboardKey = (
   keyboardKey: ValidKeyboardKey,
 ) => Atom.make(get => {})
 
@@ -339,10 +298,9 @@ const getAssignedKeyboardKeyInfoByKeyboardKey = (
 // const assertiveGet
 
 export const registeredButtonIdsOfActiveLayoutAtom = Atom.make(get =>
-  Option.map(
-    get(activeLayoutAtom),
-    layout => Object.keys(layout.virtualMIDIPadButtons) as RegisteredButtonID[],
-  ),
+  Option.map(get(activeLayoutAtom), layout => [
+    ...layout.virtualMIDIPadButtons.keys(),
+  ]),
 )
 
 export const activeLayoutWidthAtom = Atom.make(get =>
@@ -365,14 +323,14 @@ export const getRowOfIdsOfActiveLayoutAtom = Atom.family((rowIndex: number) =>
   ).pipe(Atom.withLabel('rowOfIdsOfActiveLayout')),
 )
 
-export const getCellOfActiveLayoutByCellIdAtom = Atom.family(
-  (id: RegisteredButtonID) =>
-    Atom.make(get =>
-      Option.map(get(activeLayoutAtom), layout =>
-        layout.virtualMIDIPadButtons.assertiveGet(id),
-      ),
-    ).pipe(Atom.withLabel('cellOfActiveLayout')),
-)
+// export const getCellOfActiveLayoutByCellIdAtom = Atom.family(
+//   (id: RegisteredButtonID) =>
+//     Atom.make(get =>
+//       Option.map(get(activeLayoutAtom), layout =>
+//         layout.virtualMIDIPadButtons.assertiveGet(id),
+//       ),
+//     ).pipe(Atom.withLabel('cellOfActiveLayout')),
+// )
 
 export const virtualMIDIPadButtonsWithActivations = Atom.make(get =>
   Option.map(get(activeLayoutAtom), layout => {
@@ -503,7 +461,7 @@ interface UpdatePortMapFn {
 //   Key.ArrowLeft | Key.ArrowRight | Key.ArrowUp | Key.ArrowDown
 // > =
 
-export const keyboardNavigationAtom = Atom.make(keyDownEventsStream)
+// export const keyboardNavigationAtom = Atom.make(keyDownEventsStream)
 
 // export const currentlyFocusedCellAtom = Atom.make()
 

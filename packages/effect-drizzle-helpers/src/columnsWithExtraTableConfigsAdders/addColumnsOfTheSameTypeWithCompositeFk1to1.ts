@@ -1,4 +1,5 @@
 import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+
 import type { FunctionExtendingColumnsMap } from '../columnsAdders/index.ts'
 import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts'
 

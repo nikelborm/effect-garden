@@ -4,6 +4,7 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+
 import * as EMIDIPort from './EMIDIPort.ts'
 import * as MIDIErrors from './MIDIErrors.ts'
 import * as Util from './Util.ts'

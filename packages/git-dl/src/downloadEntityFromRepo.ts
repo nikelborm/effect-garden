@@ -1,6 +1,8 @@
 import type { Octokit } from '@octokit/core'
+
 import type { UnknownException } from 'effect/Cause'
 import { type Effect, fail, gen } from 'effect/Effect'
+
 import type { FailedToCastDataToReadableStreamError } from './castToReadableStream.ts'
 import type {
   GitHubApiAuthRatelimitedError,

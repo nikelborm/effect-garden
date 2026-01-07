@@ -1,3 +1,5 @@
+import { outdent } from 'outdent'
+
 import {
   type Options,
   text,
@@ -16,7 +18,6 @@ import { flatMap } from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import { fail, succeed, Type } from 'effect/ParseResult'
 import { filter, NonEmptyString, transformOrFail } from 'effect/Schema'
-import { outdent } from 'outdent'
 
 const isGitHubSlug = (s: string) => !!s.match(/^[a-z0-9.\-_]+$/gi)
 

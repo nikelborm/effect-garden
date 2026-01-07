@@ -2,6 +2,7 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as EFunction from 'effect/Function'
+
 import * as EMIDIAccess from '../EMIDIAccess.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
 import * as Get from '../getPortByPortId/getPortByPortIdAndAccess.ts'

@@ -1,4 +1,5 @@
 import { Effect } from 'effect'
+
 import type { IdType } from './buildEntityParts.ts'
 
 export const ensureReturningOneId =

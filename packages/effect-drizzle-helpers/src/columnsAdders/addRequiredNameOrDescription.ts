@@ -1,5 +1,7 @@
 import { varchar } from 'drizzle-orm/pg-core'
+
 import { flow } from 'effect/Function'
+
 import { addColumn } from './addColumn.ts'
 import { addRequiredColumn } from './addRequiredColumn.ts'
 

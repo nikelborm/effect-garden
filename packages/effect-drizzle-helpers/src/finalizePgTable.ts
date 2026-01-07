@@ -1,6 +1,7 @@
 import { strCamelCase } from '@nevware21/ts-utils'
 import { pgTable } from 'drizzle-orm/pg-core'
 import type { CamelCase } from 'type-fest'
+
 import type { GeneralColumnMap } from './columnsAdders/AllowOnlyValidColumnMaps.ts'
 import type { TableFuncArgs } from './TableFuncArgs.ts'
 

@@ -1,8 +1,11 @@
 import type { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { createGunzip } from 'node:zlib'
-import { type Effect, gen, tryPromise } from 'effect/Effect'
+
 import { extract } from 'tar-fs'
+
+import { type Effect, gen, tryPromise } from 'effect/Effect'
+
 import { OutputConfigTag } from './configContext.ts'
 import {
   buildTaggedErrorClassVerifyingCause,

@@ -14,6 +14,7 @@
     "@effect-atom/atom": "^0.4.11",
     "@effect-atom/atom-react": "catalog:",
     "@effect/platform-browser": "catalog:",
+    "@fp-ts/optic": "^0.25.0",
     "@linaria/core": "catalog:",
     "@linaria/react": "catalog:",
     "@serwist/next": "^9.5.0",

@@ -1,5 +1,6 @@
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
+
 import type * as EMIDIAccess from './EMIDIAccess.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
 

@@ -1,5 +1,6 @@
 import type { BuildIndexColumn } from 'drizzle-orm'
 import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core'
+
 import type { GeneralColumnMap } from './columnsAdders/index.ts'
 
 export type TableFuncArgs<

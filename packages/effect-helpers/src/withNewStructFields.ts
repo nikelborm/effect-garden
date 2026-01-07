@@ -3,9 +3,8 @@ import * as Schema from 'effect/Schema'
 import * as SchemaAST from 'effect/SchemaAST'
 import * as Struct from 'effect/Struct'
 
-export type GetFields<T> = T extends Schema.Struct<infer fields>
-  ? fields
-  : never
+export type GetFields<T> =
+  T extends Schema.Struct<infer fields> ? fields : never
 
 export const withNewStructFields: {
   // data-last

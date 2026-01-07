@@ -1,4 +1,5 @@
 import { type Brand, Schema } from 'effect'
+
 import { changeEncodedTypeToString } from './changeEncodedTypeToString.ts'
 import {
   withOpenApiAnnotationsForStructs as _withOpenApiAnnotationsForStructs,

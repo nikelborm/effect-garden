@@ -1,5 +1,6 @@
 import * as Effect from 'effect/Effect'
 import type * as Scope from 'effect/Scope'
+
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'

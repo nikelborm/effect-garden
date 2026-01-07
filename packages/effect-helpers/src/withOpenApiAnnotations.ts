@@ -1,6 +1,8 @@
 import type { Schema } from 'effect'
+
 import { dual } from 'effect/Function'
 import type { Struct } from 'effect/Schema'
+
 import { withInferredFromTagIdentifierSchemaAnnotationSync } from './withInferredFromTagIdentifierSchemaAnnotation.ts'
 
 type EveryDebugStatus = 'debug enabled' | 'debug disabled'

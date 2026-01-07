@@ -1,9 +1,11 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 /** biome-ignore-all lint/correctness/noUnusedImports: it's a prototype, so I don't care for now> */
 'use client'
+
 import { Atom, useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+
 import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
 import { MIDIDeviceSelect } from './lib/MIDIDeviceSelect.tsx'

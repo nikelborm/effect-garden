@@ -2,6 +2,7 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Effect from 'effect/Effect'
+
 import * as EMIDIPort from '../EMIDIPort.ts'
 import * as Util from '../Util.ts'
 

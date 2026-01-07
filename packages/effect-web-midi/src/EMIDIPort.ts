@@ -68,6 +68,7 @@ export {
   // makeImpl,
   assert,
   BothId,
+  type BothIdToBothInstanceMap as IdToInstanceMap,
   type EMIDIPort,
   type ExtractTypeFromPort,
   type Id,
@@ -75,7 +76,6 @@ export {
   type PolymorphicPort,
   type PolymorphicPortClean,
   type TypeId,
-  type BothIdToBothInstanceMap as IdToInstanceMap,
 } from './internal/EMIDIPort.ts'
 export {
   // type GetPortById,

@@ -5,10 +5,13 @@ import {
   useAtomValue,
 } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
+import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+
 import * as EArray from 'effect/Array'
 import * as EFunction from 'effect/Function'
 import * as EString from 'effect/String'
-import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+
+import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './state.ts'
 import {
   ChevronUpDownSVG,
   SelectIcon,
@@ -26,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/Select'
-import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './state.ts'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,

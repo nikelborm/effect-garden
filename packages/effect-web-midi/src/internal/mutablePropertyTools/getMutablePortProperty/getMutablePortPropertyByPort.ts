@@ -1,4 +1,5 @@
 import * as Effect from 'effect/Effect'
+
 import type * as EMIDIPort from '../../EMIDIPort.ts'
 import { getValueInRawPortFieldUnsafe } from '../getValueInRawPortFieldUnsafe.ts'
 import type * as Match from '../matchMutablePortProperty/matchMutablePortPropertyByPort.ts'

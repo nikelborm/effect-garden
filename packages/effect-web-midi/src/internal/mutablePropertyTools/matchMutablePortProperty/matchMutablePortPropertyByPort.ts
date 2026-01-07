@@ -4,6 +4,7 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
+
 import * as EMIDIInput from '../../EMIDIInput.ts'
 import * as EMIDIOutput from '../../EMIDIOutput.ts'
 import * as EMIDIPort from '../../EMIDIPort.ts'

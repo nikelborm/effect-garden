@@ -1,5 +1,7 @@
 import { timestamp } from 'drizzle-orm/pg-core'
+
 import { flow } from 'effect/Function'
+
 import { addColumn } from './addColumn.ts'
 
 const addHappenedAtDateColumn = <const TColumnName extends string>(

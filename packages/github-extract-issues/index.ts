@@ -3,8 +3,15 @@ import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import { BunContext } from '@effect/platform-bun'
 import '@total-typescript/ts-reset'
-import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
+
 import { Order } from 'effect'
+import {
+  OctokitLayer,
+  OctokitLayerLive,
+  type RepoArgs,
+} from 'effect-octokit-layer'
+
+import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
@@ -15,11 +22,6 @@ import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
 import * as EffectString from 'effect/String'
 import * as Struct from 'effect/Struct'
-import {
-  OctokitLayer,
-  OctokitLayerLive,
-  type RepoArgs,
-} from 'effect-octokit-layer'
 
 // TODO: test how the handle per character streaming: who waits to buffer
 // everything, and who waits for newline

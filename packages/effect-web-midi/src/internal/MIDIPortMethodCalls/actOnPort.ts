@@ -3,6 +3,7 @@
 
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+
 import * as EMIDIAccess from '../EMIDIAccess.ts'
 import type * as EMIDIPort from '../EMIDIPort.ts'
 import type * as Get from '../getPortByPortId/getPortByPortIdAndAccess.ts'

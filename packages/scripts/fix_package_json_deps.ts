@@ -1,5 +1,9 @@
+import { readdir, readFile, writeFile } from 'fs/promises'
+import { console } from 'inspector'
+import { join } from 'path'
+
 import * as EArray from 'effect/Array'
-import { pipe, flow } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as EIterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
@@ -8,9 +12,7 @@ import * as Schema from 'effect/Schema'
 import * as EString from 'effect/String'
 import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
-import { readdir, readFile, writeFile } from 'fs/promises'
-import { console } from 'inspector'
-import { join } from 'path'
+
 import {
   packagesDirPath,
   projectRootAbsolutePath,

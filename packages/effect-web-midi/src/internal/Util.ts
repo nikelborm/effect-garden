@@ -5,6 +5,7 @@ import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
+
 import type * as MIDIErrors from './MIDIErrors.ts'
 
 export const midiPortStaticFields = [

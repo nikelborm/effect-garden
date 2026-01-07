@@ -1,3 +1,5 @@
+import { outdent } from 'outdent'
+
 import { type Either, gen, isRight, left, mapLeft } from 'effect/Either'
 import { ParseError } from 'effect/ParseResult'
 import {
@@ -6,7 +8,7 @@ import {
   NumberFromString,
   Struct,
 } from 'effect/Schema'
-import { outdent } from 'outdent'
+
 import {
   buildTaggedErrorClassVerifyingCause,
   type TaggedErrorClass,

@@ -1,11 +1,11 @@
-import * as Brand from 'effect/Brand'
 import * as NonPrintableKey from 'ts-key-not-enum'
+
+import * as Brand from 'effect/Brand'
 
 export type NonPrintableKeyboardKeys =
   (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
 
 export type ValidKeyboardKey = string & Brand.Brand<'ValidKeyboardKey'>
-
 export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
   // the second check is needed to ensure length of string of 1 Unicode
   // character instead of checking for it to be 1 byte
@@ -18,7 +18,6 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
 
 export type MIDINoteId = number &
   Brand.Brand<'MIDINoteId: integer in range 0-127'>
-
 export const MIDINoteId = Brand.refined<MIDINoteId>(
   n => Number.isSafeInteger(n) && n >= 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
@@ -26,14 +25,12 @@ export const MIDINoteId = Brand.refined<MIDINoteId>(
 
 export type RegisteredButtonID = string &
   Brand.Brand<'Registered button ID: non empty string'>
-
 export const RegisteredButtonID = Brand.refined<RegisteredButtonID>(
   id => !!id.length,
   () => Brand.error('Expected non empty string to make registered button id'),
 )
 
 export type Pressure = number & Brand.Brand<'Pressure: integer in range 1-127'>
-
 export const Pressure = Brand.refined<Pressure>(
   n => Number.isSafeInteger(n) && n > 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 1-127`),
@@ -68,3 +65,5 @@ export const isPressed = (state: number): state is Pressed => state === Pressed
 export const isPressedContinuously = (
   state: number,
 ): state is PressedContinuously => state === PressedContinuously
+
+export type LayoutId = string & Brand.Brand<'LayoutId'>

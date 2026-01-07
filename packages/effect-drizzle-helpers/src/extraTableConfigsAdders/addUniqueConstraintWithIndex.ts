@@ -1,5 +1,6 @@
 import { strSnakeCase } from '@nevware21/ts-utils'
 import { unique } from 'drizzle-orm/pg-core'
+
 import { addExtraConfig } from './addExtraConfig.ts'
 import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts'
 import { getCompressedIdentifierName } from './getCompressedIdentifierName.ts'

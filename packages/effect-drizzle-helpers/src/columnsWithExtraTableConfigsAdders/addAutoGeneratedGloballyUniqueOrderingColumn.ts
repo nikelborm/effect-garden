@@ -1,5 +1,7 @@
 import { serial } from 'drizzle-orm/pg-core'
+
 import { flow } from 'effect/Function'
+
 import { addRequiredColumn } from '../columnsAdders/index.ts'
 import { addUniqueConstraintWithIndex } from '../extraTableConfigsAdders/index.ts'
 

@@ -8,6 +8,7 @@ import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
+
 import { GPG_RECIPIENT } from './gpgRecipientConfig.ts'
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
 

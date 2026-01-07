@@ -1,55 +1,60 @@
 'use client'
+
 import { Button as BaseButton } from '@base-ui/react/button'
 import { useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
+
 import * as Either from 'effect/Either'
+import * as Option from 'effect/Option'
+
+import type { RegisteredButtonID } from './branded.ts'
 // import { flow } from 'effect/Function'
 import { midiToNoteName } from './midiToNoteName.ts'
 import {
   activeLayoutHeightAtom,
   activeLayoutWidthAtom,
-  getCellOfActiveLayoutByCellIdAtom,
-  keyboardNavigationAtom,
-  type RegisteredButtonID,
+  assertiveGetButtonByIdInActiveLayout,
+  // keyboardNavigationAtom,
+  registeredButtonIdsOfActiveLayoutAtom,
 } from './state.ts'
-import React from 'react'
-import * as Option from 'effect/Option'
 
-export function MidiPadSlide() {
-  const activeLayoutWidth = useAtomValue(activeLayoutWidthAtom) ?? 0
-  const activeLayoutHeight = useAtomValue(activeLayoutHeightAtom) ?? 0
-  const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
-  console.log('keyboardNavigation', keyboardNavigation)
+// const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
+// console.log('keyboardNavigation', keyboardNavigation)
 
-  return (
-    <ButtonGrid
-      role="grid"
-      aria-rowcount={activeLayoutHeight}
-      aria-colcount={activeLayoutWidth}
-    >
-      {Array.from({ length: activeLayoutHeight }, (_, activeRowIndex) => (
-        <DisplayContentsWrapper
-          // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-          key={activeRowIndex}
-          role="row"
-          aria-rowindex={activeRowIndex}
-        >
-          {Array.from({ length: activeLayoutWidth }, (_, activeColumnIndex) => (
-            <NoteButton
+export const MidiPadSlide = () =>
+  Option.match(
+    Option.all({
+      width: useAtomValue(activeLayoutWidthAtom),
+      height: useAtomValue(activeLayoutHeightAtom),
+      ids: useAtomValue(registeredButtonIdsOfActiveLayoutAtom),
+    }),
+    {
+      onNone: () => <span>No layout is selected</span>,
+      onSome: ({ height, width, ids }) => (
+        <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
+          {Array.from({ length: height }, (_, activeRowIndex) => (
+            <DisplayContentsWrapper
               // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-              key={activeColumnIndex}
-              columnIndex={activeColumnIndex}
-              rowIndex={activeRowIndex}
-            />
+              key={activeRowIndex}
+              role="row"
+              aria-rowindex={activeRowIndex}
+            >
+              {Array.from({ length: width }, (_, activeColumnIndex) => (
+                <NoteButton
+                  // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
+                  key={activeColumnIndex}
+                  buttonId={ids[activeRowIndex * width + activeColumnIndex]!}
+                />
+              ))}
+            </DisplayContentsWrapper>
           ))}
-        </DisplayContentsWrapper>
-      ))}
-    </ButtonGrid>
+        </ButtonGrid>
+      ),
+    },
   )
-}
 
-const NoteButton = (buttonId: RegisteredButtonID) =>
-  Option.match(useAtomValue(getCellOfActiveLayoutByCellIdAtom(buttonId)), {
+const NoteButton = ({ buttonId }: { buttonId: RegisteredButtonID }) =>
+  Option.match(useAtomValue(assertiveGetButtonByIdInActiveLayout(buttonId)), {
     onNone: () => {
       throw new Error("There's no active layout")
     },
@@ -58,7 +63,7 @@ const NoteButton = (buttonId: RegisteredButtonID) =>
       return (
         <NeumorphicButton
           data-midi-note={cell.assignedMIDINote}
-          data-is-externally-active={!!cell.activationReportedByDevice}
+          // data-is-externally-active={!!cell.activationReportedByDevice}
           role="gridcell"
           aria-colindex={cell.assignedMIDINote}
           type="button"

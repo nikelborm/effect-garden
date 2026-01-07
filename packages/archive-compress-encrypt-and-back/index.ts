@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import { prettyPrint } from 'effect-errors'
+
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
@@ -8,10 +10,10 @@ import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunTerminal from '@effect/platform-bun/BunTerminal'
-import { prettyPrint } from 'effect-errors'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+
 import pkg from './package.json' with { type: 'json' }
 import { archiveCompressEncryptCommand } from './src/archiveCompressEncryptCommand.ts'
 import { decryptDecompressExtractCommand } from './src/decryptDecompressExtractCommand.ts'

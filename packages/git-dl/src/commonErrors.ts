@@ -1,4 +1,5 @@
 import { RequestError } from '@octokit/request-error'
+
 import {
   buildTaggedErrorClassVerifyingCause,
   type TaggedErrorClass,

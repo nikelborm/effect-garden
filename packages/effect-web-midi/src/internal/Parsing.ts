@@ -4,6 +4,7 @@
  */
 
 import * as Stream from 'effect/Stream'
+
 import type * as EMIDIInput from './EMIDIInput.ts'
 
 //? NOTE: Look at the issue https://github.com/WebAudio/web-midi-api/issues/179

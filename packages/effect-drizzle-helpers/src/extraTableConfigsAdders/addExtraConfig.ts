@@ -1,4 +1,5 @@
 import type { PgTableExtraConfigValue } from 'drizzle-orm/pg-core'
+
 import type { ColumnMap, GeneralColumnMap } from '../columnsAdders/index.ts'
 import type { RemapToTableArgumentOfExtraConfigRenderer } from '../TableFuncArgs.ts'
 import type { FunctionRequiringColumnsMap } from './FunctionRequiringColumnsMap.ts'

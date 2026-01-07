@@ -1,7 +1,9 @@
 import type { IsIdentity, NotNull } from 'drizzle-orm'
 import type { PgBigInt53BuilderInitial } from 'drizzle-orm/pg-core'
 import { bigint } from 'drizzle-orm/pg-core'
+
 import { pipe } from 'effect/Function'
+
 import { addColumn, type GeneralColumnMap } from '../columnsAdders/index.ts'
 import { addPrimaryKey } from '../extraTableConfigsAdders/index.ts'
 import type { TableFuncArgs } from '../TableFuncArgs.ts'

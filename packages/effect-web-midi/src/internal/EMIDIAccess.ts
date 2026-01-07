@@ -18,6 +18,7 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
+
 import * as EMIDIInput from './EMIDIInput.ts'
 import * as EMIDIOutput from './EMIDIOutput.ts'
 import type * as EMIDIPort from './EMIDIPort.ts'

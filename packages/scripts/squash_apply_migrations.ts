@@ -1,8 +1,10 @@
 #!/usr/bin/env bun
 
-import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api'
 import { mkdir, rm, writeFile } from 'fs/promises'
 import { join } from 'path'
+
+import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api'
+
 import { drizzleKitMigrateDev } from './lib/composeCommands.ts'
 import { ensureDevScriptRunnerIsReady } from './lib/ensureDevScriptRunnerIsReady.ts'
 import { executeSqlInDevPgContainer } from './lib/executeSqlInDevPgContainer.ts'

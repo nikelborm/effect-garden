@@ -1,7 +1,9 @@
 import { createWriteStream } from 'node:fs'
 import type { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
+
 import { type Effect, gen, tryPromise } from 'effect/Effect'
+
 import { OutputConfigTag } from './configContext.ts'
 import {
   buildTaggedErrorClassVerifyingCause,

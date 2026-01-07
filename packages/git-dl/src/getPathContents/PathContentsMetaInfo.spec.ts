@@ -1,7 +1,10 @@
 import { text } from 'node:stream/consumers'
-import { describe, it, type TestContext } from '@effect/vitest'
+
 import type { Octokit } from '@octokit/core'
 import { RequestError } from '@octokit/request-error'
+import { assert, typeGuard } from 'tsafe'
+
+import { describe, it, type TestContext } from '@effect/vitest'
 import { UnknownException } from 'effect/Cause'
 import {
   andThen,
@@ -17,7 +20,7 @@ import {
 } from 'effect/Effect'
 import { isRight } from 'effect/Either'
 import { pipe } from 'effect/Function'
-import { assert, typeGuard } from 'tsafe'
+
 import { allWithInheritedConcurrencyByDefault } from '../allWithInheritedConcurrency.ts'
 import { FailedToCastDataToReadableStreamError } from '../castToReadableStream.ts'
 import {

@@ -1,6 +1,7 @@
 import withSerwistInit from '@serwist/next'
-import { pipe } from 'effect/Function'
 import withLinaria, { type LinariaConfig } from 'next-with-linaria'
+
+import { pipe } from 'effect/Function'
 
 const withSerwist = withSerwistInit({
   swSrc: 'src/sw.mts', // Your worker source

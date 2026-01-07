@@ -1,5 +1,11 @@
 #!/usr/bin/env bun
 
+import { DateTime, String as EString } from 'effect'
+import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
+import { match, P } from 'ts-pattern'
+import type { Transformer } from 'unified'
+import type { Node } from 'unist'
+
 import {
   FetchHttpClient,
   FileSystem,
@@ -9,7 +15,6 @@ import {
 } from '@effect/platform'
 import { KiB } from '@effect/platform/FileSystem'
 import { BunFileSystem, BunPath } from '@effect/platform-bun'
-import { DateTime, String as EString } from 'effect'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
@@ -17,10 +22,6 @@ import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
-import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
-import { match, P } from 'ts-pattern'
-import type { Transformer } from 'unified'
-import type { Node } from 'unist'
 
 interface Key {
   value: string

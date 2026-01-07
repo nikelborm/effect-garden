@@ -1,5 +1,7 @@
-import { defineConfig } from 'drizzle-kit'
 import { join } from 'path'
+
+import { defineConfig } from 'drizzle-kit'
+
 import { decodeDbConfigSync } from './lib/getDevEnvFromFile.ts'
 import {
   databasePackageDirPath,

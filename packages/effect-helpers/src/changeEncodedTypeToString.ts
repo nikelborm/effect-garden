@@ -1,10 +1,12 @@
 import { identity, Option, Schema, type SchemaAST } from 'effect'
+
 import {
   getDefaultAnnotation,
   getDescriptionAnnotation,
   getExamplesAnnotation,
   getTitleAnnotation,
 } from 'effect/SchemaAST'
+
 import type {
   CommonAnnotationMap,
   CommonAnnotationMapKeys,

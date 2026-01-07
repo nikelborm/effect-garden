@@ -1,7 +1,9 @@
 import { RequestError } from '@octokit/request-error'
 import type { OctokitResponse } from '@octokit/types'
+
 import { UnknownException } from 'effect/Cause'
 import { fn, tryPromise } from 'effect/Effect'
+
 import {
   GitHubApiNoCommitFoundForGitRefError,
   GitHubApiRepoIsEmptyError,

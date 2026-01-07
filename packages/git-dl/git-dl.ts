@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { prettyPrint } from 'effect-errors'
+
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
@@ -10,7 +12,7 @@ import * as NodeTerminal from '@effect/platform-node/NodeTerminal'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
-import { prettyPrint } from 'effect-errors'
+
 import pkg from './package.json' with { type: 'json' }
 import {
   destinationPathCLIOptionBackedByEnv,

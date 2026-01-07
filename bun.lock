@@ -21,6 +21,7 @@
         "@nikelborm/tsconfig": "workspace:*",
         "@trellisform/database": "workspace:*",
         "effect-web-midi": "workspace:*",
+        "next-midi-demo": "workspace:*",
         "ts-key-not-enum": "workspace:*",
         "turbo": "catalog:",
       },
@@ -260,6 +261,7 @@
         "@effect-atom/atom": "^0.4.11",
         "@effect-atom/atom-react": "catalog:",
         "@effect/platform-browser": "catalog:",
+        "@fp-ts/optic": "^0.25.0",
         "@linaria/core": "catalog:",
         "@linaria/react": "catalog:",
         "@serwist/next": "^9.5.0",
@@ -665,6 +667,8 @@
     "@floating-ui/react-dom": ["@floating-ui/react-dom@2.1.6", "", { "dependencies": { "@floating-ui/dom": "^1.7.4" }, "peerDependencies": { "react": ">=16.8.0", "react-dom": ">=16.8.0" } }, "sha512-4JX6rEatQEvlmgU80wZyq9RT96HZJa88q8hp0pBd+LrczeDI4o6uA2M+uvxngVHo4Ihr8uibXxH6+70zhAFrVw=="],
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.10", "", {}, "sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ=="],
+
+    "@fp-ts/optic": ["@fp-ts/optic@0.25.0", "", { "peerDependencies": { "@effect/typeclass": "^0.27.0", "effect": "^3.8.0" } }, "sha512-qEALuWspe+M+zOB7HnL1n6VVLTB2rRYhcgSWIBOJgIrCQcUpIsicgdLl1qN8VeuMvlE6EiCf3YFWDUmgnE7sAA=="],
 
     "@img/colour": ["@img/colour@1.0.0", "", {}, "sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw=="],
 

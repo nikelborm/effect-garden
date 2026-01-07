@@ -1,6 +1,7 @@
-import * as Tuple from 'effect/Tuple'
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
+
+import * as Tuple from 'effect/Tuple'
 
 export const [
   midiInputThroughPort0,

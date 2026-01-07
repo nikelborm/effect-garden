@@ -1,4 +1,5 @@
 import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+
 import type {
   AllowOnlyNonEmptyObjectsWithActualKeys,
   FunctionExtendingColumnsMap,
