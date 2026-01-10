@@ -1,5 +1,8 @@
-import { Either, ParseResult, type Schema, SchemaAST } from 'effect'
-import { dual } from 'effect/Function'
+import * as Either from 'effect/Either'
+import * as EFunction from 'effect/Function'
+import * as ParseResult from 'effect/ParseResult'
+import type * as Schema from 'effect/Schema'
+import * as SchemaAST from 'effect/SchemaAST'
 
 import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts'
 
@@ -21,7 +24,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
   >
-} = dual(
+} = EFunction.dual(
   2,
   <Self extends Schema.Struct<any>>(
     self: Self,
@@ -79,7 +82,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
     self: Self,
     prefix: string,
   ): EnsureTaggedStructWithStringLiteral<Self, never>
-} = dual(
+} = EFunction.dual(
   2,
   <Self extends Schema.Struct<any>>(
     self: Self,

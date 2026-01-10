@@ -1,5 +1,7 @@
-import { HttpServerRequest } from '@effect/platform'
-import { Context, Deferred, Effect } from 'effect'
+import * as HttpServerRequest from '@effect/platform/HttpServerRequest'
+import * as Context from 'effect/Context'
+import * as Deferred from 'effect/Deferred'
+import * as Effect from 'effect/Effect'
 
 const cache = new WeakMap<
   HttpServerRequest.HttpServerRequest,

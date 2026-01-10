@@ -1,5 +1,5 @@
-import { Schema } from 'effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
+import * as Schema from 'effect/Schema'
 
 import { type GetFields, withNewStructFields } from './withNewStructFields.ts'
 import type { EnsureStruct } from './withOpenApiAnnotations.ts'
@@ -30,7 +30,7 @@ export const withNewStructTag: {
     >,
     never
   >
-} = dual(2, (self, newTag) =>
+} = EFunction.dual(2, (self, newTag) =>
   withNewStructFields(self, {
     _tag: Schema.tag(newTag),
   }),

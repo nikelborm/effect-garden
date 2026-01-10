@@ -1,6 +1,7 @@
-import { Effect, Predicate as P } from 'effect'
-import type { NonEmptyReadonlyArray } from 'effect/Array'
-import { dual } from 'effect/Function'
+import type * as EArray from 'effect/Array'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Predicate from 'effect/Predicate'
 
 /**
  * Passes the errors through unmodified if their tags match any of the whitelisted tags. When
@@ -91,7 +92,7 @@ import { dual } from 'effect/Function'
  * );
  * ```
  */
-export const passthroughErrorsWithTagsOrElseMapError = dual<
+export const passthroughErrorsWithTagsOrElseMapError = EFunction.dual<
   // data-last
   <
     AllSelfE,
@@ -108,7 +109,7 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
       ElseE,
       ElseR
     >,
-    ...errorTagsToPassThrough: NonEmptyReadonlyArray<ErrorTagsToPassThrough>
+    ...errorTagsToPassThrough: EArray.NonEmptyReadonlyArray<ErrorTagsToPassThrough>
   ) => <SelfA, SelfR>(
     effect: Effect.Effect<SelfA, AllSelfE, SelfR>,
   ) => GetFinalEffect<
@@ -139,7 +140,7 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
       ElseE,
       ElseR
     >,
-    ...errorTagsToPassThrough: NonEmptyReadonlyArray<ErrorTagsToPassThrough>
+    ...errorTagsToPassThrough: EArray.NonEmptyReadonlyArray<ErrorTagsToPassThrough>
   ) => GetFinalEffect<
     ErrorTagsToPassThrough,
     SelfA,
@@ -169,7 +170,7 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
       ElseE,
       ElseR
     >,
-    ...errorTagsToPassThrough: NonEmptyReadonlyArray<ErrorTagsToPassThrough>
+    ...errorTagsToPassThrough: EArray.NonEmptyReadonlyArray<ErrorTagsToPassThrough>
   ): GetFinalEffect<
     ErrorTagsToPassThrough,
     SelfA,
@@ -182,24 +183,27 @@ export const passthroughErrorsWithTagsOrElseMapError = dual<
     const errorTagsToPassThroughSet = new Set<TagMinimum>(
       errorTagsToPassThrough,
     )
-    const isTag = P.or(P.isNumber, P.or(P.isString, P.isSymbol))
+    const isTag = Predicate.or(
+      Predicate.isNumber,
+      Predicate.or(Predicate.isString, Predicate.isSymbol),
+    )
 
-    const isPossibleToFilterByTag = P.compose(
-      P.hasProperty('_tag'),
+    const isPossibleToFilterByTag = Predicate.compose(
+      Predicate.hasProperty('_tag'),
       (e): e is PassableSelfE => isTag(e['_tag']),
     )
 
     const isInPassthroughSet = (err: PassableSelfE) =>
       errorTagsToPassThroughSet.has(err['_tag'])
 
-    const willPassThrough = P.compose(
+    const willPassThrough = Predicate.compose(
       isPossibleToFilterByTag,
       isInPassthroughSet,
     )
 
     const newEffect = Effect.catchIf(
       self,
-      P.not(willPassThrough) as P.Refinement<
+      Predicate.not(willPassThrough) as Predicate.Refinement<
         unknown,
         GetErrorsThatWillBeRemapped<AllSelfE, ErrorTagsToPassThrough>
       >,

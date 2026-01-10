@@ -1,5 +1,5 @@
-import type { Schema } from 'effect'
-import { dual } from 'effect/Function'
+import * as EFunction from 'effect/Function'
+import type * as Schema from 'effect/Schema'
 import type { Struct } from 'effect/Schema'
 
 import { withInferredFromTagIdentifierSchemaAnnotationSync } from './withInferredFromTagIdentifierSchemaAnnotation.ts'
@@ -134,7 +134,7 @@ export const withOpenApiAnnotationsForStructs = (
     },
   ): EnsureTaggedStructWithStringLiteral<Self, never>
 } =>
-  dual(
+  EFunction.dual(
     2,
     <Self extends Schema.Struct<any>>(
       self: Self,
