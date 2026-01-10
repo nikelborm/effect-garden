@@ -2,6 +2,7 @@
 export default {
   customSyntax: '@linaria/postcss-linaria',
   // customSyntax: "postcss-styled-syntax",
+  // extends: ['@linaria/stylelint-config-standard-linaria'],
   extends: ['stylelint-config-standard'],
   rules: {
     'value-no-vendor-prefix': true,
