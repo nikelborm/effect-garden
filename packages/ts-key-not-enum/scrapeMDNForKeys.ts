@@ -5,23 +5,23 @@ import { match, P } from 'ts-pattern'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
 
-import {
-  FetchHttpClient,
-  FileSystem,
-  HttpClient,
-  type HttpClientError,
-  Path,
-} from '@effect/platform'
+import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
+import * as FileSystem from '@effect/platform/FileSystem'
 import { KiB } from '@effect/platform/FileSystem'
-import { BunFileSystem, BunPath } from '@effect/platform-bun'
-import { DateTime, String as EString } from 'effect'
+import * as HttpClient from '@effect/platform/HttpClient'
+import type * as HttpClientError from '@effect/platform/HttpClientError'
+import * as Path from '@effect/platform/Path'
+import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
+import * as BunPath from '@effect/platform-bun/BunPath'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
+import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
+import * as EString from 'effect/String'
 
 interface Key {
   value: string
@@ -31,6 +31,7 @@ interface Key {
 const MDN_URL =
   'https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys'
 
+// https://github.com/w3c/uievents-key/
 const MDN_MDX_URL =
   'https://raw.githubusercontent.com/mdn/content/refs/heads/main/files/en-us/web/api/ui_events/keyboard_event_key_values/index.md'
 
@@ -588,6 +589,8 @@ await Effect.gen(function* () {
     '.cache',
     'scrapeMDNForKeys',
   )
+
+  // TODO: Make use of ExecutionPlan?
   const cacheFilePath = path.join(cacheDirPath, 'page.mdx')
 
   const cacheStat = fs.stat(cacheFilePath)
@@ -621,7 +624,7 @@ await Effect.gen(function* () {
 
   const readCacheFile = Effect.tapErrorCause(
     cacheFallback
-      ? fs.readFileString(cacheFilePath).pipe(Effect.catchAll(makeCacheError))
+      ? Effect.catchAll(fs.readFileString(cacheFilePath), makeCacheError)
       : makeCacheError({ message: 'cacheFallback is null' }),
     cause => Effect.logError('Failed to read from cache: ', cause),
   )
@@ -764,6 +767,9 @@ await Effect.gen(function* () {
     parseMdxNodes,
     parseMdxNodes,
   )
+
+  // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
+  // TODO: generate types as well as consts
 
   const report = {
     uniqueTypes: extractUniqueTypes(cleaned),

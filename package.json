@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@biomejs/biome": "catalog:",
+    "@linaria/postcss-linaria": "^6.3.0",
+    "@linaria/stylelint-config-standard-linaria": "^6.3.0",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
@@ -17,8 +19,11 @@
     "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",
+    "chokidar-cli": "^3.0.0",
     "effect-web-midi": "workspace:*",
     "next-midi-demo": "workspace:*",
+    "postcss-styled-syntax": "^0.7.1",
+    "stylelint-config-styled-components": "^0.1.1",
     "ts-key-not-enum": "workspace:*",
     "turbo": "catalog:"
   },
@@ -91,9 +96,15 @@
     "build": "turbo run build --continue=dependencies-successful",
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
-    "lint": "biome check --write"
+    "lint": "biome check --write",
+    "lint:css": "PATTERN='packages/*/src/**/*.{ts,tsx}'; chokidar $PATTERN --initial --command \"stylelint '$PATTERN'\""
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "biome-plugin-drizzle": "^0.1.0",
+    "stylelint": "^16.26.1",
+    "stylelint-config-standard": "^39.0.1"
+  }
 }

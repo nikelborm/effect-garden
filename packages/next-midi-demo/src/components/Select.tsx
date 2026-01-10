@@ -54,7 +54,6 @@ export const SelectTrigger = styled(BaseSelect.Trigger)`
   font-size: 1rem;
   line-height: 1.5rem;
   color: var(--color-gray-900);
-  -webkit-user-select: none;
   user-select: none;
   min-width: 9rem;
 
@@ -91,7 +90,6 @@ export const SelectIcon = BaseSelect.Icon
 export const SelectPositioner = styled(BaseSelect.Positioner)`
   outline: none;
   z-index: 1;
-  -webkit-user-select: none;
   user-select: none;
 `
 
@@ -178,7 +176,6 @@ export const SelectItem = styled(BaseSelect.Item)`
   align-items: center;
   grid-template-columns: 0.75rem 1fr;
   cursor: pointer;
-  -webkit-user-select: none;
   user-select: none;
 
   @media (pointer: coarse) {

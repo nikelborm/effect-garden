@@ -14,6 +14,7 @@
       "!**/build"
     ]
   },
+  "plugins": ["./node_modules/biome-plugin-drizzle/dist/drizzle.grit"],
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -45,8 +46,7 @@
       "style": {
         "useTemplate": "off",
         "useShorthandFunctionType": "off",
-        "noImplicitBoolean": "error",
-        "noDefaultExport": "error",
+        "noDefaultExport": "warn",
         "noRestrictedImports": {
           "level": "error",
           "options": {
