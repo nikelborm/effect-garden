@@ -280,7 +280,7 @@ for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
 
 ;({ myMonorepoPackages, rootPackageJson } = await getPackagesInfo())
 
-const myMonorepoTsconfigPackage = pipe(
+const _myMonorepoTsconfigPackage = pipe(
   myMonorepoPackages,
   EArray.filter(x => x.name === '@nikelborm/tsconfig'),
   Option.liftPredicate(Predicate.isTupleOf(1)),

@@ -229,7 +229,7 @@ const fruits = [
 ] as const satisfies unknown[]
 
 const asd1 = new BetterTuple(fruits).map(
-  <T extends [unknown, number], U>(t: T) =>
+  <T extends [unknown, number], _U>(t: T) =>
     [
       preserveOnlyNormalFruits(t)
         ? `${capitalize(t[0].name)} has ${t[0].color} color`
@@ -250,7 +250,7 @@ const asd1 = new BetterTuple(fruits).map(
 //   "broken object at index 4"
 // ]
 
-const asd2 = new BetterTuple(asd1).filter(
+const _asd2 = new BetterTuple(asd1).filter(
   (
     tuple,
   ): tuple is Exclude<
@@ -265,9 +265,9 @@ const asd2 = new BetterTuple(asd1).filter(
 //   "Watermelon has green color",
 // ]
 
-const asd3 = new BetterTuple(fruits)
+const _asd3 = new BetterTuple(fruits)
   .map(
-    <T extends [unknown, number], U>(t: T) =>
+    <T extends [unknown, number], _U>(t: T) =>
       [
         preserveOnlyNormalFruits(t)
           ? `${capitalize(t[0].name)} has ${t[0].color} color`
@@ -303,7 +303,7 @@ type StringViewOfFruit<V_I> = V_I extends [
   ? [`${Capitalize<V_I[0]['name']>} has ${V_I[0]['color']} color`, V_I[1]]
   : never
 
-const asd4 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).map(
+const _asd4 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).map(
   v_i =>
     [
       `${capitalize(v_i[0].name)} has ${v_i[0].color} color`,
@@ -319,7 +319,7 @@ const asd4 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).map(
 //   "Watermelon has green color",
 // ]
 
-const asd5 = new BetterTuple(fruits)
+const _asd5 = new BetterTuple(fruits)
   .filter(preserveOnlyNormalFruits)
   .map(
     <T extends [{ name: string; color: string }, number]>(v_i: T) =>
@@ -331,13 +331,15 @@ const asd5 = new BetterTuple(fruits)
 // Correctly inferred type (and value) should be
 // const asd5: "apple, pear, watermelon"
 
-const asd6 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).join(', ')
+const _asd6 = new BetterTuple(fruits)
+  .filter(preserveOnlyNormalFruits)
+  .join(', ')
 
 // Generally inferred type (and value) should be
 // const asd6: string
 // Because it can't cast objects to string in type-system
 
-const asd7 = new BetterTuple(fruits)
+const _asd7 = new BetterTuple(fruits)
   .concat(fruits, new BetterTuple(fruits))
   .filter(
     (tuple): tuple is Extract<typeof tuple, [{ name: string }, number]> =>

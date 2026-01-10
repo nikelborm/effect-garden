@@ -713,7 +713,7 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
 
   // TODO: finish this
 
-  const ref = yield* Ref.make(
+  const _ref = yield* Ref.make(
     SortedMap.empty<EMIDIPort.BothId, MIDIPortType>(Order.string),
   )
 

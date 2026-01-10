@@ -238,7 +238,7 @@ const getVirtualMIDIPadButtonsStoreByLayoutId = Atom.family(
     ),
 )
 
-const getVirtualMIDIPadButtonsStoreOfActiveLayout = Atom.make(get =>
+const _getVirtualMIDIPadButtonsStoreOfActiveLayout = Atom.make(get =>
   Option.map(get(activeLayoutAtom), getVirtualMIDIPadButtonsStoreByLayout),
 )
 
@@ -284,8 +284,8 @@ export const assertiveGetButtonByIdInActiveLayout = Atom.family(
 )
 
 export const getAssignedKeyboardKeyInfoByKeyboardKey = (
-  keyboardKey: ValidKeyboardKey,
-) => Atom.make(get => {})
+  _keyboardKey: ValidKeyboardKey,
+) => Atom.make(_get => {})
 
 // get(keyboardKey: ValidKeyboardKey): AssignedKeyboardKeyInfo {
 //     return this.store.get(keyboardKey) ?? { keyboardKeyPressState: NotPressed }

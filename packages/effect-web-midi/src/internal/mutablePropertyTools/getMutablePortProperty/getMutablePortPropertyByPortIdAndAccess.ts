@@ -83,32 +83,32 @@ export const getPortConnectionStateByPortIdAndAccess = <E = never, R = never>(
 
 // TODO: getInputConnectionStateByPortIdAndAccess
 export const getInputConnectionStateByPortIdAndAccess = <E = never, R = never>(
-  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-  id: EMIDIInput.Id,
+  _polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+  _id: EMIDIInput.Id,
 ) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getInputDeviceStateByPortIdAndAccess
 export const getInputDeviceStateByPortIdAndAccess = <E = never, R = never>(
-  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-  id: EMIDIInput.Id,
+  _polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+  _id: EMIDIInput.Id,
 ) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputConnectionStateByPortIdAndAccess
 export const getOutputConnectionStateByPortIdAndAccess = <E = never, R = never>(
-  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-  id: EMIDIOutput.Id,
+  _polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+  _id: EMIDIOutput.Id,
 ) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }
 
 // TODO: getOutputDeviceStateByPortIdAndAccess
 export const getOutputDeviceStateByPortIdAndAccess = <E = never, R = never>(
-  polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-  id: EMIDIOutput.Id,
+  _polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+  _id: EMIDIOutput.Id,
 ) => {
   throw new Error('Not implemented 😿  YET!! 🤩')
 }

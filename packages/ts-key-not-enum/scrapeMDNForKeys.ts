@@ -28,7 +28,7 @@ interface Key {
   description: string
 }
 
-const MDN_URL =
+const _MDN_URL =
   'https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys'
 
 // https://github.com/w3c/uievents-key/
@@ -36,7 +36,7 @@ const MDN_MDX_URL =
   'https://raw.githubusercontent.com/mdn/content/refs/heads/main/files/en-us/web/api/ui_events/keyboard_event_key_values/index.md'
 
 // Extract key name from strings like "LaunchCalculator" [5]
-const keyValueRegex = /"([a-z0-9_]+)"/i
+const _keyValueRegex = /"([a-z0-9_]+)"/i
 
 // const parseKeys = (html: string) =>
 //   Effect.try(() => {
@@ -79,7 +79,7 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
 
 const OrderKey = Order.mapInput(Order.string, (e: Key) => e.value)
 
-const removeDuplicates = (keys: Key[]) =>
+const _removeDuplicates = (keys: Key[]) =>
   EArray.dedupeWith<Key>(
     EArray.sort(keys, OrderKey),
     (a, b) => a.value === b.value,
@@ -526,7 +526,7 @@ const parseMdxNodes = (
     )
     .otherwise(() => node)
 
-const generateEnumFile = (keys: Key[]) =>
+const _generateEnumFile = (keys: Key[]) =>
   [
     '/**',
     ' * @file',
@@ -542,7 +542,7 @@ const generateEnumFile = (keys: Key[]) =>
     '',
   ].join('\n')
 
-const writeEnumFile = (content: string) =>
+const _writeEnumFile = (content: string) =>
   Effect.flatMap(FileSystem.FileSystem, fs =>
     fs.writeFileString('./index.ts', content),
   )
@@ -668,7 +668,7 @@ await Effect.gen(function* () {
     }
   }
 
-  const parsedMdx = yield* service.compileMdx(mdxPageContent, {
+  const _parsedMdx = yield* service.compileMdx(mdxPageContent, {
     rehypePlugins: [logAstPlugin],
   })
 

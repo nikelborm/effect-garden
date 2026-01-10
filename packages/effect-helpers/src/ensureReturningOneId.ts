@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import type { IdType } from './buildEntityParts.ts'
 
 export const ensureReturningOneId =
-  <const T extends string>(table: T) =>
+  <const T extends string>(_table: T) =>
   <A extends { id: number }[], E, R>(self: Effect.Effect<A, E, R>) =>
     Effect.flatMap(self, e =>
       e.length === 1

@@ -1,8 +1,6 @@
-import * as Effect from 'effect/Effect'
 import * as Either from 'effect/Either'
 import * as JSONSchema from 'effect/JSONSchema'
 import * as Schema from 'effect/Schema'
-import * as SchemaAST from 'effect/SchemaAST'
 
 // arekmaz's:
 // https://effect.website/play#3efe9f827b7d
@@ -48,11 +46,11 @@ const asd = Schema.Struct({
 
 const asd2 = Schema.transformOrFail(asd, asd, {
   strict: true,
-  decode(fromA, options, ast, fromI) {
+  decode(_fromA, _options, _ast, fromI) {
     console.log('asd2 decode stuff validated')
     return Either.right(fromI)
   },
-  encode(toI, options, ast, toA) {
+  encode(_toI, _options, _ast, toA) {
     console.log('asd2 encode stuff validated')
     return Either.right(toA)
   },
