@@ -7,6 +7,13 @@
       "url": "https://json.schemastore.org/tsconfig"
     }
   ],
+  "stylelint.validate": [
+    "css",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "cSpell.words": [
     "addgroup",
     "Dont",
