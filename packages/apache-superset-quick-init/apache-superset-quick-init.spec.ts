@@ -5,19 +5,19 @@ import {
 } from '@nikelborm/git-dl'
 import { parse } from 'yaml'
 
-import { Span } from '@effect/cli'
-import { make, run } from '@effect/cli/Command'
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { NodeContext } from '@effect/platform-node'
+import * as CLICommand from '@effect/cli/Command'
+import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as NodeContext from '@effect/platform-node/NodeContext'
 import { describe, it } from '@effect/vitest'
-import { all, gen, provide, sync } from 'effect/Effect'
-import { merge } from 'effect/Layer'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/index.ts'
 
-const appCommand = make(
+const appCommand = CLICommand.make(
   pkg.name,
   {
     destinationPath: destinationPathCLIOptionBackedByEnv,
@@ -27,16 +27,16 @@ const appCommand = make(
 )
 
 const cli = (args: ReadonlyArray<string>) =>
-  run(appCommand, {
+  CLICommand.run(appCommand, {
     name: pkg.name,
     version: pkg.version,
-    summary: Span.text(pkg.description),
+    summary: HelpDocSpan.text(pkg.description),
   })(['node', '-', ...args])
 
 describe('CLI', { concurrent: true }, () => {
   it.scoped('downloads needed files and folders', ctx =>
-    gen(function* () {
-      const [fs, path] = yield* all([FileSystem, Path])
+    Effect.gen(function* () {
+      const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
       const destinationPath = path.join(
         yield* fs.makeTempDirectoryScoped(),
@@ -49,7 +49,9 @@ describe('CLI', { concurrent: true }, () => {
         path.join(destinationPath, 'compose.yml'),
       )
 
-      const composeFileParsed = yield* sync(() => parse(composeFileAsString))
+      const composeFileParsed = yield* Effect.sync(() =>
+        parse(composeFileAsString),
+      )
 
       ctx
         .expect(composeFileParsed)
@@ -84,7 +86,7 @@ describe('CLI', { concurrent: true }, () => {
         ),
       )
 
-      const websocketConfigFileParsed = yield* sync(() =>
+      const websocketConfigFileParsed = yield* Effect.sync(() =>
         JSON.parse(websocketConfigFileAsString),
       )
 
@@ -94,6 +96,6 @@ describe('CLI', { concurrent: true }, () => {
           'jwtSecret',
           'CHANGE-ME-IN-PRODUCTION-GOTTA-BE-LONG-AND-SECRET',
         )
-    }).pipe(provide(merge(NodeContext.layer, OctokitLayer()))),
+    }).pipe(Effect.provide(Layer.merge(NodeContext.layer, OctokitLayer()))),
   )
 })

@@ -52,7 +52,7 @@
           "options": {
             "patterns": [
               {
-                "group": ["effect", "@effect/*"],
+                "group": ["effect", "@effect/*", "!@effect/vitest"],
                 "message": "Do not import from effect package directly. Use namespace imports instead"
               }
             ]
@@ -77,8 +77,6 @@
           "options": {
             "groups": [
               [":BUN:", ":NODE:"],
-              ":BLANK_LINE:",
-              ":URL:",
               ":BLANK_LINE:",
               [
                 ":PACKAGE:",

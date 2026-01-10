@@ -28,7 +28,7 @@ import {
   SelectScrollUpArrow,
   SelectTrigger,
   SelectValue,
-} from '@/components/Select'
+} from '@/components/Select.tsx'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,

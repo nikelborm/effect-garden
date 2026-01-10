@@ -1,7 +1,3 @@
-import { FileSystem, Path } from '@effect/platform'
-import * as Command from '@effect/platform/Command'
-import * as CommandExecutor from '@effect/platform/CommandExecutor'
-import { BunContext } from '@effect/platform-bun'
 import '@total-typescript/ts-reset'
 
 import {
@@ -10,8 +6,12 @@ import {
   type RepoArgs,
 } from 'effect-octokit-layer'
 
+import * as Command from '@effect/platform/Command'
+import * as CommandExecutor from '@effect/platform/CommandExecutor'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
 import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
-import { Order } from 'effect'
+import * as BunContext from '@effect/platform-bun/BunContext'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
@@ -20,6 +20,7 @@ import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
+import * as Order from 'effect/Order'
 import * as EffectString from 'effect/String'
 import * as Struct from 'effect/Struct'
 
