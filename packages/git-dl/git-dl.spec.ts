@@ -1,14 +1,15 @@
-import { Command as CliCommand, Span } from '@effect/cli'
-import { Command as PlatformCommand } from '@effect/platform'
-import { CommandExecutor } from '@effect/platform/CommandExecutor'
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { NodeContext } from '@effect/platform-node'
+import * as CliCommand from '@effect/cli/Command'
+import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
+import * as PlatformCommand from '@effect/platform/Command'
+import * as CommandExecutor from '@effect/platform/CommandExecutor'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as NodeContext from '@effect/platform-node/NodeContext'
 import { describe, it } from '@effect/vitest'
-import { Stream } from 'effect'
-import { fn, gen, map, provide } from 'effect/Effect'
+import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
-import { merge } from 'effect/Layer'
+import * as Layer from 'effect/Layer'
+import * as Stream from 'effect/Stream'
 
 import pkg from './package.json' with { type: 'json' }
 import { allWithInheritedConcurrencyByDefault } from './src/allWithInheritedConcurrency.ts'
@@ -42,10 +43,10 @@ const cli = (args: ReadonlyArray<string>) =>
   CliCommand.run(appCommand, {
     name: pkg.name,
     version: pkg.version,
-    summary: Span.text(pkg.description),
+    summary: HelpDocSpan.text(pkg.description),
   })(['node', '-', ...args])
 
-const MainLive = merge(NodeContext.layer, OctokitLayer())
+const MainLive = Layer.merge(NodeContext.layer, OctokitLayer())
 
 type Params = {
   gitRepoName: string
@@ -70,8 +71,8 @@ const Uint8ArrayStreamToString = <E, R>(
 const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
   command: PlatformCommand.Command,
 ) =>
-  gen(function* () {
-    const executor = yield* CommandExecutor
+  Effect.gen(function* () {
+    const executor = yield* CommandExecutor.CommandExecutor
 
     const process = yield* executor.start(command)
 
@@ -83,16 +84,13 @@ const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
       ])
 
     if (exitCode !== 0)
-      yield* new CommandFinishedWithNonZeroCode({
+      return yield* new CommandFinishedWithNonZeroCode({
         exitCode,
         stdout,
         stderr,
       })
 
-    return {
-      stdout,
-      stderr,
-    }
+    return { stdout, stderr }
   })
 
 const getPurelyContentDependentHashOfDirectory = (directoryPath: string) =>
@@ -115,12 +113,12 @@ const getPurelyContentDependentHashOfDirectory = (directoryPath: string) =>
       PlatformCommand.pipeTo(PlatformCommand.make('sha256sum')),
       PlatformCommand.pipeTo(PlatformCommand.make('head', '-c', '64')),
     ),
-  ).pipe(map(v => v.stdout))
+  ).pipe(Effect.map(v => v.stdout))
 
-const bareCloneAndHashRepoContents = fn('bareCloneAndHashRepoContents')(
+const bareCloneAndHashRepoContents = Effect.fn('bareCloneAndHashRepoContents')(
   function* ({ gitRepoName, gitRepoOwner, tempDirPath, gitRef }: Params) {
-    const fs = yield* FileSystem
-    const path = yield* Path
+    const fs = yield* FileSystem.FileSystem
+    const path = yield* Path.Path
     const entireGitRepoDestinationPath = path.join(
       tempDirPath,
       'originalGitRepo/',
@@ -152,9 +150,9 @@ const bareCloneAndHashRepoContents = fn('bareCloneAndHashRepoContents')(
   },
 )
 
-const cliFetchAndHashRepoContents = fn('cliFetchAndHashRepoContents')(
+const cliFetchAndHashRepoContents = Effect.fn('cliFetchAndHashRepoContents')(
   function* ({ gitRepoName, gitRepoOwner, tempDirPath, gitRef }: Params) {
-    const path = yield* Path
+    const path = yield* Path.Path
     const dirPathOfGitRepoFetchedWithOurCli = path.join(
       tempDirPath,
       'gitRepoFetchedWithOurCli/',
@@ -173,10 +171,10 @@ const cliFetchAndHashRepoContents = fn('cliFetchAndHashRepoContents')(
   },
 )
 
-const fetchAndHashBothDirs = fn('fetchAndHashBothDirs')(function* (
+const fetchAndHashBothDirs = Effect.fn('fetchAndHashBothDirs')(function* (
   repo: Omit<Params, 'tempDirPath'>,
 ) {
-  const fs = yield* FileSystem
+  const fs = yield* FileSystem.FileSystem
   const tempDirPath = yield* fs.makeTempDirectoryScoped()
   const params = {
     ...repo,
@@ -217,7 +215,7 @@ describe('CLI', { concurrent: true }, () => {
   it.scoped(
     'Git Repo nikelborm/nikelborm fetched by our cli, should be the same as repo cloned by git itself',
     ctx =>
-      gen(function* () {
+      Effect.gen(function* () {
         const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
           yield* fetchAndHashBothDirs({
             gitRepoOwner: 'nikelborm',
@@ -231,6 +229,6 @@ describe('CLI', { concurrent: true }, () => {
             `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
           )
           .toBe(hashOfOriginalGitRepo)
-      }).pipe(provide(MainLive)),
+      }).pipe(Effect.provide(MainLive)),
   )
 })
