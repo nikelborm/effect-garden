@@ -7,64 +7,65 @@ import {
 } from '@nikelborm/git-dl'
 import { prettyPrint } from 'effect-errors'
 
-import { CliConfig, Span } from '@effect/cli'
-import { make, run } from '@effect/cli/Command'
-import { map as mapCLIOption } from '@effect/cli/Options'
-import { layer as NodeFileSystemLayer } from '@effect/platform-node-shared/NodeFileSystem'
-import { layer as NodePathLayer } from '@effect/platform-node-shared/NodePath'
-import { runMain } from '@effect/platform-node-shared/NodeRuntime'
-import { layer as NodeTerminalLayer } from '@effect/platform-node-shared/NodeTerminal'
-import { Layer } from 'effect'
-import { catchAll, fail, provide, sandbox, withSpan } from 'effect/Effect'
-import { pipe } from 'effect/Function'
+import * as CliConfig from '@effect/cli/CliConfig'
+import * as CLICommand from '@effect/cli/Command'
+import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
+import * as CLIOptions from '@effect/cli/Options'
+import * as NodeFileSystem from '@effect/platform-node-shared/NodeFileSystem'
+import * as NodePath from '@effect/platform-node-shared/NodePath'
+import * as NodeRuntime from '@effect/platform-node-shared/NodeRuntime'
+import * as NodeTerminal from '@effect/platform-node-shared/NodeTerminal'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Layer from 'effect/Layer'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
 
-const appCommand = make(
+const appCommand = CLICommand.make(
   pkg.name,
   {
     destinationPath: destinationPathCLIOptionBackedByEnv.pipe(
-      mapCLIOption(e => (e === './destination' ? './superset' : e)),
+      CLIOptions.map(e => (e === './destination' ? './superset' : e)),
     ),
     gitRef: gitRefCLIOptionBackedByEnv,
   },
   createApacheSupersetFolder,
 )
 
-const cli = run(appCommand, {
+const cli = CLICommand.run(appCommand, {
   name: pkg.name,
   version: pkg.version,
-  summary: Span.text(pkg.description),
+  summary: HelpDocSpan.text(pkg.description),
 })
 
 const AppLayer = Layer.mergeAll(
-  NodeFileSystemLayer,
-  NodePathLayer,
-  NodeTerminalLayer,
+  NodeFileSystem.layer,
+  NodePath.layer,
+  NodeTerminal.layer,
   CliConfig.layer({ showTypes: false }),
   OctokitLayer({
     // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
   }),
 )
 
-pipe(
+EFunction.pipe(
   process.argv,
   cli,
-  provide(AppLayer),
-  sandbox,
-  catchAll(e => {
+  Effect.provide(AppLayer),
+  Effect.sandbox,
+  Effect.catchAll(e => {
     console.error(prettyPrint(e))
 
-    return fail(e)
+    return Effect.fail(e)
   }),
-  withSpan('cli', {
+  Effect.withSpan('cli', {
     attributes: {
       name: pkg.name,
       version: pkg.version,
     },
   }),
-  runMain({
+  NodeRuntime.runMain({
     disableErrorReporting: true,
   }),
 )

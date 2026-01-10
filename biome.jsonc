@@ -61,8 +61,11 @@
       }
     },
     "domains": {
-      "next": "recommended",
-      "react": "recommended"
+      "next": "all",
+      "turborepo": "all",
+      "project": "all",
+      // "types": "all",
+      "react": "all"
     }
   },
   "assist": {

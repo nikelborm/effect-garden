@@ -9,7 +9,7 @@ export async function executeSqlInDevPgContainer(
 
   const env = await getDevEnvFromFile()
 
-  const databaseName = env['DATABASE_NAME']
+  const databaseName = env.DATABASE_NAME
 
   const psqlProc = Bun.spawn(
     devComposeExec.concat(
@@ -17,7 +17,7 @@ export async function executeSqlInDevPgContainer(
       'postgres-dev',
       'psql',
       '-U',
-      env['DATABASE_USERNAME'],
+      env.DATABASE_USERNAME,
       databaseName,
     ),
     { stdin: 'pipe', stdout: 'ignore', stderr: 'inherit' },

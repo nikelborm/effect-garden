@@ -15,11 +15,11 @@ export async function isPgDevHealthy() {
       '-t',
       '5',
       '-p',
-      env['DATABASE_PORT'].toString(),
+      env.DATABASE_PORT.toString(),
       '-U',
-      env['DATABASE_USERNAME'],
+      env.DATABASE_USERNAME,
       '-d',
-      env['DATABASE_NAME'],
+      env.DATABASE_NAME,
     ),
   )
 

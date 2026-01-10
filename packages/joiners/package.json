@@ -34,7 +34,7 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "ts-toolbelt": "catalog:",
-    "tstyche": "^5.0.2",
+    "tstyche": "^6.0.1",
     "type-fest": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

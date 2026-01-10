@@ -22,11 +22,11 @@ export default defineConfig({
   casing: 'snake_case',
   dbCredentials: {
     ssl: false,
-    password: env['DATABASE_PASSWORD'],
-    user: env['DATABASE_USERNAME'],
-    host: env['DATABASE_HOST'],
-    port: env['DATABASE_PORT'],
-    database: env['DATABASE_NAME'],
+    password: env.DATABASE_PASSWORD,
+    user: env.DATABASE_USERNAME,
+    host: env.DATABASE_HOST,
+    port: env.DATABASE_PORT,
+    database: env.DATABASE_NAME,
     // url: 'postgres://usr:pass@localhost:5432/main?sslmode=disable',
   },
 })

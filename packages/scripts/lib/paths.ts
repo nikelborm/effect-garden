@@ -1,4 +1,4 @@
-import { join, relative } from 'path'
+import { join, relative } from 'node:path'
 
 export const scriptsPackageDirPath = join(import.meta.dirname, '..')
 export const packagesDirPath = join(scriptsPackageDirPath, '..')

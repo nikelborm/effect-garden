@@ -4,7 +4,6 @@ import { join } from 'path'
 
 import * as EArray from 'effect/Array'
 import { flow, pipe } from 'effect/Function'
-import * as EIterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'

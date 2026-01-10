@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { mkdir } from 'fs/promises'
+import { mkdir } from 'node:fs/promises'
 
 import { devComposeUpDetached } from './lib/composeCommands.ts'
 import { projectTurboCacheDirPath } from './lib/paths.ts'

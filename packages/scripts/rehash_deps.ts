@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import type { Stats } from 'fs'
-import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises'
-import { dirname, join } from 'path'
+import type { Stats } from 'node:fs'
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 
 const SRC_DIR = 'packages_dirty'
 const DEST_DIR = 'packages'
@@ -38,8 +38,8 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
 
   if ('dependencies' in pkg || 'devDependencies' in pkg) {
     const commonDependencyNames = new Set(
-      Object.keys(pkg['dependencies'] || {}),
-    ).intersection(new Set(Object.keys(pkg['devDependencies'] || {})))
+      Object.keys(pkg.dependencies || {}),
+    ).intersection(new Set(Object.keys(pkg.devDependencies || {})))
 
     if (commonDependencyNames.size)
       throw new Error(
@@ -63,8 +63,8 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
     // repo root. If it won't fix the problem during container builds, swap
     // commented parts in this script
     filtered['dependencies'] = getObjectSortedByKeys({
-      ...(pkg['dependencies'] || {}),
-      ...(pkg['devDependencies'] || {}),
+      ...(pkg.dependencies || {}),
+      ...(pkg.devDependencies || {}),
     })
   }
 
