@@ -1,10 +1,7 @@
-import { identity, Option, Schema, type SchemaAST } from 'effect'
-import {
-  getDefaultAnnotation,
-  getDescriptionAnnotation,
-  getExamplesAnnotation,
-  getTitleAnnotation,
-} from 'effect/SchemaAST'
+import * as EFunction from 'effect/Function'
+import * as Option from 'effect/Option'
+import * as Schema from 'effect/Schema'
+import * as SchemaAST from 'effect/SchemaAST'
 
 import type {
   CommonAnnotationMap,
@@ -17,10 +14,10 @@ export const changeEncodedTypeToString = <T>(
   const copyAnnotation = copyAnnotationFrom(TargetFromNumberSchema.ast)
 
   return Schema.String.pipe(
-    copyAnnotation(getDescriptionAnnotation, 'description'),
-    copyAnnotation(getTitleAnnotation, 'title'),
+    copyAnnotation(SchemaAST.getDescriptionAnnotation, 'description'),
+    copyAnnotation(SchemaAST.getTitleAnnotation, 'title'),
     copyAnnotation(
-      getExamplesAnnotation,
+      SchemaAST.getExamplesAnnotation,
       'examples',
       Schema.NumberFromString.pipe(
         Schema.NonEmptyArray,
@@ -28,7 +25,7 @@ export const changeEncodedTypeToString = <T>(
       ),
     ),
     copyAnnotation(
-      getDefaultAnnotation,
+      SchemaAST.getDefaultAnnotation,
       'default',
       Schema.encodeUnknownSync(Schema.NumberFromString),
     ),
@@ -56,5 +53,5 @@ const copyAnnotationFrom =
     Option.match(getAnnotation(annotated), {
       onSome: val => self =>
         self.annotations({ [keyToSet]: valueTransformer(val) }),
-      onNone: () => identity<typeof Schema.String>,
+      onNone: () => EFunction.identity<typeof Schema.String>,
     })

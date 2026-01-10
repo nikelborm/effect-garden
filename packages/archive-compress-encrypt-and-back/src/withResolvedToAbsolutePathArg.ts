@@ -9,6 +9,6 @@ export const withResolvedToAbsolutePathArg = <A extends string>(
   Args.mapEffect(self, relativePath =>
     Effect.map(
       Path.Path,
-      path => path.resolve(relativePath) as A & Brand.Brand<'Absolute'>,
+      path => path.resolve(relativePath) as Brand.Branded<A, 'Absolute'>,
     ),
   )

@@ -1,4 +1,5 @@
-import { type Brand, Schema } from 'effect'
+import type * as Brand from 'effect/Brand'
+import * as Schema from 'effect/Schema'
 
 import { changeEncodedTypeToString } from './changeEncodedTypeToString.ts'
 import {
@@ -114,8 +115,10 @@ export type BrandContainer<EntityName extends string> = {
   ) => Schema.brand<SubS, `${EntityName}Id`>
 }
 
-export type IdType<EntityName extends string> = number &
-  Brand.Brand<`${EntityName}Id`>
+export type IdType<EntityName extends string> = Brand.Branded<
+  number,
+  `${EntityName}Id`
+>
 
 export type IdFromNumberSchema<EntityName extends string> = Schema.Schema<
   IdType<EntityName>,

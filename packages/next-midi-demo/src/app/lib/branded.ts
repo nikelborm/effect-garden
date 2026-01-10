@@ -5,7 +5,7 @@ import * as Brand from 'effect/Brand'
 export type NonPrintableKeyboardKeys =
   (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
 
-export type ValidKeyboardKey = string & Brand.Brand<'ValidKeyboardKey'>
+export type ValidKeyboardKey = Brand.Branded<string, 'ValidKeyboardKey'>
 export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
   // the second check is needed to ensure length of string of 1 Unicode
   // character instead of checking for it to be 1 byte
@@ -16,45 +16,49 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
     ),
 )
 
-export type MIDINoteId = number &
-  Brand.Brand<'MIDINoteId: integer in range 0-127'>
+export type MIDINoteId = Brand.Branded<
+  number,
+  'MIDINoteId: integer in range 0-127'
+>
 export const MIDINoteId = Brand.refined<MIDINoteId>(
   n => Number.isSafeInteger(n) && n >= 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
 )
 
-export type RegisteredButtonID = string &
-  Brand.Brand<'Registered button ID: non empty string'>
+export type RegisteredButtonID = Brand.Branded<
+  string,
+  'Registered button ID: non empty string'
+>
 export const RegisteredButtonID = Brand.refined<RegisteredButtonID>(
   id => !!id.length,
   () => Brand.error('Expected non empty string to make registered button id'),
 )
 
-export type Pressure = number & Brand.Brand<'Pressure: integer in range 1-127'>
+export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>
 export const Pressure = Brand.refined<Pressure>(
   n => Number.isSafeInteger(n) && n > 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 1-127`),
 )
 
-export type NoteInitialVelocity = Pressure & Brand.Brand<'NoteInitialVelocity'>
+export type NoteInitialVelocity = Brand.Branded<Pressure, 'NoteInitialVelocity'>
 export const NoteInitialVelocity = Brand.all(
   Pressure,
   Brand.nominal<NoteInitialVelocity>(),
 )
 
-export type NoteCurrentPressure = Pressure & Brand.Brand<'NoteCurrentPressure'>
+export type NoteCurrentPressure = Brand.Branded<Pressure, 'NoteCurrentPressure'>
 export const NoteCurrentPressure = Brand.all(
   Pressure,
   Brand.nominal<NoteCurrentPressure>(),
 )
 
-export type NotPressed = 0 & Brand.Brand<'Not pressed'>
+export type NotPressed = Brand.Branded<0, 'Not pressed'>
 export const NotPressed = 0 as NotPressed
 
-export type Pressed = 1 & Brand.Brand<'Pressed'>
+export type Pressed = Brand.Branded<1, 'Pressed'>
 export const Pressed = 1 as Pressed
 
-export type PressedContinuously = 2 & Brand.Brand<'Pressed continuously'>
+export type PressedContinuously = Brand.Branded<2, 'Pressed continuously'>
 export const PressedContinuously = 2 as PressedContinuously
 
 export const isNotPressed = (state: number): state is NotPressed =>
@@ -66,4 +70,4 @@ export const isPressedContinuously = (
   state: number,
 ): state is PressedContinuously => state === PressedContinuously
 
-export type LayoutId = string & Brand.Brand<'LayoutId'>
+export type LayoutId = Brand.Branded<string, 'LayoutId'>

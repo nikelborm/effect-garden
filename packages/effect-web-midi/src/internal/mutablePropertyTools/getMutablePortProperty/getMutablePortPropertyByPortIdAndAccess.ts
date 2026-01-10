@@ -16,7 +16,7 @@ import * as Get from './getMutablePortPropertyByPort.ts'
  */
 const getPortByIdGeneric2 =
   // biome-ignore lint/suspicious/noExplicitAny: I don't care
-    <T extends Record.ReadonlyRecord<string & Brand.Brand<'MIDIPortId'>, any>>(
+    <T extends Record.ReadonlyRecord<Brand.Branded<string, 'MIDIPortId'>, any>>(
       getPortMap: <E = never, R = never>(
         polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
       ) => Effect.Effect<T, E, R>,
@@ -25,7 +25,7 @@ const getPortByIdGeneric2 =
       polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
       transformPortEffect: (
         effect: Effect.Effect<
-          T[Extract<keyof T, string & Brand.Brand<'MIDIPortId'>>],
+          T[Extract<keyof T, Brand.Branded<string, 'MIDIPortId'>>],
           E | MIDIErrors.PortNotFoundError,
           R
         >,

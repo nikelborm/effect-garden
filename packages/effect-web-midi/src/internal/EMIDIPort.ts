@@ -229,7 +229,7 @@ export const is: (port: unknown) => port is EMIDIPort = isGeneralImpl
 export type Id<TPortType extends MIDIPortType> =
   // for distribution
   TPortType extends MIDIPortType
-    ? string & Brand.Brand<'MIDIPortId'> & Brand.Brand<TPortType>
+    ? Brand.Branded<string, 'MIDIPortId'> & Brand.Brand<TPortType>
     : never
 
 export type BothId = Id<MIDIPortType>

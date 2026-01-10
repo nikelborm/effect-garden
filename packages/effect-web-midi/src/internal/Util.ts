@@ -79,8 +79,7 @@ const isEqual =
 export type IsEqualFlag<
   TPropertyName extends string,
   TExpectedValue extends string,
-> = boolean &
-  Brand.Brand<TPropertyName> &
+> = Brand.Branded<boolean, TPropertyName> &
   Brand.Brand<`expectedValue: ${TExpectedValue}`>
 
 export const isCertainDeviceState = isEqual<
