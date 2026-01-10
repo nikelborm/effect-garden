@@ -21,7 +21,7 @@ export function ChevronUpDownSVG(props: React.ComponentProps<'svg'>) {
   )
 }
 
-function CheckIcon(props: React.ComponentProps<'svg'>) {
+export function CheckIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       fill="currentcolor"

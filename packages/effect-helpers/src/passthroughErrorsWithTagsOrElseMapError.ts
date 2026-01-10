@@ -190,11 +190,11 @@ export const passthroughErrorsWithTagsOrElseMapError = EFunction.dual<
 
     const isPossibleToFilterByTag = Predicate.compose(
       Predicate.hasProperty('_tag'),
-      (e): e is PassableSelfE => isTag(e['_tag']),
+      (e): e is PassableSelfE => isTag(e._tag),
     )
 
     const isInPassthroughSet = (err: PassableSelfE) =>
-      errorTagsToPassThroughSet.has(err['_tag'])
+      errorTagsToPassThroughSet.has(err._tag)
 
     const willPassThrough = Predicate.compose(
       isPossibleToFilterByTag,

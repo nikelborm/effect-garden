@@ -1,15 +1,13 @@
-import { FileSystem } from '@effect/platform'
-import {
-  Config,
-  ConfigError,
-  Context,
-  Effect,
-  Layer,
-  type Option,
-  pipe,
-  Redacted,
-  Schema,
-} from 'effect'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Config from 'effect/Config'
+import * as ConfigError from 'effect/ConfigError'
+import * as Context from 'effect/Context'
+import * as Effect from 'effect/Effect'
+import { pipe } from 'effect/Function'
+import * as Layer from 'effect/Layer'
+import type * as Option from 'effect/Option'
+import * as Redacted from 'effect/Redacted'
+import * as Schema from 'effect/Schema'
 
 // ! Don't forget to update packages/backend/turbo.json and add new env variables there
 

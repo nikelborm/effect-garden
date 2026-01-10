@@ -6,9 +6,7 @@ import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as Util from 'effect-web-midi/Util'
 
 import * as Cause from 'effect/Cause'
-import * as Console from 'effect/Console'
-import * as Effect from 'effect/Effect'
-import { flow, pipe } from 'effect/Function'
+import { pipe } from 'effect/Function'
 
 const MIDIDeviceConnectionEventsStringLog = pipe(
   EMIDIAccess.request(),

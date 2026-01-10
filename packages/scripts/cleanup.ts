@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { existsSync } from 'fs'
-import { readdir, rm, stat } from 'fs/promises'
-import { basename, join } from 'path'
+import { existsSync } from 'node:fs'
+import { readdir, rm, stat } from 'node:fs/promises'
+import { basename, join } from 'node:path'
 
 import { passthroughSpawn } from './lib/passthroughSpawn.ts'
 

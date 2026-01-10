@@ -170,7 +170,6 @@ export const createStreamMakerFrom =
               attributes: { eventType: type, ...spanAttributes },
             }),
           )
-          // biome-ignore lint/suspicious/noExplicitAny: <I don't care>
         }).pipe(Stream.unwrap) as any,
     )
 

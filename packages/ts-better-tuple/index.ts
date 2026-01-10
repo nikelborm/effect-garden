@@ -199,9 +199,9 @@ const preserveOnlyNormalFruits = <const T extends [unknown, number]>(
     typeof value === 'object' &&
     value !== null &&
     'name' in value &&
-    typeof value['name'] === 'string' &&
+    typeof value.name === 'string' &&
     'color' in value &&
-    typeof value['color'] === 'string'
+    typeof value.color === 'string'
   )
 }
 
@@ -232,7 +232,7 @@ const asd1 = new BetterTuple(fruits).map(
   <T extends [unknown, number], U>(t: T) =>
     [
       preserveOnlyNormalFruits(t)
-        ? `${capitalize(t[0]['name'])} has ${t[0]['color']} color`
+        ? `${capitalize(t[0].name)} has ${t[0].color} color`
         : `broken object at index ${t[1]}`,
       t[1],
       // hint to distribute the type is needed here, so this `extends` has 2
@@ -270,7 +270,7 @@ const asd3 = new BetterTuple(fruits)
     <T extends [unknown, number], U>(t: T) =>
       [
         preserveOnlyNormalFruits(t)
-          ? `${capitalize(t[0]['name'])} has ${t[0]['color']} color`
+          ? `${capitalize(t[0].name)} has ${t[0].color} color`
           : `broken object at index ${t[1]}`,
         t[1],
         // hint to distribute the type is needed here, so this `extends` has 2
@@ -306,7 +306,7 @@ type StringViewOfFruit<V_I> = V_I extends [
 const asd4 = new BetterTuple(fruits).filter(preserveOnlyNormalFruits).map(
   v_i =>
     [
-      `${capitalize(v_i[0]['name'])} has ${v_i[0]['color']} color`,
+      `${capitalize(v_i[0].name)} has ${v_i[0].color} color`,
       v_i[1],
       // hint to distribute the type is required here
     ] as StringViewOfFruit<typeof v_i>,
@@ -324,7 +324,7 @@ const asd5 = new BetterTuple(fruits)
   .map(
     <T extends [{ name: string; color: string }, number]>(v_i: T) =>
       // hint to distribute the type is required here
-      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
+      [v_i[0].name, v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
   )
   .join(', ')
 
@@ -346,7 +346,7 @@ const asd7 = new BetterTuple(fruits)
   .map(
     <T extends [{ name: string }, number]>(v_i: T) =>
       // hint to distribute the type is required here
-      [v_i[0]['name'], v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
+      [v_i[0].name, v_i[1]] as T extends any ? [T[0]['name'], T[1]] : never,
   )
   .join(', ')
 

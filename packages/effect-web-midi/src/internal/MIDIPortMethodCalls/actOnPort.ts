@@ -62,6 +62,5 @@ export const actOnPort = <
         yield* actEffect
 
         return access
-        // biome-ignore lint/suspicious/noExplicitAny: FallbackOnUnknownOrAny backfired a bit, but I don't care about it anymore
       }) as any,
   )

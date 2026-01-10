@@ -97,7 +97,6 @@ export const matchOutputDeviceStateByPort = matchMutableMIDIPortProperty(
 export type MIDIPortMutableProperty = 'state' | 'connection'
 
 export interface PortStateHandler {
-  // biome-ignore lint/suspicious/noExplicitAny: <There's no better way to type>
   (port: EMIDIPort.EMIDIPort): any
 }
 export interface MatcherConfigPlain extends Record<string, PortStateHandler> {}
@@ -174,7 +173,6 @@ export type StateCaseToHandlerMap<
 > = {
   readonly [StateCase in MIDIPort[TMIDIPortProperty]]: (
     port: EMIDIPort.EMIDIPort<TMIDIPortType>,
-    // biome-ignore lint/suspicious/noExplicitAny: <There's no preciser type>
   ) => any
 } & {
   readonly [RedundantValueCaseHandling in Exclude<

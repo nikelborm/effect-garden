@@ -1,4 +1,4 @@
-import { copyFile, exists } from 'fs/promises'
+import { copyFile, exists } from 'node:fs/promises'
 
 import { devEnvFilePath, devEnvTemplateFilePath } from './paths.ts'
 

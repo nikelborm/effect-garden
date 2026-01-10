@@ -237,25 +237,23 @@ export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
  * @internal
  */
 export const remapErrorByName =
-  // biome-ignore lint/suspicious/noExplicitAny: I don't care
-    <TErrorClassUnion extends new (arg: any) => Error>(
-      map: { [name: string]: TErrorClassUnion },
-      absurdMessage: string,
-      rest: Omit<
-        Types.UnionToIntersection<
-          // biome-ignore lint/suspicious/noExplicitAny: I don't care
-          TErrorClassUnion extends new (arg: infer P) => any ? P : never
-        >,
-        'cause'
+  <TErrorClassUnion extends new (arg: any) => Error>(
+    map: { [name: string]: TErrorClassUnion },
+    absurdMessage: string,
+    rest: Omit<
+      Types.UnionToIntersection<
+        TErrorClassUnion extends new (arg: infer P) => any ? P : never
       >,
-    ) =>
-    (cause: unknown) => {
-      if (!(cause instanceof Error && cause.name in map))
-        throw new Error(absurdMessage)
-      // biome-ignore lint/style/noNonNullAssertion: Because we checked it above with `cause.name in map`
-      const Class = map[cause.name]!
-      return new Class({
-        cause,
-        ...rest,
-      }) as InstanceType<TErrorClassUnion>
-    }
+      'cause'
+    >,
+  ) =>
+  (cause: unknown) => {
+    if (!(cause instanceof Error && cause.name in map))
+      throw new Error(absurdMessage)
+    // biome-ignore lint/style/noNonNullAssertion: Because we checked it above with `cause.name in map`
+    const Class = map[cause.name]!
+    return new Class({
+      cause,
+      ...rest,
+    }) as InstanceType<TErrorClassUnion>
+  }

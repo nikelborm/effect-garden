@@ -39,14 +39,16 @@
   },
   "linter": {
     "rules": {
+      "suspicious": { "noExplicitAny": "off" },
       "correctness": {
         "noChildrenProp": "info",
         "useJsonImportAttributes": "error"
       },
       "style": {
+        "useComponentExportOnlyModules": "off",
         "useTemplate": "off",
         "useShorthandFunctionType": "off",
-        "noDefaultExport": "warn",
+        // "noDefaultExport": "warn",
         "noRestrictedImports": {
           "level": "error",
           "options": {

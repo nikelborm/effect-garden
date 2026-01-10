@@ -1,6 +1,6 @@
-import { readdir, readFile, writeFile } from 'fs/promises'
-import { console } from 'inspector'
-import { join } from 'path'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { console } from 'node:inspector'
+import { join } from 'node:path'
 
 import * as EArray from 'effect/Array'
 import { flow, pipe } from 'effect/Function'

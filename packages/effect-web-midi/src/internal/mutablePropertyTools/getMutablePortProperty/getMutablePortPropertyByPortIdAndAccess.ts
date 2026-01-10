@@ -15,36 +15,35 @@ import * as Get from './getMutablePortPropertyByPort.ts'
  * @internal
  */
 const getPortByIdGeneric2 =
-  // biome-ignore lint/suspicious/noExplicitAny: I don't care
-    <T extends Record.ReadonlyRecord<Brand.Branded<string, 'MIDIPortId'>, any>>(
-      getPortMap: <E = never, R = never>(
-        polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-      ) => Effect.Effect<T, E, R>,
-    ) =>
-    <A, E2, R2, E = never, R = never>(
+  <T extends Record.ReadonlyRecord<Brand.Branded<string, 'MIDIPortId'>, any>>(
+    getPortMap: <E = never, R = never>(
       polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
-      transformPortEffect: (
-        effect: Effect.Effect<
-          T[Extract<keyof T, Brand.Branded<string, 'MIDIPortId'>>],
-          E | MIDIErrors.PortNotFoundError,
-          R
-        >,
-      ) => Effect.Effect<A, E2, R2>,
-      portId: Extract<keyof T, EMIDIPort.BothId>,
-    ) =>
-      EFunction.pipe(
-        getPortMap(polymorphicAccess),
-        Effect.flatMap(
-          EFunction.flow(
-            Record.get(portId),
-            Option.match({
-              onNone: () => new MIDIErrors.PortNotFoundError({ portId }),
-              onSome: e => Effect.succeed(e),
-            }),
-          ),
+    ) => Effect.Effect<T, E, R>,
+  ) =>
+  <A, E2, R2, E = never, R = never>(
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+    transformPortEffect: (
+      effect: Effect.Effect<
+        T[Extract<keyof T, Brand.Branded<string, 'MIDIPortId'>>],
+        E | MIDIErrors.PortNotFoundError,
+        R
+      >,
+    ) => Effect.Effect<A, E2, R2>,
+    portId: Extract<keyof T, EMIDIPort.BothId>,
+  ) =>
+    EFunction.pipe(
+      getPortMap(polymorphicAccess),
+      Effect.flatMap(
+        EFunction.flow(
+          Record.get(portId),
+          Option.match({
+            onNone: () => new MIDIErrors.PortNotFoundError({ portId }),
+            onSome: e => Effect.succeed(e),
+          }),
         ),
-        transformPortEffect,
-      )
+      ),
+      transformPortEffect,
+    )
 
 // TODO: Check if software synth devices access is present. Having desired
 // port absent in the record doesn't guarantee it's disconnected

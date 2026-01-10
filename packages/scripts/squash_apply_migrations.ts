@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { mkdir, rm, writeFile } from 'fs/promises'
-import { join } from 'path'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api'
 
