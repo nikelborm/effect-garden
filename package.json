@@ -16,6 +16,7 @@
     "@nikelborm/joiners": "workspace:*",
     "@nikelborm/playground": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
+    "effect-opfs": "workspace:*",
     "@nikelborm/ts-better-tuple": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "@trellisform/database": "workspace:*",

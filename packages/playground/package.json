@@ -17,6 +17,7 @@
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "effect-opfs": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/effect-schema-i18n": "workspace:*",
     "effect-web-midi": "workspace:*",

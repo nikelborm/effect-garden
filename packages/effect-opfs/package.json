@@ -1,0 +1,85 @@
+{
+  "name": "effect-opfs",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Effect OPFS API wrapper",
+  "license": "MIT",
+  "scripts": {
+    "build": "tspc",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",
+    "dev": "tspc --watch"
+  },
+  "files": [
+    ".github/FUNDING.yml",
+    "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ],
+  "dependencies": {
+    "effect": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-opfs",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ]
+}

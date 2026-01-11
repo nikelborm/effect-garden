@@ -23,6 +23,7 @@
         "@nikelborm/tsconfig": "workspace:*",
         "@trellisform/database": "workspace:*",
         "chokidar-cli": "^3.0.0",
+        "effect-opfs": "workspace:*",
         "effect-web-midi": "workspace:*",
         "next-midi-demo": "workspace:*",
         "postcss-styled-syntax": "^0.7.1",
@@ -146,6 +147,20 @@
     "packages/effect-landscape": {
       "name": "@nikelborm/effect-landscape",
       "version": "0.0.1",
+    },
+    "packages/effect-opfs": {
+      "name": "effect-opfs",
+      "version": "0.1.0",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@nikelborm/tsconfig": "workspace:*",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+      },
     },
     "packages/effect-schema-i18n": {
       "name": "@nikelborm/effect-schema-i18n",
@@ -322,6 +337,7 @@
         "@trellisform/database": "workspace:*",
         "effect": "catalog:",
         "effect-octokit-layer": "catalog:",
+        "effect-opfs": "workspace:*",
         "effect-web-midi": "workspace:*",
         "outdent": "catalog:",
         "tinybench": "catalog:",
@@ -1282,6 +1298,8 @@
     "effect-mdx": ["effect-mdx@0.2.2", "", { "dependencies": { "@mdx-js/mdx": "^3.1.0", "gray-matter": "^4.0.3", "rehype-stringify": "^10.0.1", "remark-gfm": "^4.0.1", "remark-parse": "^11.0.0", "remark-rehype": "^11.1.2", "unified": "^11.0.5", "yaml": "^2.8.1" }, "peerDependencies": { "@effect/platform": "^0.90.10", "@effect/platform-node": "^0.94.2", "effect": "^3.18.0" }, "optionalPeers": ["@effect/platform-node"] }, "sha512-yb0wzIMN3FDy6k+VUKm58yoANC2nqxgA7fHUIw8KZZXrxEBHi/1s74igV7oHdm1As4VoAJgb0evpUEksWg7LTQ=="],
 
     "effect-octokit-layer": ["effect-octokit-layer@1.15.1", "", { "dependencies": { "@octokit/core": "7.0.6", "date-fns": "4.1.0", "picocolors": "1.1.1" }, "peerDependencies": { "@effect/platform": "0.x", "effect": "3.x" } }, "sha512-XRZBB8BMdm9DEG/oSgylK/HwpNmz/PyaXHMM9TMU5uwDD6TGIchMtVA2LfTRN7CdtVy3f68PH/rHOn/lZzGM1w=="],
+
+    "effect-opfs": ["effect-opfs@workspace:packages/effect-opfs"],
 
     "effect-web-midi": ["effect-web-midi@workspace:packages/effect-web-midi"],
 
