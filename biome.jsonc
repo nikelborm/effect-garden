@@ -54,7 +54,12 @@
           "options": {
             "patterns": [
               {
-                "group": ["effect", "@effect/*", "!@effect/vitest"],
+                "group": [
+                  "effect",
+                  "@effect/*",
+                  "@effect-atom/*",
+                  "!@effect/vitest"
+                ],
                 "message": "Do not import from effect package directly. Use namespace imports instead"
               }
             ]
@@ -85,10 +90,11 @@
                 ":PACKAGE_WITH_PROTOCOL:",
                 "!effect/**",
                 "!effect",
-                "!@effect/**"
+                "!@effect/**",
+                "!@effect-atom/**"
               ],
               ":BLANK_LINE:",
-              ["effect", "effect/**", "@effect/**"],
+              ["effect", "effect/**", "@effect/**", "@effect-atom/**"],
               ":BLANK_LINE:",
               ":URL:",
               ":BLANK_LINE:",

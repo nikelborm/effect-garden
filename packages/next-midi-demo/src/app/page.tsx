@@ -2,9 +2,11 @@
 /** biome-ignore-all lint/correctness/noUnusedImports: it's a prototype, so I don't care for now> */
 'use client'
 
-import { Atom, useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+
+import * as Atom from '@effect-atom/atom/Atom'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
@@ -14,7 +16,7 @@ import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
 const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
 
 export default function Home() {
-  const selectedId = useAtomValue(selectedInputIdAtom)
+  const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
 
   return (
     <>

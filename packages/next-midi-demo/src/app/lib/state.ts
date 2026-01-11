@@ -1,6 +1,5 @@
 'use client'
 
-import { Atom, Result } from '@effect-atom/atom-react'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
@@ -8,6 +7,9 @@ import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
 
+// import { Atom, Result } from '@effect-atom/atom-react'
+import * as Atom from '@effect-atom/atom/Atom'
+import * as Result from '@effect-atom/atom/Result'
 import * as EArray from 'effect/Array'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'

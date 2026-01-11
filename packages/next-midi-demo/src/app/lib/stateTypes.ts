@@ -11,6 +11,7 @@ import type {
   RegisteredButtonID,
   ValidKeyboardKey,
 } from './branded.ts'
+
 export interface LayoutMap extends Map<LayoutId, Layout> {}
 
 export interface Layout {
@@ -23,6 +24,40 @@ export interface Layout {
   virtualMIDIPadButtons: VirtualMIDIPadButtonsMap
 }
 
+// |--------------------------|
+// | 1 - MIDI note            |
+// | 2 - Octave               |
+// | 3 - # note name          |
+// | 4 - b note name          |
+// | 5 - m (minor) note name  |
+// | 6 - present in files     |
+// |--------------------------|
+// | 1   2   3    4    5   6  |
+// |--------------------------|
+// | 24  1   C    C    C   +  |
+// | 25  1   C#   Db   Dm  +  |
+// | 26  1   D    D    D   +  |
+// | 27  1   D#   Eb   Em  +  |
+// | 28  1   E    E    E   +  |
+// | 29  1   F    F    F   +  |
+// | 30  1   F#   Gb   Gm     |
+// | 31  1   G    G    G   +  |
+// | 32  1   G#   Ab   Am  +  |
+// | 33  1   A    A    A      |
+// | 34  1   A#   Bb   Bm     |
+// | 35  1   B    B    B      |
+// |--------------------------|
+// | Aggregate counts:        |
+// |--------------------------|
+// |         2C   1C       1C |
+// |         2D   2D       2D |
+// |         1E   2E       2E |
+// |         2F   1F       1F |
+// |         2G   2G       1G |
+// |         2A   2A       1A |
+// |         1B   2B       0B |
+// |--------------------------|
+
 export interface KeyboardKeyToVirtualMIDIPadButtonMap
   extends Map<ValidKeyboardKey, AssignedKeyboardKeyInfo> {}
 
@@ -32,7 +67,7 @@ export interface PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap
 export interface VirtualMIDIPadButtonsMap
   extends Map<RegisteredButtonID, VirtualMIDIPadButton> {}
 
-interface AssignedMIDIDeviceNote {
+export interface AssignedMIDIDeviceNote {
   assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
   midiPadPress: MIDIDeviceNotePressInfo
 }
