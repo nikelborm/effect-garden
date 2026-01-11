@@ -1,13 +1,13 @@
 'use client'
 
 import { Button as BaseButton } from '@base-ui/react/button'
-import { useAtomValue } from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 
+import { useAtomValue } from '@effect-atom/atom-react'
 import * as Either from 'effect/Either'
 import * as Option from 'effect/Option'
 
-import type { RegisteredButtonID } from './branded.ts'
+import type { RegisteredButtonID } from './branded/StoreValues.ts'
 // import { flow } from 'effect/Function'
 import { midiToNoteName } from './midiToNoteName.ts'
 import {
