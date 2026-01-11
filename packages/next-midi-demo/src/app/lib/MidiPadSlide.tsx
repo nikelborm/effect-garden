@@ -3,76 +3,88 @@
 import { Button as BaseButton } from '@base-ui/react/button'
 import { styled } from '@linaria/react'
 
-import { useAtomValue } from '@effect-atom/atom-react'
-import * as Either from 'effect/Either'
-import * as Option from 'effect/Option'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import type { RegisteredButtonID } from './branded/StoreValues.ts'
-// import { flow } from 'effect/Function'
-import { midiToNoteName } from './midiToNoteName.ts'
+import { layoutHeightAtom, layoutWidthAtom } from './state/Layout.ts'
 import {
-  activeLayoutHeightAtom,
-  activeLayoutWidthAtom,
-  assertiveGetButtonByIdInActiveLayout,
-  // keyboardNavigationAtom,
-  registeredButtonIdsOfActiveLayoutAtom,
-} from './state.ts'
+  assertiveGetButtonById,
+  registeredButtonIdsAtom,
+} from './state/VirtualMIDIPadButtonsMap.ts'
+// import {
+//   assertiveGetButtonByIdInLayout,
+//   layoutHeightAtom,
+//   layoutWidthAtom,
+//   // keyboardNavigationAtom,
+//   registeredButtonIdsOfLayoutAtom,
+// } from './state.ts'
 
 // const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
 // console.log('keyboardNavigation', keyboardNavigation)
 
-export const MidiPadSlide = () =>
-  Option.match(
-    Option.all({
-      width: useAtomValue(activeLayoutWidthAtom),
-      height: useAtomValue(activeLayoutHeightAtom),
-      ids: useAtomValue(registeredButtonIdsOfActiveLayoutAtom),
-    }),
-    {
-      onNone: () => <span>No layout is selected</span>,
-      onSome: ({ height, width, ids }) => (
-        <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
-          {Array.from({ length: height }, (_, activeRowIndex) => (
-            <DisplayContentsWrapper
+export const MidiPadSlide = () => {
+  const [width, height, ids] = [
+    Hooks.useAtomValue(layoutWidthAtom),
+    Hooks.useAtomValue(layoutHeightAtom),
+    Hooks.useAtomValue(registeredButtonIdsAtom),
+  ] as const
+  return (
+    <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
+      {Array.from({ length: height }, (_, activeRowIndex) => (
+        <DisplayContentsWrapper
+          // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
+          key={activeRowIndex}
+          role="row"
+          aria-rowindex={activeRowIndex}
+        >
+          {Array.from({ length: width }, (_, activeColumnIndex) => (
+            <NoteButton
               // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-              key={activeRowIndex}
-              role="row"
-              aria-rowindex={activeRowIndex}
-            >
-              {Array.from({ length: width }, (_, activeColumnIndex) => (
-                <NoteButton
-                  // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-                  key={activeColumnIndex}
-                  buttonId={ids[activeRowIndex * width + activeColumnIndex]!}
-                />
-              ))}
-            </DisplayContentsWrapper>
+              key={activeColumnIndex}
+              columnIndex={activeColumnIndex}
+              buttonId={ids[activeRowIndex * width + activeColumnIndex]!}
+            />
           ))}
-        </ButtonGrid>
-      ),
-    },
+        </DisplayContentsWrapper>
+      ))}
+    </ButtonGrid>
   )
+}
 
-const NoteButton = ({ buttonId }: { buttonId: RegisteredButtonID }) =>
-  Option.match(useAtomValue(assertiveGetButtonByIdInActiveLayout(buttonId)), {
-    onNone: () => {
-      throw new Error("There's no active layout")
-    },
-    onSome: cell => {
-      const noteName = Either.getOrThrow(midiToNoteName(cell.assignedMIDINote))
-      return (
-        <NeumorphicButton
-          data-midi-note={cell.assignedMIDINote}
-          // data-is-externally-active={!!cell.activationReportedByDevice}
-          role="gridcell"
-          aria-colindex={cell.assignedMIDINote}
-          type="button"
-          aria-label={noteName + ' note button'}
-          children={noteName}
-        />
-      )
-    },
-  })
+const NoteButton = ({
+  buttonId,
+  columnIndex,
+}: {
+  buttonId: RegisteredButtonID
+  columnIndex: number
+}) => {
+  const cell = Hooks.useAtomValue(assertiveGetButtonById(buttonId))
+
+  if ('patternId' in cell)
+    return (
+      <NeumorphicButton
+        // data-is-externally-active={!!cell.activationReportedByDevice}
+        data-button-id={buttonId}
+        role="gridcell"
+        aria-colindex={columnIndex}
+        type="button"
+        aria-label={'Pattern №' + cell.patternId}
+        children={cell.label}
+      />
+    )
+
+  return (
+    <NeumorphicButton
+      // data-is-externally-active={!!cell.activationReportedByDevice}
+      data-button-id={buttonId}
+      role="gridcell"
+      aria-colindex={columnIndex}
+      type="button"
+      aria-label={cell.label + ' note button'}
+      children={cell.label}
+    />
+  )
+}
 
 const ButtonGrid = styled.div`
   width: 100vw;
@@ -98,7 +110,7 @@ const ButtonGrid = styled.div`
 
 const NeumorphicButton = styled(BaseButton)<{
   $isExternallyActive?: boolean | undefined
-  'data-midi-note': number
+  'data-button-id': RegisteredButtonID
 }>`
   border: none;
   border-radius: 23px;

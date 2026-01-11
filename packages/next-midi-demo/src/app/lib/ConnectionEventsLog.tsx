@@ -1,14 +1,16 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 
-import { Atom, Result, useAtomValue } from '@effect-atom/atom-react'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as Util from 'effect-web-midi/Util'
 
+import * as Atom from '@effect-atom/atom/Atom'
+import * as Result from '@effect-atom/atom/Result'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
-import { pipe } from 'effect/Function'
+import * as EFunction from 'effect/Function'
 
-const MIDIDeviceConnectionEventsStringLog = pipe(
+const MIDIDeviceConnectionEventsStringLog = EFunction.pipe(
   EMIDIAccess.request(),
   EMIDIAccess.makeAllPortsStateChangesStream(),
   Util.mapToGlidingStringLogOfLimitedEntriesCount(50, 'latestFirst', _ => ({
@@ -25,7 +27,7 @@ const StringLogAtom = Atom.make(MIDIDeviceConnectionEventsStringLog).pipe(
 )
 
 export const ConnectionEventsLog = () => {
-  const text = useAtomValue(StringLogAtom)
+  const text = Hooks.useAtomValue(StringLogAtom)
 
   return Result.match(text, {
     onFailure: _ => (

@@ -1,17 +1,151 @@
-import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
 import * as Atom from '@effect-atom/atom/Atom'
-import { pipe } from 'effect/Function'
-import * as Option from 'effect/Option'
+import type * as Types from 'effect/Types'
 
-import type * as StoreValues from '../branded/StoreValues.ts'
-import type { KeyboardKeyToVirtualMIDIPadButtonMap } from './KeyboardKeyToVirtualMIDIPadButtonMap.ts'
-import { layoutMapAtom } from './LayoutMap.ts'
-import type { PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap } from './PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
-import type { VirtualMIDIPadButtonsMap } from './VirtualMIDIPadButtonsMap.ts'
+import { ButtonState, MIDIValues } from '../branded/index.ts'
+import * as StoreValues from '../branded/StoreValues.ts'
+import type {
+  AssignedKeyboardKeyInfo,
+  KeyboardKeyToVirtualMIDIPadButtonMap,
+} from './KeyboardKeyToVirtualMIDIPadButtonMap.ts'
+import type {
+  AssignedMIDIDeviceNote,
+  PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap,
+} from './PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
+import type {
+  VirtualMIDIPadButton,
+  VirtualMIDIPadButtonsMap,
+} from './VirtualMIDIPadButtonsMap.ts'
+
+const height = 2
+const width = 8
+
+const keyboardLayout = [
+  /////////
+  '12345678',
+  'qwertyui',
+  /////////
+] as Types.TupleOf<2, string>
+
+const midiLayout = [
+  [0, 1, 2, 3, 4, 5, 6, 7],
+  [8, 9, 10, 11, 12, 13, 14, 15],
+] as const
+
+const buttonLayout = [
+  [
+    { patternId: 1, label: 'P1' },
+    { patternId: 2, label: 'P2' },
+    { patternId: 3, label: 'P3' },
+    { patternId: 4, label: 'P4' },
+    { patternId: 5, label: 'P5' },
+    { patternId: 6, label: 'P6' },
+    { patternId: 7, label: 'P7' },
+    { patternId: 8, label: 'P8' },
+  ],
+  [
+    { noteId: 24, label: 'C' },
+    { noteId: 25, label: 'Dm' },
+    { noteId: 27, label: 'Em' },
+    { noteId: 29, label: 'F' },
+    { noteId: 31, label: 'G' },
+    { noteId: 32, label: 'Am' },
+    { noteId: 26, label: 'D' },
+    { noteId: 28, label: 'E' },
+  ],
+] as const
+
+export const layoutAtom = Atom.make<Layout>({
+  width,
+  height,
+
+  inputIdPreferences: [
+    EMIDIInput.Id(
+      'EFE87192AEC369B27A01D61D0727D8ADF620A34131385F60C48E155102A544E4',
+    ),
+  ],
+  keyboardKeyToVirtualMIDIPadButtonMap: new Map<
+    StoreValues.ValidKeyboardKey,
+    AssignedKeyboardKeyInfo
+  >([
+    ...[...keyboardLayout[0]].map(
+      (key, index) =>
+        [
+          StoreValues.ValidKeyboardKey(key),
+          {
+            assignedToVirtualMIDIPadButtonId: StoreValues.RegisteredButtonID(
+              `pattern-button-id-${index + 1}`,
+            ),
+            keyboardKeyPressState: ButtonState.NotPressed,
+          },
+        ] as const,
+    ),
+    ...[...keyboardLayout[1]].map(
+      (key, index) =>
+        [
+          StoreValues.ValidKeyboardKey(key),
+          {
+            assignedToVirtualMIDIPadButtonId: StoreValues.RegisteredButtonID(
+              `accord-button-id-${index + 1}`,
+            ),
+            keyboardKeyPressState: ButtonState.NotPressed,
+          },
+        ] as const,
+    ),
+  ]),
+
+  physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap: new Map<
+    MIDIValues.NoteId,
+    AssignedMIDIDeviceNote
+  >([
+    ...[...midiLayout[0]].map(
+      (MIDINote, index) =>
+        [
+          MIDIValues.NoteId(MIDINote),
+          {
+            assignedToVirtualMIDIPadButtonId: StoreValues.RegisteredButtonID(
+              `pattern-button-id-${index + 1}`,
+            ),
+            midiPadPress: ButtonState.NotPressed,
+          },
+        ] as const,
+    ),
+    ...[...midiLayout[1]].map(
+      (MIDINote, index) =>
+        [
+          MIDIValues.NoteId(MIDINote),
+          {
+            assignedToVirtualMIDIPadButtonId: StoreValues.RegisteredButtonID(
+              `accord-button-id-${index + 1}`,
+            ),
+            midiPadPress: ButtonState.NotPressed,
+          },
+        ] as const,
+    ),
+  ]),
+
+  virtualMIDIPadButtons: new Map<
+    StoreValues.RegisteredButtonID,
+    VirtualMIDIPadButton
+  >([
+    ...[...buttonLayout[0]].map(({ label, patternId }, index) => {
+      const id = StoreValues.RegisteredButtonID(
+        `pattern-button-id-${index + 1}`,
+      )
+      return [id, { id, label, patternId }] as const
+    }),
+    ...[...buttonLayout[1]].map(({ label, noteId }, index) => {
+      const id = StoreValues.RegisteredButtonID(`accord-button-id-${index + 1}`)
+      return [
+        id,
+        { id, label, assignedMIDINote: MIDIValues.NoteId(noteId) },
+      ] as const
+    }),
+  ]),
+}).pipe(Atom.withLabel('layout'))
 
 export interface Layout {
-  id: StoreValues.LayoutId
   inputIdPreferences: EMIDIInput.Id[]
   width: number
   height: number
@@ -20,49 +154,10 @@ export interface Layout {
   virtualMIDIPadButtons: VirtualMIDIPadButtonsMap
 }
 
-export const assertiveGetLayoutAtomByLayoutId = Atom.family(
-  (id: StoreValues.LayoutId) =>
-    Atom.make(get => {
-      const layout = get(layoutMapAtom).get(id)
-
-      if (!layout)
-        throw new Error(
-          "Attempted to get layout by id, that's not available in the layout store",
-        )
-
-      return layout
-    }),
+export const layoutWidthAtom = Atom.make(get => get(layoutAtom).width).pipe(
+  Atom.withLabel('layoutWidth'),
 )
 
-/**
- * using null deselects it
- */
-export const activeLayoutAtom = Atom.writable<
-  Option.Option<Layout>,
-  StoreValues.LayoutId | null
->(
-  get =>
-    Option.some(
-      get(assertiveGetLayoutAtomByLayoutId('main' as StoreValues.LayoutId)),
-    ),
-  (ctx, activeLayoutId) => {
-    if (!activeLayoutId) return ctx.setSelf(Option.none())
-
-    ctx.set(focusedCellOfActiveLayoutAtom, Atom.Reset)
-    pipe(
-      activeLayoutId,
-      assertiveGetLayoutAtomByLayoutId,
-      ctx.get,
-      Option.some,
-      ctx.setSelf,
-    )
-  },
-).pipe(Atom.withLabel('activeLayoutId'))
-
-export const activeLayoutWidthAtom = Atom.make(get =>
-  Option.map(get(activeLayoutAtom), _ => _.width),
-).pipe(Atom.withLabel('activeLayoutWidth'))
-
-export const activeLayoutHeightAtom = Atom.make(get =>
-  Option.map(get(activeLayoutAtom), _ => _.height),
-).pipe(Atom.withLabel('activeLayoutHeight'))
+export const layoutHeightAtom = Atom.make(get => get(layoutAtom).height).pipe(
+  Atom.withLabel('layoutHeight'),
+)
