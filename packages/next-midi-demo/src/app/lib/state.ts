@@ -23,9 +23,11 @@ import * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
+import { ButtonState } from './branded/index.ts'
 import * as MIDIValues from './branded/MIDIValues.ts'
 import * as StoreValues from './branded/StoreValues.ts'
 import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
+import { setPhysicalButtonState } from './state/PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
 import {
   assertiveGetButtonById,
   registeredButtonIdsAtom,
@@ -46,12 +48,11 @@ export const getMessagesLogAtom: (
   !inputId
     ? Atom.make(
         Result.success('Input id is not selected. No log entries to show'),
-      ).pipe(Atom.withLabel('messagesLog'))
+      ).pipe(Atom.withLabel('messagesStringLog'))
     : pipe(
         EMIDIInput.makeMessagesStreamById(inputId),
         Parsing.withParsedDataField,
         Parsing.withTouchpadPositionUpdates,
-        Stream.filter(Predicate.or(Parsing.isNoteRelease, Parsing.isNotePress)),
         Util.mapToGlidingStringLogOfLimitedEntriesCount(
           50,
           'latestFirst',
@@ -68,7 +69,49 @@ export const getMessagesLogAtom: (
           Stream.succeed(e.cause.message),
         ),
         messageEventLogStream => Atom.make(messageEventLogStream),
-        Atom.withLabel('messagesLog'),
+        Atom.withLabel('messagesStringLog'),
+        Atom.keepAlive,
+        Atom.withServerValueInitial,
+      ),
+)
+
+export const getNotePressReleaseEventsAtom: (
+  arg: EMIDIInput.Id | null,
+) => Atom.Atom<
+  Result.Result<
+    Parsing.ParsedMIDIMessage<
+      Parsing.NotePressPayload | Parsing.NoteReleasePayload
+    >,
+    | MIDIErrors.AbortError
+    | MIDIErrors.MIDIAccessNotAllowedError
+    | MIDIErrors.MIDIAccessNotSupportedError
+    | MIDIErrors.UnderlyingSystemError
+  >
+> = Atom.family((inputId: EMIDIInput.Id | null) =>
+  !inputId
+    ? Atom.make(Stream.empty).pipe(Atom.withLabel('notePressReleaseEvents'))
+    : pipe(
+        EMIDIInput.makeMessagesStreamById(inputId),
+        Stream.catchTag('PortNotFound', () =>
+          Stream.dieMessage('it should not be possible to pass invalid id'),
+        ),
+        Parsing.withParsedDataField,
+        Parsing.withTouchpadPositionUpdates,
+        Stream.filter(Predicate.or(Parsing.isNoteRelease, Parsing.isNotePress)),
+        Stream.provideLayer(
+          EMIDIAccess.layerSystemExclusiveAndSoftwareSynthSupported,
+        ),
+        Stream.tap(({ midiMessage }) =>
+          Atom.set(setPhysicalButtonState, {
+            midiPadPress:
+              midiMessage._tag === 'Note Press'
+                ? ButtonState.Pressed
+                : ButtonState.NotPressed,
+            physicalMIDIDeviceNote: MIDIValues.NoteId(midiMessage.note),
+          }),
+        ),
+        messageEventLogStream => Atom.make(messageEventLogStream),
+        Atom.withLabel('notePressReleaseEvents'),
         Atom.keepAlive,
         Atom.withServerValueInitial,
       ),
@@ -147,6 +190,7 @@ export const virtualMIDIPadButtonsWithActivations = Atom.make(get => {
         ),
         pressedByMIDIPadButtons: SortedSet.empty(MIDIValues.NoteIdOrder),
       })),
+      Option.getOrThrow,
     )
 
   for (const [
@@ -160,14 +204,13 @@ export const virtualMIDIPadButtonsWithActivations = Atom.make(get => {
 
     map = pipe(
       getOrDefault(buttonId),
-      Option.map(button => ({
+      button => ({
         ...button,
-        pressedByKeyboardKeys: SortedSet.add(
-          button.pressedByKeyboardKeys,
-          keyboardKey,
-        ),
-      })),
-      Option.getOrThrow,
+        pressedByKeyboardKeys:
+          assignedKeyboardKeyInfo.keyboardKeyPressState === ButtonState.Pressed
+            ? SortedSet.add(button.pressedByKeyboardKeys, keyboardKey)
+            : button.pressedByKeyboardKeys,
+      }),
       newState => SortedMap.set(map, buttonId, newState),
     )
   }
@@ -183,19 +226,32 @@ export const virtualMIDIPadButtonsWithActivations = Atom.make(get => {
 
     map = pipe(
       getOrDefault(buttonId),
-      Option.map(button => ({
+      button => ({
         ...button,
-        pressedByMIDIPadButtons: SortedSet.add(
-          button.pressedByMIDIPadButtons,
-          physicalMIDIDeviceNote,
-        ),
-      })),
-      Option.getOrThrow,
+        pressedByMIDIPadButtons:
+          assignedMIDIDeviceNote.midiPadPress === ButtonState.Pressed
+            ? SortedSet.add(
+                button.pressedByMIDIPadButtons,
+                physicalMIDIDeviceNote,
+              )
+            : button.pressedByMIDIPadButtons,
+      }),
       newState => SortedMap.set(map, buttonId, newState),
     )
   }
 
-  console.log('virtualMIDIPadButtonsWithActivations: ', map)
+  console.log(
+    'virtualMIDIPadButtonsWithActivations: ',
+    pipe(
+      Record.fromEntries(SortedMap.entries(map)),
+      Record.map(val => ({
+        pressedByKeyboardKeys: [...SortedSet.values(val.pressedByKeyboardKeys)],
+        pressedByMIDIPadButtons: [
+          ...SortedSet.values(val.pressedByMIDIPadButtons),
+        ],
+      })),
+    ),
+  )
 
   return map
 })
@@ -237,16 +293,6 @@ export const isButtonPressed = Atom.family(
 //     Atom.make(get => {
 //       const layout = get(layoutAtom)
 //       return layout.keyboardKeyToVirtualMIDIPadButtonMap.get(key)
-//     }),
-// )
-
-// export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
-//   (physicalMIDIDeviceNote: MIDIValues.NoteId) =>
-//     Atom.make(get => {
-//       const layout = get(layoutAtom)
-//       return layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
-//         physicalMIDIDeviceNote,
-//       )
 //     }),
 // )
 

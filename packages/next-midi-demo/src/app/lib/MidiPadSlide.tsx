@@ -12,6 +12,7 @@ import {
   assertiveGetButtonById,
   registeredButtonIdsAtom,
 } from './state/VirtualMIDIPadButtonsMap.ts'
+import { getNotePressReleaseEventsAtom, isButtonPressed } from './state.ts'
 // import {
 //   assertiveGetButtonByIdInLayout,
 //   layoutHeightAtom,
@@ -33,6 +34,7 @@ export const MidiPadSlide = ({
     Hooks.useAtomValue(layoutHeightAtom),
     Hooks.useAtomValue(registeredButtonIdsAtom),
   ] as const
+  Hooks.useAtomMount(getNotePressReleaseEventsAtom(selectedInputPortId))
 
   return (
     <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
@@ -65,11 +67,13 @@ const NoteButton = ({
   columnIndex: number
 }) => {
   const cell = Hooks.useAtomValue(assertiveGetButtonById(buttonId))
+  const isPressed = Hooks.useAtomValue(isButtonPressed(buttonId))
 
   if ('patternId' in cell)
     return (
       <NeumorphicButton
         // data-is-externally-active={!!cell.activationReportedByDevice}
+        $isExternallyActive={isPressed}
         data-button-id={buttonId}
         role="gridcell"
         aria-colindex={columnIndex}
@@ -83,6 +87,7 @@ const NoteButton = ({
     <NeumorphicButton
       // data-is-externally-active={!!cell.activationReportedByDevice}
       data-button-id={buttonId}
+      $isExternallyActive={isPressed}
       role="gridcell"
       aria-colindex={columnIndex}
       type="button"

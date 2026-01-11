@@ -153,11 +153,11 @@ function parseMIDIMessagePayload(
   if (third === undefined) return unknown()
 
   if (code === 0x8) {
-    if (third !== 0x40) return unknown()
     return {
       _tag: 'Note Release',
       channel,
       note: second,
+      velocity: third,
     }
   }
 
@@ -167,6 +167,7 @@ function parseMIDIMessagePayload(
         _tag: 'Note Release',
         channel,
         note: second,
+        velocity: 64,
       }
     return {
       _tag: 'Note Press',
@@ -254,7 +255,12 @@ export const isChannelPressure = (
 /////////////////////////////////////////////
 
 export interface NoteReleasePayload
-  extends Readonly<{ _tag: 'Note Release'; channel: number; note: number }> {}
+  extends Readonly<{
+    _tag: 'Note Release'
+    channel: number
+    note: number
+    velocity: number
+  }> {}
 
 export const isNoteReleasePayload = (
   e: TaggedObject,

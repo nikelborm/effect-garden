@@ -1,4 +1,5 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
+import * as BaseSeparator from '@base-ui/react/separator'
 import { css } from '@linaria/core'
 import { styled } from '@linaria/react'
 import type * as React from 'react'
@@ -83,7 +84,7 @@ export const SelectValue = BaseSelect.Value
 export const Backdrop = BaseSelect.Backdrop
 export const Group = BaseSelect.Group
 export const GroupLabel = BaseSelect.GroupLabel
-export const Separator = BaseSelect.Separator
+export const Separator = BaseSeparator.Separator
 
 export const SelectIcon = BaseSelect.Icon
 
