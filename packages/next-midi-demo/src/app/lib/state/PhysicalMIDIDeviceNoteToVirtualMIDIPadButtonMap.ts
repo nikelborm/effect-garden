@@ -6,17 +6,5 @@ export interface PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap
 
 export interface AssignedMIDIDeviceNote {
   assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
-  midiPadPress: MIDIDeviceNotePressInfo
+  midiPadPress: ButtonState.NotPressed | ButtonState.Pressed
 }
-
-export type MIDIDeviceNotePressInfo =
-  | { state: ButtonState.NotPressed }
-  | {
-      state: ButtonState.Pressed
-      initialAcquiredVelocity: MIDIValues.NoteInitialVelocity
-    }
-  | {
-      state: ButtonState.PressedContinuously
-      initialAcquiredVelocity: MIDIValues.NoteInitialVelocity
-      latestContinuousPressure: MIDIValues.NoteCurrentPressure
-    }
