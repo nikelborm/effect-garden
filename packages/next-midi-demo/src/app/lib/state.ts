@@ -24,7 +24,11 @@ import * as Stream from 'effect/Stream'
 import type * as MIDIValues from './branded/MIDIValues.ts'
 import type * as StoreValues from './branded/StoreValues.ts'
 import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
-import { registeredButtonIdsAtom } from './state/VirtualMIDIPadButtonsMap.ts'
+import {
+  assertiveGetButtonById,
+  registeredButtonIdsAtom,
+  type VirtualMIDIPadButton,
+} from './state/VirtualMIDIPadButtonsMap.ts'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,
@@ -45,9 +49,7 @@ export const getMessagesLogAtom: (
         EMIDIInput.makeMessagesStreamById(inputId),
         Parsing.withParsedDataField,
         Parsing.withTouchpadPositionUpdates,
-        Stream.filter(
-          Predicate.or(Parsing.isChannelPressure, Parsing.isNotePress),
-        ),
+        Stream.filter(Predicate.or(Parsing.isNoteRelease, Parsing.isNotePress)),
         Util.mapToGlidingStringLogOfLimitedEntriesCount(
           50,
           'latestFirst',
@@ -208,13 +210,12 @@ export const getVirtualMIDIPadButtonByKeyboardKeyId = Atom.family(
 
 export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
   (physicalMIDIDeviceNote: MIDIValues.NoteId) =>
-    Atom.make(get =>
-      Option.map(get(layoutAtom), layout =>
-        layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
-          physicalMIDIDeviceNote,
-        ),
-      ),
-    ),
+    Atom.make(get => {
+      const layout = get(layoutAtom)
+      return layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
+        physicalMIDIDeviceNote,
+      )
+    }),
 )
 
 export const focusedCellOfLayoutAtom = Atom.writable<
@@ -224,12 +225,7 @@ export const focusedCellOfLayoutAtom = Atom.writable<
   () => null,
   (ctx, value: StoreValues.RegisteredButtonID | Atom.Reset) =>
     ctx.setSelf(
-      value === Atom.Reset
-        ? null
-        : Option.getOrThrowWith(
-            ctx.get(layoutAtom),
-            () => new Error('Cannot set focused cell when no layout is active'),
-          ).virtualMIDIPadButtons.assertiveGet(value),
+      value === Atom.Reset ? null : ctx.get(assertiveGetButtonById(value)),
     ),
 ).pipe(Atom.withLabel('currentFocusedCell'))
 

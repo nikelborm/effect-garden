@@ -28,10 +28,9 @@ const keyboardLayout = [
   /////////
 ] as Types.TupleOf<2, string>
 
-// TODO: update
 const midiLayout = [
-  [0, 1, 2, 3, 4, 5, 6, 7],
-  [8, 9, 10, 11, 12, 13, 14, 15],
+  [92, 93, 94, 95, 96, 97, 98, 99],
+  [84, 85, 86, 87, 88, 89, 90, 91],
 ] as const
 
 const buttonLayout = [
