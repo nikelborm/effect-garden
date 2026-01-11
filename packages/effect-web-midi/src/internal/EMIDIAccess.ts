@@ -54,6 +54,8 @@ import * as Util from './Util.ts'
 
 // TODO: make matchers that support returning effects from the callback instead of plain values
 
+// TODO: utilities to create mock implementations of objects because, all make methods are internal
+
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
@@ -487,6 +489,83 @@ export interface AllPortsRecordInContextEffect
  */
 export const AllPortsRecord: AllPortsRecordInContextEffect =
   getAllPortsRecord(EMIDIAccess)
+
+export interface GetPortArrayFromPolymorphicAccess<Port> {
+  /**
+   *
+   */
+  <E = never, R = never>(
+    polymorphicAccess: PolymorphicAccessInstance<E, R>,
+  ): Effect.Effect<Port[], E, R>
+}
+
+/**
+ * Because `MIDIInputMap` can potentially be a mutable object, meaning new
+ * devices can be added or removed at runtime, it is effectful.
+ *
+ * The **`inputs`** read-only property of the MIDIAccess interface provides
+ * access to any available MIDI input ports.
+ *
+ * [MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/inputs)
+ */
+export const getInputsArray: GetPortArrayFromPolymorphicAccess<EMIDIInput.EMIDIInput> =
+  EFunction.flow(getInputsRecord, Effect.map(Record.values))
+
+/**
+ * Because `MIDIOutputMap` can potentially be a mutable object, meaning new
+ * devices can be added or removed at runtime, it is effectful.
+ *
+ * The **`outputs`** read-only property of the MIDIAccess interface provides
+ * access to any available MIDI output ports.
+ *
+ * [MDN
+ * Reference](https://developer.mozilla.org/docs/Web/API/MIDIAccess/outputs)
+ */
+export const getOutputsArray: GetPortArrayFromPolymorphicAccess<EMIDIOutput.EMIDIOutput> =
+  EFunction.flow(getOutputsRecord, Effect.map(Record.values))
+
+/**
+ *
+ *
+ */
+export const getAllPortsArray: GetPortArrayFromPolymorphicAccess<
+  EMIDIOutput.EMIDIOutput | EMIDIInput.EMIDIInput
+> = EFunction.flow(getAllPortsRecord, Effect.map(Record.values))
+
+export interface InputsArrayInContextEffect
+  extends Effect.Effect<EMIDIInput.EMIDIInput[], never, EMIDIAccess> {}
+
+/**
+ *
+ *
+ */
+export const InputsArray: InputsArrayInContextEffect =
+  getInputsArray(EMIDIAccess)
+
+export interface OutputsArrayInContextEffect
+  extends Effect.Effect<EMIDIOutput.EMIDIOutput[], never, EMIDIAccess> {}
+
+/**
+ *
+ *
+ */
+export const OutputsArray: OutputsArrayInContextEffect =
+  getOutputsArray(EMIDIAccess)
+
+export interface AllPortsArrayInContextEffect
+  extends Effect.Effect<
+    (EMIDIOutput.EMIDIOutput | EMIDIInput.EMIDIInput)[],
+    never,
+    EMIDIAccess
+  > {}
+
+/**
+ *
+ *
+ */
+export const AllPortsArray: AllPortsArrayInContextEffect =
+  getAllPortsArray(EMIDIAccess)
 
 /**
  * [MIDIConnectionEvent MDN

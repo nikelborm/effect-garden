@@ -1,5 +1,6 @@
 export {
   // type AcquiredThing,
+  AllPortsArray as FullArray,
   AllPortsRecord as FullRecord,
   // assert,
   // assumeImpl,
@@ -11,6 +12,7 @@ export {
   // type GetThingByPortIdAccessFirst,
   // type GetThingByPortIdAccessLast,
   // type GetThingByPortIdAccessLastSecondHalf,
+  getAllPortsArray as getFullArray,
   getAllPortsRecord as getFullRecord,
   // getInputsRecord,
   // getOutputsRecord,
