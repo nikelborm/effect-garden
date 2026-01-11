@@ -5,6 +5,7 @@ import * as Data from 'effect/Data'
 import * as Either from 'effect/Either'
 import { flow } from 'effect/Function'
 import * as Option from 'effect/Option'
+import * as Order from 'effect/Order'
 import * as Tuple from 'effect/Tuple'
 
 export type NonPrintableKeyboardKeys =
@@ -22,6 +23,10 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
       `Expected "${key}" to be either a valid non-printable key name, or a single unicode symbol`,
     ),
 )
+export const ValidKeyboardKeyOrder = Order.mapInput(
+  Order.string,
+  (a: ValidKeyboardKey) => a,
+)
 
 // ======================================================
 
@@ -32,6 +37,10 @@ export type RegisteredButtonID = Brand.Branded<
 export const RegisteredButtonID = Brand.refined<RegisteredButtonID>(
   id => !!id.length,
   () => Brand.error('Expected non empty string to make registered button id'),
+)
+export const RegisteredButtonIdOrder = Order.mapInput(
+  Order.string,
+  (a: RegisteredButtonID) => a,
 )
 
 // ======================================================

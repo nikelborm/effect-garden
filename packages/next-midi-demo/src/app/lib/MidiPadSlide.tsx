@@ -2,6 +2,7 @@
 
 import { Button as BaseButton } from '@base-ui/react/button'
 import { styled } from '@linaria/react'
+import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
@@ -22,12 +23,17 @@ import {
 // const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
 // console.log('keyboardNavigation', keyboardNavigation)
 
-export const MidiPadSlide = () => {
+export const MidiPadSlide = ({
+  selectedInputPortId,
+}: {
+  selectedInputPortId: EMIDIInput.Id | null
+}) => {
   const [width, height, ids] = [
     Hooks.useAtomValue(layoutWidthAtom),
     Hooks.useAtomValue(layoutHeightAtom),
     Hooks.useAtomValue(registeredButtonIdsAtom),
   ] as const
+
   return (
     <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
       {Array.from({ length: height }, (_, activeRowIndex) => (

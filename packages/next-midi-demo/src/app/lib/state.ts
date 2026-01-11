@@ -19,10 +19,12 @@ import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
+import * as SortedMap from 'effect/SortedMap'
+import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
-import type * as MIDIValues from './branded/MIDIValues.ts'
-import type * as StoreValues from './branded/StoreValues.ts'
+import * as MIDIValues from './branded/MIDIValues.ts'
+import * as StoreValues from './branded/StoreValues.ts'
 import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
 import {
   assertiveGetButtonById,
@@ -128,65 +130,95 @@ export const getRowOfIdsOfLayoutAtom = Atom.family((rowIndex: number) =>
 export const virtualMIDIPadButtonsWithActivations = Atom.make(get => {
   const layout = get(layoutAtom)
 
-  const map = new Map<
+  let map = SortedMap.empty<
     StoreValues.RegisteredButtonID,
     {
-      pressedByKeyboardKeys: Set<StoreValues.ValidKeyboardKey>
-      pressedByMIDIPadButtons: Set<MIDIValues.NoteId>
+      pressedByKeyboardKeys: SortedSet.SortedSet<StoreValues.ValidKeyboardKey>
+      pressedByMIDIPadButtons: SortedSet.SortedSet<MIDIValues.NoteId>
     }
-  >()
+  >(StoreValues.RegisteredButtonIdOrder)
+
+  const getOrDefault = (buttonId: StoreValues.RegisteredButtonID) =>
+    pipe(
+      SortedMap.get(map, buttonId),
+      Option.orElseSome(() => ({
+        pressedByKeyboardKeys: SortedSet.empty(
+          StoreValues.ValidKeyboardKeyOrder,
+        ),
+        pressedByMIDIPadButtons: SortedSet.empty(MIDIValues.NoteIdOrder),
+      })),
+    )
+
   for (const [
     keyboardKey,
-    virtualMIDIPadButton,
+    assignedKeyboardKeyInfo,
   ] of layout.keyboardKeyToVirtualMIDIPadButtonMap) {
-    if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton)) continue
+    if (!('assignedToVirtualMIDIPadButtonId' in assignedKeyboardKeyInfo))
+      continue
 
-    const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
-    let curState = map.get(id)
-    if (!curState) {
-      const newState = {
-        pressedByKeyboardKeys: new Set<never>(),
-        pressedByMIDIPadButtons: new Set<never>(),
-      }
-      map.set(id, newState)
-      curState = newState
-    }
-    curState.pressedByKeyboardKeys.add(keyboardKey)
+    const buttonId = assignedKeyboardKeyInfo.assignedToVirtualMIDIPadButtonId
+
+    map = pipe(
+      getOrDefault(buttonId),
+      Option.map(button => ({
+        ...button,
+        pressedByKeyboardKeys: SortedSet.add(
+          button.pressedByKeyboardKeys,
+          keyboardKey,
+        ),
+      })),
+      Option.getOrThrow,
+      newState => SortedMap.set(map, buttonId, newState),
+    )
   }
 
   for (const [
     physicalMIDIDeviceNote,
-    virtualMIDIPadButton,
+    assignedMIDIDeviceNote,
   ] of layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap) {
-    if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton)) continue
+    if (!('assignedToVirtualMIDIPadButtonId' in assignedMIDIDeviceNote))
+      continue
 
-    const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
-    let curState = map.get(id)
-    if (!curState) {
-      const newState = {
-        pressedByKeyboardKeys: new Set<never>(),
-        pressedByMIDIPadButtons: new Set<never>(),
-      }
-      map.set(id, newState)
-      curState = newState
-    }
-    curState.pressedByMIDIPadButtons.add(physicalMIDIDeviceNote)
+    const buttonId = assignedMIDIDeviceNote.assignedToVirtualMIDIPadButtonId
+
+    map = pipe(
+      getOrDefault(buttonId),
+      Option.map(button => ({
+        ...button,
+        pressedByMIDIPadButtons: SortedSet.add(
+          button.pressedByMIDIPadButtons,
+          physicalMIDIDeviceNote,
+        ),
+      })),
+      Option.getOrThrow,
+      newState => SortedMap.set(map, buttonId, newState),
+    )
   }
+
+  console.log('virtualMIDIPadButtonsWithActivations: ', map)
 
   return map
 })
 
-export const getPressureStateOfButton = Atom.family(
-  (buttonId: StoreValues.RegisteredButtonID) =>
-    Atom.make(get => {
-      const activations = get(virtualMIDIPadButtonsWithActivations)
-      return (
-        activations.get(buttonId) ?? {
-          pressedByKeyboardKeys: new Set<StoreValues.ValidKeyboardKey>(),
-          pressedByMIDIPadButtons: new Set<MIDIValues.NoteId>(),
-        }
-      )
-    }),
+export const getPressureStateOfButton: (
+  buttonId: StoreValues.RegisteredButtonID,
+) => Atom.Atom<{
+  pressedByKeyboardKeys: SortedSet.SortedSet<StoreValues.ValidKeyboardKey>
+  pressedByMIDIPadButtons: SortedSet.SortedSet<MIDIValues.NoteId>
+}> = Atom.family((buttonId: StoreValues.RegisteredButtonID) =>
+  Atom.make(get =>
+    pipe(
+      get(virtualMIDIPadButtonsWithActivations),
+      SortedMap.get(buttonId),
+      Option.orElseSome(() => ({
+        pressedByKeyboardKeys: SortedSet.empty(
+          StoreValues.ValidKeyboardKeyOrder,
+        ),
+        pressedByMIDIPadButtons: SortedSet.empty(MIDIValues.NoteIdOrder),
+      })),
+      Option.getOrThrow,
+    ),
+  ),
 )
 
 export const isButtonPressed = Atom.family(
@@ -194,29 +226,29 @@ export const isButtonPressed = Atom.family(
     Atom.make(get => {
       const state = get(getPressureStateOfButton(buttonId))
       return (
-        !!state.pressedByKeyboardKeys.size ||
-        !!state.pressedByMIDIPadButtons.size
+        !!SortedSet.size(state.pressedByKeyboardKeys) ||
+        !!SortedSet.size(state.pressedByMIDIPadButtons)
       )
     }),
 )
 
-export const getVirtualMIDIPadButtonByKeyboardKeyId = Atom.family(
-  (key: StoreValues.ValidKeyboardKey) =>
-    Atom.make(get => {
-      const layout = get(layoutAtom)
-      return layout.keyboardKeyToVirtualMIDIPadButtonMap.get(key)
-    }),
-)
+// export const getVirtualMIDIPadButtonByKeyboardKeyId = Atom.family(
+//   (key: StoreValues.ValidKeyboardKey) =>
+//     Atom.make(get => {
+//       const layout = get(layoutAtom)
+//       return layout.keyboardKeyToVirtualMIDIPadButtonMap.get(key)
+//     }),
+// )
 
-export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
-  (physicalMIDIDeviceNote: MIDIValues.NoteId) =>
-    Atom.make(get => {
-      const layout = get(layoutAtom)
-      return layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
-        physicalMIDIDeviceNote,
-      )
-    }),
-)
+// export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
+//   (physicalMIDIDeviceNote: MIDIValues.NoteId) =>
+//     Atom.make(get => {
+//       const layout = get(layoutAtom)
+//       return layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
+//         physicalMIDIDeviceNote,
+//       )
+//     }),
+// )
 
 export const focusedCellOfLayoutAtom = Atom.writable<
   VirtualMIDIPadButton | null,

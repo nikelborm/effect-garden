@@ -1,22 +1,14 @@
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
 import * as Atom from '@effect-atom/atom/Atom'
+import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 
 import { ButtonState, MIDIValues } from '../branded/index.ts'
 import * as StoreValues from '../branded/StoreValues.ts'
-import type {
-  AssignedKeyboardKeyInfo,
-  KeyboardKeyToVirtualMIDIPadButtonMap,
-} from './KeyboardKeyToVirtualMIDIPadButtonMap.ts'
-import type {
-  AssignedMIDIDeviceNote,
-  PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap,
-} from './PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
-import type {
-  VirtualMIDIPadButton,
-  VirtualMIDIPadButtonsMap,
-} from './VirtualMIDIPadButtonsMap.ts'
+import type { KeyboardKeyToVirtualMIDIPadButtonMap } from './KeyboardKeyToVirtualMIDIPadButtonMap.ts'
+import type { PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap } from './PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
+import type { VirtualMIDIPadButtonsMap } from './VirtualMIDIPadButtonsMap.ts'
 
 const height = 2
 const width = 8
@@ -65,10 +57,9 @@ export const layoutAtom = Atom.make<Layout>({
       'EFE87192AEC369B27A01D61D0727D8ADF620A34131385F60C48E155102A544E4',
     ),
   ],
-  keyboardKeyToVirtualMIDIPadButtonMap: new Map<
-    StoreValues.ValidKeyboardKey,
-    AssignedKeyboardKeyInfo
-  >([
+  keyboardKeyToVirtualMIDIPadButtonMap: SortedMap.make(
+    StoreValues.ValidKeyboardKeyOrder,
+  )(
     ...[...keyboardLayout[0]].map(
       (key, index) =>
         [
@@ -93,12 +84,11 @@ export const layoutAtom = Atom.make<Layout>({
           },
         ] as const,
     ),
-  ]),
+  ),
 
-  physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap: new Map<
-    MIDIValues.NoteId,
-    AssignedMIDIDeviceNote
-  >([
+  physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap: SortedMap.make(
+    MIDIValues.NoteIdOrder,
+  )(
     ...[...midiLayout[0]].map(
       (MIDINote, index) =>
         [
@@ -123,12 +113,9 @@ export const layoutAtom = Atom.make<Layout>({
           },
         ] as const,
     ),
-  ]),
+  ),
 
-  virtualMIDIPadButtons: new Map<
-    StoreValues.RegisteredButtonID,
-    VirtualMIDIPadButton
-  >([
+  virtualMIDIPadButtons: SortedMap.make(StoreValues.RegisteredButtonIdOrder)(
     ...[...buttonLayout[0]].map(({ label, patternId }, index) => {
       const id = StoreValues.RegisteredButtonID(
         `pattern-button-id-${index + 1}`,
@@ -142,7 +129,7 @@ export const layoutAtom = Atom.make<Layout>({
         { id, label, assignedMIDINote: MIDIValues.NoteId(noteId) },
       ] as const
     }),
-  ]),
+  ),
 }).pipe(Atom.withLabel('layout'))
 
 export interface Layout {

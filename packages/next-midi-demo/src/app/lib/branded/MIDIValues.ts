@@ -1,10 +1,12 @@
 import * as Brand from 'effect/Brand'
+import * as Order from 'effect/Order'
 
 export type NoteId = Brand.Branded<number, 'MIDINoteId: integer in range 0-127'>
 export const NoteId = Brand.refined<NoteId>(
   n => Number.isSafeInteger(n) && n >= 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
 )
+export const NoteIdOrder = Order.mapInput(Order.number, (a: NoteId) => a)
 
 export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>
 export const Pressure = Brand.refined<Pressure>(

@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <>
-      <MidiPadSlide />
+      <MidiPadSlide selectedInputPortId={selectedId} />
       <Separator />
       <Wrapper>
         <Header>Connection events</Header>

@@ -1,3 +1,5 @@
+import type * as SortedMap from 'effect/SortedMap'
+
 import type { ButtonState } from '../branded/index.ts'
 import type {
   RegisteredButtonID,
@@ -5,7 +7,7 @@ import type {
 } from '../branded/StoreValues.ts'
 
 export interface KeyboardKeyToVirtualMIDIPadButtonMap
-  extends Map<ValidKeyboardKey, AssignedKeyboardKeyInfo> {}
+  extends SortedMap.SortedMap<ValidKeyboardKey, AssignedKeyboardKeyInfo> {}
 
 export interface AssignedKeyboardKeyInfo {
   assignedToVirtualMIDIPadButtonId?: RegisteredButtonID
