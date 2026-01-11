@@ -1,17 +1,13 @@
-import {
-  type Atom,
-  Result,
-  useAtomSet,
-  useAtomValue,
-} from '@effect-atom/atom-react'
 import { styled } from '@linaria/react'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 
+import type * as Atom from '@effect-atom/atom/Atom'
+import * as Result from '@effect-atom/atom/Result'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as EArray from 'effect/Array'
 import * as EFunction from 'effect/Function'
 import * as EString from 'effect/String'
 
-import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './state.ts'
 import {
   ChevronUpDownSVG,
   SelectIcon,
@@ -28,7 +24,8 @@ import {
   SelectScrollUpArrow,
   SelectTrigger,
   SelectValue,
-} from '@/components/Select.tsx'
+} from '../../components/Select.tsx'
+import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './state.ts'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,
@@ -42,12 +39,12 @@ export const MIDIDeviceSelect = <
     EMIDIPort.Id<CleanupPortType<NoInfer<TPortType>>> | null
   >
 }) => {
-  const filteredPortsResult = useAtomValue(
+  const filteredPortsResult = Hooks.useAtomValue(
     getPortsOfSpecificTypeAtom(typeToShowExclusively),
   )
   console.log('MIDIDeviceSelect rendered: ', filteredPortsResult)
 
-  const setSelectedId = useAtomSet(selectedIdAtom)
+  const setSelectedId = Hooks.useAtomSet(selectedIdAtom)
 
   return Result.matchWithError(filteredPortsResult, {
     onDefect: defect => {
