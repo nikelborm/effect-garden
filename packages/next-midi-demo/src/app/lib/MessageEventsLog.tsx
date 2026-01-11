@@ -1,9 +1,10 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 
-import { Result, useAtomValue } from '@effect-atom/atom-react'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
+import * as Result from '@effect-atom/atom/Result'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
 
 import { getMessagesLogAtom } from './state.ts'
@@ -13,7 +14,7 @@ export const MessageEventsLog = ({
 }: {
   selectedId: EMIDIInput.Id | null
 }) => {
-  const text = useAtomValue(getMessagesLogAtom(selectedId))
+  const text = Hooks.useAtomValue(getMessagesLogAtom(selectedId))
 
   return Result.match(text, {
     onFailure: _ => (

@@ -23,7 +23,8 @@ import * as Stream from 'effect/Stream'
 
 import type * as MIDIValues from './branded/MIDIValues.ts'
 import type * as StoreValues from './branded/StoreValues.ts'
-import type { VirtualMIDIPadButton } from './stateTypes.ts'
+import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
+import { registeredButtonIdsAtom } from './state/VirtualMIDIPadButtonsMap.ts'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,
@@ -105,119 +106,110 @@ export const getAssignedKeyboardKeyInfoByKeyboardKey = (
 //     return this.store.get(id) ?? { midiPadPress: { state: NotPressed } }
 //   }
 
-export const getRowOfIdsOfActiveLayoutAtom = Atom.family((rowIndex: number) =>
-  Atom.make(get =>
-    Option.map(
-      Option.all([
-        get(activeLayoutWidthAtom),
-        get(registeredButtonIdsOfActiveLayoutAtom),
-      ]),
-      ([width, ids]) => ids.slice(rowIndex * width, (rowIndex + 1) * width),
-    ),
-  ).pipe(Atom.withLabel('rowOfIdsOfActiveLayout')),
+export const getRowOfIdsOfLayoutAtom = Atom.family((rowIndex: number) =>
+  Atom.make(get => {
+    const width = get(layoutWidthAtom)
+    const ids = get(registeredButtonIdsAtom)
+    return ids.slice(rowIndex * width, (rowIndex + 1) * width)
+  }).pipe(Atom.withLabel('rowOfIdsOfLayout')),
 )
 
-// export const getCellOfActiveLayoutByCellIdAtom = Atom.family(
+// export const getCellOfLayoutByCellIdAtom = Atom.family(
 //   (id: RegisteredButtonID) =>
 //     Atom.make(get =>
-//       Option.map(get(activeLayoutAtom), layout =>
+//       Option.map(get(layoutAtom), layout =>
 //         layout.virtualMIDIPadButtons.assertiveGet(id),
 //       ),
-//     ).pipe(Atom.withLabel('cellOfActiveLayout')),
+//     ).pipe(Atom.withLabel('cellOfLayout')),
 // )
 
-export const virtualMIDIPadButtonsWithActivations = Atom.make(get =>
-  Option.map(get(activeLayoutAtom), layout => {
-    const map = new Map<
-      StoreValues.RegisteredButtonID,
-      {
-        pressedByKeyboardKeys: Set<StoreValues.ValidKeyboardKey>
-        pressedByMIDIPadButtons: Set<MIDIValues.NoteId>
-      }
-    >()
-    for (const [
-      keyboardKey,
-      virtualMIDIPadButton,
-    ] of layout.keyboardKeyToVirtualMIDIPadButtonMap) {
-      if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton))
-        continue
+export const virtualMIDIPadButtonsWithActivations = Atom.make(get => {
+  const layout = get(layoutAtom)
 
-      const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
-      let curState = map.get(id)
-      if (!curState) {
-        const newState = {
-          pressedByKeyboardKeys: new Set<never>(),
-          pressedByMIDIPadButtons: new Set<never>(),
-        }
-        map.set(id, newState)
-        curState = newState
-      }
-      curState.pressedByKeyboardKeys.add(keyboardKey)
+  const map = new Map<
+    StoreValues.RegisteredButtonID,
+    {
+      pressedByKeyboardKeys: Set<StoreValues.ValidKeyboardKey>
+      pressedByMIDIPadButtons: Set<MIDIValues.NoteId>
     }
+  >()
+  for (const [
+    keyboardKey,
+    virtualMIDIPadButton,
+  ] of layout.keyboardKeyToVirtualMIDIPadButtonMap) {
+    if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton)) continue
 
-    for (const [
-      physicalMIDIDeviceNote,
-      virtualMIDIPadButton,
-    ] of layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap) {
-      if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton))
-        continue
-
-      const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
-      let curState = map.get(id)
-      if (!curState) {
-        const newState = {
-          pressedByKeyboardKeys: new Set<never>(),
-          pressedByMIDIPadButtons: new Set<never>(),
-        }
-        map.set(id, newState)
-        curState = newState
+    const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
+    let curState = map.get(id)
+    if (!curState) {
+      const newState = {
+        pressedByKeyboardKeys: new Set<never>(),
+        pressedByMIDIPadButtons: new Set<never>(),
       }
-      curState.pressedByMIDIPadButtons.add(physicalMIDIDeviceNote)
+      map.set(id, newState)
+      curState = newState
     }
+    curState.pressedByKeyboardKeys.add(keyboardKey)
+  }
 
-    return map
-  }),
-)
+  for (const [
+    physicalMIDIDeviceNote,
+    virtualMIDIPadButton,
+  ] of layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap) {
+    if (!('assignedToVirtualMIDIPadButtonId' in virtualMIDIPadButton)) continue
+
+    const id = virtualMIDIPadButton.assignedToVirtualMIDIPadButtonId
+    let curState = map.get(id)
+    if (!curState) {
+      const newState = {
+        pressedByKeyboardKeys: new Set<never>(),
+        pressedByMIDIPadButtons: new Set<never>(),
+      }
+      map.set(id, newState)
+      curState = newState
+    }
+    curState.pressedByMIDIPadButtons.add(physicalMIDIDeviceNote)
+  }
+
+  return map
+})
 
 export const getPressureStateOfButton = Atom.family(
   (buttonId: StoreValues.RegisteredButtonID) =>
-    Atom.make(get =>
-      Option.map(
-        get(virtualMIDIPadButtonsWithActivations),
-        activations =>
-          activations.get(buttonId) ?? {
-            pressedByKeyboardKeys: new Set<StoreValues.ValidKeyboardKey>(),
-            pressedByMIDIPadButtons: new Set<MIDIValues.NoteId>(),
-          },
-      ),
-    ),
+    Atom.make(get => {
+      const activations = get(virtualMIDIPadButtonsWithActivations)
+      return (
+        activations.get(buttonId) ?? {
+          pressedByKeyboardKeys: new Set<StoreValues.ValidKeyboardKey>(),
+          pressedByMIDIPadButtons: new Set<MIDIValues.NoteId>(),
+        }
+      )
+    }),
 )
 
 export const isButtonPressed = Atom.family(
   (buttonId: StoreValues.RegisteredButtonID) =>
-    Atom.make(get =>
-      Option.map(
-        get(getPressureStateOfButton(buttonId)),
-        state =>
-          !!state.pressedByKeyboardKeys.size ||
-          !!state.pressedByMIDIPadButtons.size,
-      ),
-    ),
+    Atom.make(get => {
+      const state = get(getPressureStateOfButton(buttonId))
+      return (
+        !!state.pressedByKeyboardKeys.size ||
+        !!state.pressedByMIDIPadButtons.size
+      )
+    }),
 )
 
 export const getVirtualMIDIPadButtonByKeyboardKeyId = Atom.family(
   (key: StoreValues.ValidKeyboardKey) =>
-    Atom.make(get =>
-      Option.map(get(activeLayoutAtom), layout =>
-        layout.keyboardKeyToVirtualMIDIPadButtonMap.get(key),
-      ),
-    ),
+    Atom.make(get => {
+      const layout = get(layoutAtom)
+      return layout.keyboardKeyToVirtualMIDIPadButtonMap.get(key)
+    }),
 )
 
 export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
   (physicalMIDIDeviceNote: MIDIValues.NoteId) =>
     Atom.make(get =>
-      Option.map(get(activeLayoutAtom), layout =>
+      Option.map(get(layoutAtom), layout =>
         layout.physicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.get(
           physicalMIDIDeviceNote,
         ),
@@ -225,7 +217,7 @@ export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
     ),
 )
 
-export const focusedCellOfActiveLayoutAtom = Atom.writable<
+export const focusedCellOfLayoutAtom = Atom.writable<
   VirtualMIDIPadButton | null,
   StoreValues.RegisteredButtonID | Atom.Reset
 >(
@@ -235,7 +227,7 @@ export const focusedCellOfActiveLayoutAtom = Atom.writable<
       value === Atom.Reset
         ? null
         : Option.getOrThrowWith(
-            ctx.get(activeLayoutAtom),
+            ctx.get(layoutAtom),
             () => new Error('Cannot set focused cell when no layout is active'),
           ).virtualMIDIPadButtons.assertiveGet(value),
     ),
