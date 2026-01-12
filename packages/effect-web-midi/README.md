@@ -6,6 +6,15 @@ Huge thanks to [Web MIDI spec](https://www.w3.org/TR/webmidi/)!
 
 1. tests ([useful example](https://chromium-review.googlesource.com/c/chromium/src/+/7242095/1/third_party/blink/web_tests/wpt_internal/webmidi/requestmidiaccess.https.html))
 
+## Early Adopters
+
+1. Etude ([GitHub](https://github.com/MichaelVessia/etude), [Web
+   site](https://etude.vessia.net/)) -- A self-hosted piano practice tool built
+   by Michael Vessia ([GitHub @michaelvessia](https://github.com/michaelvessia),
+   [Web Site](https://vessia.net/)) that scores your performance against sheet
+   music. Connect a MIDI keyboard, load a piece, play through it, and get
+   real-time feedback on accuracy.
+
 ## Demo
 
 ```ts

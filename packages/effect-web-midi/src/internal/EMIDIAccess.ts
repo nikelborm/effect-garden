@@ -56,6 +56,12 @@ import * as Util from './Util.ts'
 
 // TODO: utilities to create mock implementations of objects because, all make methods are internal
 
+// TODO: document that in tests, you need to manually provide the mock access with the tag
+
+// TODO: export react and atom related stuff
+
+// TODO: add streams with reactive live port/input/output maps snapshots
+
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
  * instances from other objects at both runtime and type-level
