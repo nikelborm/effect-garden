@@ -14,6 +14,7 @@ Huge thanks to [Web MIDI spec](https://www.w3.org/TR/webmidi/)!
    [Web Site](https://vessia.net/)) that scores your performance against sheet
    music. Connect a MIDI keyboard, load a piece, play through it, and get
    real-time feedback on accuracy.
+2. And, hopefully, You 😉 🫶
 
 ## Demo
 
