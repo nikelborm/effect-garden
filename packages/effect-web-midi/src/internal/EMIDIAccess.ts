@@ -518,8 +518,21 @@ export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
 /**
+ * Higher-order helper function to canonicalize a subset of raw ports from raw access object
+ * into their `effect-web-midi` counterparts using the provided `make` function.
  *
  * @internal
+ * @param key The property key of {@linkcode MIDIAccess} like {@linkcode MIDIAccess.inputs|inputs} or {@linkcode MIDIAccess.outputs|outputs} to access the map (e.g. {@linkcode MIDIInputMap} or {@linkcode MIDIOutputMap})
+ * @param make A function to wrap the raw MIDI port (e.g. {@linkcode MIDIInput}) from that map into a managed by `effect-web-midi` port instance (e.g. {@linkcode EMIDIInput}).
+ * @returns A function that, when given a raw {@linkcode MIDIAccess}, returns an iterable of `[ID, effectful port]` pairs.
+ * @example
+ * ```ts
+ * import * as EMIDIInput from 'effect-web-midi/EMIDIInput';
+ *
+ * declare const rawAccess: MIDIAccess;
+ * const getInputs = getPortEntriesFromRawAccess('inputs', EMIDIInput.make);
+ * const inputEntries: Iterable<InputRecordEntry> = getInputs(rawAccess);
+ * ```
  */
 const getPortEntriesFromRawAccess =
   <
@@ -541,24 +554,57 @@ const getPortEntriesFromRawAccess =
     )
 
 /**
- *
  * @internal
+ * @example
+ * ```ts
+ * declare const rawAccess: MIDIAccess;
+ *
+ * for (const [inputId, inputPort] of getInputEntriesFromRaw(rawAccess)) {
+ *   //        ^         ^? EMIDIInput.EMIDIInput
+ *   //        ^? EMIDIInput.Id
+ * }
+ * ```
  */
 const getInputEntriesFromRaw: {
   (rawAccess: MIDIAccess): Iterable<InputRecordEntry>
 } = getPortEntriesFromRawAccess('inputs', EMIDIInput.make)
 
 /**
- *
  * @internal
+ * @example
+ * ```ts
+ * declare const rawAccess: MIDIAccess;
+ *
+ * for (const [outputId, outputPort] of getOutputEntriesFromRaw(rawAccess)) {
+ *   //        ^         ^? EMIDIOutput.EMIDIOutput
+ *   //        ^? EMIDIOutput.Id
+ * }
+ * ```
  */
 const getOutputEntriesFromRaw: {
   (rawAccess: MIDIAccess): Iterable<OutputRecordEntry>
 } = getPortEntriesFromRawAccess('outputs', EMIDIOutput.make)
 
 /**
+ * A single iterable with both inputs and outputs port entries from a raw {@linkcode MIDIAccess} instance.
  *
  * @internal
+ * @example
+ * ```ts
+ * declare const rawAccess: MIDIAccess;
+ *
+ * for (const entry of getOutputEntriesFromRaw(rawAccess)) {
+ *   if (entry[1].type === 'input') {
+ *     const [inputId, inputPort] = entry
+ *   //       ^         ^? EMIDIInput.EMIDIInput
+ *   //       ^? EMIDIInput.Id
+ *   } else {
+ *     const [outputId, outputPort] = entry
+ *   //       ^         ^? EMIDIOutput.EMIDIOutput
+ *   //       ^? EMIDIOutput.Id
+ *   }
+ * }
+ * ```
  */
 const getAllPortsEntriesFromRaw: {
   (rawAccess: MIDIAccess): Iterable<InputRecordEntry | OutputRecordEntry>
@@ -567,9 +613,22 @@ const getAllPortsEntriesFromRaw: {
 
 /**
  *
- * @param getRecordEntriesFromRawAccess
- * @returns
+ * @param getRecordEntriesFromRawAccess Function taking raw {@linkcode MIDIAccess} and returning `[EMIDIPort.Id, EMIDIPort.EMIDIPort]` tuples
+ * @returns Function taking {@linkcode PolymorphicAccessInstance|EMIDIAccess.PolymorphicInstance} and returning `Record<Id, EMIDIPort>`
  * @internal
+ * @example
+ * ```ts
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
+ * import * as EMIDIInput from 'effect-web-midi/EMIDIInput';
+ * import * as Effect from 'effect/Effect';
+ *
+ * const decorated = decorateToTakePolymorphicAccessAndReturnRecord(
+ *   getInputEntriesFromRaw
+ * );
+ * const inputsEffect = decorated(EMIDIAccess.request());
+ * const inputs = await Effect.runPromise(inputsEffect);
+ * //    ^? EMIDIInput.IdToInstanceMap
+ * ```
  */
 const decorateToTakePolymorphicAccessAndReturnRecord = <
   T extends UnknownEntriesUnion,
@@ -587,23 +646,35 @@ const decorateToTakePolymorphicAccessAndReturnRecord = <
       ),
     )) as GetPortRecordFromPolymorphicAccess<T>
 
+/**
+ * Interface for functions that retrieve a port record from polymorphic access.
+ */
 export interface GetPortRecordFromPolymorphicAccess<
   RecordEntries extends UnknownEntriesUnion,
 > {
   /**
-   *
+   * @param polymorphicAccess Optionally wrapped in effect {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}.
+   * @returns Effect with `Record` of MIDI port ids mapped to according effectful ports
    */
   <E = never, R = never>(
     polymorphicAccess: PolymorphicAccessInstance<E, R>,
   ): Effect.Effect<EntriesToRecord<RecordEntries>, E, R>
 }
 
-type EntriesToRecord<Entries extends UnknownEntriesUnion> =
+/**
+ * Utility type to convert union of entries to a record type.
+ *
+ * @template Entries The union of entry tuples.
+ */
+export type EntriesToRecord<Entries extends UnknownEntriesUnion> =
   Types.UnionToIntersection<
     Entries extends unknown ? Record<Entries[0], Entries[1]> : never
   >
 
-type UnknownEntriesUnion = [string, unknown]
+/**
+ * Placeholder tuple representing `Record` entry
+ */
+export type UnknownEntriesUnion = [string, unknown]
 
 /**
  * Because `MIDIInputMap` can potentially be a mutable object, meaning new

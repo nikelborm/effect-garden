@@ -2,6 +2,7 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as EArray from 'effect/Array'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
+import * as Order from 'effect/Order'
 import * as SortedMap from 'effect/SortedMap'
 
 import type { MIDIValues, StoreValues } from '../branded/index.ts'
@@ -14,11 +15,13 @@ export interface VirtualMIDIPadButtonsMap
 export type VirtualMIDIPadButton =
   | {
       id: RegisteredButtonID
+      order: number
       label: string
       assignedMIDINote: MIDIValues.NoteId
     }
   | {
       id: RegisteredButtonID
+      order: number
       label: string
       patternId: number
     }
@@ -44,11 +47,13 @@ export const assertiveGetButtonById = Atom.family(
     ),
 )
 
-export const registeredButtonIdsAtom = Atom.make(get =>
+export const sortedRegisteredButtonIdsAtom = Atom.make(get =>
   EFunction.pipe(
     virtualMIDIPadButtonsStoreAtom,
     get,
-    SortedMap.keys,
+    SortedMap.entries,
     EArray.fromIterable,
+    EArray.sortWith(([, button]) => button.order, Order.number),
+    EArray.map(([id]) => id),
   ),
 )

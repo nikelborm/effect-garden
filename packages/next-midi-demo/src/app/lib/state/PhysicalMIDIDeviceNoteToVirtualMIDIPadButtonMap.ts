@@ -45,7 +45,7 @@ export const getVirtualMIDIPadButtonByPhysicalMIDIDeviceNote = Atom.family(
     ),
 )
 
-export const setPhysicalButtonState = Atom.fnSync<{
+export const setPhysicalMIDIPadButtonState = Atom.fnSync<{
   physicalMIDIDeviceNote: MIDIValues.NoteId
   midiPadPress: ButtonState.Pressed | ButtonState.NotPressed
 }>()(({ physicalMIDIDeviceNote, midiPadPress }, ctx) => {

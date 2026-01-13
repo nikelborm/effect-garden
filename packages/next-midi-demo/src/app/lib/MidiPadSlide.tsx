@@ -10,9 +10,13 @@ import type { RegisteredButtonID } from './branded/StoreValues.ts'
 import { layoutHeightAtom, layoutWidthAtom } from './state/Layout.ts'
 import {
   assertiveGetButtonById,
-  registeredButtonIdsAtom,
+  sortedRegisteredButtonIdsAtom,
 } from './state/VirtualMIDIPadButtonsMap.ts'
-import { getNotePressReleaseEventsAtom, isButtonPressed } from './state.ts'
+import {
+  getNotePressReleaseEventsAtom,
+  isButtonPressed,
+  keyboardPressesForVirtualMIDIPadButtonsAtom,
+} from './state.ts'
 // import {
 //   assertiveGetButtonByIdInLayout,
 //   layoutHeightAtom,
@@ -32,9 +36,10 @@ export const MidiPadSlide = ({
   const [width, height, ids] = [
     Hooks.useAtomValue(layoutWidthAtom),
     Hooks.useAtomValue(layoutHeightAtom),
-    Hooks.useAtomValue(registeredButtonIdsAtom),
+    Hooks.useAtomValue(sortedRegisteredButtonIdsAtom),
   ] as const
   Hooks.useAtomMount(getNotePressReleaseEventsAtom(selectedInputPortId))
+  Hooks.useAtomMount(keyboardPressesForVirtualMIDIPadButtonsAtom)
 
   return (
     <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>

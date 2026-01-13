@@ -15,6 +15,7 @@ import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import { pipe } from 'effect/Function'
+import * as EIterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
@@ -26,11 +27,15 @@ import * as Stream from 'effect/Stream'
 import { ButtonState } from './branded/index.ts'
 import * as MIDIValues from './branded/MIDIValues.ts'
 import * as StoreValues from './branded/StoreValues.ts'
+import {
+  assignedKeyboardKeyStoreAtom,
+  setKeyboardKeyState,
+} from './state/KeyboardKeyToVirtualMIDIPadButtonMap.ts'
 import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
-import { setPhysicalButtonState } from './state/PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
+import { setPhysicalMIDIPadButtonState } from './state/PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
 import {
   assertiveGetButtonById,
-  registeredButtonIdsAtom,
+  sortedRegisteredButtonIdsAtom,
   type VirtualMIDIPadButton,
 } from './state/VirtualMIDIPadButtonsMap.ts'
 
@@ -102,7 +107,7 @@ export const getNotePressReleaseEventsAtom: (
           EMIDIAccess.layerSystemExclusiveAndSoftwareSynthSupported,
         ),
         Stream.tap(({ midiMessage }) =>
-          Atom.set(setPhysicalButtonState, {
+          Atom.set(setPhysicalMIDIPadButtonState, {
             midiPadPress:
               midiMessage._tag === 'Note Press'
                 ? ButtonState.Pressed
@@ -117,29 +122,56 @@ export const getNotePressReleaseEventsAtom: (
       ),
 )
 
-export const makeKeyboardSliceMapAtom = <
-  const SelectedKeys extends StoreValues.NonPrintableKeyboardKeys,
+export const makeKeyboardSliceMapStream = <
+  const SelectedKeys extends string,
   Ref extends GlobalEventHandlers,
 >(
   keys: SelectedKeys[],
   ref?: Ref,
 ) => {
-  const refWithFallback = ref ?? globalThis.document
+  const refWithFallback = ref ?? globalThis.window
 
   const keySet = new Set(keys)
 
-  const stream = refWithFallback
-    ? Stream.filterMap(
-        Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown', {
-          bufferSize: 0,
-        }),
-        ({ key }) =>
-          keySet.has(key as SelectedKeys) ? Option.some(key) : Option.none(),
+  return refWithFallback
+    ? Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown', {
+        bufferSize: 0,
+      }).pipe(
+        Stream.merge(
+          Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keyup', {
+            bufferSize: 0,
+          }),
+        ),
+        Stream.filterMap(event =>
+          keySet.has(event.key as SelectedKeys) &&
+          !(
+            event.target instanceof HTMLElement &&
+            (event.target.tagName === 'INPUT' ||
+              event.target.tagName === 'TEXTAREA' ||
+              event.target.isContentEditable)
+          )
+            ? Option.some({
+                key: StoreValues.ValidKeyboardKey(event.key),
+                keyboardKeyPressState:
+                  event.type === 'keydown'
+                    ? ButtonState.Pressed
+                    : ButtonState.NotPressed,
+              })
+            : Option.none(),
+        ),
       )
     : Stream.empty
-
-  return { stream, atom: Atom.make(stream) }
 }
+
+export const keyboardPressesForVirtualMIDIPadButtonsAtom = Atom.make(get =>
+  pipe(
+    get(assignedKeyboardKeyStoreAtom),
+    SortedMap.keys,
+    EArray.fromIterable,
+    makeKeyboardSliceMapStream,
+    Stream.tap(event => Atom.set(setKeyboardKeyState, event)),
+  ),
+)
 
 export const getAssignedKeyboardKeyInfoByKeyboardKey = (
   _keyboardKey: StoreValues.ValidKeyboardKey,
@@ -156,7 +188,7 @@ export const getAssignedKeyboardKeyInfoByKeyboardKey = (
 export const getRowOfIdsOfLayoutAtom = Atom.family((rowIndex: number) =>
   Atom.make(get => {
     const width = get(layoutWidthAtom)
-    const ids = get(registeredButtonIdsAtom)
+    const ids = get(sortedRegisteredButtonIdsAtom)
     return ids.slice(rowIndex * width, (rowIndex + 1) * width)
   }).pipe(Atom.withLabel('rowOfIdsOfLayout')),
 )
