@@ -63,21 +63,23 @@ import * as Util from './Util.ts'
 // TODO: add streams with reactive live port/input/output maps snapshots
 
 /**
- * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
- * instances from other objects at both runtime and type-level
+ * Unique symbol used for distinguishing
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}s from other objects at
+ * both runtime and type-level
  * @internal
  */
 const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIAccessInstance')
 
 /**
- * Unique symbol used for distinguishing {@linkcode EMIDIAccessInstance}
- * instances from other objects at both runtime and type-level
+ * Unique symbol used for distinguishing
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}s from other objects at
+ * both runtime and type-level
  */
 export type TypeId = typeof TypeId
 
 /**
  * A tag that allows to provide
- * {@linkcode EMIDIAccessInstance|access instance} once with e.g.
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance} once with e.g.
  * {@linkcode layer}, {@linkcode layerSystemExclusiveSupported}, etc. and reuse
  * it anywhere, instead of repeatedly {@linkcode request}ing it.
  *
@@ -86,7 +88,7 @@ export type TypeId = typeof TypeId
  *
  * @example
  * ```ts
- * import { EMIDIAccess } from 'effect-web-midi'
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  * import * as Effect from 'effect/Effect'
  *
  * const program = Effect.gen(function* () {
@@ -100,7 +102,7 @@ export type TypeId = typeof TypeId
  *   //    >
  *
  *   const access = yield* EMIDIAccess.EMIDIAccess
- *   //    ^ EMIDIAccessInstance
+ *   //    ^ EMIDIAccess.Instance
  *
  *   console.log(access.sysexEnabled)
  *   //                 ^ true
@@ -118,7 +120,7 @@ export interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to send and receive
    * `System Exclusive` messages is requested or allowed on a given
-   * {@linkcode EMIDIAccessInstance} object.
+   * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance} object.
    *
    * If this field is set to `true`, but `System Exclusive` support is denied
    * (either by policy or by user action), the access request will fail with a
@@ -136,15 +138,17 @@ export interface RequestMIDIAccessOptions {
   /**
    * This field informs the system whether the ability to utilize any software
    * synthesizers installed in the host system is requested or allowed on a
-   * given {@linkcode EMIDIAccessInstance} object.
+   * given {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance} object.
    *
    * If this field is set to `true`, but software synthesizer support is denied
    * (either by policy or by user action), the access request will fail with a
    * {@linkcode MIDIErrors.MIDIAccessNotAllowedError} error.
    *
-   * If this support is not requested, {@linkcode AllPortsRecord},
-   * {@linkcode getInputsRecord}, {@linkcode OutputsRecord}, etc. would
-   * not include any software synthesizers.
+   * If this support is not requested,
+   * {@linkcode AllPortsRecord|EMIDIAccess.AllPortsRecord},
+   * {@linkcode getInputsRecord|EMIDIAccess.getInputsRecord},
+   * {@linkcode OutputsArray|EMIDIAccess.OutputsArray}, etc. would not include
+   * any software synthesizers.
    *
    * Note that may result in a two-step request procedure if software
    * synthesizer support is desired but not required - software synthesizers may
@@ -157,7 +161,8 @@ export interface RequestMIDIAccessOptions {
 }
 
 /**
- * Prototype of all {@linkcode EMIDIAccessInstance} instances
+ * Prototype of all objects satisfying the
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance} type.
  * @internal
  */
 const Proto = {
@@ -192,11 +197,10 @@ const Proto = {
   },
 } satisfies EMIDIAccessInstance
 
-// !!! DOCUMENTATION CURSOR !!!
-
 /**
- * Thin wrapper around {@linkcode MIDIAccess} instance. Will be seen in all the
- * external code.
+ * Thin wrapper around raw {@linkcode MIDIAccess} instance. Will be seen in all the
+ * external code. Has a word `Instance` in the name to avoid confusion with
+ * {@linkcode EMIDIAccess|EMIDIAccess.EMIDIAccess} context tag.
  */
 export interface EMIDIAccessInstance
   extends Equal.Equal,
@@ -216,8 +220,9 @@ export interface EMIDIAccessInstance
 }
 
 /**
- * Thin wrapper around {@linkcode MIDIAccess} instance giving access to the
- * actual field storing it.
+ * Thin wrapper around raw {@linkcode MIDIAccess} instance giving access to the
+ * actual field storing it. Has a word `Instance` in the name to avoid confusion
+ * with {@linkcode EMIDIAccess|EMIDIAccess.EMIDIAccess} context tag.
  * @internal
  */
 interface EMIDIAccessImplementationInstance extends EMIDIAccessInstance {
@@ -226,9 +231,23 @@ interface EMIDIAccessImplementationInstance extends EMIDIAccessInstance {
 }
 
 /**
+ * @param rawAccess The raw {@linkcode MIDIAccess} object from the browser's Web
+ * MIDI API to be wrapped.
+ * @param config Optional configuration options used to acquire the `rawAccess`,
+ * to preserve alongside it.
  *
+ * @returns An object with private fields like
+ * {@linkcode EMIDIAccessImplementationInstance._access|_access} and
+ * {@linkcode EMIDIAccessImplementationInstance._config|_config} that are not
+ * supposed to be used externally by user-facing code.
  *
  * @internal
+ * @example
+ * ```typescript
+ * const config = { sysex: true };
+ * const rawAccess = await navigator.requestMIDIAccess(config);
+ * const internalInstance = makeImpl(rawAccess, config);
+ * ```
  */
 const makeImpl = (
   rawAccess: MIDIAccess,
@@ -242,10 +261,21 @@ const makeImpl = (
 }
 
 /**
- * Asserts an object to be valid `EMIDIAccess` and casts it to internal
- * implementation type
+ * Asserts that an `unknown` value is a valid
+ * {@linkcode EMIDIAccessImplementationInstance} and casts it to the type.
+ * Throws an error if the assertion fails.
  *
  * @internal
+ * @example
+ * ```typescript
+ * const unknownValue: null | EMIDIAccessInstance = null
+ * try {
+ *   const validatedAccess = assertImpl(unknownValue);
+ *   // validatedAccess is now known to be EMIDIAccessImplementationInstance
+ * } catch (error) {
+ *   console.error("Assertion failed:", error);
+ * }
+ * ```
  */
 const assertImpl = (access: unknown) => {
   if (!isImpl(access)) throw new Error('Failed to cast to EMIDIAccess')
@@ -253,22 +283,61 @@ const assertImpl = (access: unknown) => {
 }
 
 /**
- * Asserts an object to be valid `EMIDIAccess`
+ * Asserts that an `unknown` value is a valid {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}
+ * and casts it to the type. Throws an error if the assertion fails.
  *
  * @internal
+ * @example
+ * ```typescript
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
+ *
+ * const unknownValue: null | EMIDIAccess.Instance = null
+ *
+ * try {
+ *   const validatedAccess = EMIDIAccess.assert(unknownValue);
+ *   // validatedAccess is now known to be EMIDIAccess.Instance
+ * } catch (error) {
+ *   console.error("Assertion failed:", error);
+ * }
+ * ```
+ *
+ * @see {@linkcode is|EMIDIAccess.is}
  */
 export const assert: (access: unknown) => EMIDIAccessInstance = assertImpl
 
 /**
+ * Purely a type-level typecast to expose internal fields. Does no runtime
+ * validation and assumes you provided
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance} acquired legitimately
+ * from `effect-web-midi`.
+ *
  * @internal
+ * @example
+ * ```typescript
+ * // Assume `accessInstance` is known to be an internal implementation
+ * declare const accessPublic: EMIDIAccess.Instance;
+ * const accessInternal = assumeImpl(accessPublic);
+ * console.log('No type error here: ', accessInternal._config)
+ * ```
  */
 export const assumeImpl = (access: EMIDIAccessInstance) =>
   access as EMIDIAccessImplementationInstance
 
 /**
- *
+ * Creates a public-facing {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}
+ * from a raw {@linkcode MIDIAccess} object and optional configuration options
+ * used to acquire it. Prevents revealing internal fields set by
+ * `effect-web-midi` to the end user.
  *
  * @internal
+ * @example
+ * ```typescript
+ * // This is an internal helper, typically not called directly by users.
+ * // It's used by the 'request' function to create the instance.
+ * const config = { sysex: true }
+ * const rawAccess = await navigator.requestMIDIAccess(config);
+ * const instance = make(rawAccess, config);
+ * ```
  */
 const make: (
   rawAccess: MIDIAccess,
@@ -276,9 +345,19 @@ const make: (
 ) => EMIDIAccessInstance = makeImpl
 
 /**
- *
- *
  * @internal
+ * @example
+ * ```typescript
+ * const accessOrNot: null | EMIDIAccessInstance = null
+ *
+ * if (isImpl(accessOrNot)) {
+ *   const accessInternal = accessOrNot;
+ *   // will not be logged
+ *   console.log('No type error here: ', accessInternal._config)
+ * } else {
+ *   console.log('This will be logged because null is not EMIDIAccessInstance')
+ * }
+ * ```
  */
 const isImpl = (access: unknown): access is EMIDIAccessImplementationInstance =>
   typeof access === 'object' &&
@@ -293,22 +372,95 @@ const isImpl = (access: unknown): access is EMIDIAccessImplementationInstance =>
   access._access instanceof MIDIAccess
 
 /**
+ * @example
+ * ```typescript
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
+ * const accessOrNot: null | EMIDIAccessInstance = null
  *
+ * if (EMIDIAccess.is(accessOrNot)) {
+ *   const accessPublic = accessOrNot;
+ *   // ts-expect-error You're exposed only to public facing fields
+ *   console.log(accessPublic._config)
+ *   // will not be logged
+ * } else {
+ *   console.log('This will be logged because null is not EMIDIAccessInstance')
+ * }
+ * ```
+ *
+ * @see {@linkcode assert|EMIDIAccess.assert}
  */
 export const is: (access: unknown) => access is EMIDIAccessInstance = isImpl
 
 /**
+ * This utility function is used internally to handle different ways MIDI access
+ * might be provided, ensuring a consistent type for further operations. It uses
+ * the public {@linkcode is|EMIDIAccess.is} type guard for validation. If an
+ * effect is passed, errors and requirements are passed-through without
+ * modifications.
  *
  * @internal
+ * @param polymorphicAccess Either just {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}, or an
+ * Effect having it in the success channel.
+ * @returns An effect with type-asserted at runtime
+ * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}.
+ *
+ * @example
+ * ```typescript
+ * import * as Effect from 'effect/Effect';
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
+ *
+ * const getValidatedAccess = Effect.gen(function* () {
+ *   // Assume `polymorphicAccess` is obtained elsewhere
+ *   const polymorphicAccess = {} as EMIDIAccess.PolymorphicInstance;
+ *   const validatedAccess = yield* EMIDIAccess.simplify(polymorphicAccess);
+ *   // The operation above will throw a defect, because {} is not an access instance
+ *   return validatedAccess;
+ * });
+ * ```
+ *
+ * @see {@linkcode Util.fromPolymorphic}
+ * @see {@linkcode PolymorphicAccessInstance|EMIDIAccess.PolymorphicInstance}
+ * @see {@linkcode PolymorphicAccessInstanceClean|EMIDIAccess.PolymorphicCleanInstance}
  */
-export const resolve = <E = never, R = never>(
+export const simplify = <E = never, R = never>(
   polymorphicAccess: PolymorphicAccessInstance<E, R>,
 ) => Util.fromPolymorphic(polymorphicAccess, is)
 
 /**
+ * Represents a MIDI access instance that can be provided polymorphically:
+ * directly as a value ({@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}),
+ * or wrapped in effect. Typically processed by
+ * {@linkcode simplify|EMIDIAccess.simplify}.
  *
+ * @template E The type of errors that can be thrown while acquiring the access.
+ * @template R The environment required to simplify the access.
  *
+ * @example
+ * ```typescript
+ * import * as Effect from 'effect/Effect';
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
+ * import type * as MIDIErrors from 'effect-web-midi/MIDIErrors';
+ *
+ * let polymorphicAccess: EMIDIAccess.PolymorphicInstance<
+ *   | MIDIErrors.MIDIAccessNotAllowedError
+ *   | MIDIErrors.MIDIAccessNotSupportedError,
+ *   never
+ * > = EMIDIAccess.request().pipe(
+ *   Effect.catchTag('AbortError', 'UnderlyingSystemError', () =>
+ *     Effect.dieMessage('YOLO'),
+ *   ),
+ * )
+ *
+ * if (Effect.isEffect(polymorphicAccess)) {
+ *   const access: EMIDIAccess.Instance = await Effect.runPromise(polymorphicAccess)
+ *   // Assignment of plain instance works just fine
+ *   polymorphicAccess = access
+ * }
+ * ```
+ *
+ * @see {@linkcode simplify|EMIDIAccess.simplify}
+ * @see {@linkcode PolymorphicAccessInstanceClean|EMIDIAccess.PolymorphicCleanInstance}
  */
 export type PolymorphicAccessInstance<E, R> = Util.PolymorphicEffect<
   EMIDIAccessInstance,
@@ -317,8 +469,29 @@ export type PolymorphicAccessInstance<E, R> = Util.PolymorphicEffect<
 >
 
 /**
+ * Represents a MIDI access instance that can be provided polymorphically:
+ * directly as a value ({@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}),
+ * or wrapped in effect that never fails and doesn't require any context.
+ * Typically processed by {@linkcode simplify|EMIDIAccess.simplify}.
  *
+ * @example
+ * ```typescript
+ * import * as Effect from 'effect/Effect';
+ * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
+ * let polymorphicAccess: EMIDIAccess.PolymorphicCleanInstance =
+ *   Effect.orDie(EMIDIAccess.request())
+ *
+ * if (Effect.isEffect(polymorphicAccess)) {
+ *   const access: EMIDIAccess.Instance =
+ *     await Effect.runPromise(polymorphicAccess)
+ *   // Assignment of plain instance works just fine
+ *   polymorphicAccess = access
+ * }
+ * ```
+ *
+ * @see {@linkcode simplify|EMIDIAccess.simplify}
+ * @see {@linkcode PolymorphicAccessInstance|EMIDIAccess.PolymorphicInstance}
  */
 export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<
   never,
@@ -326,8 +499,21 @@ export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<
 >
 
 /**
+ * This utility type is used internally to infer the type of values stored in
+ * {@linkcode MIDIAccess} maps like in {@linkcode MIDIAccess.inputs|.inputs}
+ * ({@linkcode MIDIInputMap}) or {@linkcode MIDIAccess.outputs|.outputs}
+ * ({@linkcode MIDIOutputMap}) fields.
  *
+ * @template T - The `ReadonlyMap` to take value from.
  *
+ * @example
+ * ```typescript
+ * declare const myMap: ReadonlyMap<string, number>;
+ * type MyMapValue = ValueOfReadonlyMap<typeof myMap>;
+ * //   ^ type MyMapValue = number
+ * type MyMapValue2 = ValueOfReadonlyMap<MIDIOutputMap>;
+ * //   ^ type MyMapValue2 = MIDIOutput
+ * ```
  */
 type ValueOfReadonlyMap<T> = T extends ReadonlyMap<unknown, infer V> ? V : never
 
@@ -392,7 +578,7 @@ const decorateToTakePolymorphicAccessAndReturnRecord = <
 ) =>
   (polymorphicAccess =>
     Effect.map(
-      resolve(polymorphicAccess),
+      simplify(polymorphicAccess),
       EFunction.flow(
         assumeImpl,
         impl => impl._access,
@@ -621,7 +807,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
   Util.polymorphicCheckInDual(is),
   Effect.fn('EMIDIAccess.send')(
     function* (polymorphicAccess, target, midiMessage, timestamp) {
-      const access = yield* resolve(polymorphicAccess)
+      const access = yield* simplify(polymorphicAccess)
 
       const outputs = yield* getOutputsRecord(access)
 

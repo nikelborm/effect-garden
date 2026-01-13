@@ -77,7 +77,7 @@ export const is: (output: unknown) => output is EMIDIOutput = isImpl
  *
  * @internal
  */
-const resolve = <E = never, R = never>(
+const simplify = <E = never, R = never>(
   polymorphicPort: PolymorphicOutput<E, R>,
 ) => Util.fromPolymorphic(polymorphicPort, is)
 
@@ -100,7 +100,7 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
   Util.polymorphicCheckInDual(is),
   Effect.fn('EMIDIOutput.send')(
     function* (polymorphicOutput, midiMessage, timestamp) {
-      const output = yield* resolve(polymorphicOutput)
+      const output = yield* simplify(polymorphicOutput)
 
       yield* Effect.annotateCurrentSpan({
         midiMessage,
@@ -146,7 +146,7 @@ export const clear = Effect.fn('EMIDIOutput.clear')(function* <
   E = never,
   R = never,
 >(polymorphicOutput: PolymorphicOutput<E, R>) {
-  const output = yield* resolve(polymorphicOutput)
+  const output = yield* simplify(polymorphicOutput)
 
   yield* Effect.annotateCurrentSpan({
     port: Util.getStaticMIDIPortInfo(output),

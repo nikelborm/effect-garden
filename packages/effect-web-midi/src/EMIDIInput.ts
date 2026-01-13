@@ -32,7 +32,7 @@ export {
   // type PolymorphicAccessInstanceClean,
   // type RequestMIDIAccessOptions,
   // request,
-  // resolve,
+  // simplify,
   // type SendFromAccessArgs,
   // type SendMIDIMessageAccessFirst,
   // type SendMIDIMessageAccessLast,
@@ -51,8 +51,8 @@ export {
   type InputIdToInstanceMap as IdToInstanceMap,
   is,
   makeMessagesStreamByPort as makeMessagesStream,
-  type PolymorphicInput,
-  type PolymorphicInputClean,
+  type PolymorphicInput as PolymorphicInstance,
+  type PolymorphicInputClean as PolymorphicCleanInstance,
 } from './internal/EMIDIInput.ts'
 // export {
 //   assert,

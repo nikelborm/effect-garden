@@ -48,7 +48,7 @@ export const actOnPort = <
     2,
     (polymorphicAccess, portId) =>
       Effect.gen(function* () {
-        const access = yield* EMIDIAccess.resolve(polymorphicAccess)
+        const access = yield* EMIDIAccess.simplify(polymorphicAccess)
 
         const port = yield* getPortFromAccessAndPortId(
           access,

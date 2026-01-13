@@ -37,7 +37,7 @@ const getPortByIdAndRemap = <
   RInput | ROutput
 > =>
   EFunction.dual(2, (polymorphicAccess, portId) =>
-    Effect.flatMap(EMIDIAccess.resolve(polymorphicAccess), access => {
+    Effect.flatMap(EMIDIAccess.simplify(polymorphicAccess), access => {
       const rawAccess = EMIDIAccess.assumeImpl(access)._access
 
       let rawPort: MIDIOutput | MIDIInput | undefined =

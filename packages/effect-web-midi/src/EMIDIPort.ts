@@ -31,7 +31,7 @@ export {
   // type PolymorphicAccessInstanceClean,
   // type RequestMIDIAccessOptions,
   // request,
-  // resolve,
+  // simplify,
   // type SendFromAccessArgs,
   // type SendMIDIMessageAccessFirst,
   // type SendMIDIMessageAccessLast,
@@ -75,8 +75,8 @@ export {
   type ExtractTypeFromPort,
   type Id,
   is,
-  type PolymorphicPort,
-  type PolymorphicPortClean,
+  type PolymorphicPort as PolymorphicInstance,
+  type PolymorphicPortClean as PolymorphicCleanInstance,
   type TypeId,
 } from './internal/EMIDIPort.ts'
 export {
