@@ -243,7 +243,7 @@ interface EMIDIAccessImplementationInstance extends EMIDIAccessInstance {
  *
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * const config = { sysex: true };
  * const rawAccess = await navigator.requestMIDIAccess(config);
  * const internalInstance = makeImpl(rawAccess, config);
@@ -267,7 +267,7 @@ const makeImpl = (
  *
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * const unknownValue: null | EMIDIAccessInstance = null
  * try {
  *   const validatedAccess = assertImpl(unknownValue);
@@ -288,7 +288,7 @@ const assertImpl = (access: unknown) => {
  *
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
  * const unknownValue: null | EMIDIAccess.Instance = null
@@ -313,7 +313,7 @@ export const assert: (access: unknown) => EMIDIAccessInstance = assertImpl
  *
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * // Assume `accessInstance` is known to be an internal implementation
  * declare const accessPublic: EMIDIAccess.Instance;
  * const accessInternal = assumeImpl(accessPublic);
@@ -331,7 +331,7 @@ export const assumeImpl = (access: EMIDIAccessInstance) =>
  *
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * // This is an internal helper, typically not called directly by users.
  * // It's used by the 'request' function to create the instance.
  * const config = { sysex: true }
@@ -347,7 +347,7 @@ const make: (
 /**
  * @internal
  * @example
- * ```typescript
+ * ```ts
  * const accessOrNot: null | EMIDIAccessInstance = null
  *
  * if (isImpl(accessOrNot)) {
@@ -373,7 +373,7 @@ const isImpl = (access: unknown): access is EMIDIAccessImplementationInstance =>
 
 /**
  * @example
- * ```typescript
+ * ```ts
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
  * const accessOrNot: null | EMIDIAccessInstance = null
@@ -406,7 +406,7 @@ export const is: (access: unknown) => access is EMIDIAccessInstance = isImpl
  * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}.
  *
  * @example
- * ```typescript
+ * ```ts
  * import * as Effect from 'effect/Effect';
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
@@ -437,7 +437,7 @@ export const simplify = <E = never, R = never>(
  * @template R The environment required to simplify the access.
  *
  * @example
- * ```typescript
+ * ```ts
  * import * as Effect from 'effect/Effect';
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  * import type * as MIDIErrors from 'effect-web-midi/MIDIErrors';
@@ -475,7 +475,7 @@ export type PolymorphicAccessInstance<E, R> = Util.PolymorphicEffect<
  * Typically processed by {@linkcode simplify|EMIDIAccess.simplify}.
  *
  * @example
- * ```typescript
+ * ```ts
  * import * as Effect from 'effect/Effect';
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
@@ -507,7 +507,7 @@ export type PolymorphicAccessInstanceClean = PolymorphicAccessInstance<
  * @template T - The `ReadonlyMap` to take value from.
  *
  * @example
- * ```typescript
+ * ```ts
  * declare const myMap: ReadonlyMap<string, number>;
  * type MyMapValue = ValueOfReadonlyMap<typeof myMap>;
  * //   ^ type MyMapValue = number
