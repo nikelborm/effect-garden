@@ -144,6 +144,10 @@ export const makeKeyboardSliceMapStream = <
         ),
         Stream.filterMap(event =>
           keySet.has(event.key as SelectedKeys) &&
+          !event.ctrlKey &&
+          !event.shiftKey &&
+          !event.altKey &&
+          !event.metaKey &&
           !(
             event.target instanceof HTMLElement &&
             (event.target.tagName === 'INPUT' ||

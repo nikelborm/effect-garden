@@ -9,14 +9,18 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
+import { runnable } from './lib/dataFetcher.ts'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
 import { MIDIDeviceSelect } from './lib/MIDIDeviceSelect.tsx'
 import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
+
+const fetcherAtom = Atom.make(runnable)
 
 const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
 
 export default function Home() {
   const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
+  Hooks.useAtomMount(fetcherAtom)
 
   return (
     <>

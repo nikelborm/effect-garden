@@ -19,6 +19,15 @@ const nextConfig: LinariaConfig = {
   },
   typedRoutes: true,
 
+  // turbopack: {
+  //   rules: {
+  //     '*.wav': {
+  //       loaders: ['file-loader'],
+  //       as: 'url',
+  //     },
+  //   },
+  // },
+
   // probably will be needed later for some of the internal libraries
   // transpilePackages: ['package-name'],
   poweredByHeader: false,

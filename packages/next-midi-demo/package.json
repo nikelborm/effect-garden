@@ -11,8 +11,9 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
-    "@effect-atom/atom": "^0.4.11",
+    "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
+    "@effect/platform": "catalog:",
     "@effect/platform-browser": "catalog:",
     "@fp-ts/optic": "^0.25.0",
     "@linaria/core": "catalog:",

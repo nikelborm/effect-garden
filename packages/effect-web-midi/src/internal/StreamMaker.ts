@@ -46,22 +46,24 @@ const validOnNullStrategies = new Set([
  * **Second call arguments**
  *
  * - `isSelf` - Function determining if the maker was called as an overload with
- *   all parameters passed all at once, or with them spread by 2 calls. `self`
- *   will be later assigned to a `cameFrom` property of the object in the
- *   success channel of the stream
+ *   all parameters passed at once, or with them spread by 2 calls. `self` will
+ *   be later assigned to a `cameFrom` property of the object in the success
+ *   channel of the stream
  *
  * - `buildConfig` - Function that makes config out of an effectful version
- *   (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInput.EMIDIInput},
- *   {@linkcode EMIDIOutput.EMIDIOutput}) of a MIDI object.
+ *   (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance|EMIDIAccess.Instance},
+ *   {@linkcode EMIDIInput.EMIDIInput}, {@linkcode EMIDIOutput.EMIDIOutput}) of
+ *   a MIDI object.
  *
  * - `remapValueToContainer` - Callback that maps the value of the event's
  *   selected field to an extension of the object inside stream's success
  *   channel. All fields of the returned object must always be present and
  *   should be consistently nullable, when the incoming event's field is null.
  *
- * @template TEventTypeToEventValueMap An interface with event types of raw
- * Web MIDI objects as keys and according event structures as values. e.g.
- * `MIDIAccessEventMap`, `MIDIPortEventMap`, `MIDIInputEventMap`
+ * @template TEventTypeToEventValueMap An interface with event types of raw Web
+ * MIDI objects as keys and according event structures as values. e.g.
+ * {@linkcode MIDIAccessEventMap}, {@linkcode MIDIPortEventMap},
+ * {@linkcode MIDIInputEventMap}
  *
  * @internal
  */
@@ -69,12 +71,12 @@ export const createStreamMakerFrom =
   <TEventTypeToEventValueMap extends object>() =>
   /**
    * @param isSelf Function determining if the maker was called as an overload
-   * with all parameters passed all at once, or with them spread by 2 calls.
+   * with all parameters passed at once, or with them spread by 2 calls.
    * `self` will be later assigned to a `cameFrom` property of the object in the
    * success channel of the stream
    *
    * @param buildConfig Function that makes config out of an effectful version
-   * (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance}, {@linkcode EMIDIInput.EMIDIInput},
+   * (e.g. {@linkcode EMIDIAccess.EMIDIAccessInstance|EMIDIAccess.Instance}, {@linkcode EMIDIInput.EMIDIInput},
    * {@linkcode EMIDIOutput.EMIDIOutput}) of a MIDI object.
    *
    * @param remapValueToContainer Callback that maps the `fieldValue` of the
