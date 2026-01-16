@@ -2,10 +2,6 @@
 
 Huge thanks to [Web MIDI spec](https://www.w3.org/TR/webmidi/)!
 
-## TODO
-
-1. tests ([useful example](https://chromium-review.googlesource.com/c/chromium/src/+/7242095/1/third_party/blink/web_tests/wpt_internal/webmidi/requestmidiaccess.https.html))
-
 ## Early Adopters
 
 1. Etude ([GitHub](https://github.com/MichaelVessia/etude), [Web
@@ -14,7 +10,18 @@ Huge thanks to [Web MIDI spec](https://www.w3.org/TR/webmidi/)!
    [Web Site](https://vessia.net/)) that scores your performance against sheet
    music. Connect a MIDI keyboard, load a piece, play through it, and get
    real-time feedback on accuracy.
-2. And, hopefully, You 😉 🫶
+2. And, hopefully, You 😉 🫶 Please 🙏
+
+## Potential Adopters
+
+1. [search on GitHub for effect and requestMIDIAccess](https://github.com/search?q=%2F%28from+%7Crequire%5C%28%29%5B%27%22%5D%40%3Feffect%5B%27%22%5C%2F%5D%2F+language%3Atypescript+NOT+is%3Afork+requestMIDIAccess+NOT+owner%3Anikelborm&type=code)
+2. [chris-albert/midi-structor](https://github.com/chris-albert/midi-structor)
+
+## Devices the lib was manually tested on
+
+1. [Novation Launchpad X](https://novationmusic.com/products/launchpad-x)
+2. KORG NanoPad v1
+3. If you tested it on some devices not listed here, feel free to report your results through [GitHub issues](https://github.com/nikelborm/effect-garden/issues)
 
 ## Demo
 
@@ -263,3 +270,7 @@ const Wrapper = styled.div`
 <img width="1567" height="946" alt="Screenshot From 2025-12-29 01-46-34" src="https://github.com/user-attachments/assets/7411d393-0ef4-485a-954d-0d8d4e56a42e" />
 
 ![photo_2025-11-17_22-00-08](https://github.com/user-attachments/assets/e45ead32-6675-4fed-aff3-aeb416ba8ead)
+
+## TODO
+
+1. tests ([useful example](https://chromium-review.googlesource.com/c/chromium/src/+/7242095/1/third_party/blink/web_tests/wpt_internal/webmidi/requestmidiaccess.https.html))

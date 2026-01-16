@@ -1,13 +1,13 @@
 # Effect OPFS API wrapper
 
-Huge thanks to [OPFS spec](https://fs.spec.whatwg.org/)!
+Huge thanks to [OPFS spec](https://fs.spec.whatwg.org/), and [Storage spec](https://storage.spec.whatwg.org/)!
 
 ## TODO
 
 1. analyze https://github.com/kachurun/opfs-worker
 2. analyze https://github.com/hughfenghen/opfs-tools
 
-## Prior art
+## Potential adopters
 
 1. [Livestore](https://github.com/livestorejs/livestore/tree/916ee7d1731a3690fd8123d296a207122efe13cb/packages/%40livestore/utils/src/browser/Opfs)
 2. [@overeng/effect-utils](https://github.com/overengineeringstudio/effect-utils/blob/3b64a889696555203dfb81ae94990339634f5202/packages/%40overeng/utils/src/browser/opfs.ts#L8)

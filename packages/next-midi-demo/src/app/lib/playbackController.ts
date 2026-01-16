@@ -1,6 +1,7 @@
 import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
+import type * as Fiber from 'effect/Fiber'
 import EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
@@ -19,7 +20,7 @@ export type AudioState =
       readonly _tag: 'ScheduledChange'
       readonly current: AudioPlayback
       readonly next: AudioPlayback
-      readonly cleanupFiber: any
+      readonly cleanupFiber: Fiber.RuntimeFiber<void, never>
     }
 
 export class AudioService extends Context.Tag('AudioService')<
@@ -37,6 +38,12 @@ export const AudioServiceLive = Layer.effect(
     const state = yield* Ref.make<AudioState>({ _tag: 'NotPlaying' })
     const fadeTime = 0.1 // seconds
 
+    const arrayOfCleanupFibers = []
+    // TODO: fill
+    // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
+
+    audioContext.decodeAudioData()
+
     const createPlayback = (buffer: AudioBuffer): AudioPlayback => {
       const bufferSource = audioContext.createBufferSource()
       const gainNode = audioContext.createGain()
@@ -46,6 +53,14 @@ export const AudioServiceLive = Layer.effect(
       return { bufferSource, gainNode }
     }
 
+    const createImmediatelyLoudPlayback = (buffer: AudioBuffer) => {
+      const playback = createPlayback(buffer)
+      playback.gainNode.gain.setValueAtTime(1, audioContext.currentTime)
+      playback.bufferSource.start()
+    }
+
+    const createSilentByDefaultPlayback = () => {}
+
     const cleanupPlayback = (playback: AudioPlayback) =>
       Effect.sync(() => {
         playback.bufferSource.stop()
@@ -53,120 +68,108 @@ export const AudioServiceLive = Layer.effect(
         playback.gainNode.disconnect()
       })
 
-    const play = (buffer: AudioBuffer) =>
-      Ref.get(state).pipe(
-        Effect.flatMap(currentStatus =>
-          Effect.gen(function* () {
-            switch (currentStatus._tag) {
-              case 'NotPlaying': {
-                const playback = createPlayback(buffer)
-                playback.gainNode.gain.setValueAtTime(
-                  1,
-                  audioContext.currentTime,
-                )
-                playback.bufferSource.start()
-                yield* Ref.set(state, {
-                  _tag: 'PlayingAsset' as const,
-                  current: playback,
-                })
-                break
-              }
+    const play = Effect.fn(function* (buffer: AudioBuffer) {
+      const currentStatus = yield* Ref.get(state)
+      switch (currentStatus._tag) {
+        case 'NotPlaying': {
+          yield* Ref.set(state, {
+            _tag: 'PlayingAsset' as const,
+            current: playback,
+          })
+          break
+        }
 
-              case 'PlayingAsset': {
-                {
-                  const nextPlayback = createPlayback(buffer)
-                  const oldPlayback = currentStatus.current
+        case 'PlayingAsset': {
+          {
+            const nextPlayback = createPlayback(buffer)
+            const oldPlayback = currentStatus.current
 
-                  oldPlayback.gainNode.gain.exponentialRampToValueAtTime(
-                    0.001,
-                    audioContext.currentTime + fadeTime,
-                  )
-                  nextPlayback.gainNode.gain.setValueAtTime(
-                    0.001,
-                    audioContext.currentTime,
-                  )
-                  nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-                    1,
-                    audioContext.currentTime + fadeTime,
-                  )
-                  nextPlayback.bufferSource.start()
+            oldPlayback.gainNode.gain.exponentialRampToValueAtTime(
+              0.001,
+              audioContext.currentTime + fadeTime,
+            )
+            nextPlayback.gainNode.gain.setValueAtTime(
+              0.001,
+              audioContext.currentTime,
+            )
+            nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+              1,
+              audioContext.currentTime + fadeTime,
+            )
+            nextPlayback.bufferSource.start()
 
-                  const cleanupFiber = yield* EFunction.pipe(
-                    cleanupPlayback(oldPlayback).pipe(
-                      Effect.delay(Duration.seconds(fadeTime + 0.1)),
-                      Effect.zipRight(
-                        Ref.update(state, s =>
-                          s._tag === 'ScheduledChange'
-                            ? {
-                                _tag: 'PlayingAsset' as const,
-                                current: nextPlayback,
-                              }
-                            : s,
-                        ),
-                      ),
-                      Effect.fork,
-                    ),
-                  )
+            const cleanupFiber = yield* Effect.sleep(
+              Duration.seconds(fadeTime + 0.1),
+            ).pipe(
+              Effect.tap(() => cleanupPlayback(oldPlayback)),
+              Effect.zipRight(
+                Ref.update(state, s =>
+                  s._tag === 'ScheduledChange'
+                    ? {
+                        _tag: 'PlayingAsset' as const,
+                        current: nextPlayback,
+                      }
+                    : s,
+                ),
+              ),
+              Effect.fork,
+            )
 
-                  yield* Ref.set(state, {
-                    _tag: 'ScheduledChange' as const,
-                    current: oldPlayback,
-                    next: nextPlayback,
-                    cleanupFiber,
-                  })
-                }
-                break
-              }
+            yield* Ref.set(state, {
+              _tag: 'ScheduledChange' as const,
+              current: oldPlayback,
+              next: nextPlayback,
+              cleanupFiber,
+            })
+          }
+          break
+        }
 
-              case 'ScheduledChange': {
-                // yield* Effect.interrupt(currentStatus.cleanupFiber)
+        case 'ScheduledChange': {
+          yield* Effect.interruptWith(currentStatus.cleanupFiber.id())
 
-                yield* cleanupPlayback(currentStatus.next)
+          yield* cleanupPlayback(currentStatus.next)
 
-                const newNextPlayback = createPlayback(buffer)
-                const current = currentStatus.current
+          const newNextPlayback = createPlayback(buffer)
+          const current = currentStatus.current
 
-                current.gainNode.gain.cancelScheduledValues(
-                  audioContext.currentTime,
-                )
-                current.gainNode.gain.exponentialRampToValueAtTime(
-                  0.001,
-                  audioContext.currentTime + fadeTime,
-                )
+          current.gainNode.gain.cancelScheduledValues(audioContext.currentTime)
+          current.gainNode.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + fadeTime,
+          )
 
-                newNextPlayback.gainNode.gain.setValueAtTime(
-                  0.001,
-                  audioContext.currentTime,
-                )
-                newNextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-                  1,
-                  audioContext.currentTime + fadeTime,
-                )
-                newNextPlayback.bufferSource.start()
+          newNextPlayback.gainNode.gain.setValueAtTime(
+            0.001,
+            audioContext.currentTime,
+          )
+          newNextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+            1,
+            audioContext.currentTime + fadeTime,
+          )
+          newNextPlayback.bufferSource.start()
 
-                const newFiber = yield* cleanupPlayback(current).pipe(
-                  Effect.delay(Duration.seconds(fadeTime + 0.1)),
-                  Effect.zipRight(
-                    Ref.update(state, () => ({
-                      _tag: 'PlayingAsset' as const,
-                      current: newNextPlayback,
-                    })),
-                  ),
-                  Effect.fork,
-                )
+          const newFiber = yield* cleanupPlayback(current).pipe(
+            Effect.delay(Duration.seconds(fadeTime + 0.1)),
+            Effect.zipRight(
+              Ref.update(state, () => ({
+                _tag: 'PlayingAsset' as const,
+                current: newNextPlayback,
+              })),
+            ),
+            Effect.fork,
+          )
 
-                yield* Ref.set(state, {
-                  _tag: 'ScheduledChange',
-                  current: current,
-                  next: newNextPlayback,
-                  cleanupFiber: newFiber,
-                })
-                break
-              }
-            }
-          }),
-        ),
-      )
+          yield* Ref.set(state, {
+            _tag: 'ScheduledChange',
+            current: current,
+            next: newNextPlayback,
+            cleanupFiber: newFiber,
+          })
+          break
+        }
+      }
+    })
 
     const stop = () =>
       Ref.getAndSet(state, { _tag: 'NotPlaying' }).pipe(

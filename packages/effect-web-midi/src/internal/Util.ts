@@ -46,8 +46,8 @@ export type FallbackOnUnknownOrAny<TCandidate, Fallback> =
     : TCandidate
 
 export const polymorphicCheckInDual =
-  (is: (arg: unknown) => boolean) => (arg: IArguments) =>
-    Effect.isEffect(arg[0]) || is(arg[0])
+  (is: (arg: unknown) => boolean) => (args: IArguments) =>
+    Effect.isEffect(args[0]) || is(args[0])
 
 export function fromPolymorphic<A, E = never, R = never>(
   polymorphicValue: PolymorphicEffect<A, E, R>,

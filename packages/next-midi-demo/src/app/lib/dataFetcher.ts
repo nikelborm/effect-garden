@@ -29,6 +29,8 @@ export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundEr
   { cause: Schema.Unknown },
 ) {}
 
+// TODO: proper error handling for example when TypeError or ReferenceError on UnsupportedError (navigator.storage.getDirectory)
+
 const makeOPFSSink = (fileName: string) => {
   const acquireWritable = Effect.acquireRelease(
     Effect.tryPromise({

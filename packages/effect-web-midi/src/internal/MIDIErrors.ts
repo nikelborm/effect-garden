@@ -232,6 +232,7 @@ export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   }
 }
 
+// TODO: Make so that the function also ensures that cause.name is properly matches the map arg field it's assigned from, so that consistency goes both ways
 /**
  *
  * @internal

@@ -33,11 +33,11 @@ const CommonProto = {
 
   [TypeId]: TypeId,
 
-  [Hash.symbol](this: EMIDIPortImpl) {
+  [Hash.symbol]() {
     return Hash.string(this.id)
   },
 
-  [Equal.symbol](this: EMIDIPortImpl, that: Equal.Equal) {
+  [Equal.symbol](that: Equal.Equal) {
     return 'id' in that && this.id === that.id
   },
 
@@ -46,11 +46,11 @@ const CommonProto = {
     return Pipeable.pipeArguments(this, arguments)
   },
 
-  toString(this: EMIDIPortImpl) {
+  toString() {
     return Inspectable.format(this.toJSON())
   },
 
-  toJSON(this: EMIDIPortImpl) {
+  toJSON() {
     return {
       _id: 'EMIDIPort',
       id: this.id,
@@ -61,7 +61,7 @@ const CommonProto = {
     }
   },
 
-  [Inspectable.NodeInspectSymbol](this: EMIDIPortImpl) {
+  [Inspectable.NodeInspectSymbol]() {
     return this.toJSON()
   },
 

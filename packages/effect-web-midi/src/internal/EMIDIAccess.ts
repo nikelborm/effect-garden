@@ -168,7 +168,7 @@ export interface RequestMIDIAccessOptions {
 const Proto = {
   _tag: 'EMIDIAccess' as const,
   [TypeId]: TypeId,
-  [Hash.symbol](this: EMIDIAccessImplementationInstance) {
+  [Hash.symbol]() {
     return Hash.structure(this._config)
   },
   [Equal.symbol](that: Equal.Equal) {
@@ -178,13 +178,13 @@ const Proto = {
     // biome-ignore lint/complexity/noArguments: Effect's tradition
     return Pipeable.pipeArguments(this, arguments)
   },
-  toString(this: EMIDIAccessImplementationInstance) {
+  toString() {
     return Inspectable.format(this.toJSON())
   },
-  toJSON(this: EMIDIAccessImplementationInstance) {
+  toJSON() {
     return { _id: 'EMIDIAccess', config: this._config }
   },
-  [Inspectable.NodeInspectSymbol](this: EMIDIAccessImplementationInstance) {
+  [Inspectable.NodeInspectSymbol]() {
     return this.toJSON()
   },
 
@@ -195,7 +195,7 @@ const Proto = {
   get softwareSynthEnabled() {
     return !!assumeImpl(this)._config.software
   },
-} satisfies EMIDIAccessInstance
+} as EMIDIAccessImplementationInstance
 
 /**
  * Thin wrapper around raw {@linkcode MIDIAccess} instance. Will be seen in all the
@@ -315,7 +315,7 @@ export const assert: (access: unknown) => EMIDIAccessInstance = assertImpl
  * @example
  * ```ts
  * // Assume `accessInstance` is known to be an internal implementation
- * declare const accessPublic: EMIDIAccess.Instance;
+ * declare const accessPublic: EMIDIAccessInstance;
  * const accessInternal = assumeImpl(accessPublic);
  * console.log('No type error here: ', accessInternal._config)
  * ```
@@ -376,7 +376,7 @@ const isImpl = (access: unknown): access is EMIDIAccessImplementationInstance =>
  * ```ts
  * import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess';
  *
- * const accessOrNot: null | EMIDIAccessInstance = null
+ * const accessOrNot: null | EMIDIAccess.Instance = null
  *
  * if (EMIDIAccess.is(accessOrNot)) {
  *   const accessPublic = accessOrNot;
