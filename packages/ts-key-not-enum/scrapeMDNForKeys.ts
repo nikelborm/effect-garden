@@ -771,6 +771,11 @@ await Effect.gen(function* () {
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
+  // TODO: wrap with  or better yet with dprint or other
+  // https://www.30secondsofcode.org/js/s/word-wrap/
+  // https://www.npmjs.com/package/wordwrapjs
+  // https://github.com/hosseinmd/prettier-plugin-jsdoc
+
   const report = {
     uniqueTypes: extractUniqueTypes(cleaned),
     // mdxTextExpressionNodes: collectNodesOfCertainType(
