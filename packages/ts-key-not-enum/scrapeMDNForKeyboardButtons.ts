@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
+import prettier from 'prettier'
 import { match, P } from 'ts-pattern'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
@@ -715,11 +716,6 @@ await Effect.gen(function* () {
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
-  // TODO: wrap with  or better yet with dprint or other
-  // https://www.30secondsofcode.org/js/s/word-wrap/
-  // https://www.npmjs.com/package/wordwrapjs
-  // https://github.com/hosseinmd/prettier-plugin-jsdoc
-
   const report = {
     uniqueTypes: extractUniqueTypes(cleaned),
     // mdxTextExpressionNodes: collectNodesOfCertainType(
@@ -754,6 +750,20 @@ await Effect.gen(function* () {
   yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
+
+  // TODO: wrap
+  const formatted = Effect.promise(() =>
+    prettier.format('sourceCodeString', {
+      parser: 'typescript',
+      plugins: ['prettier-plugin-jsdoc'],
+      printWidth: 80,
+      jsdocPrintWidth: 80,
+      jsdocDescriptionWithDot: true,
+      jsdocEmptyCommentStrategy: 'remove',
+    }),
+  )
+
+  console.log(formatted)
 }).pipe(
   Effect.catchAll(error => Console.error(error)),
   Effect.provide(AppLayer),
