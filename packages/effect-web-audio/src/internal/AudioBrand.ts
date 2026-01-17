@@ -1,12 +1,6 @@
 import * as Brand from 'effect/Brand'
 // import * as Order from 'effect/Order'
 
-export type AudioSinkId = Brand.Branded<string, 'AudioSinkId'>
-export const AudioSinkId = Brand.refined<AudioSinkId>(
-  id => typeof id === 'string',
-  id => Brand.error(`Expected ${id} to be a string`),
-)
-
 export type InHertz = Brand.Branded<number, 'InHertz'>
 export const InHertz = Brand.refined<InHertz>(
   hz => typeof hz === 'number',

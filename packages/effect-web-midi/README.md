@@ -14,8 +14,8 @@ Huge thanks to [Web MIDI spec](https://www.w3.org/TR/webmidi/)!
 
 ## Potential Adopters
 
-1. [search on GitHub for effect and requestMIDIAccess](https://github.com/search?q=%2F%28from+%7Crequire%5C%28%29%5B%27%22%5D%40%3Feffect%5B%27%22%5C%2F%5D%2F+language%3Atypescript+NOT+is%3Afork+requestMIDIAccess+NOT+owner%3Anikelborm&type=code)
-2. [chris-albert/midi-structor](https://github.com/chris-albert/midi-structor)
+1. [chris-albert/midi-structor](https://github.com/chris-albert/midi-structor)
+2. [Search on GitHub for `effect` and `requestMIDIAccess`...](https://github.com/search?q=%2F%28from+%7Crequire%5C%28%29%5B%27%22%5D%40%3Feffect%5B%27%22%5C%2F%5D%2F+language%3Atypescript+NOT+is%3Afork+requestMIDIAccess+NOT+owner%3Anikelborm&type=code)
 
 ## Devices the lib was manually tested on
 

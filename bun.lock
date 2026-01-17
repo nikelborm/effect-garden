@@ -183,6 +183,7 @@
       "version": "0.1.0",
       "dependencies": {
         "effect": "catalog:",
+        "effect-web-mediacapture-streams": "workspace:*",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",

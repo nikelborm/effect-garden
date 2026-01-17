@@ -1,3 +1,4 @@
+import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 
@@ -58,7 +59,8 @@ const config = Schema.UndefinedOr(
         type: Schema.Literal('none'),
       }),
     ).pipe(Schema.optionalWith({ exact: true })),
-    renderSizeHint: Schema.Literal('hardware', 'default').pipe(
+    renderSizeHint: EFunction.pipe(
+      Schema.Union(Schema.Literal('hardware', 'default'), Schema.Number),
       Schema.optionalWith({ exact: true }),
     ),
   }),

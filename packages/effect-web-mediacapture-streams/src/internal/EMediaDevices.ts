@@ -1,5 +1,7 @@
+import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 
+import * as EMediaDeviceInfo from './EMediaDeviceInfo.ts'
 import * as MediaErrors from './MediaErrors.ts'
 
 /**
@@ -7,16 +9,17 @@ import * as MediaErrors from './MediaErrors.ts'
  *
  * @example
  * ```ts
- * import * as EMediaDevices from 'effect-web-audio/EMediaDevices'
+ * import * as EMediaDevices from 'effect-web-mediacapture-streams/EMediaDevices'
+ * import * as Effect from 'effect/Effect'
  *
- * const audioBufferOrError = EMediaDevices.enumerate
+ * const mediaDeviceInfoArray = EMediaDevices.enumerate.pipe(
+ *   Effect.runPromise,
+ *   console.log
+ * )
  * ```
  */
 export const enumerate = Effect.tryPromise({
-  try: () =>
-    navigator.mediaDevices.enumerateDevices() as Promise<
-      (MediaDeviceInfo | InputDeviceInfo)[]
-    >,
+  try: () => navigator.mediaDevices.enumerateDevices(),
   catch: MediaErrors.remapErrorByName(
     {
       NotSupportedError: MediaErrors.MediaDeviceEnumerationNotSupportedError,
@@ -25,10 +28,10 @@ export const enumerate = Effect.tryPromise({
       // For case when navigator.mediaDevices.enumerateDevices is undefined
       TypeError: MediaErrors.MediaDeviceEnumerationNotSupportedError,
     },
-    'EMIDIAccess.request error handling absurd',
+    'EMediaDevices.enumerate error handling absurd',
     {},
   ),
 }).pipe(
-  Effect.map(e => e),
+  Effect.map(EArray.map(EMediaDeviceInfo.make)),
   Effect.withSpan('EMediaDevices.enumerate'),
 )

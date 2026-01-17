@@ -174,8 +174,6 @@ interface EAudioBufferImpl extends EAudioBuffer {
 /**
  * @param rawAudioBuffer The raw {@linkcode AudioBuffer} object from the browser's Web
  * Audio API to be wrapped.
- * @param config Optional configuration options used to acquire the `rawAudioBuffer`,
- * to preserve alongside it.
  *
  * @internal
  * @example

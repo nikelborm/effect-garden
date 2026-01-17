@@ -1,5 +1,4 @@
 export {
-  AudioSinkId,
   ChannelAmount,
   ChannelIndex,
   InHertz,

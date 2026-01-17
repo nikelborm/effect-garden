@@ -21,7 +21,8 @@
     "!**/scratchpad.*"
   ],
   "dependencies": {
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "effect-web-mediacapture-streams": "workspace:*"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio",
   "devDependencies": {

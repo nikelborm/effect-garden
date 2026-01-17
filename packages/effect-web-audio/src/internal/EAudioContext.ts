@@ -1,3 +1,7 @@
+import type * as EMediaDeviceInfo from 'effect-web-mediacapture-streams/EMediaDeviceInfo'
+import type * as EMediaDevices from 'effect-web-mediacapture-streams/EMediaDevices'
+import type * as MediaBrand from 'effect-web-mediacapture-streams/MediaBrand'
+
 import * as Context from 'effect/Context'
 import * as Either from 'effect/Either'
 import * as Equal from 'effect/Equal'
@@ -7,6 +11,7 @@ import * as Pipeable from 'effect/Pipeable'
 
 import type * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
+import type * as EAudioBuffer from './EAudioBuffer.ts'
 
 /**
  * Unique symbol used for distinguishing
@@ -327,33 +332,38 @@ export interface MakeAudioContextOptions extends AudioContextOptions {
   readonly latencyHint?: AudioContextLatencyCategory | number
 
   /**
-   * Indicates the sample rate to use for the new context. The value must be a
-   * floating-point value indicating the sample rate, in samples per second, for
-   * which to configure the new context; additionally, the value must be one
-   * which is supported by AudioBuffer.sampleRate. The value will typically be
-   * between 8,000 Hz and 96,000 Hz; the default will vary depending on the
-   * output device, but the sample rate 44,100 Hz is the most common. If the
-   * sampleRate property is not included in the options, or the options are not
-   * specified when creating the audio context, the new context's output
-   * device's preferred sample rate is used by default.
+   * The value must be a floating-point value indicating the sample rate, in
+   * samples per second; additionally, the value must be one which is supported
+   * by
+   * {@linkcode EAudioBuffer.EAudioBuffer.sampleRate|EAudioBuffer.sampleRate}.
+   * The value will typically be between 8,000 Hz and 96,000 Hz and the sample
+   * rate 44,100 Hz is the most common. If not specified, output device's
+   * preferred sample rate will be used by default
    */
   readonly sampleRate?: AudioBrand.SampleRate
 
   /**
    * Specifies the sink ID of the audio output device to use for the
-   * AudioContext. This can take one of the following value types:
+   * {@linkcode EAudioContext}. This can take one of the following value types:
    *
-   * - A string representing the sink ID, retrieved for example via the deviceId
-   *   property of the MediaDeviceInfo objects returned by
-   *   MediaDevices.enumerateDevices().
+   * - {@linkcode MediaBrand.AudioSinkId} retrieved for example from the
+   *   {@linkcode EMediaDeviceInfo.EMediaDeviceInfo.deviceId|deviceId} of
+   *   {@linkcode EMediaDeviceInfo.EMediaDeviceInfo|EMediaDeviceInfo} returned
+   *   by {@linkcode EMediaDevices.enumerate}
    * - An object representing different options for a sink ID. Currently, this
    *   takes a single property, type, with a value of none. Setting this
    *   parameter causes the audio to be processed without being played through
    *   any audio output device.
    */
-  readonly sinkId?: AudioBrand.AudioSinkId | AudioSinkOptions
+  readonly sinkId?: MediaBrand.AudioSinkId | AudioSinkOptions
 
-  readonly renderSizeHint?: AudioContextRenderSizeCategory
+  /**
+   * Render quantum size is a number of sample-frames in a block. This hint
+   * allows users to ask for a specific size, to use the default of 128 frames,
+   * or to ask the User-Agent to pick a good size if `"hardware"` is specified.
+   * The user agent may or may not choose to meet this request
+   */
+  readonly renderSizeHint?: AudioContextRenderSizeCategory | number
 }
 
 export type AudioContextRenderSizeCategory = 'default' | 'hardware'

@@ -1,2 +1,5 @@
+export * as EInputDeviceInfo from './EInputDeviceInfo.ts'
+export * as EMediaDeviceInfo from './EMediaDeviceInfo.ts'
 export * as EMediaDevices from './EMediaDevices.ts'
+export * as MediaBrand from './MediaBrand.ts'
 export * as MediaErrors from './MediaErrors.ts'
