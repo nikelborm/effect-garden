@@ -162,7 +162,6 @@ const parseMdxNodes = (
       },
       selection => ({
         type: 'text',
-        transformationLabel: 'mdxTextExpression',
         value: Object.values(selection).filter(Boolean).join(' '),
       }),
     )
@@ -185,15 +184,10 @@ const parseMdxNodes = (
           },
         },
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'mdxFlowExpression',
-        value,
-      }),
+      value => ({ type: 'text', value }),
     )
     .with({ type: 'mdxTextExpression', value: 'deprecated_inline' }, () => ({
       type: 'text',
-      transformationLabel: 'mdxTextExpression',
       value: 'deprecated',
     }))
     .with(
@@ -205,7 +199,6 @@ const parseMdxNodes = (
       },
       ({ textAlias, url }) => ({
         type: 'text',
-        transformationLabel: 'a-element-primitive',
         value: `[${textAlias}](${url ?? 'https://www.google.com/search?q=' + textAlias})`,
       }),
     )
@@ -224,7 +217,6 @@ const parseMdxNodes = (
       },
       ({ textAlias, url }) => ({
         type: 'text',
-        transformationLabel: 'a-mdxJsxTextElement-primitive',
         value: `[${textAlias}](${url})`,
       }),
     )
@@ -234,25 +226,10 @@ const parseMdxNodes = (
         tagName: 'code',
         children: [{ type: 'text', value: P.select() }],
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'code-element-primitive',
-        value: '`' + value + '`',
-      }),
+      value => ({ type: 'text', value: '`' + value + '`' }),
     )
-    .with(
-      {
-        type: 'mdxJsxTextElement',
-        name: 'br',
-        attributes: [],
-        children: [],
-      },
-      () => ({
-        type: 'text',
-        transformationLabel: 'br-mdxJsxTextElement-primitive',
-        value: '\n',
-      }),
-    )
+    // @ts-expect-error
+    .with({ name: 'br' }, () => ({ type: 'text', value: '\n' }))
     .with(
       {
         type: 'mdxJsxTextElement',
@@ -262,7 +239,6 @@ const parseMdxNodes = (
       },
       value => ({
         type: 'text',
-        transformationLabel: 'kbd/code-mdxJsxTextElement-primitive',
         value:
           '`' +
           value.children
@@ -277,14 +253,9 @@ const parseMdxNodes = (
       {
         type: 'mdxJsxTextElement',
         name: 'strong',
-        attributes: [],
         children: [{ type: 'text', value: P.select() }],
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'strong-mdxJsxTextElement-primitive',
-        value: '**' + value + '**',
-      }),
+      value => ({ type: 'text', value: '**' + value + '**' }),
     )
     .with(
       {
@@ -292,11 +263,7 @@ const parseMdxNodes = (
         tagName: 'strong',
         children: [{ type: 'text', value: P.select() }],
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'strong-mdxJsxTextElement-primitive',
-        value: '**' + value + '**',
-      }),
+      value => ({ type: 'text', value: '**' + value + '**' }),
     )
     .with(
       {
@@ -304,37 +271,7 @@ const parseMdxNodes = (
         tagName: 'em',
         children: [{ type: 'text', value: P.select() }],
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'em-element-primitive',
-        value: '*' + value + '*',
-      }),
-    )
-    .with(
-      {
-        type: 'element',
-        tagName: 'h2',
-        children: [{ type: 'text', value: P.select() }],
-      },
-      value => ({
-        type: 'text',
-        tagName: 'h2',
-        transformationLabel: 'h2-element-primitive',
-        value: '## ' + value,
-      }),
-    )
-    .with(
-      {
-        type: 'element',
-        tagName: 'h3',
-        children: [{ type: 'text', value: P.select() }],
-      },
-      value => ({
-        type: 'text',
-        tagName: 'h3',
-        transformationLabel: 'h3-element-primitive',
-        value: '### ' + value,
-      }),
+      value => ({ type: 'text', value: '*' + value + '*' }),
     )
     .with(
       {
@@ -343,11 +280,23 @@ const parseMdxNodes = (
         attributes: [],
         children: [{ type: 'text', value: P.select() }],
       },
-      value => ({
-        type: 'text',
-        transformationLabel: 'em-element-primitive',
-        value: '*' + value + '*',
-      }),
+      value => ({ type: 'text', value: '*' + value + '*' }),
+    )
+    .with(
+      {
+        type: 'element',
+        tagName: 'h2',
+        children: [{ type: 'text', value: P.select() }],
+      },
+      value => ({ type: 'text', tagName: 'h2', value: '## ' + value }),
+    )
+    .with(
+      {
+        type: 'element',
+        tagName: 'h3',
+        children: [{ type: 'text', value: P.select() }],
+      },
+      value => ({ type: 'text', tagName: 'h3', value: '### ' + value }),
     )
     .with(
       {
@@ -358,7 +307,6 @@ const parseMdxNodes = (
       value => ({
         type: 'text',
         tagName: 'li',
-        transformationLabel: 'li-stack-children',
         value: value.children.map(child => child.value).join(''),
       }),
     )
@@ -371,7 +319,6 @@ const parseMdxNodes = (
       value => ({
         type: 'text',
         name: 'div',
-        transformationLabel: 'div-stack-children',
         value: value.children.map(child => child.value).join(''),
       }),
     )
@@ -384,7 +331,6 @@ const parseMdxNodes = (
       value => ({
         type: 'text',
         tagName: 'p',
-        transformationLabel: 'p-stack-children',
         value: value.children.map(child => child.value).join('\n'),
       }),
     )
@@ -397,7 +343,6 @@ const parseMdxNodes = (
       value => ({
         type: 'text',
         name: 'p',
-        transformationLabel: 'p-compact',
         value: value.children.map(child => child.value).join('\n'),
       }),
     )
@@ -410,7 +355,6 @@ const parseMdxNodes = (
       value => ({
         type: 'text',
         name: 'td',
-        transformationLabel: 'td-compact',
         value: value.children.map(child => child.value).join(''),
       }),
     )
@@ -587,7 +531,7 @@ await Effect.gen(function* () {
   const cacheDirPath = path.join(
     process.env['HOME'] ?? '~',
     '.cache',
-    'scrapeMDNForKeys',
+    'scrapeMDNForKeyboardButtons',
   )
 
   // TODO: Make use of ExecutionPlan?

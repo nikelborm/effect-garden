@@ -87,7 +87,7 @@ if (ev.key === 'é') { ... }
 
 ## Building
 
-Run the scraper script ([`scrapeMDNForKeys.ts`](./scrapeMDNForKeys.ts)) using:
+Run the scraper script ([`scrapeMDNForKeyboardButtons.ts`](./scrapeMDNForKeyboardButtons.ts)) using:
 
 ```sh
 npm run scrape

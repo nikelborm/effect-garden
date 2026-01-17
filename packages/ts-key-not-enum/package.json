@@ -6,8 +6,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tspc",
-    "prepack": "bun ./scrapeMDNForKeys.ts && rm -rf dist dist-types && ./node_modules/.bin/tspc",
-    "scrape": "bun ./scrapeMDNForKeys.ts",
+    "prepack": "bun ./scrapeMDNForKeyboardButtons.ts && rm -rf dist dist-types && ./node_modules/.bin/tspc",
+    "scrape": "bun ./scrapeMDNForKeyboardButtons.ts",
     "dev": "tspc --watch"
   },
   "files": [
