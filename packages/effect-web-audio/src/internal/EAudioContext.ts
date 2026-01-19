@@ -3,15 +3,17 @@ import type * as EMediaDevices from 'effect-web-mediacapture-streams/EMediaDevic
 import type * as MediaBrand from 'effect-web-mediacapture-streams/MediaBrand'
 
 import * as Context from 'effect/Context'
+import * as Effect from 'effect/Effect'
 import * as Either from 'effect/Either'
 import * as Equal from 'effect/Equal'
+import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
 
 import type * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
-import type * as EAudioBuffer from './EAudioBuffer.ts'
+import * as EAudioBuffer from './EAudioBuffer.ts'
 
 /**
  * Unique symbol used for distinguishing
@@ -371,3 +373,73 @@ export type AudioSinkType = 'none'
 export interface AudioSinkOptions {
   readonly type: AudioSinkType
 }
+
+export const decodeAudioData: DecodeAudioData = EFunction.dual<
+  DecodeAudioDataSourceLast,
+  DecodeAudioDataSourceFirst
+>(
+  args => is(args[0]),
+  (context, audioBuffer) =>
+    Effect.tryPromise({
+      try: () => assumeImpl(context)._audioContext.decodeAudioData(audioBuffer),
+      catch: AudioErrors.remapErrorByName(
+        {
+          InvalidStateError:
+            AudioErrors.CannotDecodeAudioDataDocumentIsNotFullyActive,
+          DataCloneError: AudioErrors.CannotDecodeAudioDataEmptyBufferError,
+          EncodingError:
+            AudioErrors.CannotDecodeAudioDataUnrecognizedEncodingFormat,
+        },
+        'audioContext.decodeAudioData(...) error remapping absurd',
+        {},
+      ),
+    }).pipe(
+      Effect.map(EAudioBuffer.makeImpl),
+      Effect.withSpan('EAudioContext.decodeAudioData'),
+    ),
+)
+
+export interface DecodeAudioData
+  extends DecodeAudioDataSourceFirst,
+    DecodeAudioDataSourceLast {}
+
+// TODO: example in JSDoc
+export interface DecodeAudioDataSourceFirst {
+  /**
+   *
+   *
+   * @param context
+   * @param audioBuffer
+   */
+  (
+    context: EAudioContextInstance,
+    audioBuffer: ArrayBuffer,
+  ): DecodeAudioDataResult
+}
+
+// TODO: example in JSDoc
+export interface DecodeAudioDataSourceLast {
+  /**
+   *
+   *
+   * @param audioBuffer
+   */
+  (audioBuffer: ArrayBuffer): DecodeAudioDataSourceLastSecondPart
+}
+
+// TODO: example in JSDoc
+export interface DecodeAudioDataSourceLastSecondPart {
+  /**
+   *
+   *
+   * @param context
+   */
+  (context: EAudioContextInstance): DecodeAudioDataResult
+}
+
+export type DecodeAudioDataResult = Effect.Effect<
+  EAudioBuffer.EAudioBuffer,
+  | AudioErrors.CannotDecodeAudioDataDocumentIsNotFullyActive
+  | AudioErrors.CannotDecodeAudioDataEmptyBufferError
+  | AudioErrors.CannotDecodeAudioDataUnrecognizedEncodingFormat
+>

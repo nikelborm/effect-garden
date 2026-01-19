@@ -38,6 +38,7 @@ export const MidiPadSlide = ({
     Hooks.useAtomValue(layoutHeightAtom),
     Hooks.useAtomValue(sortedRegisteredButtonIdsAtom),
   ] as const
+
   Hooks.useAtomMount(getNotePressReleaseEventsAtom(selectedInputPortId))
   Hooks.useAtomMount(keyboardPressesForVirtualMIDIPadButtonsAtom)
 

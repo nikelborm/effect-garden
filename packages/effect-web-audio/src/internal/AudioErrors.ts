@@ -182,3 +182,21 @@ export class CannotChannelDataOfEAudioBufferUnknownError extends Schema.TaggedEr
     channelIndex: Schema.Number,
   },
 ) {}
+
+//? decodeAudioData
+
+export class CannotDecodeAudioDataDocumentIsNotFullyActive extends Schema.TaggedError<CannotDecodeAudioDataDocumentIsNotFullyActive>()(
+  'CannotDecodeAudioDataDocumentIsNotFullyActive',
+  { cause: ErrorSchema(Schema.Literal('InvalidStateError')) },
+) {}
+
+// When fails to clone into separate decoding thread, for example, but also needs to be tested if OOM can trigger it
+export class CannotDecodeAudioDataEmptyBufferError extends Schema.TaggedError<CannotDecodeAudioDataEmptyBufferError>()(
+  'CannotDecodeAudioDataEmptyBufferError',
+  { cause: ErrorSchema(Schema.Literal('DataCloneError')) },
+) {}
+
+export class CannotDecodeAudioDataUnrecognizedEncodingFormat extends Schema.TaggedError<CannotDecodeAudioDataUnrecognizedEncodingFormat>()(
+  'CannotDecodeAudioDataUnrecognizedEncodingFormat',
+  { cause: ErrorSchema(Schema.Literal('EncodingError')) },
+) {}

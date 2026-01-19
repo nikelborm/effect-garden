@@ -186,7 +186,7 @@ interface EAudioBufferImpl extends EAudioBuffer {
  * const internalInstance = makeImpl(rawAudioBuffer);
  * ```
  */
-const makeImpl = (rawAudioBuffer: AudioBuffer): EAudioBufferImpl => {
+export const makeImpl = (rawAudioBuffer: AudioBuffer): EAudioBufferImpl => {
   const instance = Object.create(Proto)
   instance._audioBuffer = rawAudioBuffer
   return instance
