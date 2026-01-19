@@ -4,7 +4,8 @@
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 
-import { Atom, useAtom } from '@effect-atom/atom-react'
+import * as Atom from '@effect-atom/atom/Atom'
+import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { nanoPadOutputId } from './ports.ts'
 
@@ -24,6 +25,6 @@ const dumpRequester = Atom.fn(() =>
 )
 
 export const useDumpRequester = () => {
-  const [dumpRequestState, requestDump] = useAtom(dumpRequester)
+  const [dumpRequestState, requestDump] = Hooks.useAtom(dumpRequester)
   return { requestDump, dumpRequestState }
 }
