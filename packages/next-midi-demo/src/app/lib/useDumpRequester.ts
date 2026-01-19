@@ -1,9 +1,10 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 
-import { Atom, useAtom } from '@effect-atom/atom-react'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
+
+import { Atom, useAtom } from '@effect-atom/atom-react'
 
 import { nanoPadOutputId } from './ports.ts'
 
