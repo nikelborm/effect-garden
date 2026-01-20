@@ -1,21 +1,14 @@
-import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as EArray from 'effect/Array'
-import * as Console from 'effect/Console'
-import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as FiberMap from 'effect/FiberMap'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as KeyedPool from 'effect/KeyedPool'
 import * as Option from 'effect/Option'
-import * as RcMap from 'effect/RcMap'
-import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as Schema from 'effect/Schema'
-import * as Sink from 'effect/Sink'
-import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 import type * as Types from 'effect/Types'
 
@@ -25,20 +18,13 @@ import {
   getLocalAssetFileName,
   getRemoteAssetPath,
   type PatternPointer,
-  TaggedPatternPointer,
+  type RecordedAccordIndexes,
+  type RecordedPatternIndexes,
+  type Strength,
 } from './audioAssetHelpers.ts'
 import { getFileHandle, listEntries } from './opfs.ts'
 
-// TODO: ensure only 1 writer to the file.
-
 const ASSET_SIZE_BYTES = 2117490
-
-const asd = getRemoteAssetPath({
-  _tag: 'pattern',
-  accordIndex: 5,
-  patternIndex: 3,
-  strength: 's',
-})
 
 export class OPFSError extends Schema.TaggedError<OPFSError>()('OPFSError', {
   cause: Schema.Unknown,
@@ -66,7 +52,62 @@ const getStreamOfRemoteAsset = (asset: AssetPointer, resumeFromByte?: number) =>
       HttpClientError.ResponseError,
       never
     >
-  }).pipe(Stream.unwrap)
+  }).pipe(Effect.withSpan('getStreamOfRemoteAsset'), Stream.unwrap)
+
+export const readOPFSFile = Effect.fn('readOPFSFile')(function* (
+  fileName: string,
+) {
+  const root = yield* RootDirectoryHandle
+
+  return yield* Effect.tryPromise({
+    try: async () => {
+      const handle = await root.getFileHandle(fileName, { create: false })
+      const file = await handle.getFile()
+
+      const buffer = await file.arrayBuffer()
+      return new Uint8Array<ArrayBuffer>(buffer)
+    },
+    catch: cause => new OPFSError({ cause }),
+  })
+})
+
+export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundError>()(
+  'OPFSFileNotFoundError',
+  { cause: Schema.Unknown },
+) {}
+
+// TODO: proper error handling for example when TypeError or ReferenceError on UnsupportedError (navigator.storage.getDirectory)
+
+type FileStats =
+  | {
+      readonly exists: true
+      readonly size: number
+    }
+  | {
+      readonly exists: false
+    }
+
+export const checkOPFSFileExists = (fileName: string) =>
+  EFunction.pipe(
+    RootDirectoryHandle,
+    Effect.flatMap(root =>
+      Effect.tryPromise({
+        try: async (): Promise<FileStats> => {
+          const handle = await root.getFileHandle(fileName, { create: false })
+
+          const file = await handle.getFile()
+          return { exists: true, size: file.size }
+        },
+        catch: cause =>
+          cause instanceof DOMException && cause.name === 'NotFoundError'
+            ? new OPFSFileNotFoundError({ cause })
+            : new OPFSError({ cause }),
+      }),
+    ),
+    Effect.catchTag('OPFSFileNotFoundError', () =>
+      Effect.succeed<FileStats>({ exists: false }),
+    ),
+  )
 
 // Effect.provide(FetchHttpClient.layer),
 
@@ -107,13 +148,18 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
           ),
         )
 
-      const getCompletionProgressFrom0To1 = (asset: AssetPointer) =>
+      const getCurrentDownloadedBytes = (asset: AssetPointer) =>
         Effect.map(Ref.get(mapRef), map =>
           Option.match(HashMap.get(map, asset), {
-            onSome: size => size / ASSET_SIZE_BYTES,
+            onSome: size => size,
             onNone: () => 0,
           }),
         )
+
+      const getCompletionProgressFrom0To1 = EFunction.flow(
+        getCurrentDownloadedBytes,
+        Effect.map(currentBytes => currentBytes / ASSET_SIZE_BYTES),
+      )
 
       const isFinished = (asset: AssetPointer) =>
         Effect.map(
@@ -123,6 +169,7 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
 
       return {
         increaseAssetSize,
+        getCurrentDownloadedBytes,
         getCompletionProgressFrom0To1,
         isFinished,
       }
@@ -151,6 +198,7 @@ class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager
             const fileHandle = yield* getFileHandle({
               dirHandle: rootDirectoryHandle,
               fileName: getLocalAssetFileName(pointer),
+              create: true,
             })
 
             const file = yield* Effect.promise(() => fileHandle.getFile())
@@ -180,13 +228,6 @@ class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager
         ),
         size: 1,
       })
-      const asd = pool.get(
-        TaggedPatternPointer.make({
-          accordIndex: 0,
-          patternIndex: 0,
-          strength: 's',
-        }),
-      )
 
       return {
         getWriter: (selector: AssetPointer) => pool.get(selector),
@@ -195,61 +236,107 @@ class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager
   },
 ) {}
 
+const downloadAsset = Effect.fn('downloadAsset')(function* (
+  asset: AssetPointer,
+) {
+  const opfs = yield* OpfsWritableHandleManager
+  const remoteAssetURL = new URL(
+    getRemoteAssetPath(asset),
+    globalThis?.document?.location.origin,
+  ).toString()
+
+  const estimationMap = yield* LoadedAssetSizeEstimationMap
+
+  yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
+
+  const writeToOPFS = yield* opfs.getWriter(asset).pipe(
+    Effect.catchTag('FileAlreadyLoadedError', () => Effect.interrupt),
+    Effect.catchTag('OPFSError', () =>
+      Effect.dieMessage('cannot download because of underlying err'),
+    ),
+  )
+
+  yield* Stream.runForEach(
+    getStreamOfRemoteAsset(
+      asset,
+      yield* estimationMap.getCurrentDownloadedBytes(asset),
+    ),
+    byteArray => writeToOPFS(byteArray.buffer),
+  ).pipe(Effect.orDie)
+})
+
 export class DownloadManager extends Effect.Service<DownloadManager>()(
   'next-midi-demo/AudioAssetManager/DownloadManager',
   {
-    scoped: Effect.gen(function* () {
-      // const currentlyLoadingFibers = yield* Ref.make({})
-      // const root = yield* RootDirectoryHandle
-      const fiberMap = yield* FiberMap.make<string, void, never>()
-
-      // const
-      // const assetRefMap
-      yield* Effect.void
-
-      return {
+    scoped: Effect.map(
+      FiberMap.make<AssetPointer, void, never>(),
+      fiberMap => ({
         startOrContinueOrIgnoreCompletedCached: Effect.fn(
           'DownloadManager.startOrContinueOrIgnoreCached',
         )(function* (assets: AssetPointer[]) {
           for (const asset of assets) {
-          }
-          yield* FiberMap.run(fiberMap, 'fiber a', Effect.never)
+            // either 0 or 1, depending if the download is already running
+            const sizeIncreaseAfterAttemptingToRunTheAsset =
+              +!(yield* FiberMap.has(fiberMap, asset))
 
-          yield* Effect.void
+            const sizeAfterAttemptingToRunTheAsset =
+              (yield* FiberMap.size(fiberMap)) +
+              sizeIncreaseAfterAttemptingToRunTheAsset
+
+            if (sizeAfterAttemptingToRunTheAsset > 5)
+              return yield* Effect.dieMessage(
+                'Cannot run more than 5 downloads in parallel',
+              )
+
+            yield* FiberMap.run(
+              fiberMap,
+              asset,
+              Effect.acquireRelease(downloadAsset(asset), () =>
+                FiberMap.remove(fiberMap, asset),
+              ),
+              { onlyIfMissing: true },
+            )
+          }
         }),
         interruptOrIgnoreNotStarted: Effect.fn(
           'DownloadManager.interruptOrIgnoreNotStarted',
         )(function* (assets: AssetPointer[]) {
-          yield* Effect.void
+          for (const asset of assets) {
+            yield* FiberMap.remove(fiberMap, asset)
+          }
         }),
-      }
-    }),
+      }),
+    ),
   },
 ) {}
 
-// const
-
-export class AudioAssetSelectionService extends Effect.Service<AudioAssetSelectionService>()(
-  'AudioAssetSelectionService',
+export class CurrentlySelectedAsset extends Effect.Service<CurrentlySelectedAsset>()(
+  'next-midi-demo/AudioAssetManager/CurrentlySelectedAsset',
   {
-    effect: Effect.gen(function* () {
-      const currentAssetRef = yield* Ref.make<PatternPointer>({
+    effect: Effect.map(
+      Ref.make<PatternPointer>({
         accordIndex: 0,
         patternIndex: 0,
         strength: 'm',
-      })
-      const currentlyActiveFibers = []
-      return {
-        scheduleLoadingExtremelyHighPriorityAsset: (
-          asset: AssetPointer[],
-        ): Effect.Effect<void> => {
-          return Effect.void
-        },
-        scheduleLoadingAsset: () => {},
-        isAssetReady: (asset: AssetPointer) => {},
-        getAssetDownloadStatusFrom0To1: (asset: AssetPointer) => {},
-      }
-    }),
+      }),
+      currentAssetRef => ({
+        get: () => Ref.get(currentAssetRef),
+        setPattern: (patternIndex: RecordedPatternIndexes) =>
+          Ref.update(currentAssetRef, prev =>
+            prev.patternIndex === patternIndex
+              ? prev
+              : { ...prev, patternIndex },
+          ),
+        setAccord: (accordIndex: RecordedAccordIndexes) =>
+          Ref.update(currentAssetRef, prev =>
+            prev.accordIndex === accordIndex ? prev : { ...prev, accordIndex },
+          ),
+        setStrength: (strength: Strength) =>
+          Ref.update(currentAssetRef, prev =>
+            prev.strength === strength ? prev : { ...prev, strength },
+          ),
+      }),
+    ),
   },
 ) {}
 
