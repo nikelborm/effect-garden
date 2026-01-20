@@ -185,6 +185,7 @@ export const make = (
       {
         InvalidStateError:
           AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive,
+        // TODO: also somehow parse NotSupportedError thrown due to reaching maximum allowed number of contexts
         NotSupportedError:
           AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate,
         TypeError: AudioErrors.CannotMakeEAudioContextInvalidLatencyHint,
