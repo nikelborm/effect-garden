@@ -1,0 +1,25 @@
+{
+  "extends": "@nikelborm/tsconfig",
+  "compilerOptions": {
+    "declarationDir": "./dist-types",
+    "outDir": "./dist",
+    "baseUrl": "./"
+  },
+  "include": ["src/**/*.ts", "*.ts"],
+  "exclude": [
+    ".github",
+    ".stryker-tmp",
+    ".turbo",
+    ".vscode",
+    "build",
+    "dist-types",
+    "dist",
+    "gh-page",
+    "node_modules",
+    "out",
+    "reports",
+    "scripts",
+    "tmp",
+    "vite.config.ts"
+  ]
+}
