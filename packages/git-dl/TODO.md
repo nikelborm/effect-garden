@@ -213,6 +213,9 @@ https://securityscorecards.dev/viewer/?uri=github.com/xmldom/xmldom
 https://www.bestpractices.dev/en/projects/7879
 https://socket.dev/npm/package/@xmldom/xmldom
 https://snyk.io/advisor/npm-package/@xmldom/xmldom
+https://www.greptile.com/
+https://www.coderabbit.ai/
+https://www.sourcery.ai/
 
 integrate syncpack ([example](https://github.com/livestorejs/livestore/blob/dev/syncpack.config.mjs))
 

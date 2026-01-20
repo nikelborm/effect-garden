@@ -54,23 +54,6 @@ const getStreamOfRemoteAsset = (asset: AssetPointer, resumeFromByte?: number) =>
     >
   }).pipe(Effect.withSpan('getStreamOfRemoteAsset'), Stream.unwrap)
 
-export const readOPFSFile = Effect.fn('readOPFSFile')(function* (
-  fileName: string,
-) {
-  const root = yield* RootDirectoryHandle
-
-  return yield* Effect.tryPromise({
-    try: async () => {
-      const handle = await root.getFileHandle(fileName, { create: false })
-      const file = await handle.getFile()
-
-      const buffer = await file.arrayBuffer()
-      return new Uint8Array<ArrayBuffer>(buffer)
-    },
-    catch: cause => new OPFSError({ cause }),
-  })
-})
-
 export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundError>()(
   'OPFSFileNotFoundError',
   { cause: Schema.Unknown },
@@ -251,8 +234,12 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
 
   const writeToOPFS = yield* opfs.getWriter(asset).pipe(
     Effect.catchTag('FileAlreadyLoadedError', () => Effect.interrupt),
-    Effect.catchTag('OPFSError', () =>
-      Effect.dieMessage('cannot download because of underlying err'),
+    Effect.catchTag('OPFSError', err =>
+      Effect.dieMessage(
+        'cannot download because of underlying opfs err: ' +
+          err.message +
+          err?.cause?.message,
+      ),
     ),
   )
 
@@ -288,14 +275,9 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
                 'Cannot run more than 5 downloads in parallel',
               )
 
-            yield* FiberMap.run(
-              fiberMap,
-              asset,
-              Effect.acquireRelease(downloadAsset(asset), () =>
-                FiberMap.remove(fiberMap, asset),
-              ),
-              { onlyIfMissing: true },
-            )
+            yield* FiberMap.run(fiberMap, asset, downloadAsset(asset), {
+              onlyIfMissing: true,
+            })
           }
         }),
         interruptOrIgnoreNotStarted: Effect.fn(
