@@ -530,7 +530,8 @@ await Effect.gen(function* () {
   const path = yield* Path.Path
 
   const cacheDirPath = path.join(
-    process.env['HOME'] ?? '~',
+    // biome-ignore lint/complexity/useLiteralKeys: index signatures conflict with tsconfig
+    import.meta?.env?.['HOME'] ?? '~',
     '.cache',
     'scrapeMDNForKeyboardButtons',
   )

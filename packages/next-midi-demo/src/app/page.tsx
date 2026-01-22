@@ -11,29 +11,29 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Effect from 'effect/Effect'
 
 import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
-import { fetchAudioAsset, runnable } from './lib/dataFetcher.ts'
+// import { fetchAudioAsset, runnable } from './lib/dataFetcher.ts'
 import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
 import { MIDIDeviceSelect } from './lib/MIDIDeviceSelect.tsx'
 import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
 
-const fetcherAtom = Atom.make(
-  Effect.gen(function* () {
-    const asset = yield* fetchAudioAsset({
-      _tag: 'pattern',
-      patternIndex: 1,
-      noteIndex: 26,
-      strength: 'm',
-    })
+// const fetcherAtom = Atom.make(
+//   Effect.gen(function* () {
+//     const asset = yield* fetchAudioAsset({
+//       _tag: 'pattern',
+//       patternIndex: 1,
+//       noteIndex: 26,
+//       strength: 'm',
+//     })
 
-    EAudioContext.decodeAudioData(asset.buffer)
-  }),
-)
+//     EAudioContext.decodeAudioData(asset.buffer)
+//   }),
+// )
 
 const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
 
 export default function Home() {
   const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
-  Hooks.useAtomMount(fetcherAtom)
+  // Hooks.useAtomMount(fetcherAtom)
 
   return (
     <>

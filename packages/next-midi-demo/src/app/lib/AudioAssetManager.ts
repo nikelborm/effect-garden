@@ -262,15 +262,11 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
           'DownloadManager.startOrContinueOrIgnoreCached',
         )(function* (assets: AssetPointer[]) {
           for (const asset of assets) {
-            // either 0 or 1, depending if the download is already running
-            const sizeIncreaseAfterAttemptingToRunTheAsset =
-              +!(yield* FiberMap.has(fiberMap, asset))
-
-            const sizeAfterAttemptingToRunTheAsset =
-              (yield* FiberMap.size(fiberMap)) +
-              sizeIncreaseAfterAttemptingToRunTheAsset
-
-            if (sizeAfterAttemptingToRunTheAsset > 5)
+            const isFiberMapFull = (yield* FiberMap.size(fiberMap)) === 5
+            const willThisAssetTriggerNewDownload =
+              !(yield* FiberMap.has(fiberMap, asset)) &&
+              !(yield* FiberMap.has(fiberMap, asset))
+            if (isFiberMapFull && willThisAssetTriggerNewDownload)
               return yield* Effect.dieMessage(
                 'Cannot run more than 5 downloads in parallel',
               )

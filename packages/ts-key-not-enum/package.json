@@ -30,6 +30,8 @@
     "@nikelborm/tsconfig": "workspace:*",
     "@types/unist": "^3.0.3",
     "effect": "catalog:",
+    "@types/bun": "^1.3.6",
+    "ts-pattern": "^5.9.0",
     "effect-mdx": "^0.2.2",
     "prettier": "^3.8.0",
     "prettier-plugin-jsdoc": "^1.8.0",
@@ -96,8 +98,5 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ],
-  "dependencies": {
-    "ts-pattern": "^5.9.0"
-  }
+  ]
 }
