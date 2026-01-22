@@ -144,11 +144,10 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
         Effect.map(currentBytes => currentBytes / ASSET_SIZE_BYTES),
       )
 
-      const isFinished = (asset: AssetPointer) =>
-        Effect.map(
-          getCompletionProgressFrom0To1(asset),
-          progress => progress === 1,
-        )
+      const isFinished = EFunction.flow(
+        getCurrentDownloadedBytes,
+        Effect.map(currentBytes => currentBytes === ASSET_SIZE_BYTES),
+      )
 
       return {
         increaseAssetSize,
@@ -158,11 +157,6 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
       }
     }),
   },
-) {}
-
-class FileAlreadyLoadedError extends Schema.TaggedError<FileAlreadyLoadedError>()(
-  'FileAlreadyLoadedError',
-  {},
 ) {}
 
 class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager>()(
@@ -185,9 +179,6 @@ class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager
             })
 
             const file = yield* Effect.promise(() => fileHandle.getFile())
-
-            if (file.size === ASSET_SIZE_BYTES)
-              return yield* new FileAlreadyLoadedError()
 
             const writablePointingAtTheEnd = yield* Effect.promise(async () => {
               const writable = await fileHandle.createWritable({
@@ -228,20 +219,21 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
     globalThis?.document?.location.origin,
   ).toString()
 
-  const estimationMap = yield* LoadedAssetSizeEstimationMap
+  const writeToOPFS = yield* opfs
+    .getWriter(asset)
+    .pipe(
+      Effect.catchTag('OPFSError', err =>
+        Effect.dieMessage(
+          'cannot download because of underlying opfs err: ' +
+            err.message +
+            err?.cause?.message,
+        ),
+      ),
+    )
 
   yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
 
-  const writeToOPFS = yield* opfs.getWriter(asset).pipe(
-    Effect.catchTag('FileAlreadyLoadedError', () => Effect.interrupt),
-    Effect.catchTag('OPFSError', err =>
-      Effect.dieMessage(
-        'cannot download because of underlying opfs err: ' +
-          err.message +
-          err?.cause?.message,
-      ),
-    ),
-  )
+  const estimationMap = yield* LoadedAssetSizeEstimationMap
 
   yield* Stream.runForEach(
     getStreamOfRemoteAsset(
@@ -252,23 +244,31 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
   ).pipe(Effect.orDie)
 })
 
+const MAX_PARALLEL_ASSET_DOWNLOADS = 5
+
 export class DownloadManager extends Effect.Service<DownloadManager>()(
   'next-midi-demo/AudioAssetManager/DownloadManager',
   {
     scoped: Effect.map(
-      FiberMap.make<AssetPointer, void, never>(),
-      fiberMap => ({
+      Effect.all({
+        fiberMap: FiberMap.make<AssetPointer, void, never>(),
+        estimationMap: LoadedAssetSizeEstimationMap,
+      }),
+      ({ fiberMap, estimationMap }) => ({
         startOrContinueOrIgnoreCompletedCached: Effect.fn(
           'DownloadManager.startOrContinueOrIgnoreCached',
         )(function* (assets: AssetPointer[]) {
           for (const asset of assets) {
-            const isFiberMapFull = (yield* FiberMap.size(fiberMap)) === 5
+            const isFiberMapFull =
+              (yield* FiberMap.size(fiberMap)) === MAX_PARALLEL_ASSET_DOWNLOADS
+
             const willThisAssetTriggerNewDownload =
               !(yield* FiberMap.has(fiberMap, asset)) &&
-              !(yield* FiberMap.has(fiberMap, asset))
+              !(yield* estimationMap.isFinished(asset))
+
             if (isFiberMapFull && willThisAssetTriggerNewDownload)
               return yield* Effect.dieMessage(
-                'Cannot run more than 5 downloads in parallel',
+                `Cannot run more than ${MAX_PARALLEL_ASSET_DOWNLOADS} downloads in parallel`,
               )
 
             yield* FiberMap.run(fiberMap, asset, downloadAsset(asset), {
