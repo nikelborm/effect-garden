@@ -23,7 +23,9 @@ export type AudioState =
       readonly cleanupFiber: Fiber.RuntimeFiber<void, never>
     }
 
-export class AudioService extends Context.Tag('AudioService')<
+export class AudioService extends Context.Tag(
+  'next-midi-demo/playbackController/AudioService',
+)<
   AudioService,
   {
     readonly play: (buffer: AudioBuffer) => Effect.Effect<void>

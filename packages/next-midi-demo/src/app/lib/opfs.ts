@@ -6,8 +6,10 @@
  */
 
 import * as Effect from 'effect/Effect'
-import * as Option from 'effect/Option'
+import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
+
+import { RootDirectoryHandle } from './services/RootDirectoryHandle.ts'
 
 /**
  * Simple utility to format bytes as human-readable strings.
@@ -53,6 +55,42 @@ export const prettyBytes = (bytes: number): string => {
 
   return `${isNegative ? '-' : ''}${formatted} ${unit}`
 }
+
+type FileStats =
+  | {
+      readonly exists: true
+      readonly size: number
+    }
+  | {
+      readonly exists: false
+    }
+
+export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundError>()(
+  'OPFSFileNotFoundError',
+  { cause: Schema.Unknown },
+) {}
+
+export const checkOPFSFileExists = (fileName: string) =>
+  EFunction.pipe(
+    RootDirectoryHandle,
+    Effect.flatMap(root =>
+      Effect.tryPromise({
+        try: async (): Promise<FileStats> => {
+          const handle = await root.getFileHandle(fileName, { create: false })
+
+          const file = await handle.getFile()
+          return { exists: true, size: file.size }
+        },
+        catch: cause =>
+          cause instanceof DOMException && cause.name === 'NotFoundError'
+            ? new OPFSFileNotFoundError({ cause })
+            : new OPFSError({ operation: 'checkOPFSFileExists', cause }),
+      }),
+    ),
+    Effect.catchTag('OPFSFileNotFoundError', () =>
+      Effect.succeed<FileStats>({ exists: false }),
+    ),
+  )
 
 // Augment FileSystemDirectoryHandle with async iterator methods not yet in TS DOM lib
 declare global {
@@ -361,6 +399,21 @@ export const deleteAll = (
         cause: error,
       }),
   })
+
+export const getFileSize = (fileName: string) =>
+  EFunction.pipe(
+    RootDirectoryHandle,
+    Effect.flatMap(root =>
+      Effect.tryPromise({
+        try: async () => {
+          const handle = await root.getFileHandle(fileName)
+          const file = await handle.getFile()
+          return file.size
+        },
+        catch: cause => new OPFSError({ operation: 'getFileSize', cause }),
+      }),
+    ),
+  )
 
 /**
  * Deletes a specific entry from a directory.

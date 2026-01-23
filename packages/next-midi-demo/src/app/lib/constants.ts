@@ -1,0 +1,2 @@
+export const ASSET_SIZE_BYTES = 2117490
+export const MAX_PARALLEL_ASSET_DOWNLOADS = 5
