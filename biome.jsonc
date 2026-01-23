@@ -39,7 +39,10 @@
   },
   "linter": {
     "rules": {
-      "suspicious": { "noExplicitAny": "off" },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "useIterableCallbackReturn": "info"
+      },
       "correctness": {
         "noChildrenProp": "info",
         "useJsonImportAttributes": "error"

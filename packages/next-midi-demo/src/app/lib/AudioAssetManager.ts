@@ -92,6 +92,21 @@ export const checkOPFSFileExists = (fileName: string) =>
     ),
   )
 
+const getFileSize = (fileName: string) =>
+  EFunction.pipe(
+    RootDirectoryHandle,
+    Effect.flatMap(root =>
+      Effect.tryPromise({
+        try: async () => {
+          const handle = await root.getFileHandle(fileName)
+          const file = await handle.getFile()
+          return file.size
+        },
+        catch: cause => new OPFSError({ cause }),
+      }),
+    ),
+  )
+
 // Effect.provide(FetchHttpClient.layer),
 
 class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
@@ -100,7 +115,7 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
     dependencies: [RootDirectoryHandle.Default],
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
-      const mapRef = yield* Effect.flatMap(
+      const getAssetSizesWrittenToDisk = Effect.map(
         listEntries(rootDirectoryHandle),
         EFunction.flow(
           EArray.filter(e => e.kind === 'file'),
@@ -111,32 +126,32 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
             ),
           ),
           HashMap.fromIterable,
-          Ref.make,
         ),
       ).pipe(Effect.orDie)
+
+      const assetToSizeHashMapRef = yield* Effect.flatMap(
+        getAssetSizesWrittenToDisk,
+        Ref.make,
+      )
+
+      const getCurrentDownloadedBytes = (asset: AssetPointer) =>
+        Effect.map(
+          Ref.get(assetToSizeHashMapRef),
+          EFunction.flow(
+            HashMap.get(asset),
+            Option.getOrElse(() => 0),
+          ),
+        )
 
       const increaseAssetSize = (
         asset: AssetPointer,
         bytesDownloaded: number,
       ) =>
-        Ref.update(mapRef, map =>
-          HashMap.modifyAt(
-            map,
-            asset,
-            Option.match({
-              onNone: () => Option.some(bytesDownloaded),
-              onSome: previousBytes =>
-                Option.some(previousBytes + bytesDownloaded),
-            }),
+        Effect.flatMap(getCurrentDownloadedBytes(asset), previousBytes =>
+          Ref.update(
+            assetToSizeHashMapRef,
+            HashMap.set(asset, previousBytes + bytesDownloaded),
           ),
-        )
-
-      const getCurrentDownloadedBytes = (asset: AssetPointer) =>
-        Effect.map(Ref.get(mapRef), map =>
-          Option.match(HashMap.get(map, asset), {
-            onSome: size => size,
-            onNone: () => 0,
-          }),
         )
 
       const getCompletionProgressFrom0To1 = EFunction.flow(
@@ -144,16 +159,23 @@ class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimat
         Effect.map(currentBytes => currentBytes / ASSET_SIZE_BYTES),
       )
 
-      const isFinished = EFunction.flow(
-        getCurrentDownloadedBytes,
-        Effect.map(currentBytes => currentBytes === ASSET_SIZE_BYTES),
-      )
+      const getCompletionStatus = (asset: AssetPointer) =>
+        Effect.flatMap(
+          getCurrentDownloadedBytes(asset),
+          Effect.fn(function* (currentBytes) {
+            if (currentBytes !== ASSET_SIZE_BYTES)
+              return 'not finished' as const
+            const size = yield* getFileSize(getLocalAssetFileName(asset))
+            if (size !== ASSET_SIZE_BYTES) return 'fetched, but not written'
+            return 'finished'
+          }),
+        )
 
       return {
         increaseAssetSize,
         getCurrentDownloadedBytes,
         getCompletionProgressFrom0To1,
-        isFinished,
+        getCompletionStatus,
       }
     }),
   },
@@ -254,36 +276,67 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
         fiberMap: FiberMap.make<AssetPointer, void, never>(),
         estimationMap: LoadedAssetSizeEstimationMap,
       }),
-      ({ fiberMap, estimationMap }) => ({
-        startOrContinueOrIgnoreCompletedCached: Effect.fn(
+      ({ fiberMap, estimationMap }) => {
+        const isFiberMapFull = Effect.map(
+          FiberMap.size(fiberMap),
+          size => size === MAX_PARALLEL_ASSET_DOWNLOADS,
+        )
+
+        const isCurrentlyDownloading = (asset: AssetPointer) =>
+          FiberMap.has(fiberMap, asset)
+
+        const waitUntilCompletelyFree = FiberMap.awaitEmpty(fiberMap).pipe(
+          Effect.withSpan('DownloadManager.waitUntilCompletelyFree'),
+        )
+
+        const startOrContinueOrIgnoreCompletedCached = Effect.fn(
           'DownloadManager.startOrContinueOrIgnoreCached',
-        )(function* (assets: AssetPointer[]) {
-          for (const asset of assets) {
-            const isFiberMapFull =
-              (yield* FiberMap.size(fiberMap)) === MAX_PARALLEL_ASSET_DOWNLOADS
+        )(function* (asset: AssetPointer) {
+          const isInProgress = yield* isCurrentlyDownloading(asset)
 
-            const willThisAssetTriggerNewDownload =
-              !(yield* FiberMap.has(fiberMap, asset)) &&
-              !(yield* estimationMap.isFinished(asset))
+          if (isInProgress)
+            return {
+              _tag: 'AssetIsInProgress' as const,
+              message: `Asset download is in progress`,
+            }
 
-            if (isFiberMapFull && willThisAssetTriggerNewDownload)
-              return yield* Effect.dieMessage(
-                `Cannot run more than ${MAX_PARALLEL_ASSET_DOWNLOADS} downloads in parallel`,
-              )
+          const areAllBytesFetched = yield* estimationMap.isFinished(asset)
 
-            yield* FiberMap.run(fiberMap, asset, downloadAsset(asset), {
-              onlyIfMissing: true,
-            })
+          if (areAllBytesFetched)
+            return {
+              _tag: 'AssetAlreadyDownloaded' as const,
+              message: `All bytes to fetch the asset have been received, although might not have been written`,
+            }
+
+          if (yield* isFiberMapFull)
+            return {
+              _tag: 'DownloadManagerAtMaximumCapacity' as const,
+              message: `It's reasonable to start download, but the limit of parallel downloads is reached`,
+            }
+
+          const fiber = yield* downloadAsset(asset).pipe(
+            FiberMap.run(fiberMap, asset, { onlyIfMissing: true }),
+          )
+
+          return {
+            _tag: 'StartedDownloadingAsset' as const,
+            message: `Asset downloading started`,
+            awaitCompletion: fiber.await,
           }
-        }),
-        interruptOrIgnoreNotStarted: Effect.fn(
+        })
+
+        const interruptOrIgnoreNotStarted = Effect.fn(
           'DownloadManager.interruptOrIgnoreNotStarted',
-        )(function* (assets: AssetPointer[]) {
-          for (const asset of assets) {
-            yield* FiberMap.remove(fiberMap, asset)
-          }
-        }),
-      }),
+        )((asset: AssetPointer) => FiberMap.remove(fiberMap, asset))
+
+        return {
+          isFiberMapFull,
+          isCurrentlyDownloading,
+          waitUntilCompletelyFree,
+          startOrContinueOrIgnoreCompletedCached,
+          interruptOrIgnoreNotStarted,
+        }
+      },
     ),
   },
 ) {}
