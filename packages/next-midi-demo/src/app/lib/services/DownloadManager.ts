@@ -1,7 +1,9 @@
 import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Effect from 'effect/Effect'
+import type * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
+import * as MutableHashMap from 'effect/MutableHashMap'
 import * as Stream from 'effect/Stream'
 
 import { type AssetPointer, getRemoteAssetPath } from '../audioAssetHelpers.ts'
@@ -33,18 +35,13 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
         const startOrContinueOrIgnoreCompletedCached = Effect.fn(
           'DownloadManager.startOrContinueOrIgnoreCached',
         )(function* (asset: AssetPointer) {
-          const isInProgress = yield* isCurrentlyDownloading(asset)
-
-          if (isInProgress)
+          if (yield* isCurrentlyDownloading(asset))
             return {
               _tag: 'AssetIsInProgress' as const,
               message: `Asset download is in progress`,
             }
 
-          const areAllBytesFetched =
-            (yield* estimationMap.getCompletionStatus(asset)) !== 'not finished'
-
-          if (areAllBytesFetched)
+          if (yield* estimationMap.areAllBytesFetched(asset))
             return {
               _tag: 'AssetAlreadyDownloaded' as const,
               message: `All bytes to fetch the asset have been received, although might not have been written`,
@@ -71,9 +68,15 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
           'DownloadManager.interruptOrIgnoreNotStarted',
         )((asset: AssetPointer) => FiberMap.remove(fiberMap, asset))
 
+        const currentlyDownloading = Effect.withSpan(
+          getFiberMapKeys(fiberMap),
+          'DownloadManager.currentlyDownloading',
+        )
+
         return {
           isFiberMapFull,
           isCurrentlyDownloading,
+          currentlyDownloading,
           waitUntilCompletelyFree,
           startOrContinueOrIgnoreCompletedCached,
           interruptOrIgnoreNotStarted,
@@ -129,3 +132,23 @@ const getStreamOfRemoteAsset = (asset: AssetPointer, resumeFromByte?: number) =>
       never
     >
   }).pipe(Effect.withSpan('getStreamOfRemoteAsset'), Stream.unwrap)
+
+export const getFiberMapKeys = <K, A, E>(self: FiberMap.FiberMap<K, A, E>) => {
+  const state = (
+    self as unknown as {
+      state:
+        | { readonly _tag: 'Closed' }
+        | {
+            readonly _tag: 'Open'
+            readonly backing: MutableHashMap.MutableHashMap<
+              K,
+              Fiber.RuntimeFiber<A, E>
+            >
+          }
+    }
+  ).state
+
+  return Effect.sync(() =>
+    state._tag === 'Closed' ? [] : MutableHashMap.keys(state.backing),
+  )
+}

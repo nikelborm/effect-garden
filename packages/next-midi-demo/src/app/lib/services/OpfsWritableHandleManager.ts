@@ -20,7 +20,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const pool = yield* KeyedPool.make({
-        acquire: Effect.fn(
+        acquire: Effect.fn('OpfsWritableHandleManager.acquireWritable')(
           function* (pointer: AssetPointer) {
             const fileHandle = yield* getFileHandle({
               dirHandle: rootDirectoryHandle,

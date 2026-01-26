@@ -21,7 +21,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
     dependencies: [RootDirectoryHandle.Default],
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
-      const getAssetSizesWrittenToDisk = Effect.map(
+      const assetSizesActuallyPresentOnDisk = Effect.map(
         listEntries(rootDirectoryHandle),
         EFunction.flow(
           EArray.filter(e => e.kind === 'file'),
@@ -36,7 +36,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       ).pipe(Effect.orDie)
 
       const assetToSizeHashMapRef = yield* Effect.flatMap(
-        getAssetSizesWrittenToDisk,
+        assetSizesActuallyPresentOnDisk,
         Ref.make,
       )
 
@@ -79,8 +79,15 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           }),
         )
 
+      const areAllBytesFetched = EFunction.flow(
+        getCompletionStatus,
+        Effect.map(status => status !== 'not finished'),
+      )
+
       return {
         increaseAssetSize,
+        assetSizesActuallyPresentOnDisk,
+        areAllBytesFetched,
         getCurrentDownloadedBytes,
         getCompletionProgressFrom0To1,
         getCompletionStatus,
