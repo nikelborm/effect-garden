@@ -3,10 +3,7 @@ import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
-import * as EFunction from 'effect/Function'
 import * as MutableHashMap from 'effect/MutableHashMap'
-import * as Option from 'effect/Option'
-import * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 
 import { type AssetPointer, getRemoteAssetPath } from '../audioAssetHelpers.ts'
@@ -85,8 +82,6 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
         }
       }, assetAdditionSemaphore.withPermits(1))
 
-      const consumeIterable = Effect.fn('consumeIterable')(function* () {})
-
       const interruptOrIgnoreNotStarted = Effect.fn(
         'DownloadManager.interruptOrIgnoreNotStarted',
       )((asset: AssetPointer) => FiberMap.remove(fiberMap, asset))
@@ -121,17 +116,8 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
 
   const estimationMap = yield* LoadedAssetSizeEstimationMap
   const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
-  // FiberMap.
 
   yield* opfs.getWriter(asset).pipe(
-    Effect.catchTag('OPFSError', err =>
-      Effect.dieMessage(
-        'cannot download because of underlying opfs err: ' +
-          err.message +
-          // @ts-expect-error
-          err?.cause?.message,
-      ),
-    ),
     Stream.scoped,
     Stream.cross(getStreamOfRemoteAsset(asset, currentBytes)),
     Stream.flatMap(([writeToOPFS, byteArray]) => writeToOPFS(byteArray.buffer)),

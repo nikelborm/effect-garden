@@ -22,7 +22,7 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
       CurrentlySelectedAssetState.Default,
       DownloadManager.Default,
     ],
-    effect: Effect.gen(function* () {
+    scoped: Effect.gen(function* () {
       const currentlySelectedAsset = yield* CurrentlySelectedAssetState
       const downloadManager = yield* DownloadManager
       const runtime = yield* Effect.runtime()
@@ -30,7 +30,11 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
         void,
         never
       >>(null)
-      const runFork = Runtime.runFork(runtime)
+      const scope = yield* Effect.scope
+      const runFork = <A, E>(
+        effect: Effect.Effect<A, E, never>,
+        options?: Omit<Runtime.RunForkOptions, 'scope'> | undefined,
+      ) => Runtime.runFork(runtime)(effect, { ...options, scope })
 
       const scheduleNewPlanExecution = Effect.fn(
         'AssetDownloadScheduler.scheduleNewPlanExecution',

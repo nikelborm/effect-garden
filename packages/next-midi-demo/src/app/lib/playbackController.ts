@@ -13,7 +13,7 @@ export type AudioPlayback = {
   readonly gainNode: GainNode
 }
 
-export type AudioState =
+export type AppPlaybackState =
   | { readonly _tag: 'NotPlaying' }
   | { readonly _tag: 'PlayingAsset'; readonly current: AudioPlayback }
   | {
@@ -37,7 +37,7 @@ export const AudioServiceLive = Layer.effect(
   AudioService,
   Effect.gen(function* () {
     const audioContext = new AudioContext()
-    const state = yield* Ref.make<AudioState>({ _tag: 'NotPlaying' })
+    const state = yield* Ref.make<AppPlaybackState>({ _tag: 'NotPlaying' })
     const fadeTime = 0.1 // seconds
 
     const arrayOfCleanupFibers = []
@@ -46,29 +46,7 @@ export const AudioServiceLive = Layer.effect(
 
     audioContext.decodeAudioData()
 
-    const createPlayback = (buffer: AudioBuffer): AudioPlayback => {
-      const bufferSource = audioContext.createBufferSource()
-      const gainNode = audioContext.createGain()
-      bufferSource.buffer = buffer
-      bufferSource.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      return { bufferSource, gainNode }
-    }
-
-    const createImmediatelyLoudPlayback = (buffer: AudioBuffer) => {
-      const playback = createPlayback(buffer)
-      playback.gainNode.gain.setValueAtTime(1, audioContext.currentTime)
-      playback.bufferSource.start()
-    }
-
     const createSilentByDefaultPlayback = () => {}
-
-    const cleanupPlayback = (playback: AudioPlayback) =>
-      Effect.sync(() => {
-        playback.bufferSource.stop()
-        playback.bufferSource.disconnect()
-        playback.gainNode.disconnect()
-      })
 
     const play = Effect.fn(function* (buffer: AudioBuffer) {
       const currentStatus = yield* Ref.get(state)
@@ -199,3 +177,30 @@ export const AudioServiceLive = Layer.effect(
     return { play, stop }
   }),
 )
+
+const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) => {
+  const bufferSource = audioContext.createBufferSource()
+  const gainNode = audioContext.createGain()
+  bufferSource.buffer = buffer
+  bufferSource.connect(gainNode)
+
+  gainNode.connect(audioContext.destination)
+
+  return { bufferSource, gainNode }
+}
+
+const createImmediatelyLoudPlayback = (
+  audioContext: AudioContext,
+  buffer: AudioBuffer,
+) => {
+  const playback = createPlayback(audioContext, buffer)
+  playback.gainNode.gain.setValueAtTime(1, audioContext.currentTime)
+  playback.bufferSource.start()
+}
+
+const cleanupPlayback = (playback: AudioPlayback) =>
+  Effect.sync(() => {
+    playback.bufferSource.stop()
+    playback.bufferSource.disconnect()
+    playback.gainNode.disconnect()
+  })

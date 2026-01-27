@@ -1,23 +1,16 @@
 'use client'
 
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
-import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
-import * as Parsing from 'effect-web-midi/Parsing'
-import * as Util from 'effect-web-midi/Util'
 
-// import { Atom, Result } from '@effect-atom/atom-react'
 import * as Atom from '@effect-atom/atom/Atom'
-import * as Result from '@effect-atom/atom/Result'
 import * as EArray from 'effect/Array'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import { pipe } from 'effect/Function'
-import * as EIterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
-import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
@@ -32,95 +25,11 @@ import {
   setKeyboardKeyState,
 } from './state/KeyboardKeyToVirtualMIDIPadButtonMap.ts'
 import { layoutAtom, layoutWidthAtom } from './state/Layout.ts'
-import { setPhysicalMIDIPadButtonState } from './state/PhysicalMIDIDeviceNoteToVirtualMIDIPadButtonMap.ts'
 import {
   assertiveGetButtonById,
   sortedRegisteredButtonIdsAtom,
   type VirtualMIDIPadButton,
 } from './state/VirtualMIDIPadButtonsMap.ts'
-
-export const getMessagesLogAtom: (
-  inputId: EMIDIInput.Id | null,
-) => Atom.Atom<
-  Result.Result<
-    string,
-    | MIDIErrors.AbortError
-    | MIDIErrors.UnderlyingSystemError
-    | MIDIErrors.MIDIAccessNotAllowedError
-    | MIDIErrors.PortNotFoundError
-  >
-> = Atom.family(inputId =>
-  !inputId
-    ? Atom.make(
-        Result.success('Input id is not selected. No log entries to show'),
-      ).pipe(Atom.withLabel('messagesStringLog'))
-    : pipe(
-        EMIDIInput.makeMessagesStreamById(inputId),
-        Parsing.withParsedDataField,
-        Parsing.withTouchpadPositionUpdates,
-        Util.mapToGlidingStringLogOfLimitedEntriesCount(
-          50,
-          'latestFirst',
-          current => ({
-            time: current.capturedAt.toISOString(),
-            id: current.cameFrom.id.slice(-10),
-            ...current.midiMessage,
-          }),
-        ),
-        Stream.provideLayer(
-          EMIDIAccess.layerSystemExclusiveAndSoftwareSynthSupported,
-        ),
-        Stream.catchTag('MIDIAccessNotSupportedError', e =>
-          Stream.succeed(e.cause.message),
-        ),
-        messageEventLogStream => Atom.make(messageEventLogStream),
-        Atom.withLabel('messagesStringLog'),
-        Atom.keepAlive,
-        Atom.withServerValueInitial,
-      ),
-)
-
-export const getNotePressReleaseEventsAtom: (
-  arg: EMIDIInput.Id | null,
-) => Atom.Atom<
-  Result.Result<
-    Parsing.ParsedMIDIMessage<
-      Parsing.NotePressPayload | Parsing.NoteReleasePayload
-    >,
-    | MIDIErrors.AbortError
-    | MIDIErrors.MIDIAccessNotAllowedError
-    | MIDIErrors.MIDIAccessNotSupportedError
-    | MIDIErrors.UnderlyingSystemError
-  >
-> = Atom.family((inputId: EMIDIInput.Id | null) =>
-  !inputId
-    ? Atom.make(Stream.empty).pipe(Atom.withLabel('notePressReleaseEvents'))
-    : pipe(
-        EMIDIInput.makeMessagesStreamById(inputId),
-        Stream.catchTag('PortNotFound', () =>
-          Stream.dieMessage('it should not be possible to pass invalid id'),
-        ),
-        Parsing.withParsedDataField,
-        Parsing.withTouchpadPositionUpdates,
-        Stream.filter(Predicate.or(Parsing.isNoteRelease, Parsing.isNotePress)),
-        Stream.provideLayer(
-          EMIDIAccess.layerSystemExclusiveAndSoftwareSynthSupported,
-        ),
-        Stream.tap(({ midiMessage }) =>
-          Atom.set(setPhysicalMIDIPadButtonState, {
-            midiPadPress:
-              midiMessage._tag === 'Note Press'
-                ? ButtonState.Pressed
-                : ButtonState.NotPressed,
-            physicalMIDIDeviceNote: MIDIValues.NoteId(midiMessage.note),
-          }),
-        ),
-        messageEventLogStream => Atom.make(messageEventLogStream),
-        Atom.withLabel('notePressReleaseEvents'),
-        Atom.keepAlive,
-        Atom.withServerValueInitial,
-      ),
-)
 
 export const makeKeyboardSliceMapStream = <
   const SelectedKeys extends string,

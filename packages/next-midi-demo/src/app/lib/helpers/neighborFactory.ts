@@ -1,7 +1,3 @@
-const strengthSet = new Set(['s', 'm', 'v'] as const)
-const accordIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
-const patternIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
-
 function getCombinations<T>(size: number, array: T[]): T[][] {
   const results: T[][] = []
 
@@ -74,19 +70,13 @@ export const neighborFactory =
     return results
   }
 
-export const getNeighborMIDIPadButtons = neighborFactory([
-  { setName: 'patternIndex', set: patternIndexSet },
-  { setName: 'strength', set: strengthSet },
-  { setName: 'accordIndex', set: accordIndexSet },
-])
-
-type Range<
+export type Range<
   N extends number,
   Acc extends number[] = [],
 > = Acc['length'] extends N
   ? Acc[number] | N
   : Range<N, [...Acc, Acc['length']]>
 
-type GetNode<Arg extends { setName: string; set: Set<any> }[]> = {
+export type GetNode<Arg extends { setName: string; set: Set<any> }[]> = {
   [K in Arg[number] as K['setName']]: K['set'] extends Set<infer T> ? T : never
 }
