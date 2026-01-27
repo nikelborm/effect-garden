@@ -10,7 +10,7 @@ import type {
 } from '../audioAssetHelpers.ts'
 
 export class CurrentlySelectedAccordIndexState extends Effect.Service<CurrentlySelectedAccordIndexState>()(
-  'next-midi-demo/CurrentlySelectedAccordIndexState',
+  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedAccordIndexState',
   {
     accessors: true,
     effect: Effect.map(
@@ -26,7 +26,7 @@ export class CurrentlySelectedAccordIndexState extends Effect.Service<CurrentlyS
 ) {}
 
 export class CurrentlySelectedPatternIndexState extends Effect.Service<CurrentlySelectedPatternIndexState>()(
-  'next-midi-demo/CurrentlySelectedPatternIndexState',
+  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedPatternIndexState',
   {
     accessors: true,
     effect: Effect.map(
@@ -42,7 +42,7 @@ export class CurrentlySelectedPatternIndexState extends Effect.Service<Currently
 ) {}
 
 export class CurrentlySelectedStrengthState extends Effect.Service<CurrentlySelectedStrengthState>()(
-  'next-midi-demo/CurrentlySelectedStrengthState',
+  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedStrengthState',
   {
     accessors: true,
     effect: Effect.map(
@@ -79,16 +79,25 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
           strength: strengthState.current,
         }),
         changes: EFunction.pipe(
-          Stream.Do,
-          Stream.bind('accordIndex', () => accordIndexState.changes, {
-            concurrency: 'unbounded',
+          Stream.mergeWithTag(
+            {
+              strength: strengthState.changes,
+              accordIndex: accordIndexState.changes,
+              patternIndex: patternIndexState.changes,
+            },
+            { concurrency: 'unbounded' },
+          ),
+          Stream.mapAccum({} as Record<string, any>, (accumulator, current) => {
+            const newAcc = { ...accumulator, [current._tag]: current.value }
+
+            return [
+              newAcc,
+              Object.keys(newAcc).length === 3
+                ? Stream.succeed(newAcc)
+                : Stream.empty,
+            ]
           }),
-          Stream.bind('patternIndex', () => patternIndexState.changes, {
-            concurrency: 'unbounded',
-          }),
-          Stream.bind('strength', () => strengthState.changes, {
-            concurrency: 'unbounded',
-          }),
+          Stream.flatten({}),
         ),
       }),
     ),
