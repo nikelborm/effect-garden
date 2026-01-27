@@ -4,6 +4,7 @@ import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type {
+  PatternPointer,
   RecordedAccordIndexes,
   RecordedPatternIndexes,
   Strength,
@@ -87,17 +88,14 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
             },
             { concurrency: 'unbounded' },
           ),
-          Stream.mapAccum({} as Record<string, any>, (accumulator, current) => {
-            const newAcc = { ...accumulator, [current._tag]: current.value }
-
-            return [
-              newAcc,
-              Object.keys(newAcc).length === 3
-                ? Stream.succeed(newAcc)
-                : Stream.empty,
-            ]
-          }),
-          Stream.flatten({}),
+          Stream.scan(
+            {} as PatternPointer,
+            (
+              previousSelectedAsset,
+              { _tag: updatedParam, value: newParamValue },
+            ) => ({ ...previousSelectedAsset, [updatedParam]: newParamValue }),
+          ),
+          Stream.filter(state => Object.keys(state).length === 3),
         ),
       }),
     ),
