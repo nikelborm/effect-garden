@@ -3,7 +3,10 @@ import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
+import * as EFunction from 'effect/Function'
 import * as MutableHashMap from 'effect/MutableHashMap'
+import * as Option from 'effect/Option'
+import * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 
 import { type AssetPointer, getRemoteAssetPath } from '../audioAssetHelpers.ts'
@@ -14,75 +17,94 @@ import { OpfsWritableHandleManager } from './OpfsWritableHandleManager.ts'
 export class DownloadManager extends Effect.Service<DownloadManager>()(
   'next-midi-demo/DownloadManager',
   {
-    scoped: Effect.map(
-      Effect.all({
-        fiberMap: FiberMap.make<AssetPointer, void, never>(),
-        estimationMap: LoadedAssetSizeEstimationMap,
-      }),
-      ({ fiberMap, estimationMap }) => {
-        const isFiberMapFull = Effect.map(
-          FiberMap.size(fiberMap),
-          size => size === MAX_PARALLEL_ASSET_DOWNLOADS,
+    scoped: Effect.gen(function* () {
+      const fiberMap = yield* FiberMap.make<AssetPointer, void, never>()
+      const estimationMap = yield* LoadedAssetSizeEstimationMap
+      const assetAdditionSemaphore = yield* Effect.makeSemaphore(1)
+
+      const isFiberMapFull = Effect.map(
+        FiberMap.size(fiberMap),
+        size => size === MAX_PARALLEL_ASSET_DOWNLOADS,
+      )
+      const run = yield* FiberMap.runtime(fiberMap)<
+        | OpfsWritableHandleManager
+        | LoadedAssetSizeEstimationMap
+        | HttpClient.HttpClient
+      >()
+
+      const isCurrentlyDownloading = (asset: AssetPointer) =>
+        FiberMap.has(fiberMap, asset)
+
+      const waitUntilCompletelyFree = FiberMap.awaitEmpty(fiberMap).pipe(
+        Effect.withSpan('DownloadManager.waitUntilCompletelyFree'),
+      )
+
+      const startOrContinueOrIgnoreCompletedCached = Effect.fn(
+        'DownloadManager.startOrContinueOrIgnoreCached',
+      )(function* (asset: AssetPointer) {
+        const effectWithDownloadFiber = FiberMap.get(fiberMap, asset)
+        let downloadAssetFiber = yield* Effect.catchTag(
+          effectWithDownloadFiber,
+          'NoSuchElementException',
+          () => Effect.succeed(null),
         )
 
-        const isCurrentlyDownloading = (asset: AssetPointer) =>
-          FiberMap.has(fiberMap, asset)
-
-        const waitUntilCompletelyFree = FiberMap.awaitEmpty(fiberMap).pipe(
-          Effect.withSpan('DownloadManager.waitUntilCompletelyFree'),
-        )
-
-        const startOrContinueOrIgnoreCompletedCached = Effect.fn(
-          'DownloadManager.startOrContinueOrIgnoreCached',
-        )(function* (asset: AssetPointer) {
-          if (yield* isCurrentlyDownloading(asset))
-            return {
-              _tag: 'AssetIsInProgress' as const,
-              message: `Asset download is in progress`,
-            }
-
-          if (yield* estimationMap.areAllBytesFetched(asset))
-            return {
-              _tag: 'AssetAlreadyDownloaded' as const,
-              message: `All bytes to fetch the asset have been received, although might not have been written`,
-            }
-
-          if (yield* isFiberMapFull)
-            return {
-              _tag: 'DownloadManagerAtMaximumCapacity' as const,
-              message: `It's reasonable to start download, but the limit of parallel downloads is reached`,
-            }
-
-          const fiber = yield* downloadAsset(asset).pipe(
-            FiberMap.run(fiberMap, asset, { onlyIfMissing: true }),
-          )
-
+        if (downloadAssetFiber)
           return {
-            _tag: 'StartedDownloadingAsset' as const,
-            message: `Asset downloading started`,
-            awaitCompletion: fiber.await,
+            _tag: 'AssetIsInProgress' as const,
+            message: `Asset download is in progress`,
+            awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
           }
+
+        if (yield* estimationMap.areAllBytesFetched(asset))
+          return {
+            _tag: 'AssetAlreadyDownloaded' as const,
+            message: `All bytes to fetch the asset have been received, although might not have been written`,
+          }
+
+        if (yield* isFiberMapFull)
+          return {
+            _tag: 'DownloadManagerAtMaximumCapacity' as const,
+            message: `It's reasonable to start download, but the limit of parallel downloads is reached`,
+            awaitFreeSlot: getFibersOfFiberMap(fiberMap).pipe(
+              Effect.flatMap(fibers =>
+                Effect.raceAll(fibers.map(fiber => fiber.await)),
+              ),
+              Effect.asVoid,
+            ),
+          }
+
+        downloadAssetFiber = run(asset, downloadAsset(asset), {
+          onlyIfMissing: true,
         })
 
-        const interruptOrIgnoreNotStarted = Effect.fn(
-          'DownloadManager.interruptOrIgnoreNotStarted',
-        )((asset: AssetPointer) => FiberMap.remove(fiberMap, asset))
-
-        const currentlyDownloading = Effect.withSpan(
-          getFiberMapKeys(fiberMap),
-          'DownloadManager.currentlyDownloading',
-        )
-
         return {
-          isFiberMapFull,
-          isCurrentlyDownloading,
-          currentlyDownloading,
-          waitUntilCompletelyFree,
-          startOrContinueOrIgnoreCompletedCached,
-          interruptOrIgnoreNotStarted,
+          _tag: 'StartedDownloadingAsset' as const,
+          message: `Asset downloading started`,
+          awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
         }
-      },
-    ),
+      }, assetAdditionSemaphore.withPermits(1))
+
+      const consumeIterable = Effect.fn('consumeIterable')(function* () {})
+
+      const interruptOrIgnoreNotStarted = Effect.fn(
+        'DownloadManager.interruptOrIgnoreNotStarted',
+      )((asset: AssetPointer) => FiberMap.remove(fiberMap, asset))
+
+      const currentlyDownloading = Effect.withSpan(
+        getFiberMapKeys(fiberMap),
+        'DownloadManager.currentlyDownloading',
+      )
+
+      return {
+        isFiberMapFull,
+        isCurrentlyDownloading,
+        currentlyDownloading,
+        waitUntilCompletelyFree,
+        startOrContinueOrIgnoreCompletedCached,
+        interruptOrIgnoreNotStarted,
+      }
+    }),
   },
 ) {}
 
@@ -95,7 +117,13 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
     globalThis?.document?.location.origin,
   ).toString()
 
-  const writeToOPFS = yield* opfs.getWriter(asset).pipe(
+  yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
+
+  const estimationMap = yield* LoadedAssetSizeEstimationMap
+  const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
+  // FiberMap.
+
+  yield* opfs.getWriter(asset).pipe(
     Effect.catchTag('OPFSError', err =>
       Effect.dieMessage(
         'cannot download because of underlying opfs err: ' +
@@ -104,19 +132,12 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
           err?.cause?.message,
       ),
     ),
+    Stream.scoped,
+    Stream.cross(getStreamOfRemoteAsset(asset, currentBytes)),
+    Stream.flatMap(([writeToOPFS, byteArray]) => writeToOPFS(byteArray.buffer)),
+    Stream.orDie,
+    Stream.runDrain,
   )
-
-  yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
-
-  const estimationMap = yield* LoadedAssetSizeEstimationMap
-
-  yield* Stream.runForEach(
-    getStreamOfRemoteAsset(
-      asset,
-      yield* estimationMap.getCurrentDownloadedBytes(asset),
-    ),
-    byteArray => writeToOPFS(byteArray.buffer),
-  ).pipe(Effect.orDie)
 })
 
 const getStreamOfRemoteAsset = (asset: AssetPointer, resumeFromByte?: number) =>
@@ -150,5 +171,27 @@ export const getFiberMapKeys = <K, A, E>(self: FiberMap.FiberMap<K, A, E>) => {
 
   return Effect.sync(() =>
     state._tag === 'Closed' ? [] : MutableHashMap.keys(state.backing),
+  )
+}
+
+export const getFibersOfFiberMap = <K, A, E>(
+  self: FiberMap.FiberMap<K, A, E>,
+) => {
+  const state = (
+    self as unknown as {
+      state:
+        | { readonly _tag: 'Closed' }
+        | {
+            readonly _tag: 'Open'
+            readonly backing: MutableHashMap.MutableHashMap<
+              K,
+              Fiber.RuntimeFiber<A, E>
+            >
+          }
+    }
+  ).state
+
+  return Effect.sync(() =>
+    state._tag === 'Closed' ? [] : MutableHashMap.values(state.backing),
   )
 }

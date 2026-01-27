@@ -1,6 +1,6 @@
-const strengthSet = new Set(['s', 'm', 'v'])
-const accordIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7])
-const patternIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7])
+const strengthSet = new Set(['s', 'm', 'v'] as const)
+const accordIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
+const patternIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
 
 function getCombinations<T>(size: number, array: T[]): T[][] {
   const results: T[][] = []

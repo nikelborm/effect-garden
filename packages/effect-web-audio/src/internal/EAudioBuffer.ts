@@ -192,6 +192,13 @@ export const makeImpl = (rawAudioBuffer: AudioBuffer): EAudioBufferImpl => {
   return instance
 }
 
+// TODO: wrap all returned either into Effect.suspend to ensure delayed
+// processing of side-effectful operations
+// Example: we can create a buffer, and it's allocation is a side-effectful
+// operation; same inputs will not correspond to the same outputs, because
+// allocation of big chunks of memory can fail. It's not like 1+1, which will
+// almost never fail.
+
 // TODO: update MDN here on AudioBufferOptions https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer/AudioBuffer
 
 /**
