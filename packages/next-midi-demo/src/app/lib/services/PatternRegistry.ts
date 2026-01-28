@@ -32,7 +32,7 @@ export class PatternRegistry
         setActivePattern: (patternIndex: RecordedPatternIndexes) =>
           SubscriptionRef.set(currentPatternIndexRef, patternIndex),
       }),
-    ) as Effect.Effect<IPatternRegistry>,
+    ),
   })
   implements IPatternRegistry {}
 

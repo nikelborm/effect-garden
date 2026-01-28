@@ -41,7 +41,7 @@ export class AccordRegistry
         setActiveAccord: (accordIndex: RecordedAccordIndexes) =>
           SubscriptionRef.set(currentAccordIndexRef, accordIndex),
       }),
-    ) as Effect.Effect<IAccordRegistry>,
+    ),
   })
   implements IAccordRegistry {}
 
