@@ -111,8 +111,8 @@ export interface PhysicalKeyboardKeyToUIButtonMap
   extends SortedMap.SortedMap<ValidKeyboardKey, AssignedPhysicalKeyboardKey> {}
 
 export class AssignedPhysicalKeyboardKey extends Data.Class<{
-  assignedToUIButtonId?: RegisteredButtonID
   keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
+  assignedToUIButtonId?: RegisteredButtonID
 }> {
   constructor(
     keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,

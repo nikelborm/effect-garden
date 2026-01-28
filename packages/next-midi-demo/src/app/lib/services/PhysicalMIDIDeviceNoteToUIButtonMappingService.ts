@@ -16,6 +16,18 @@ const midiLayout = {
   notesHandlingAccords: EArray.range(84, 91),
 }
 
+const makeMapEntry = (
+  registeredButtonId: StoreValues.RegisteredButtonID,
+  note: number,
+) =>
+  [
+    MIDIValues.NoteId(note),
+    new AssignedPhysicalMIDIDeviceNote(
+      ButtonState.NotPressed,
+      registeredButtonId,
+    ),
+  ] as const
+
 export class PhysicalMIDIDeviceNoteToUIButtonMappingService extends Effect.Service<PhysicalMIDIDeviceNoteToUIButtonMappingService>()(
   'next-midi-demo/PhysicalMIDIDeviceNoteToUIButtonMappingService',
   {
@@ -34,18 +46,6 @@ export class PhysicalMIDIDeviceNoteToUIButtonMappingService extends Effect.Servi
         throw new Error(
           'Assertion failed: accordButtonIds.length !== midiLayout.notesHandlingAccords.length',
         )
-
-      const makeMapEntry = (
-        registeredButtonId: StoreValues.RegisteredButtonID,
-        note: number,
-      ) =>
-        [
-          MIDIValues.NoteId(note),
-          new AssignedPhysicalMIDIDeviceNote(
-            ButtonState.NotPressed,
-            registeredButtonId,
-          ),
-        ] as const
 
       const physicalToVirtualKeyMapRef =
         yield* SubscriptionRef.make<PhysicalMIDIDeviceNoteToUIButtonMap>(
@@ -110,8 +110,8 @@ export interface PhysicalMIDIDeviceNoteToUIButtonMap
   > {}
 
 export class AssignedPhysicalMIDIDeviceNote extends Data.Class<{
-  assignedToUIButtonId?: StoreValues.RegisteredButtonID
   keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
+  assignedToUIButtonId?: StoreValues.RegisteredButtonID
 }> {
   constructor(
     keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,
