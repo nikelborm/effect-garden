@@ -1,27 +1,10 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
-import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { Strength } from '../audioAssetHelpers.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
+import { CurrentlySelectedStrengthState } from './CurrentlySelectedStrengthState.ts'
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
-
-export class CurrentlySelectedStrengthState extends Effect.Service<CurrentlySelectedStrengthState>()(
-  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedStrengthState',
-  {
-    accessors: true,
-    effect: Effect.map(
-      SubscriptionRef.make<Strength>('m'),
-      currentStrengthRef => ({
-        current: SubscriptionRef.get(currentStrengthRef),
-        changes: currentStrengthRef.changes,
-        set: (strength: Strength) =>
-          SubscriptionRef.set(currentStrengthRef, strength),
-      }),
-    ),
-  },
-) {}
 
 export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelectedAssetState>()(
   'next-midi-demo/CurrentlySelectedAssetState',
