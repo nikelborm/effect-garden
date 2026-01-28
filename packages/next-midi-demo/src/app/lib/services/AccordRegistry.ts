@@ -58,11 +58,11 @@ type _AllAccordTuple<
   Labels extends readonly AccordMiniInfo[] = typeof accords,
 > = Labels extends readonly [
   ...infer RestLabels extends readonly AccordMiniInfo[],
-  infer CurrLabel extends AccordMiniInfo,
+  infer Current extends AccordMiniInfo,
 ]
   ? readonly [
       ..._AllAccordTuple<RestLabels>,
-      Accord<CurrLabel['id'], CurrLabel['label'], RestLabels['length']>,
+      Accord<Current['id'], Current['label'], RestLabels['length']>,
     ]
   : readonly []
 
