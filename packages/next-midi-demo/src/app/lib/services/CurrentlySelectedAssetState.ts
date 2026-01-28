@@ -3,44 +3,9 @@ import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type {
-  PatternPointer,
-  RecordedAccordIndexes,
-  RecordedPatternIndexes,
-  Strength,
-} from '../audioAssetHelpers.ts'
-
-export class CurrentlySelectedAccordIndexState extends Effect.Service<CurrentlySelectedAccordIndexState>()(
-  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedAccordIndexState',
-  {
-    accessors: true,
-    effect: Effect.map(
-      SubscriptionRef.make<RecordedAccordIndexes>(0),
-      currentAccordIndexRef => ({
-        current: SubscriptionRef.get(currentAccordIndexRef),
-        changes: currentAccordIndexRef.changes,
-        set: (accordIndex: RecordedAccordIndexes) =>
-          SubscriptionRef.set(currentAccordIndexRef, accordIndex),
-      }),
-    ),
-  },
-) {}
-
-export class CurrentlySelectedPatternIndexState extends Effect.Service<CurrentlySelectedPatternIndexState>()(
-  'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedPatternIndexState',
-  {
-    accessors: true,
-    effect: Effect.map(
-      SubscriptionRef.make<RecordedPatternIndexes>(0),
-      currentPatternIndexRef => ({
-        current: SubscriptionRef.get(currentPatternIndexRef),
-        changes: currentPatternIndexRef.changes,
-        set: (patternIndex: RecordedPatternIndexes) =>
-          SubscriptionRef.set(currentPatternIndexRef, patternIndex),
-      }),
-    ),
-  },
-) {}
+import type { Strength } from '../audioAssetHelpers.ts'
+import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
+import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 
 export class CurrentlySelectedStrengthState extends Effect.Service<CurrentlySelectedStrengthState>()(
   'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedStrengthState',
@@ -63,33 +28,37 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
   {
     accessors: true,
     dependencies: [
-      CurrentlySelectedAccordIndexState.Default,
-      CurrentlySelectedPatternIndexState.Default,
+      AccordRegistry.Default,
+      PatternRegistry.Default,
       CurrentlySelectedStrengthState.Default,
     ],
     effect: Effect.map(
       Effect.all({
-        accordIndexState: CurrentlySelectedAccordIndexState,
-        patternIndexState: CurrentlySelectedPatternIndexState,
+        accordRegistry: AccordRegistry,
+        patternRegistry: PatternRegistry,
         strengthState: CurrentlySelectedStrengthState,
       }),
-      ({ accordIndexState, patternIndexState, strengthState }) => ({
+      ({ accordRegistry, patternRegistry, strengthState }) => ({
         current: Effect.all({
-          accordIndex: accordIndexState.current,
-          patternIndex: patternIndexState.current,
+          accord: accordRegistry.currentlyActiveAccord,
+          pattern: patternRegistry.currentlyActivePattern,
           strength: strengthState.current,
         }),
         changes: EFunction.pipe(
           Stream.mergeWithTag(
             {
               strength: strengthState.changes,
-              accordIndex: accordIndexState.changes,
-              patternIndex: patternIndexState.changes,
+              accord: accordRegistry.activeAccordChanges,
+              pattern: patternRegistry.activePatternChanges,
             },
             { concurrency: 'unbounded' },
           ),
           Stream.scan(
-            {} as PatternPointer,
+            {} as {
+              readonly strength: 's' | 'm' | 'v'
+              readonly pattern: AllPatternUnion
+              readonly accord: AllAccordUnion
+            },
             (
               previousSelectedAsset,
               { _tag: updatedParam, value: newParamValue },

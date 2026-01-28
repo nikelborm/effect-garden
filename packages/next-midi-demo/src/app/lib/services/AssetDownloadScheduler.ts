@@ -11,7 +11,7 @@ import {
   TaggedPatternPointer,
 } from '../audioAssetHelpers.ts'
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
-import { getNeighborMIDIPadButtons } from '../helpers/neighborFactory.ts'
+import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { DownloadManager } from './DownloadManager.ts'
 
@@ -96,7 +96,14 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
 
       EFunction.pipe(
         currentlySelectedAsset.changes,
-        Stream.tap(scheduleNewPlanExecution),
+        Stream.tap(
+          ({
+            accord: { index: accordIndex },
+            pattern: { index: patternIndex },
+            strength,
+          }) =>
+            scheduleNewPlanExecution({ accordIndex, patternIndex, strength }),
+        ),
         Stream.runDrain,
         runFork,
       )
