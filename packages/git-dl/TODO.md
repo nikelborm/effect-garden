@@ -266,6 +266,7 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [JoshuaKGoldberg/ts-api-utils](https://github.com/JoshuaKGoldberg/ts-api-utils)
 - [unjs/magicast](https://github.com/unjs/magicast)
 - [auvred/magic-esquery](https://github.com/auvred/magic-esquery)
+- [alloy-framework/alloy](https://github.com/alloy-framework/alloy)
 
 # Support other JS runtimes
 

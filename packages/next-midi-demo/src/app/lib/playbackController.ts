@@ -12,7 +12,7 @@ export type AudioPlayback = {
   readonly bufferSource: AudioBufferSourceNode
   readonly gainNode: GainNode
 }
-
+// AudioPa
 export type AppPlaybackState =
   | { readonly _tag: 'NotPlaying' }
   | { readonly _tag: 'PlayingAsset'; readonly current: AudioPlayback }
@@ -190,6 +190,15 @@ const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) => {
 }
 
 const createImmediatelyLoudPlayback = (
+  audioContext: AudioContext,
+  buffer: AudioBuffer,
+) => {
+  const playback = createPlayback(audioContext, buffer)
+  playback.gainNode.gain.setValueAtTime(1, audioContext.currentTime)
+  playback.bufferSource.start()
+}
+
+const createInitiallySilentPlaybackWithScheduledLoudnessIncrease = (
   audioContext: AudioContext,
   buffer: AudioBuffer,
 ) => {

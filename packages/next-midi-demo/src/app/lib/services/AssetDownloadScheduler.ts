@@ -11,7 +11,7 @@ import {
   TaggedPatternPointer,
 } from '../audioAssetHelpers.ts'
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
-import { getNeighborMIDIPadButtons } from '../neighborFactory.ts'
+import { getNeighborMIDIPadButtons } from '../helpers/neighborFactory.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { DownloadManager } from './DownloadManager.ts'
 
