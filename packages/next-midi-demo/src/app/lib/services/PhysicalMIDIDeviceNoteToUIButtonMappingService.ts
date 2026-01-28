@@ -8,58 +8,42 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import * as ButtonState from '../branded/ButtonState.ts'
 import * as MIDIValues from '../branded/MIDIValues.ts'
-import type * as StoreValues from '../branded/StoreValues.ts'
-import { UIButtonService } from './UIButtonService.ts'
+import { type Accord, AccordRegistry } from './AccordRegistry.ts'
+import { type Pattern, PatternRegistry } from './PatternRegistry.ts'
 
-const midiLayout = {
-  notesHandlingPatterns: EArray.range(92, 99),
-  notesHandlingAccords: EArray.range(84, 91),
-}
+const notesHandlingPatterns = EArray.range(92, 99)
+const notesHandlingAccords = EArray.range(84, 91)
 
-const makeMapEntry = (
-  registeredButtonId: StoreValues.RegisteredButtonID,
-  note: number,
-) =>
+const makeMapEntry = (assignedTo: Accord | Pattern, note: number) =>
   [
     MIDIValues.NoteId(note),
-    new AssignedPhysicalMIDIDeviceNote(
-      ButtonState.NotPressed,
-      registeredButtonId,
-    ),
+    new AssignedPhysicalMIDIDeviceNote(ButtonState.NotPressed, assignedTo),
   ] as const
 
 export class PhysicalMIDIDeviceNoteToUIButtonMappingService extends Effect.Service<PhysicalMIDIDeviceNoteToUIButtonMappingService>()(
   'next-midi-demo/PhysicalMIDIDeviceNoteToUIButtonMappingService',
   {
     accessors: true,
+    dependencies: [PatternRegistry.Default, AccordRegistry.Default],
     effect: Effect.gen(function* () {
-      const buttonService = yield* UIButtonService
-      const patternButtonIds = yield* buttonService.patternButtonIds
-      const accordButtonIds = yield* buttonService.accordButtonIds
+      const allAccords = yield* AccordRegistry.allAccords
+      const allPatterns = yield* PatternRegistry.allPatterns
 
-      if (patternButtonIds.length !== midiLayout.notesHandlingPatterns.length)
+      if (allPatterns.length !== notesHandlingPatterns.length)
         throw new Error(
-          'Assertion failed: patternButtonIds.length !== midiLayout.notesHandlingPatterns.length',
+          'Assertion failed: allPatterns.length !== notesHandlingPatterns.length',
         )
 
-      if (accordButtonIds.length !== midiLayout.notesHandlingAccords.length)
+      if (allAccords.length !== notesHandlingAccords.length)
         throw new Error(
-          'Assertion failed: accordButtonIds.length !== midiLayout.notesHandlingAccords.length',
+          'Assertion failed: allAccords.length !== notesHandlingAccords.length',
         )
 
       const physicalToVirtualKeyMapRef =
         yield* SubscriptionRef.make<PhysicalMIDIDeviceNoteToUIButtonMap>(
           SortedMap.make(MIDIValues.NoteIdOrder)(
-            ...EArray.zipWith(
-              patternButtonIds,
-              midiLayout.notesHandlingPatterns,
-              makeMapEntry,
-            ),
-            ...EArray.zipWith(
-              accordButtonIds,
-              midiLayout.notesHandlingAccords,
-              makeMapEntry,
-            ),
+            ...EArray.zipWith(allPatterns, notesHandlingPatterns, makeMapEntry),
+            ...EArray.zipWith(allAccords, notesHandlingAccords, makeMapEntry),
           ),
         )
 
@@ -111,20 +95,17 @@ export interface PhysicalMIDIDeviceNoteToUIButtonMap
 
 export class AssignedPhysicalMIDIDeviceNote extends Data.Class<{
   keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
-  assignedToUIButtonId?: StoreValues.RegisteredButtonID
+  assignedTo?: Accord | Pattern
 }> {
   constructor(
     keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,
-    assignedToUIButtonId?: StoreValues.RegisteredButtonID,
+    assignedTo?: Accord | Pattern,
   ) {
-    super({
-      keyboardKeyPressState,
-      ...(assignedToUIButtonId && { assignedToUIButtonId }),
-    })
+    super({ keyboardKeyPressState, ...(assignedTo && { assignedTo }) })
   }
 
   static setState = (
     info: AssignedPhysicalMIDIDeviceNote,
     state: ButtonState.NotPressed | ButtonState.Pressed,
-  ) => new AssignedPhysicalMIDIDeviceNote(state, info.assignedToUIButtonId)
+  ) => new AssignedPhysicalMIDIDeviceNote(state, info.assignedTo)
 }

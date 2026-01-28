@@ -7,65 +7,44 @@ import * as SortedMap from 'effect/SortedMap'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
-import type {
-  RegisteredButtonID,
-  ValidKeyboardKey,
-} from '../branded/StoreValues.ts'
+import type { ValidKeyboardKey } from '../branded/StoreValues.ts'
 import * as StoreValues from '../branded/StoreValues.ts'
-import { UIButtonService } from './UIButtonService.ts'
+import { type Accord, AccordRegistry } from './AccordRegistry.ts'
+import { type Pattern, PatternRegistry } from './PatternRegistry.ts'
 
-const keyboardLayout = {
-  keysHandlingPatterns: Array.from('12345678'),
-  keysHandlingAccords: Array.from('qwertyui'),
-}
+const keysHandlingPatterns = Array.from('12345678')
+const keysHandlingAccords = Array.from('qwertyui')
+
+const makeMapEntry = (assignedTo: Accord | Pattern, key: string) =>
+  [
+    StoreValues.ValidKeyboardKey(key),
+    new AssignedPhysicalKeyboardKey(ButtonState.NotPressed, assignedTo),
+  ] as const
 
 export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<PhysicalKeyboardKeyToUIButtonMappingService>()(
   'next-midi-demo/PhysicalKeyboardKeyToUIButtonMappingService',
   {
     accessors: true,
-    dependencies: [UIButtonService.Default],
+    dependencies: [PatternRegistry.Default, AccordRegistry.Default],
     effect: Effect.gen(function* () {
-      const buttonService = yield* UIButtonService
-      const patternButtonIds = yield* buttonService.patternButtonIds
-      const accordButtonIds = yield* buttonService.accordButtonIds
+      const allAccords = yield* AccordRegistry.allAccords
+      const allPatterns = yield* PatternRegistry.allPatterns
 
-      if (
-        patternButtonIds.length !== keyboardLayout.keysHandlingPatterns.length
-      )
+      if (allPatterns.length !== keysHandlingPatterns.length)
         throw new Error(
-          'Assertion failed: patternButtonIds.length !== keyboardLayout.keysHandlingPatterns.length',
+          'Assertion failed: allPatterns.length !== keysHandlingPatterns.length',
         )
 
-      if (accordButtonIds.length !== keyboardLayout.keysHandlingAccords.length)
+      if (allAccords.length !== keysHandlingAccords.length)
         throw new Error(
-          'Assertion failed: accordButtonIds.length !== keyboardLayout.keysHandlingAccords.length',
+          'Assertion failed: allAccords.length !== keysHandlingAccords.length',
         )
-
-      const makeMapEntry = (
-        registeredButtonId: RegisteredButtonID,
-        key: string,
-      ) =>
-        [
-          StoreValues.ValidKeyboardKey(key),
-          new AssignedPhysicalKeyboardKey(
-            ButtonState.NotPressed,
-            registeredButtonId,
-          ),
-        ] as const
 
       const physicalToVirtualKeyMapRef =
         yield* SubscriptionRef.make<PhysicalKeyboardKeyToUIButtonMap>(
           SortedMap.make(StoreValues.ValidKeyboardKeyOrder)(
-            ...EArray.zipWith(
-              patternButtonIds,
-              keyboardLayout.keysHandlingPatterns,
-              makeMapEntry,
-            ),
-            ...EArray.zipWith(
-              accordButtonIds,
-              keyboardLayout.keysHandlingAccords,
-              makeMapEntry,
-            ),
+            ...EArray.zipWith(allPatterns, keysHandlingPatterns, makeMapEntry),
+            ...EArray.zipWith(allAccords, keysHandlingAccords, makeMapEntry),
           ),
         )
 
@@ -112,20 +91,17 @@ export interface PhysicalKeyboardKeyToUIButtonMap
 
 export class AssignedPhysicalKeyboardKey extends Data.Class<{
   keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
-  assignedToUIButtonId?: RegisteredButtonID
+  assignedTo?: Accord | Pattern
 }> {
   constructor(
     keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,
-    assignedToUIButtonId?: RegisteredButtonID,
+    assignedTo?: Accord | Pattern,
   ) {
-    super({
-      keyboardKeyPressState,
-      ...(assignedToUIButtonId && { assignedToUIButtonId }),
-    })
+    super({ keyboardKeyPressState, ...(assignedTo && { assignedTo }) })
   }
 
   static setState = (
     info: AssignedPhysicalKeyboardKey,
     state: ButtonState.NotPressed | ButtonState.Pressed,
-  ) => new AssignedPhysicalKeyboardKey(state, info.assignedToUIButtonId)
+  ) => new AssignedPhysicalKeyboardKey(state, info.assignedTo)
 }
