@@ -48,13 +48,21 @@ interface IPatternRegistry {
 type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =
   Labels extends readonly [
     ...infer RestLabels extends readonly string[],
-    infer CurrLabel,
+    infer CurrLabel extends string,
   ]
     ? readonly [
         ..._AllPatternTuple<RestLabels>,
-        { readonly index: RestLabels['length']; readonly label: CurrLabel },
+        Pattern<CurrLabel, RestLabels['length']>,
       ]
     : readonly []
+
+export interface Pattern<
+  Label extends string = string,
+  Index extends number = number,
+> {
+  readonly label: Label
+  readonly index: Index
+}
 
 export type AllPatternTuple = _AllPatternTuple
 

@@ -62,7 +62,7 @@ type _AllAccordTuple<
 ]
   ? readonly [
       ..._AllAccordTuple<RestLabels>,
-      { readonly index: RestLabels['length'] } & CurrLabel,
+      Accord<CurrLabel['id'], CurrLabel['label'], RestLabels['length']>,
     ]
   : readonly []
 
@@ -70,7 +70,18 @@ export type AllAccordTuple = _AllAccordTuple
 
 export type AllAccordUnion = AllAccordTuple[number]
 
-export interface AccordMiniInfo {
-  id: number
-  label: string
+export interface AccordMiniInfo<
+  Id extends number = number,
+  Label extends string = string,
+> {
+  readonly id: Id
+  readonly label: Label
+}
+
+export interface Accord<
+  Id extends number = number,
+  Label extends string = string,
+  Index extends number = number,
+> extends AccordMiniInfo<Id, Label> {
+  readonly index: Index
 }
