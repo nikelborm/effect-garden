@@ -7,7 +7,7 @@ import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
-import { nanoPadOutputId } from './ports.ts'
+import { nanoPadOutputId } from './constants.ts'
 
 const globalDataDumpRequest = new Uint8Array([
   0xf0, 0x42, 0x40 /* 4g */,

@@ -1,4 +1,4 @@
-import { Result } from '@effect-atom/atom'
+import * as Result from '@effect-atom/atom/Result'
 import * as Cause from 'effect/Cause'
 
 import { useDumpRequester } from './useDumpRequester.ts'
