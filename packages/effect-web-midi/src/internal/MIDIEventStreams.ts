@@ -1,40 +1,44 @@
-import type * as Cause from 'effect/Cause'
-import type * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
-import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type * as EMIDIAccess from './EMIDIAccess.ts'
+import * as EMIDIAccess from './EMIDIAccess.ts'
 import * as EMIDIInput from './EMIDIInput.ts'
 import { getInputByPortIdAndAccess } from './getPortByPortId/getPortByPortIdAndAccess.ts'
-import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
 import type * as MIDIErrors from './MIDIErrors.ts'
 import * as Parsing from './Parsing.ts'
 import type * as StreamMaker from './StreamMaker.ts'
 import * as Util from './Util.ts'
 
-// export const makeSpecificMessageStreamByInputIdAndAccess = <
-//   Payload extends Parsing.TaggedObject,
-// >(
-//   predicate: Parsing.MessagePredicate<Payload>,
-// ) => EMIDIInput.makeMessagesStreamByPort
+export const buildSpecificEventStreamByInputIdAndAccessMaker = <
+  Payload extends Parsing.TaggedObject,
+>(
+  predicate: Parsing.MessagePredicate<Payload>,
+): DualMakeSpecificMessageStreamFromAccess<Payload> => {
+  const makeSpecificMessageStreamByInput =
+    buildSpecificMessageStreamByInputMaker(predicate)
+
+  return EFunction.dual(
+    Util.polymorphicCheckInDual(EMIDIAccess.is),
+    (polymorphicAccess, id, options) =>
+      makeSpecificMessageStreamByInput(
+        getInputByPortIdAndAccess(polymorphicAccess, id),
+        options,
+      ),
+  )
+}
 
 const buildSpecificMessagesStreamByInputIdInContextMaker = <
   Payload extends Parsing.TaggedObject,
 >(
   predicate: Parsing.MessagePredicate<Payload>,
 ) => {
-  const makeSpecificMessageStreamByInput =
-    buildSpecificMessageStreamByInputMaker(predicate)
+  const makeSpecificMessageStreamByAccess =
+    buildSpecificEventStreamByInputIdAndAccessMaker(predicate)
 
   return <const TForbidNullsStrategy extends ForbidNullsStrategy = undefined>(
     id: EMIDIInput.Id,
     options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
-  ) =>
-    makeSpecificMessageStreamByInput(
-      GetPort.getInputByPortIdInContext(id),
-      options,
-    )
+  ) => makeSpecificMessageStreamByAccess(EMIDIAccess.EMIDIAccess, id, options)
 }
 
 const buildSpecificMessageStreamByInputMaker = <
@@ -90,6 +94,10 @@ export interface MakeSpecificMessageStreamInputLastSecondPart<
     polymorphicInput: EMIDIInput.PolymorphicInput<E, R>,
   ): MakeSpecificMessageStreamResult<Payload, TForbidNullsStrategy, E, R>
 }
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
 
 export interface DualMakeSpecificMessageStreamFromAccess<
   Payload extends Parsing.TaggedObject,
@@ -152,78 +160,11 @@ export interface MakeSpecificMessageStreamResult<
     R
   > {}
 
-// interface MakeEventStreamByInputIdAndAccess<
-//   TPayload extends Parsing.TaggedObject,
-// > {
-//   <
-//     E1 = never,
-//     R1 = never,
-//     const TForbidNullsStrategy extends StreamMaker.OnNullStrategy = undefined,
-//   >(
-//     polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E1, R1>,
-//     id: EMIDIInput.Id,
-//     options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
-//   ): Stream.Stream<
-//     Parsing.ParsedMIDIMessage<TPayload>,
-//     | E1
-//     | MIDIErrors.PortNotFoundError
-//     | StreamMaker.StreamError<TForbidNullsStrategy, never>,
-//     R1
-//   >
-// }
-
-// const buildSpecificEventStreamByInputIdAndAccessMaker = <
-//   TPayload extends Parsing.TaggedObject,
-// >(
-//   makeStreamByPort: <
-//     E1 = never,
-//     R1 = never,
-//     const TForbidNullsStrategy extends StreamMaker.OnNullStrategy = undefined,
-//   >(
-//     polymorphicPort: EMIDIInput.PolymorphicInput<E1, R1>,
-//     options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
-//   ) => Stream.Stream<
-//     Parsing.ParsedMIDIMessage<TPayload>,
-//     StreamMaker.StreamError<TForbidNullsStrategy, E1>,
-//     R1
-//   >,
-// ): MakeEventStreamByInputIdAndAccess<TPayload> =>
-//   EFunction.dual<
-//     (
-//       polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<never, never>,
-//       id: EMIDIInput.Id,
-//       options?: StreamMaker.StreamMakerOptions<undefined>,
-//     ) => Stream.Stream<
-//       Parsing.ParsedMIDIMessage<TPayload>,
-//       MIDIErrors.PortNotFoundError,
-//       never
-//     >,
-//     <
-//       E1 = never,
-//       R1 = never,
-//       const TForbidNullsStrategy extends StreamMaker.OnNullStrategy = undefined,
-//     >(
-//       polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E1, R1>,
-//       id: EMIDIInput.Id,
-//       options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
-//     ) => Stream.Stream<
-//       Parsing.ParsedMIDIMessage<TPayload>,
-//       | E1
-//       | MIDIErrors.PortNotFoundError
-//       | StreamMaker.StreamError<TForbidNullsStrategy, never>,
-//       R1
-//     >
-//   >(3, (polymorphicAccess, id, options) =>
-//     Effect.map(EMIDIAccess.simplify(polymorphicAccess), access =>
-//       makeStreamByPort(getInputByPortIdAndAccess(access, id), options),
-//     ).pipe(Stream.unwrap),
-//   )
-
 export const makeNoteReleaseStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isNoteRelease)
 
 export const makeNoteReleaseStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(makeNoteReleaseStreamByInput)
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isNoteRelease)
 
 export const makeNoteReleaseStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isNoteRelease)
@@ -232,7 +173,7 @@ export const makeNotePressStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isNotePress)
 
 export const makeNotePressStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(makeNotePressStreamByInput)
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isNotePress)
 
 export const makeNotePressStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isNotePress)
@@ -241,7 +182,7 @@ export const makeUnknownReplyStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isUnknownReply)
 
 export const makeUnknownReplyStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(makeUnknownReplyStreamByInput)
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isUnknownReply)
 
 export const makeUnknownReplyStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isUnknownReply)
@@ -250,9 +191,7 @@ export const makeControlChangeStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isControlChange)
 
 export const makeControlChangeStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(
-    makeControlChangeStreamByInput,
-  )
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isControlChange)
 
 export const makeControlChangeStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isControlChange)
@@ -261,9 +200,7 @@ export const makeChannelPressureStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isChannelPressure)
 
 export const makeChannelPressureStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(
-    makeChannelPressureStreamByInput,
-  )
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isChannelPressure)
 
 export const makeChannelPressureStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isChannelPressure)
@@ -272,9 +209,7 @@ export const makeTouchpadReleaseStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isTouchpadRelease)
 
 export const makeTouchpadReleaseStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(
-    makeTouchpadReleaseStreamByInput,
-  )
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isTouchpadRelease)
 
 export const makeTouchpadReleaseStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isTouchpadRelease)
@@ -283,9 +218,7 @@ export const makePitchBendChangeStreamByInput =
   buildSpecificMessageStreamByInputMaker(Parsing.isPitchBendChange)
 
 export const makePitchBendChangeStreamByInputIdAndAccess =
-  buildSpecificEventStreamByInputIdAndAccessMaker(
-    makePitchBendChangeStreamByInput,
-  )
+  buildSpecificEventStreamByInputIdAndAccessMaker(Parsing.isPitchBendChange)
 
 export const makePitchBendChangeStreamByInputIdInContext =
   buildSpecificMessagesStreamByInputIdInContextMaker(Parsing.isPitchBendChange)
@@ -295,7 +228,7 @@ export const makeTouchpadPositionUpdateStreamByInput =
 
 export const makeTouchpadPositionUpdateStreamByInputIdAndAccess =
   buildSpecificEventStreamByInputIdAndAccessMaker(
-    makeTouchpadPositionUpdateStreamByInput,
+    Parsing.isTouchpadPositionUpdate,
   )
 
 export const makeTouchpadPositionUpdateStreamByInputIdInContext =
