@@ -1,6 +1,10 @@
 export {
-  type DualMakeSpecificMessageStream,
+  type DualMakeSpecificMessageStreamFromAccess,
+  type DualMakeSpecificMessageStreamFromInput,
   type ForbidNullsStrategy,
+  type MakeSpecificMessageStreamAccessFirst,
+  type MakeSpecificMessageStreamAccessLast,
+  type MakeSpecificMessageStreamAccessLastSecondPart,
   type MakeSpecificMessageStreamInputFirst,
   type MakeSpecificMessageStreamInputLast,
   type MakeSpecificMessageStreamInputLastSecondPart,

@@ -4,7 +4,7 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import * as EMIDIAccess from './EMIDIAccess.ts'
+import type * as EMIDIAccess from './EMIDIAccess.ts'
 import * as EMIDIInput from './EMIDIInput.ts'
 import { getInputByPortIdAndAccess } from './getPortByPortId/getPortByPortIdAndAccess.ts'
 import * as GetPort from './getPortByPortId/getPortByPortIdInContext.ts'
@@ -41,7 +41,7 @@ const buildSpecificMessageStreamByInputMaker = <
   Payload extends Parsing.TaggedObject,
 >(
   predicate: Parsing.MessagePredicate<Payload>,
-): DualMakeSpecificMessageStream<Payload> =>
+): DualMakeSpecificMessageStreamFromInput<Payload> =>
   EFunction.dual(
     Util.polymorphicCheckInDual(EMIDIInput.is),
     EFunction.flow(
@@ -56,7 +56,7 @@ export type ForbidNullsStrategy = Exclude<
   'passthrough'
 >
 
-export interface DualMakeSpecificMessageStream<
+export interface DualMakeSpecificMessageStreamFromInput<
   Payload extends Parsing.TaggedObject,
 > extends MakeSpecificMessageStreamInputLast<Payload>,
     MakeSpecificMessageStreamInputFirst<Payload> {}
@@ -89,6 +89,56 @@ export interface MakeSpecificMessageStreamInputLastSecondPart<
   <E = never, R = never>(
     polymorphicInput: EMIDIInput.PolymorphicInput<E, R>,
   ): MakeSpecificMessageStreamResult<Payload, TForbidNullsStrategy, E, R>
+}
+
+export interface DualMakeSpecificMessageStreamFromAccess<
+  Payload extends Parsing.TaggedObject,
+> extends MakeSpecificMessageStreamAccessLast<Payload>,
+    MakeSpecificMessageStreamAccessFirst<Payload> {}
+
+export interface MakeSpecificMessageStreamAccessFirst<
+  Payload extends Parsing.TaggedObject,
+> {
+  <
+    E = never,
+    R = never,
+    const TForbidNullsStrategy extends ForbidNullsStrategy = undefined,
+  >(
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+    id: EMIDIInput.Id,
+    options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
+  ): MakeSpecificMessageStreamResult<
+    Payload,
+    TForbidNullsStrategy,
+    E | MIDIErrors.PortNotFoundError,
+    R
+  >
+}
+
+export interface MakeSpecificMessageStreamAccessLast<
+  Payload extends Parsing.TaggedObject,
+> {
+  <const TForbidNullsStrategy extends ForbidNullsStrategy = undefined>(
+    id: EMIDIInput.Id,
+    options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
+  ): MakeSpecificMessageStreamAccessLastSecondPart<
+    Payload,
+    TForbidNullsStrategy
+  >
+}
+
+export interface MakeSpecificMessageStreamAccessLastSecondPart<
+  Payload extends Parsing.TaggedObject,
+  TForbidNullsStrategy extends ForbidNullsStrategy,
+> {
+  <E = never, R = never>(
+    polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
+  ): MakeSpecificMessageStreamResult<
+    Payload,
+    TForbidNullsStrategy,
+    E | MIDIErrors.PortNotFoundError,
+    R
+  >
 }
 
 export interface MakeSpecificMessageStreamResult<
