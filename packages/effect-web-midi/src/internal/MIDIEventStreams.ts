@@ -42,16 +42,13 @@ const buildSpecificMessageStreamByInputMaker = <
 >(
   predicate: Parsing.MessagePredicate<Payload>,
 ): DualMakeSpecificMessageStream<Payload> =>
-  EFunction.dual<
-    MakeSpecificMessageStreamInputLast<Payload>,
-    MakeSpecificMessageStreamInputFirst<Payload>
-  >(
+  EFunction.dual(
     Util.polymorphicCheckInDual(EMIDIInput.is),
     EFunction.flow(
       EMIDIInput.makeMessagesStreamByPort as any,
       Parsing.withParsedDataField,
       Stream.filter(predicate),
-    ) as any,
+    ),
   )
 
 export type ForbidNullsStrategy = Exclude<
