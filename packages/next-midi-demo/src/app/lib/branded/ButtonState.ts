@@ -9,6 +9,9 @@ export const Pressed = 1 as Pressed
 export type PressedContinuously = Brand.Branded<2, 'Pressed continuously'>
 export const PressedContinuously = 2 as PressedContinuously
 
+export type All = NotPressed | Pressed | PressedContinuously
+export type AllSimple = NotPressed | Pressed
+
 export const isNotPressed = (state: number): state is NotPressed =>
   state === NotPressed
 

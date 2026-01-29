@@ -1,7 +1,8 @@
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { Strength } from '../audioAssetHelpers.ts'
+import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
 
 export class CurrentlySelectedStrengthState extends Effect.Service<CurrentlySelectedStrengthState>()(
   'next-midi-demo/CurrentlySelectedAssetState/CurrentlySelectedStrengthState',
@@ -12,8 +13,10 @@ export class CurrentlySelectedStrengthState extends Effect.Service<CurrentlySele
       currentStrengthRef => ({
         current: SubscriptionRef.get(currentStrengthRef),
         changes: currentStrengthRef.changes,
-        set: (strength: Strength) =>
-          SubscriptionRef.set(currentStrengthRef, strength),
+        set: (strength: Strength) => {
+          const trustedStrength = Schema.decodeSync(StrengthSchema)(strength)
+          return SubscriptionRef.set(currentStrengthRef, trustedStrength)
+        },
       }),
     ),
   },

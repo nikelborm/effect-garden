@@ -1,8 +1,14 @@
+import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as Order from 'effect/Order'
+import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { RecordedAccordIndexes } from '../audioAssetHelpers.ts'
+import {
+  AccordIndexSchema,
+  type RecordedAccordIndexes,
+} from '../audioAssetHelpers.ts'
 
 const accords = [
   { id: 24, label: 'C' },
@@ -15,13 +21,12 @@ const accords = [
   { id: 28, label: 'E' },
 ] as const
 
-const allAccords = accords.map((info, index) => ({
-  ...info,
-  index,
-})) as unknown as AllAccordTuple
+const allAccords = accords.map(
+  (info, index) => new Accord({ ...info, index }),
+) as unknown as AllAccordTuple
 
 const mapIndexToAccord = (index: RecordedAccordIndexes) =>
-  ({ index, ...accords[index] }) as AllAccordUnion
+  new Accord({ index, ...accords[index] }) as AllAccordUnion
 
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
@@ -38,8 +43,11 @@ export class AccordRegistry
           currentAccordIndexRef.changes,
           mapIndexToAccord,
         ),
-        setActiveAccord: (accordIndex: RecordedAccordIndexes) =>
-          SubscriptionRef.set(currentAccordIndexRef, accordIndex),
+        setActiveAccord: (accordIndex: RecordedAccordIndexes) => {
+          const trustedIndex = Schema.decodeSync(AccordIndexSchema)(accordIndex)
+
+          return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
+        },
       }),
     ),
   })
@@ -78,10 +86,15 @@ export interface AccordMiniInfo<
   readonly label: Label
 }
 
-export interface Accord<
+export class Accord<
   Id extends number = number,
   Label extends string = string,
   Index extends number = number,
-> extends AccordMiniInfo<Id, Label> {
-  readonly index: Index
+> extends Data.TaggedClass('Accord')<
+  AccordMiniInfo<Id, Label> & { readonly index: Index }
+> {
+  static models = (p: unknown): p is Accord =>
+    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Accord'
 }
+
+export const AccordOrderById = Order.mapInput(Order.number, (a: Accord) => a.id)

@@ -94,14 +94,14 @@ export interface PhysicalMIDIDeviceNoteToUIButtonMap
   > {}
 
 export class AssignedPhysicalMIDIDeviceNote extends Data.Class<{
-  keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
+  notePressState: ButtonState.NotPressed | ButtonState.Pressed
   assignedTo?: Accord | Pattern
 }> {
   constructor(
-    keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,
+    notePressState: ButtonState.NotPressed | ButtonState.Pressed,
     assignedTo?: Accord | Pattern,
   ) {
-    super({ keyboardKeyPressState, ...(assignedTo && { assignedTo }) })
+    super({ notePressState, ...(assignedTo && { assignedTo }) })
   }
 
   static setState = (

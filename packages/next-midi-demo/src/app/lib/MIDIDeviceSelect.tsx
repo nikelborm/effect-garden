@@ -25,7 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../components/Select.tsx'
-import { type CleanupPortType, getPortsOfSpecificTypeAtom } from './state.ts'
+import {
+  type CleanupPortType,
+  getPortsOfSpecificTypeAtom,
+} from './atoms/portMapAtom.ts'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,

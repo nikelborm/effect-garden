@@ -4,6 +4,7 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as SortedMap from 'effect/SortedMap'
+import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
@@ -26,7 +27,7 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
   {
     accessors: true,
     dependencies: [PatternRegistry.Default, AccordRegistry.Default],
-    effect: Effect.gen(function* () {
+    scoped: Effect.gen(function* () {
       const allAccords = yield* AccordRegistry.allAccords
       const allPatterns = yield* PatternRegistry.allPatterns
 
@@ -76,6 +77,17 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
           ),
         )
 
+      yield* EFunction.pipe(
+        yield* currentMap,
+        SortedMap.keys,
+        makeKeyboardSliceMapStream,
+        Stream.tap(({ key, keyboardKeyPressState }) =>
+          setPhysicalKeyboardKeyState(key, keyboardKeyPressState),
+        ),
+        Stream.runDrain,
+        Effect.forkScoped,
+      )
+
       return {
         currentMap,
         mapChanges: physicalToVirtualKeyMapRef.changes,
@@ -85,6 +97,51 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
     }),
   },
 ) {}
+
+export const makeKeyboardSliceMapStream = <
+  const SelectedKeys extends string,
+  Ref extends GlobalEventHandlers,
+>(
+  keys: Iterable<SelectedKeys>,
+  ref?: Ref,
+) => {
+  const refWithFallback = ref ?? globalThis.window
+
+  const keySet = new Set(keys)
+
+  return refWithFallback
+    ? Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown', {
+        bufferSize: 0,
+      }).pipe(
+        Stream.merge(
+          Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keyup', {
+            bufferSize: 0,
+          }),
+        ),
+        Stream.filterMap(event =>
+          keySet.has(event.key as SelectedKeys) &&
+          !event.ctrlKey &&
+          !event.shiftKey &&
+          !event.altKey &&
+          !event.metaKey &&
+          !(
+            event.target instanceof HTMLElement &&
+            (event.target.tagName === 'INPUT' ||
+              event.target.tagName === 'TEXTAREA' ||
+              event.target.isContentEditable)
+          )
+            ? Option.some({
+                key: StoreValues.ValidKeyboardKey(event.key),
+                keyboardKeyPressState:
+                  event.type === 'keydown'
+                    ? ButtonState.Pressed
+                    : ButtonState.NotPressed,
+              })
+            : Option.none(),
+        ),
+      )
+    : Stream.empty
+}
 
 export interface PhysicalKeyboardKeyToUIButtonMap
   extends SortedMap.SortedMap<ValidKeyboardKey, AssignedPhysicalKeyboardKey> {}

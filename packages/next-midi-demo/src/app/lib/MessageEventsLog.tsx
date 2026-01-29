@@ -7,7 +7,7 @@ import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
 
-import { getMessagesLogAtom } from './state.ts'
+import { getMessagesLogAtom } from './atoms/getMessagesLogAtom.ts'
 
 export const MessageEventsLog = ({
   selectedId = null,

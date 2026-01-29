@@ -267,6 +267,10 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [unjs/magicast](https://github.com/unjs/magicast)
 - [auvred/magic-esquery](https://github.com/auvred/magic-esquery)
 - [alloy-framework/alloy](https://github.com/alloy-framework/alloy)
+- [composio/generate-toolkit-sources.ts](https://github.com/ComposioHQ/composio/blob/af067522e59faa0d537d4584d4cb67fb0af29b64/ts/packages/cli/src/generation/typescript/generate-toolkit-sources.ts)
+- [@composio/ts-builders](https://github.com/ComposioHQ/composio/blob/af067522e59faa0d537d4584d4cb67fb0af29b64/ts/packages/ts-builders/README.md)
+- [floydspace/effect-aws/generate-client.ts](https://github.com/floydspace/effect-aws/blob/main/scripts/generate-client.ts)
+- [effect-ak/aws-sdk/write/code-parts/effect.ts](https://github.com/effect-ak/aws-sdk/blob/main/src/write/code-parts/effect.ts)
 
 # Support other JS runtimes
 
