@@ -138,13 +138,8 @@ function parseMIDIMessagePayload(
   const channel = status & 0b1111
 
   if (rawPayload.length === 2) {
-    if (code === 0xd) {
-      return {
-        _tag: 'Channel Pressure',
-        channel,
-        velocity: second,
-      }
-    }
+    if (code === 0xd)
+      return { _tag: 'Channel Pressure', channel, velocity: second }
   }
 
   if (rawPayload.length !== 3) return unknown()
@@ -152,39 +147,17 @@ function parseMIDIMessagePayload(
   const third = rawPayload.at(2)
   if (third === undefined) return unknown()
 
-  if (code === 0x8) {
-    return {
-      _tag: 'Note Release',
-      channel,
-      note: second,
-      velocity: third,
-    }
-  }
+  if (code === 0x8)
+    return { _tag: 'Note Release', channel, note: second, velocity: third }
 
   if (code === 0x9) {
     if (third === 0)
-      return {
-        _tag: 'Note Release',
-        channel,
-        note: second,
-        velocity: 64,
-      }
-    return {
-      _tag: 'Note Press',
-      channel,
-      note: second,
-      velocity: third,
-    }
+      return { _tag: 'Note Release', channel, note: second, velocity: 64 }
+    return { _tag: 'Note Press', channel, note: second, velocity: third }
   }
 
-  if (code === 0xb) {
-    return {
-      _tag: 'Control Change',
-      channel,
-      control: second,
-      value: third,
-    }
-  }
+  if (code === 0xb)
+    return { _tag: 'Control Change', channel, control: second, value: third }
 
   if (code === 0xe) {
     if (second === 0 && third === 0x40)
@@ -199,7 +172,25 @@ function parseMIDIMessagePayload(
   return unknown()
 }
 
+const isSpecificPayload =
+  <Payload extends TaggedObject>(tag: Payload['_tag']) =>
+  (e: TaggedObject): e is Payload =>
+    e._tag === tag
+
+export interface MessagePredicate<Payload extends TaggedObject> {
+  (m: ParsedMIDIMessage<TaggedObject>): m is ParsedMIDIMessage<Payload>
+}
+
+const isSpecificMessage =
+  <Payload extends TaggedObject>(
+    isSpecificPayload: (e: TaggedObject) => e is Payload,
+  ): MessagePredicate<Payload> =>
+  (m): m is ParsedMIDIMessage<Payload> =>
+    isSpecificPayload(m.midiMessage)
+
 export type TaggedObject = { readonly _tag: string }
+
+/////////////////////////////////////////////
 
 export interface UnknownReplyPayload
   extends Readonly<{
@@ -208,14 +199,10 @@ export interface UnknownReplyPayload
     stack: string
   }> {}
 
-export const isUnknownReplyPayload = (
-  e: TaggedObject,
-): e is UnknownReplyPayload => e._tag === 'Unknown Reply'
+export const isUnknownReplyPayload =
+  isSpecificPayload<UnknownReplyPayload>('Unknown Reply')
 
-export const isUnknownReply = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<UnknownReplyPayload> =>
-  isUnknownReplyPayload(e.midiMessage)
+export const isUnknownReply = isSpecificMessage(isUnknownReplyPayload)
 
 /////////////////////////////////////////////
 
@@ -227,12 +214,10 @@ export interface NotePressPayload
     velocity: number
   }> {}
 
-export const isNotePressPayload = (e: TaggedObject): e is NotePressPayload =>
-  e._tag === 'Note Press'
+export const isNotePressPayload =
+  isSpecificPayload<NotePressPayload>('Note Press')
 
-export const isNotePress = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<NotePressPayload> => isNotePressPayload(e.midiMessage)
+export const isNotePress = isSpecificMessage(isNotePressPayload)
 
 /////////////////////////////////////////////
 
@@ -243,14 +228,10 @@ export interface ChannelPressurePayload
     velocity: number
   }> {}
 
-export const isChannelPressurePayload = (
-  e: TaggedObject,
-): e is ChannelPressurePayload => e._tag === 'Channel Pressure'
+export const isChannelPressurePayload =
+  isSpecificPayload<ChannelPressurePayload>('Channel Pressure')
 
-export const isChannelPressure = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<ChannelPressurePayload> =>
-  isChannelPressurePayload(e.midiMessage)
+export const isChannelPressure = isSpecificMessage(isChannelPressurePayload)
 
 /////////////////////////////////////////////
 
@@ -262,14 +243,10 @@ export interface NoteReleasePayload
     velocity: number
   }> {}
 
-export const isNoteReleasePayload = (
-  e: TaggedObject,
-): e is NoteReleasePayload => e._tag === 'Note Release'
+export const isNoteReleasePayload =
+  isSpecificPayload<NoteReleasePayload>('Note Release')
 
-export const isNoteRelease = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<NoteReleasePayload> =>
-  isNoteReleasePayload(e.midiMessage)
+export const isNoteRelease = isSpecificMessage(isNoteReleasePayload)
 
 /////////////////////////////////////////////
 
@@ -281,28 +258,20 @@ export interface ControlChangePayload
     value: number
   }> {}
 
-export const isControlChangePayload = (
-  e: TaggedObject,
-): e is ControlChangePayload => e._tag === 'Control Change'
+export const isControlChangePayload =
+  isSpecificPayload<ControlChangePayload>('Control Change')
 
-export const isControlChange = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<ControlChangePayload> =>
-  isControlChangePayload(e.midiMessage)
+export const isControlChange = isSpecificMessage(isControlChangePayload)
 
 /////////////////////////////////////////////
 
 export interface TouchpadReleasePayload
   extends Readonly<{ _tag: 'Touchpad Release'; channel: number }> {}
 
-export const isTouchpadReleasePayload = (
-  e: TaggedObject,
-): e is TouchpadReleasePayload => e._tag === 'Touchpad Release'
+export const isTouchpadReleasePayload =
+  isSpecificPayload<TouchpadReleasePayload>('Touchpad Release')
 
-export const isTouchpadRelease = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<TouchpadReleasePayload> =>
-  isTouchpadReleasePayload(e.midiMessage)
+export const isTouchpadRelease = isSpecificMessage(isTouchpadReleasePayload)
 
 /////////////////////////////////////////////
 
@@ -313,14 +282,10 @@ export interface PitchBendChangePayload
     value: number
   }> {}
 
-export const isPitchBendChangePayload = (
-  e: TaggedObject,
-): e is PitchBendChangePayload => e._tag === 'Pitch Bend Change'
+export const isPitchBendChangePayload =
+  isSpecificPayload<PitchBendChangePayload>('Pitch Bend Change')
 
-export const isPitchBendChange = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<PitchBendChangePayload> =>
-  isPitchBendChangePayload(e.midiMessage)
+export const isPitchBendChange = isSpecificMessage(isPitchBendChangePayload)
 
 /////////////////////////////////////////////
 
@@ -331,11 +296,9 @@ export interface TouchpadPositionUpdatePayload
     y: number
   }> {}
 
-export const isTouchpadPositionUpdatePayload = (e: {
-  _tag: string
-}): e is TouchpadPositionUpdatePayload => e._tag === 'Touchpad Position Update'
+export const isTouchpadPositionUpdatePayload =
+  isSpecificPayload<TouchpadPositionUpdatePayload>('Touchpad Position Update')
 
-export const isTouchpadPositionUpdate = (
-  e: ParsedMIDIMessage<TaggedObject>,
-): e is ParsedMIDIMessage<TouchpadPositionUpdatePayload> =>
-  isTouchpadPositionUpdatePayload(e.midiMessage)
+export const isTouchpadPositionUpdate = isSpecificMessage(
+  isTouchpadPositionUpdatePayload,
+)

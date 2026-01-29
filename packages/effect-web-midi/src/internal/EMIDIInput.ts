@@ -86,10 +86,7 @@ export const makeMessagesStreamByPort =
     is,
     input => ({
       tag: 'MIDIMessage',
-      eventListener: {
-        target: assumeImpl(input)._port,
-        type: 'midimessage',
-      },
+      eventListener: { target: assumeImpl(input)._port, type: 'midimessage' },
       spanAttributes: {
         spanTargetName: 'MIDI port',
         port: Util.getStaticMIDIPortInfo(input),

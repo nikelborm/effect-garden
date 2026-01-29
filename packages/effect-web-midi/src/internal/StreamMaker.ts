@@ -6,9 +6,9 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import type * as EMIDIAccess from './EMIDIAccess.ts'
-import type * as EMIDIInput from './EMIDIInput.ts'
-import type * as EMIDIOutput from './EMIDIOutput.ts'
+import * as EMIDIAccess from './EMIDIAccess.ts'
+import * as EMIDIInput from './EMIDIInput.ts'
+import * as EMIDIOutput from './EMIDIOutput.ts'
 import * as Util from './Util.ts'
 
 // TODO: make an experiment to see if listeners are automatically removed on disconnect
