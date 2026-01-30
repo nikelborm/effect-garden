@@ -44,6 +44,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
       const physicalKeyboardKeyModelToUIButtonMappingService =
         yield* PhysicalKeyboardKeyModelToUIButtonMappingService
+
       const physicalMIDIDeviceButtonModelToUIButtonMappingService =
         yield* PhysicalMIDIDeviceButtonModelToUIButtonMappingService
 
@@ -56,7 +57,13 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       const shit =
-        <const TReportKey extends keyof PressureReport>(key: TReportKey) =>
+        <
+          const TReportKey extends
+            | 'pressedByKeyboardKeys'
+            | 'pressedByMIDIPadButtons',
+        >(
+          key: TReportKey,
+        ) =>
         (
           map: SortedMap.SortedMap<
             PressureReport[TReportKey] extends SortedSet.SortedSet<infer V>
@@ -69,29 +76,18 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             map,
             ([id, model]) =>
               Effect.gen(function* () {
-                const transformReport = <TAssignee>(
-                  self: PressureReportMapRef<TAssignee>,
-                  assignee: TAssignee,
-                ) =>
-                  Ref.update(
-                    self,
-                    sortedMapModify(
-                      assignee,
-                      (previousReport: PressureReport): PressureReport => ({
-                        ...previousReport,
-                        [key]:
-                          model.buttonPressState === ButtonState.Pressed
-                            ? SortedSet.add(previousReport[key] as any, id)
-                            : SortedSet.remove(previousReport[key] as any, id),
-                      }),
-                    ),
-                  )
-
+                const transformReport = transformReportGeneric(
+                  key,
+                  prevValAtKey =>
+                    model.buttonPressState === ButtonState.Pressed
+                      ? SortedSet.add(prevValAtKey, id as any)
+                      : SortedSet.remove(prevValAtKey, id as any),
+                )
                 if (Pattern.models(model.assignedTo))
-                  yield* transformReport(patternButtonsMapRef, model.assignedTo)
+                  yield* transformReport(model.assignedTo)(patternButtonsMapRef)
 
                 if (Accord.models(model.assignedTo))
-                  yield* transformReport(accordButtonsMapRef, model.assignedTo)
+                  yield* transformReport(model.assignedTo)(accordButtonsMapRef)
               }),
             { discard: true },
           )
@@ -157,10 +153,25 @@ const defaultReportOnNone = EFunction.flow(
 const getPressureReportOfMapRef =
   <TAssignee>(assigneeMapRef: PressureReportMapRef<TAssignee>) =>
   (assignee: TAssignee) =>
-    Effect.map(Ref.get(assigneeMapRef), getPressureReportOfMap(assignee))
+    Effect.map(
+      Ref.get(assigneeMapRef),
+      EFunction.flow(SortedMap.get(assignee), defaultReportOnNone),
+    )
 
-const getPressureReportOfMap = <TAssignee>(assignee: TAssignee) =>
-  EFunction.flow(SortedMap.get(assignee)<PressureReport>, defaultReportOnNone)
+const transformReportGeneric =
+  <const TReportKey extends keyof PressureReport>(
+    key: TReportKey,
+    transformReportField: (
+      previous: PressureReport[TReportKey],
+    ) => PressureReport[TReportKey],
+  ) =>
+  <TAssignee>(assignee: TAssignee) =>
+    Ref.update<PressureReportMap<TAssignee>>(
+      sortedMapModify(assignee, previousReport => ({
+        ...previousReport,
+        [key]: transformReportField(previousReport[key]),
+      })),
+    )
 
 const isButtonPressed =
   <TAssignee>(
