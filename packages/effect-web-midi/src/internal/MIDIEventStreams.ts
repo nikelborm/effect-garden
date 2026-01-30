@@ -68,6 +68,9 @@ export interface DualMakeSpecificMessageStreamFromInput<
 export interface MakeSpecificMessageStreamInputFirst<
   Payload extends Parsing.TaggedObject,
 > {
+  /**
+   *
+   */
   <
     E = never,
     R = never,
@@ -81,6 +84,9 @@ export interface MakeSpecificMessageStreamInputFirst<
 export interface MakeSpecificMessageStreamInputLast<
   Payload extends Parsing.TaggedObject,
 > {
+  /**
+   *
+   */
   <const TForbidNullsStrategy extends ForbidNullsStrategy = undefined>(
     options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
   ): MakeSpecificMessageStreamInputLastSecondPart<Payload, TForbidNullsStrategy>
@@ -90,6 +96,9 @@ export interface MakeSpecificMessageStreamInputLastSecondPart<
   Payload extends Parsing.TaggedObject,
   TForbidNullsStrategy extends ForbidNullsStrategy,
 > {
+  /**
+   *
+   */
   <E = never, R = never>(
     polymorphicInput: EMIDIInput.PolymorphicInput<E, R>,
   ): MakeSpecificMessageStreamResult<Payload, TForbidNullsStrategy, E, R>
@@ -107,6 +116,9 @@ export interface DualMakeSpecificMessageStreamFromAccess<
 export interface MakeSpecificMessageStreamAccessFirst<
   Payload extends Parsing.TaggedObject,
 > {
+  /**
+   *
+   */
   <
     E = never,
     R = never,
@@ -126,6 +138,9 @@ export interface MakeSpecificMessageStreamAccessFirst<
 export interface MakeSpecificMessageStreamAccessLast<
   Payload extends Parsing.TaggedObject,
 > {
+  /**
+   *
+   */
   <const TForbidNullsStrategy extends ForbidNullsStrategy = undefined>(
     id: EMIDIInput.Id,
     options?: StreamMaker.StreamMakerOptions<TForbidNullsStrategy>,
@@ -139,6 +154,9 @@ export interface MakeSpecificMessageStreamAccessLastSecondPart<
   Payload extends Parsing.TaggedObject,
   TForbidNullsStrategy extends ForbidNullsStrategy,
 > {
+  /**
+   *
+   */
   <E = never, R = never>(
     polymorphicAccess: EMIDIAccess.PolymorphicAccessInstance<E, R>,
   ): MakeSpecificMessageStreamResult<
