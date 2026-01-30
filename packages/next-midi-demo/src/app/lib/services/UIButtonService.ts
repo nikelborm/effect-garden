@@ -16,7 +16,6 @@ import type { PhysicalButtonModel } from '../helpers/PhysicalButtonModel.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { Accord, AccordOrderById, AccordRegistry } from './AccordRegistry.ts'
-import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import {
   Pattern,
@@ -73,21 +72,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         ) =>
           Effect.forEach(
             map,
-            ([id, model]) =>
-              Effect.gen(function* () {
-                const transformReport = transformReportGeneric(
-                  key,
-                  prevValAtKey =>
-                    model.buttonPressState === ButtonState.Pressed
-                      ? SortedSet.add(prevValAtKey, id as any)
-                      : SortedSet.remove(prevValAtKey, id as any),
-                )
-                if (Pattern.models(model.assignedTo))
-                  yield* transformReport(model.assignedTo)(patternButtonsMapRef)
+            Effect.fn(function* ([id, model]) {
+              const transformReport = transformReportGeneric(
+                key,
+                prevValAtKey =>
+                  model.buttonPressState === ButtonState.Pressed
+                    ? SortedSet.add(prevValAtKey, id as any)
+                    : SortedSet.remove(prevValAtKey, id as any),
+              )
+              if (Pattern.models(model.assignedTo))
+                yield* transformReport(model.assignedTo)(patternButtonsMapRef)
 
-                if (Accord.models(model.assignedTo))
-                  yield* transformReport(model.assignedTo)(accordButtonsMapRef)
-              }),
+              if (Accord.models(model.assignedTo))
+                yield* transformReport(model.assignedTo)(accordButtonsMapRef)
+            }),
             { discard: true },
           )
 
