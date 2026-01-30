@@ -760,6 +760,9 @@ await Effect.gen(function* () {
   yield* fs.makeDirectory('./out')
   const main = []
   let lastGroupName = null
+  // TODO: solve this shit:
+  // > [!NOTE]
+
   // path.join
   for (const element of (cleaned as any).children) {
     if (element?.value?.trim?.() === '') continue
@@ -767,7 +770,7 @@ await Effect.gen(function* () {
       lastGroupName = EString.snakeToPascal(
         element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
       )
-      report2[lastGroupName] = { additions: [], rows: [], other: [] }
+      report2[lastGroupName] = { main: [], rows: [], additions: [] }
 
       // yield* fs.writeFileString(
       //   path.join(
@@ -793,7 +796,7 @@ await Effect.gen(function* () {
         continue
       }
 
-      report2[lastGroupName].other.push(element)
+      report2[lastGroupName].main.push(element)
     } else {
       main.push(element)
     }
