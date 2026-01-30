@@ -9,7 +9,7 @@ import * as Parsing from './Parsing.ts'
 import type * as StreamMaker from './StreamMaker.ts'
 import * as Util from './Util.ts'
 
-export const buildSpecificEventStreamByInputIdAndAccessMaker = <
+const buildSpecificEventStreamByInputIdAndAccessMaker = <
   Payload extends Parsing.TaggedObject,
 >(
   predicate: Parsing.MessagePredicate<Payload>,
