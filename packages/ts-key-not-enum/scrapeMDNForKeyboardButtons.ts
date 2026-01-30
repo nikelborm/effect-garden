@@ -108,6 +108,13 @@ const formatKeyEntry = ({ value, description }: Key) => {
   return `${formattedDescription}\nexport const ${value} = '${value}';`
 }
 
+const compactCleanup = (value: any) =>
+  value.children
+    .map((child: any) => child.value)
+    .join(' ')
+    .replaceAll(/[\s]+/g, ' ')
+    .trim()
+
 const parseMdxNodes = (
   node:
     | {
@@ -163,7 +170,11 @@ const parseMdxNodes = (
       },
       selection => ({
         type: 'text',
-        value: Object.values(selection).filter(Boolean).join(' '),
+        value: Object.values(selection)
+          .filter(Boolean)
+          .join(' ')
+          .replaceAll(/[\s]+/g, ' ')
+          .trim(),
       }),
     )
     .with(
@@ -230,7 +241,7 @@ const parseMdxNodes = (
       value => ({ type: 'text', value: '`' + value + '`' }),
     )
     // @ts-expect-error
-    .with({ name: 'br' }, () => ({ type: 'text', value: '\n' }))
+    .with({ name: 'br' }, () => ({ type: 'text', value: ' ' }))
     .with(
       {
         type: 'mdxJsxTextElement',
@@ -305,11 +316,7 @@ const parseMdxNodes = (
         tagName: 'li',
         children: P.array({ type: 'text', value: P.string }),
       },
-      value => ({
-        type: 'text',
-        tagName: 'li',
-        value: value.children.map(child => child.value).join(''),
-      }),
+      value => ({ type: 'text', tagName: 'li', value: compactCleanup(value) }),
     )
     .with(
       {
@@ -317,11 +324,7 @@ const parseMdxNodes = (
         name: 'div',
         children: P.array({ type: 'text', value: P.string }),
       },
-      value => ({
-        type: 'text',
-        name: 'div',
-        value: value.children.map(child => child.value).join(''),
-      }),
+      value => ({ type: 'text', name: 'div', value: compactCleanup(value) }),
     )
     .with(
       {
@@ -329,11 +332,7 @@ const parseMdxNodes = (
         tagName: 'p',
         children: P.array({ type: 'text', value: P.string }),
       },
-      value => ({
-        type: 'text',
-        tagName: 'p',
-        value: value.children.map(child => child.value).join('\n'),
-      }),
+      value => ({ type: 'text', tagName: 'p', value: compactCleanup(value) }),
     )
     .with(
       {
@@ -341,11 +340,7 @@ const parseMdxNodes = (
         name: 'p',
         children: P.array({ type: 'text', value: P.string }),
       },
-      value => ({
-        type: 'text',
-        name: 'p',
-        value: value.children.map(child => child.value).join('\n'),
-      }),
+      value => ({ type: 'text', name: 'p', value: compactCleanup(value) }),
     )
     .with(
       {
@@ -353,11 +348,7 @@ const parseMdxNodes = (
         name: 'td',
         children: P.array({ type: 'text', value: P.string }),
       },
-      value => ({
-        type: 'text',
-        name: 'td',
-        value: value.children.map(child => child.value).join(''),
-      }),
+      value => ({ type: 'text', name: 'td', value: compactCleanup(value) }),
     )
     .with(
       {
@@ -607,11 +598,9 @@ await Effect.gen(function* () {
 
   let mdast = null as Node | null
 
-  const logAstPlugin = (): Transformer => {
-    return (tree, _file) => {
-      mdast = tree
-      return tree
-    }
+  const logAstPlugin = (): Transformer => (tree, _file) => {
+    mdast = tree
+    return tree
   }
 
   const _parsedMdx = yield* service.compileMdx(mdxPageContent, {
@@ -717,7 +706,7 @@ await Effect.gen(function* () {
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
-  const report = {
+  let report: any = {
     uniqueTypes: extractUniqueTypes(cleaned),
     // mdxTextExpressionNodes: collectNodesOfCertainType(
     //   cleaned,
@@ -738,17 +727,19 @@ await Effect.gen(function* () {
     //   // 'mdxJsxFlowElement',
     //   // 'mdxJsxAttribute',
     // ]).map(e => parseMdxNodes(e as any)),
-    datas: [...new Set(collectNodesOfCertainType(cleaned, ['root']))].map(
-      parseMdxNodes,
-    ),
+    // datas: [...new Set(collectNodesOfCertainType(cleaned, ['root']))].map(
+    //   parseMdxNodes,
+    // ),
+    cleaned,
     // datas: [...new Set(extractValuesAtKeys(cleaned, ['class']))].map(
     //   parseMdxNodes,
     // ),
   }
+  report = (cleaned as any).children
+  // report = report.filter((e: any) => e.tagName === 'h2')
 
   console.log(report)
   yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
-  yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 
@@ -763,8 +754,54 @@ await Effect.gen(function* () {
       jsdocEmptyCommentStrategy: 'remove',
     }),
   )
+  const report2: any = {}
+
+  yield* fs.remove('./out', { force: true, recursive: true })
+  yield* fs.makeDirectory('./out')
+  const main = []
+  let lastGroupName = null
+  // path.join
+  for (const element of (cleaned as any).children) {
+    if (element?.value?.trim?.() === '') continue
+    if (element.tagName === 'h2' || element.tagName === 'h3') {
+      lastGroupName = EString.snakeToPascal(
+        element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
+      )
+      report2[lastGroupName] = { additions: [], rows: [], other: [] }
+
+      // yield* fs.writeFileString(
+      //   path.join(
+      //     './out',
+      //     EString.snakeToPascal(
+      //       element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
+      //     ) + '.ts',
+      //   ),
+      //   '',
+      //   { flag: 'w' },
+      // )
+    }
+    if (lastGroupName) {
+      if (element?.tagName === 'h2' || element?.tagName === 'h3') continue
+
+      if (element?.type === 'table 6' || element?.type === 'table 3') {
+        report2[lastGroupName].rows = element?.rows
+        continue
+      }
+
+      if (element?.value?.[0] === '[') {
+        report2[lastGroupName].additions.push(element?.value)
+        continue
+      }
+
+      report2[lastGroupName].other.push(element)
+    } else {
+      main.push(element)
+    }
+  }
 
   console.log(formatted)
+  report = { main, report2 }
+  yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
 }).pipe(
   Effect.catchAll(error => Console.error(error)),
   Effect.provide(AppLayer),

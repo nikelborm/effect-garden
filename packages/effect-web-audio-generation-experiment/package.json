@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "effect": "catalog:",
-    "@webref/idl": "^3.71.0",
+    "@webref/idl": "^3.72.0",
     "effect-web-audio": "workspace:*"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio-generate",
