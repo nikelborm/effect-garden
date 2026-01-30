@@ -81,15 +81,13 @@ export class PhysicalMIDIDeviceButtonModelToUIButtonMappingService extends Effec
           ),
         )
 
-      // yield* EFunction.pipe(
-      //   yield* currentMap,
-      //   SortedMap.keys,
-      //   makeMIDIMapStream,
-      //   Stream.tap(({ noteId, keyboardKeyPressState }) =>
-      //     setPhysicalMIDIDeviceButtonModelState(noteId, keyboardKeyPressState),
+      // yield* reactivelySchedule(
+      //   EFunction.pipe(
+      //     yield* currentMap,
+      //     SortedMap.keys,
+      //     makeKeyboardSliceMapStream,
       //   ),
-      //   Stream.runDrain,
-      //   Effect.forkScoped,
+      //   setPhysicalMIDIDeviceButtonModelState,
       // )
 
       return {

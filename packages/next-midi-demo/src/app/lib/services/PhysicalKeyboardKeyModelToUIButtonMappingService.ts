@@ -10,6 +10,7 @@ import { ButtonState } from '../branded/index.ts'
 import type { ValidKeyboardKey } from '../branded/StoreValues.ts'
 import * as StoreValues from '../branded/StoreValues.ts'
 import { PhysicalButtonModel } from '../helpers/PhysicalButtonModel.ts'
+import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModifyAt } from '../helpers/sortedMapModifyAt.ts'
 import { type Accord, AccordRegistry } from './AccordRegistry.ts'
 import { type Pattern, PatternRegistry } from './PatternRegistry.ts'
@@ -63,16 +64,19 @@ export class PhysicalKeyboardKeyModelToUIButtonMappingService extends Effect.Ser
           ),
         )
 
-      const setPhysicalKeyboardKeyModelState = (
-        key: ValidKeyboardKey,
-        pressState: ButtonState.Pressed | ButtonState.NotPressed,
-      ) =>
+      const setPhysicalKeyboardKeyModelState = ({
+        key,
+        keyboardKeyPressState,
+      }: {
+        key: ValidKeyboardKey
+        keyboardKeyPressState: ButtonState.Pressed | ButtonState.NotPressed
+      }) =>
         SubscriptionRef.update(
           modelToUIButtonMapRef,
           sortedMapModifyAt(key, keyModelOption =>
             Option.some(
               new PhysicalButtonModel(
-                pressState,
+                keyboardKeyPressState,
                 keyModelOption._tag === 'Some'
                   ? keyModelOption.value?.assignedTo
                   : undefined,
@@ -81,15 +85,13 @@ export class PhysicalKeyboardKeyModelToUIButtonMappingService extends Effect.Ser
           ),
         )
 
-      yield* EFunction.pipe(
-        yield* currentMap,
-        SortedMap.keys,
-        makeKeyboardSliceMapStream,
-        Stream.tap(({ key, keyboardKeyPressState }) =>
-          setPhysicalKeyboardKeyModelState(key, keyboardKeyPressState),
+      yield* reactivelySchedule(
+        EFunction.pipe(
+          yield* currentMap,
+          SortedMap.keys,
+          makeKeyboardSliceMapStream,
         ),
-        Stream.runDrain,
-        Effect.forkScoped,
+        setPhysicalKeyboardKeyModelState,
       )
 
       return {

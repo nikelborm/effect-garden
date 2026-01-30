@@ -4,7 +4,6 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
-import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
 import { type NoteId, NoteIdOrder } from '../branded/MIDIValues.ts'
@@ -13,6 +12,7 @@ import {
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
 import type { PhysicalButtonModel } from '../helpers/PhysicalButtonModel.ts'
+import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { Accord, AccordOrderById, AccordRegistry } from './AccordRegistry.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
@@ -115,18 +115,14 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const isPatternButtonPressed = isButtonPressed(getPressureReportOfPattern)
       const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
 
-      yield* EFunction.pipe(
+      yield* reactivelySchedule(
         physicalKeyboardKeyModelToUIButtonMappingService.mapChanges,
-        Stream.tap(updatePressedByKeyboardKeys),
-        Stream.runDrain,
-        Effect.forkScoped,
+        updatePressedByKeyboardKeys,
       )
 
-      yield* EFunction.pipe(
+      yield* reactivelySchedule(
         physicalMIDIDeviceButtonModelToUIButtonMappingService.mapChanges,
-        Stream.tap(updatePressedByMIDIPadButtons),
-        Stream.runDrain,
-        Effect.forkScoped,
+        updatePressedByMIDIPadButtons,
       )
 
       return {
