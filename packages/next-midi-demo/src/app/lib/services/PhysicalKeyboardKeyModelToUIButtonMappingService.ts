@@ -1,5 +1,4 @@
 import * as EArray from 'effect/Array'
-import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
@@ -10,6 +9,8 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { ButtonState } from '../branded/index.ts'
 import type { ValidKeyboardKey } from '../branded/StoreValues.ts'
 import * as StoreValues from '../branded/StoreValues.ts'
+import { PhysicalButtonModel } from '../helpers/PhysicalButtonModel.ts'
+import { sortedMapModifyAt } from '../helpers/sortedMapModifyAt.ts'
 import { type Accord, AccordRegistry } from './AccordRegistry.ts'
 import { type Pattern, PatternRegistry } from './PatternRegistry.ts'
 
@@ -19,11 +20,11 @@ const keysHandlingAccords = Array.from('qwertyui')
 const makeMapEntry = (assignedTo: Accord | Pattern, key: string) =>
   [
     StoreValues.ValidKeyboardKey(key),
-    new AssignedPhysicalKeyboardKey(ButtonState.NotPressed, assignedTo),
+    new PhysicalButtonModel(ButtonState.NotPressed, assignedTo),
   ] as const
 
-export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<PhysicalKeyboardKeyToUIButtonMappingService>()(
-  'next-midi-demo/PhysicalKeyboardKeyToUIButtonMappingService',
+export class PhysicalKeyboardKeyModelToUIButtonMappingService extends Effect.Service<PhysicalKeyboardKeyModelToUIButtonMappingService>()(
+  'next-midi-demo/PhysicalKeyboardKeyModelToUIButtonMappingService',
   {
     accessors: true,
     dependencies: [PatternRegistry.Default, AccordRegistry.Default],
@@ -41,38 +42,41 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
           'Assertion failed: allAccords.length !== keysHandlingAccords.length',
         )
 
-      const physicalToVirtualKeyMapRef =
-        yield* SubscriptionRef.make<PhysicalKeyboardKeyToUIButtonMap>(
+      const modelToUIButtonMapRef =
+        yield* SubscriptionRef.make<PhysicalKeyboardKeyModelToUIButtonMap>(
           SortedMap.make(StoreValues.ValidKeyboardKeyOrder)(
             ...EArray.zipWith(allPatterns, keysHandlingPatterns, makeMapEntry),
             ...EArray.zipWith(allAccords, keysHandlingAccords, makeMapEntry),
           ),
         )
 
-      const currentMap = SubscriptionRef.get(physicalToVirtualKeyMapRef)
+      const currentMap = SubscriptionRef.get(modelToUIButtonMapRef)
 
-      const getPhysicalKeyboardKeyStateFromMap = (key: ValidKeyboardKey) =>
-        EFunction.flow(
-          SortedMap.get(key)<AssignedPhysicalKeyboardKey>,
-          Option.getOrElse(
-            () => new AssignedPhysicalKeyboardKey(ButtonState.NotPressed),
+      const getPhysicalKeyboardKeyModelState = (key: ValidKeyboardKey) =>
+        Effect.map(
+          currentMap,
+          EFunction.flow(
+            SortedMap.get(key),
+            Option.getOrElse(
+              () => new PhysicalButtonModel(ButtonState.NotPressed),
+            ),
           ),
         )
 
-      const getPhysicalKeyboardKeyState = (key: ValidKeyboardKey) =>
-        Effect.map(currentMap, getPhysicalKeyboardKeyStateFromMap(key))
-
-      const setPhysicalKeyboardKeyState = (
+      const setPhysicalKeyboardKeyModelState = (
         key: ValidKeyboardKey,
-        keyboardKeyPressState: ButtonState.Pressed | ButtonState.NotPressed,
+        pressState: ButtonState.Pressed | ButtonState.NotPressed,
       ) =>
-        SubscriptionRef.update(physicalToVirtualKeyMapRef, prevMap =>
-          SortedMap.set(
-            prevMap,
-            key,
-            AssignedPhysicalKeyboardKey.setState(
-              getPhysicalKeyboardKeyStateFromMap(key)(prevMap),
-              keyboardKeyPressState,
+        SubscriptionRef.update(
+          modelToUIButtonMapRef,
+          sortedMapModifyAt(key, keyModelOption =>
+            Option.some(
+              new PhysicalButtonModel(
+                pressState,
+                keyModelOption._tag === 'Some'
+                  ? keyModelOption.value?.assignedTo
+                  : undefined,
+              ),
             ),
           ),
         )
@@ -82,7 +86,7 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
         SortedMap.keys,
         makeKeyboardSliceMapStream,
         Stream.tap(({ key, keyboardKeyPressState }) =>
-          setPhysicalKeyboardKeyState(key, keyboardKeyPressState),
+          setPhysicalKeyboardKeyModelState(key, keyboardKeyPressState),
         ),
         Stream.runDrain,
         Effect.forkScoped,
@@ -90,9 +94,8 @@ export class PhysicalKeyboardKeyToUIButtonMappingService extends Effect.Service<
 
       return {
         currentMap,
-        mapChanges: physicalToVirtualKeyMapRef.changes,
-        setPhysicalKeyboardKeyState,
-        getPhysicalKeyboardKeyState,
+        mapChanges: modelToUIButtonMapRef.changes,
+        getPhysicalKeyboardKeyModelState,
       }
     }),
   },
@@ -143,22 +146,5 @@ export const makeKeyboardSliceMapStream = <
     : Stream.empty
 }
 
-export interface PhysicalKeyboardKeyToUIButtonMap
-  extends SortedMap.SortedMap<ValidKeyboardKey, AssignedPhysicalKeyboardKey> {}
-
-export class AssignedPhysicalKeyboardKey extends Data.Class<{
-  keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed
-  assignedTo?: Accord | Pattern
-}> {
-  constructor(
-    keyboardKeyPressState: ButtonState.NotPressed | ButtonState.Pressed,
-    assignedTo?: Accord | Pattern,
-  ) {
-    super({ keyboardKeyPressState, ...(assignedTo && { assignedTo }) })
-  }
-
-  static setState = (
-    info: AssignedPhysicalKeyboardKey,
-    state: ButtonState.NotPressed | ButtonState.Pressed,
-  ) => new AssignedPhysicalKeyboardKey(state, info.assignedTo)
-}
+export interface PhysicalKeyboardKeyModelToUIButtonMap
+  extends SortedMap.SortedMap<ValidKeyboardKey, PhysicalButtonModel> {}

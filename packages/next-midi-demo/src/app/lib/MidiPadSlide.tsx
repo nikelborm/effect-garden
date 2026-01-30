@@ -7,56 +7,46 @@ import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import type { RegisteredButtonID } from './branded/StoreValues.ts'
-import { layoutHeightAtom, layoutWidthAtom } from './state/Layout.ts'
+import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
 import {
   assertiveGetButtonById,
-  sortedRegisteredButtonIdsAtom,
-} from './state/VirtualMIDIPadButtonsMap.ts'
-import {
   getNotePressReleaseEventsAtom,
   isButtonPressed,
   keyboardPressesForVirtualMIDIPadButtonsAtom,
+  // keyboardNavigationAtom,
+  registeredButtonIdsOfLayoutAtom,
+  sortedRegisteredButtonIdsAtom,
 } from './state.ts'
-// import {
-//   assertiveGetButtonByIdInLayout,
-//   layoutHeightAtom,
-//   layoutWidthAtom,
-//   // keyboardNavigationAtom,
-//   registeredButtonIdsOfLayoutAtom,
-// } from './state.ts'
-
-// const keyboardNavigation = useAtomValue(keyboardNavigationAtom) ?? 0
-// console.log('keyboardNavigation', keyboardNavigation)
 
 export const MidiPadSlide = ({
   selectedInputPortId,
 }: {
   selectedInputPortId: EMIDIInput.Id | null
 }) => {
-  const [width, height, ids] = [
-    Hooks.useAtomValue(layoutWidthAtom),
-    Hooks.useAtomValue(layoutHeightAtom),
-    Hooks.useAtomValue(sortedRegisteredButtonIdsAtom),
-  ] as const
+  const ids = Hooks.useAtomValue(sortedRegisteredButtonIdsAtom)
 
   Hooks.useAtomMount(getNotePressReleaseEventsAtom(selectedInputPortId))
   Hooks.useAtomMount(keyboardPressesForVirtualMIDIPadButtonsAtom)
 
   return (
-    <ButtonGrid role="grid" aria-rowcount={height} aria-colcount={width}>
-      {Array.from({ length: height }, (_, activeRowIndex) => (
+    <ButtonGrid
+      role="grid"
+      aria-rowcount={LAYOUT_HEIGHT}
+      aria-colcount={LAYOUT_WIDTH}
+    >
+      {Array.from({ length: LAYOUT_HEIGHT }, (_, activeRowIndex) => (
         <DisplayContentsWrapper
           // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
           key={activeRowIndex}
           role="row"
           aria-rowindex={activeRowIndex}
         >
-          {Array.from({ length: width }, (_, activeColumnIndex) => (
+          {Array.from({ length: LAYOUT_WIDTH }, (_, activeColumnIndex) => (
             <NoteButton
               // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
               key={activeColumnIndex}
               columnIndex={activeColumnIndex}
-              buttonId={ids[activeRowIndex * width + activeColumnIndex]!}
+              buttonId={ids[activeRowIndex * LAYOUT_WIDTH + activeColumnIndex]!}
             />
           ))}
         </DisplayContentsWrapper>

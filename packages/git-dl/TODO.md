@@ -252,6 +252,7 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [AugustinMauroy/typescript-package-template](https://github.com/AugustinMauroy/typescript-package-template) from [jsr-io/jsr#1087 (comment)](https://github.com/jsr-io/jsr/discussions/1087#discussioncomment-13030291)
 - [mylesmmurphy/prettify-ts/typescript-plugin](https://github.com/mylesmmurphy/prettify-ts/tree/main/packages/typescript-plugin)
 - [nonara/ts-patch](https://github.com/nonara/ts-patch)
+- [nonara/ts-expose-internals](https://github.com/nonara/ts-expose-internals)
 - [microsoft/ts-fix](https://github.com/microsoft/ts-fix/) (I was blocked by incomplete PR https://github.com/microsoft/ts-fix/pull/43#issuecomment-2840178848)
 - [JSR rolldown-plugin-jsr-self-types](https://jsr.io/@jsr-community/rolldown-plugin-jsr-self-types@0.0.1-beta.1)
 - [dsherret/ts-factory-code-generator-generator](https://github.com/dsherret/ts-factory-code-generator-generator)
@@ -271,6 +272,12 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [@composio/ts-builders](https://github.com/ComposioHQ/composio/blob/af067522e59faa0d537d4584d4cb67fb0af29b64/ts/packages/ts-builders/README.md)
 - [floydspace/effect-aws/generate-client.ts](https://github.com/floydspace/effect-aws/blob/main/scripts/generate-client.ts)
 - [effect-ak/aws-sdk/write/code-parts/effect.ts](https://github.com/effect-ak/aws-sdk/blob/main/src/write/code-parts/effect.ts)
+- [jondot/hygen](https://github.com/jondot/hygen)
+- [phenomnomnominal/tsquery](https://github.com/phenomnomnominal/tsquery)
+- [samchon/typia/factories](https://github.com/samchon/typia/blob/master/src/factories/ExpressionFactory.ts) and [programmers](https://github.com/samchon/typia/blob/master/src/programmers/functional/FunctionalAssertFunctionProgrammer.ts) paterns
+- [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server)
+- [GoogleFeud/ts-macros](https://github.com/GoogleFeud/ts-macros)
+
 
 # Support other JS runtimes
 
