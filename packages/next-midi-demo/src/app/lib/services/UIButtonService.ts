@@ -1,4 +1,5 @@
 import * as Effect from 'effect/Effect'
+import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
@@ -34,13 +35,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       AccordRegistry.Default,
       PhysicalKeyboardKeyModelToUIButtonMappingService.Default,
       PhysicalMIDIDeviceButtonModelToUIButtonMappingService.Default,
-      CurrentlySelectedAssetState.Default,
       LoadedAssetSizeEstimationMap.Default,
     ],
     scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
-      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
       const physicalKeyboardKeyModelToUIButtonMappingService =
         yield* PhysicalKeyboardKeyModelToUIButtonMappingService
@@ -123,6 +122,28 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       yield* reactivelySchedule(
         physicalMIDIDeviceButtonModelToUIButtonMappingService.mapChanges,
         updatePressedByMIDIPadButtons,
+      )
+
+      yield* reactivelySchedule(
+        accordRegistry.activeAccordChanges,
+        activeAccord =>
+          Effect.gen(function* () {
+            for (const [accord] of yield* accordButtonsMapRef) {
+              yield* transformReportGeneric('isActive', () =>
+                Equal.equals(accord, activeAccord),
+              )(accord)(accordButtonsMapRef)
+            }
+          }),
+      )
+
+      yield* reactivelySchedule(
+        patternRegistry.activePatternChanges,
+        Effect.fn(function* (activePattern) {
+          for (const [pattern] of yield* patternButtonsMapRef)
+            yield* transformReportGeneric('isActive', () =>
+              Equal.equals(pattern, activePattern),
+            )(pattern)(patternButtonsMapRef)
+        }),
       )
 
       return {

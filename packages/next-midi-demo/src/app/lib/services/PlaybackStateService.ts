@@ -1,7 +1,7 @@
 import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
-import type * as Fiber from 'effect/Fiber'
+import * as Fiber from 'effect/Fiber'
 import EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
@@ -54,94 +54,93 @@ export const AudioServiceLive = Layer.effect(
     const createSilentByDefaultPlayback = () => {}
 
     const play = Effect.fn(function* (buffer: AudioBuffer) {
-      // const currentStatus = yield* Ref.get(state)
-      // switch (currentStatus._tag) {
-      //   case 'NotPlaying':
-      //     return yield* Ref.set(state, {
-      //       _tag: 'PlayingAsset' as const,
-      //       current: yield* createImmediatelyLoudPlayback(audioContext, buffer),
-      //       playbackStartedAtSecond: audioContext.currentTime,
-      //     })
-      //   case 'PlayingAsset': {
-      //     {
-      //       const nextPlayback = createPlayback(buffer)
-      //       const oldPlayback = currentStatus.current
-      //       oldPlayback.gainNode.gain.exponentialRampToValueAtTime(
-      //         0.001,
-      //         audioContext.currentTime + fadeTime,
-      //       )
-      //       nextPlayback.gainNode.gain.setValueAtTime(
-      //         0.001,
-      //         audioContext.currentTime,
-      //       )
-      //       nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-      //         1,
-      //         audioContext.currentTime + fadeTime,
-      //       )
-      //       nextPlayback.bufferSource.start()
-      //       const cleanupFiber = yield* Effect.sleep(
-      //         Duration.seconds(fadeTime + 0.1),
-      //       ).pipe(
-      //         Effect.tap(() => cleanupPlayback(oldPlayback)),
-      //         Effect.zipRight(
-      //           Ref.update(state, s =>
-      //             s._tag === 'ScheduledChange'
-      //               ? {
-      //                   _tag: 'PlayingAsset' as const,
-      //                   current: nextPlayback,
-      //                 }
-      //               : s,
-      //           ),
-      //         ),
-      //         Effect.fork,
-      //       )
-      //       yield* Ref.set(state, {
-      //         _tag: 'ScheduledChange' as const,
-      //         current: oldPlayback,
-      //         next: nextPlayback,
-      //         cleanupFiber,
-      //       })
-      //     }
-      //     break
-      //   }
-      //   case 'ScheduledChange': {
-      //     yield* Effect.interruptWith(currentStatus.cleanupFiber.id())
-      //     yield* cleanupPlayback(currentStatus.next)
-      //     const newNextPlayback = createPlayback(buffer)
-      //     const current = currentStatus.current
-      //     current.gainNode.gain.cancelScheduledValues(audioContext.currentTime)
-      //     current.gainNode.gain.exponentialRampToValueAtTime(
-      //       0.001,
-      //       audioContext.currentTime + fadeTime,
-      //     )
-      //     newNextPlayback.gainNode.gain.setValueAtTime(
-      //       0.001,
-      //       audioContext.currentTime,
-      //     )
-      //     newNextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-      //       1,
-      //       audioContext.currentTime + fadeTime,
-      //     )
-      //     newNextPlayback.bufferSource.start()
-      //     const newFiber = yield* cleanupPlayback(current).pipe(
-      //       Effect.delay(Duration.seconds(fadeTime + 0.1)),
-      //       Effect.zipRight(
-      //         Ref.update(state, () => ({
-      //           _tag: 'PlayingAsset' as const,
-      //           current: newNextPlayback,
-      //         })),
-      //       ),
-      //       Effect.fork,
-      //     )
-      //     yield* Ref.set(state, {
-      //       _tag: 'ScheduledChange',
-      //       current: current,
-      //       next: newNextPlayback,
-      //       cleanupFiber: newFiber,
-      //     })
-      //     break
-      //   }
-      // }
+      const currentStatus = yield* Ref.get(state)
+      switch (currentStatus._tag) {
+        case 'NotPlaying':
+          return yield* Ref.set(state, {
+            _tag: 'PlayingAsset' as const,
+            current: yield* createImmediatelyLoudPlayback(audioContext, buffer),
+            playbackStartedAtSecond: audioContext.currentTime,
+          })
+        case 'PlayingAsset': {
+          // const nextPlayback = createPlayback(buffer)
+          // const oldPlayback = currentStatus.current
+          // oldPlayback.gainNode.gain.exponentialRampToValueAtTime(
+          //   0.001,
+          //   audioContext.currentTime + fadeTime,
+          // )
+          // nextPlayback.gainNode.gain.setValueAtTime(
+          //   0.001,
+          //   audioContext.currentTime,
+          // )
+          // nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+          //   1,
+          //   audioContext.currentTime + fadeTime,
+          // )
+          // nextPlayback.bufferSource.start()
+          // const cleanupFiber = yield* Effect.sleep(
+          //   Duration.seconds(fadeTime + 0.1),
+          // ).pipe(
+          //   Effect.tap(() => cleanupPlayback(oldPlayback)),
+          //   Effect.zipRight(
+          //     Ref.update(state, s =>
+          //       s._tag === 'ScheduledChange'
+          //         ? {
+          //             _tag: 'PlayingAsset' as const,
+          //             current: nextPlayback,
+          //           }
+          //         : s,
+          //     ),
+          //   ),
+          //   Effect.fork,
+          // )
+          // yield* Ref.set(state, {
+          //   _tag: 'ScheduledChange' as const,
+          //   current: oldPlayback,
+          //   next: nextPlayback,
+          //   cleanupFiber,
+          // })
+
+          break
+        }
+        case 'ScheduledChange': {
+          yield* Fiber.interrupt(currentStatus.cleanupFiber)
+          yield* cleanupPlayback(currentStatus.next)
+          // const newNextPlayback = createPlayback(buffer)
+          // const current = currentStatus.current
+          // current.gainNode.gain.cancelScheduledValues(audioContext.currentTime)
+          // current.gainNode.gain.exponentialRampToValueAtTime(
+          //   0.001,
+          //   audioContext.currentTime + fadeTime,
+          // )
+          // newNextPlayback.gainNode.gain.setValueAtTime(
+          //   0.001,
+          //   audioContext.currentTime,
+          // )
+          // newNextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+          //   1,
+          //   audioContext.currentTime + fadeTime,
+          // )
+          // newNextPlayback.bufferSource.start()
+          // const newFiber = yield* cleanupPlayback(current).pipe(
+          //   Effect.delay(Duration.seconds(fadeTime + 0.1)),
+          //   Effect.zipRight(
+          //     Ref.update(state, () => ({
+          //       _tag: 'PlayingAsset' as const,
+          //       current: newNextPlayback,
+          //     })),
+          //   ),
+          //   Effect.fork,
+          // )
+          // yield* Ref.set(state, {
+          //   _tag: 'ScheduledChange',
+          //   current: current,
+          //   next: newNextPlayback,
+          //   cleanupFiber: newFiber,
+          // })
+          break
+        }
+      }
     })
 
     const stop = () =>
