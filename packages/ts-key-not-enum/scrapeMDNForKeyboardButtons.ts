@@ -114,6 +114,8 @@ const compactCleanup = (value: any) =>
     .join(' ')
     .replaceAll(/[\s]+/g, ' ')
     .trim()
+    .replaceAll(/ ([.?,:;)])/g, '$1')
+    .replaceAll('>', '\n>')
 
 const parseMdxNodes = (
   node:
@@ -259,6 +261,21 @@ const parseMdxNodes = (
             .filter(Boolean)
             .join('') +
           '`',
+      }),
+    )
+    .with(
+      {
+        type: 'element',
+        tagName: 'ul',
+        children: P.array({ type: 'text', value: P.string }),
+      },
+      value => ({
+        type: 'text',
+        value: value.children
+          .map(child => child.value.trim())
+          .filter(Boolean)
+          .map(e => '- ' + e)
+          .join('\n'),
       }),
     )
     .with(
@@ -796,7 +813,7 @@ await Effect.gen(function* () {
         continue
       }
 
-      report2[lastGroupName].main.push(element)
+      report2[lastGroupName].main.push(element.value)
     } else {
       main.push(element)
     }
