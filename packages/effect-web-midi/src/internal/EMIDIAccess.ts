@@ -29,6 +29,10 @@ import * as GetProperty from './mutablePropertyTools/getMutablePortProperty/getM
 import * as StreamMaker from './StreamMaker.ts'
 import * as Util from './Util.ts'
 
+// Todo research in web midi api
+
+// Focus on Uniqueness: On Windows, MIDI device IDs can be unstable (sometimes just an index). Focusing your library on robustly identifying the same device across reconnections is a much more valuable feature than worrying about memory leaks from too many IDs.
+
 // TODO: add stream of messages sent from this device to target midi device
 
 // TODO: fat service APIs, where all the methods are attached to instance and
