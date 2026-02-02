@@ -1,4 +1,6 @@
 /**
+ * @module EditingKeys
+ *
  * @file
  * @generated
  */

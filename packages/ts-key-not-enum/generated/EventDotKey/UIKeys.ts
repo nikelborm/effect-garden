@@ -1,4 +1,6 @@
 /**
+ * @module UIKeys
+ *
  * @file
  * @generated
  */

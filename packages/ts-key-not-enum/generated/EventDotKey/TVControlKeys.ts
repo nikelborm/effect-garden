@@ -1,7 +1,9 @@
 /**
- * @file
+ * These key values represent buttons or keys present on television devices, or
+ * computers or phones which have TV support.
  *
- *   These key values represent buttons or keys present on television devices, or
- *   computers or phones which have TV support.
+ * @module TVControlKeys
+ *
+ * @file
  * @generated
  */

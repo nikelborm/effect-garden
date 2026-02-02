@@ -1,4 +1,6 @@
 /**
+ * @module WhitespaceKeys
+ *
  * @file
  * @generated
  */

@@ -1,4 +1,6 @@
 /**
+ * @module CommonIMEKeys
+ *
  * @file
  * @generated
  */

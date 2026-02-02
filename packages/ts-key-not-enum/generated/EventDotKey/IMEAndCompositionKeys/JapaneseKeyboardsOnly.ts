@@ -1,6 +1,8 @@
 /**
- * @file
+ * These keys are only available on Japanese keyboards.
  *
- *   These keys are only available on Japanese keyboards.
+ * @module JapaneseKeyboardsOnly
+ *
+ * @file
  * @generated
  */
