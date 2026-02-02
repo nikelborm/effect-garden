@@ -456,15 +456,11 @@
     "packages/ts-key-not-enum": {
       "name": "ts-key-not-enum",
       "version": "1.0.0",
-      "dependencies": {
-        "@biomejs/js-api": "^4.0.0",
-        "@biomejs/wasm-nodejs": "^2.3.13",
-        "@microsoft/tsdoc": "^0.16.0",
-      },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
+        "@microsoft/tsdoc": "^0.16.0",
         "@nikelborm/tsconfig": "workspace:*",
         "@types/bun": "^1.3.8",
         "@types/unist": "^3.0.3",
@@ -640,10 +636,6 @@
     "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@2.3.13", "", { "os": "win32", "cpu": "arm64" }, "sha512-QweDxY89fq0VvrxME+wS/BXKmqMrOTZlN9SqQ79kQSIc3FrEwvW/PvUegQF6XIVaekncDykB5dzPqjbwSKs9DA=="],
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.3.13", "", { "os": "win32", "cpu": "x64" }, "sha512-trDw2ogdM2lyav9WFQsdsfdVy1dvZALymRpgmWsvSez0BJzBjulhOT/t+wyKeh3pZWvwP3VMs1SoOKwO3wecMQ=="],
-
-    "@biomejs/js-api": ["@biomejs/js-api@4.0.0", "", { "peerDependencies": { "@biomejs/wasm-bundler": "^2.3.0", "@biomejs/wasm-nodejs": "^2.3.0", "@biomejs/wasm-web": "^2.3.0" }, "optionalPeers": ["@biomejs/wasm-bundler", "@biomejs/wasm-nodejs", "@biomejs/wasm-web"] }, "sha512-EOArR/6drRzM1/hwOIz1pZw90FL31Ud4Y7hEHGWVtMNmAwS9SrwZ8hMENGlLVXCeGW/kL46p8kX7eO6x9Nmezg=="],
-
-    "@biomejs/wasm-nodejs": ["@biomejs/wasm-nodejs@2.3.13", "", {}, "sha512-tkfO5sKWZOdicrzP1PcYQAJ7G6npg0fx5Xs7gd2/V7TAQGbqhZFzqTs69iupPD7hHsTcbYrFhYwTlyMTVTjUPA=="],
 
     "@cacheable/memory": ["@cacheable/memory@2.0.7", "", { "dependencies": { "@cacheable/utils": "^2.3.3", "@keyv/bigmap": "^1.3.0", "hookified": "^1.14.0", "keyv": "^5.5.5" } }, "sha512-RbxnxAMf89Tp1dLhXMS7ceft/PGsDl1Ip7T20z5nZ+pwIAsQ1p2izPjVG69oCLv/jfQ7HDPHTWK0c9rcAWXN3A=="],
 
