@@ -723,7 +723,7 @@ await Effect.gen(function* () {
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
-  let report: any = {
+  let report_: any = {
     uniqueTypes: extractUniqueTypes(cleaned),
     // mdxTextExpressionNodes: collectNodesOfCertainType(
     //   cleaned,
@@ -752,8 +752,8 @@ await Effect.gen(function* () {
     //   parseMdxNodes,
     // ),
   }
-  report = (cleaned as any).children
-  // report = report.filter((e: any) => e.tagName === 'h2')
+  report_ = (cleaned as any).children
+  // report_ = report_.filter((e: any) => e.tagName === 'h2')
 
   yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
 
@@ -770,67 +770,71 @@ await Effect.gen(function* () {
       jsdocEmptyCommentStrategy: 'remove',
     }),
   )
-  const report2: any = {}
+  const report: any = { main: [] } as any
 
   yield* fs.remove('./out', { force: true, recursive: true })
   yield* fs.makeDirectory('./out')
-  const main = []
-  let lastGroupName = ''
-  let subcategory = ''
+  let cursor = report as any
+  let subcategoriesStack: string[] = []
   // TODO: solve this shit:
   // > [!NOTE]
 
   for (const element of (cleaned as any).children) {
     if (element?.value?.trim?.() === '') continue
-    if (element.tagName === 'h2') {
-      lastGroupName = EString.snakeToPascal(
+    if (element.tagName === 'h2' || element.tagName === 'h3') {
+      const expectedStackSize = parseInt(element.tagName.slice(1), 10) - 1
+      const name = EString.snakeToPascal(
         element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
       )
-      subcategory = ''
-      report2[lastGroupName] = {
-        main: [],
-        rows: [],
-        additions: [],
-      }
-    }
-    if (element.tagName === 'h3') {
-      subcategory = EString.snakeToPascal(
-        element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
-      )
-      if (!report2[lastGroupName].subcategories)
-        report2[lastGroupName].subcategories = {}
-      report2[lastGroupName].subcategories[subcategory] = {
-        main: [],
-        rows: [],
-        additions: [],
-      }
-    }
-    if (lastGroupName) {
-      if (element?.tagName === 'h2' || element?.tagName === 'h3') continue
-      let target = report2[lastGroupName]
+      if (expectedStackSize - subcategoriesStack.length === 1) {
+        if (!cursor.subcategories) cursor.subcategories = {}
 
-      if (subcategory) target = target.subcategories[subcategory]
-
-      if (element?.type === 'table 6' || element?.type === 'table 3') {
-        target.rows = element?.rows
+        const obj = {
+          main: [],
+          rows: [],
+          additions: [],
+        }
+        cursor.subcategories[name] = obj
+        cursor = obj
+        subcategoriesStack.push(name)
+        continue
+      }
+      if (expectedStackSize <= subcategoriesStack.length) {
+        subcategoriesStack = [
+          ...subcategoriesStack.slice(0, expectedStackSize - 1),
+          name,
+        ]
+        cursor = report
+        for (const subcategory of subcategoriesStack) {
+          if (!cursor.subcategories) cursor.subcategories = {}
+          const obj = cursor?.subcategories?.[subcategory] ?? {
+            main: [],
+            rows: [],
+            additions: [],
+          }
+          cursor.subcategories[subcategory] = obj
+          cursor = obj
+        }
         continue
       }
 
-      if (element?.value?.[0] === '[') {
-        let { index, note } = element.value.match(
-          /^\[(?<index>\d)\] (?<note>.*)/,
-        ).groups
-
-        index = parseInt(index, 10) - 1
-
-        target.additions[index] = note
-        continue
-      }
-
-      target.main.push(element.value)
-    } else {
-      main.push(element)
+      throw new Error('Wtf? seems like improper headings structure')
     }
+
+    if (element?.type === 'table 6' || element?.type === 'table 3') {
+      cursor.rows = element?.rows
+      continue
+    }
+    const addition = element?.value?.match(/^\[(?<index>\d)\] (?<note>.*)/)
+
+    if (addition) {
+      let { index, note } = addition.groups
+      index = parseInt(index, 10) - 1
+      cursor.additions[index] = note
+      continue
+    }
+
+    cursor.main.push(element.value)
   }
 
   // yield* fs.writeFileString(
@@ -844,7 +848,6 @@ await Effect.gen(function* () {
   //   { flag: 'w' },
   // )
 
-  report = { main, report2 }
   yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
 }).pipe(
   Effect.catchAll(error => Console.error(error)),

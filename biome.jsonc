@@ -107,6 +107,5 @@
         }
       }
     }
-  } // implement the same kind of import sorting as in here:
-  // https://github.com/jpb06/effect-errors/blob/0fb8790c5e0a9a7b13536abb413210a734f6313c/biome.json#L231
+  }
 }
