@@ -755,7 +755,6 @@ await Effect.gen(function* () {
   report = (cleaned as any).children
   // report = report.filter((e: any) => e.tagName === 'h2')
 
-  console.log(report)
   yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
@@ -776,50 +775,75 @@ await Effect.gen(function* () {
   yield* fs.remove('./out', { force: true, recursive: true })
   yield* fs.makeDirectory('./out')
   const main = []
-  let lastGroupName = null
+  let lastGroupName = ''
+  let subcategory = ''
   // TODO: solve this shit:
   // > [!NOTE]
 
-  // path.join
   for (const element of (cleaned as any).children) {
     if (element?.value?.trim?.() === '') continue
-    if (element.tagName === 'h2' || element.tagName === 'h3') {
+    if (element.tagName === 'h2') {
       lastGroupName = EString.snakeToPascal(
         element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
       )
-      report2[lastGroupName] = { main: [], rows: [], additions: [] }
-
-      // yield* fs.writeFileString(
-      //   path.join(
-      //     './out',
-      //     EString.snakeToPascal(
-      //       element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
-      //     ) + '.ts',
-      //   ),
-      //   '',
-      //   { flag: 'w' },
-      // )
+      subcategory = ''
+      report2[lastGroupName] = {
+        main: [],
+        rows: [],
+        additions: [],
+      }
+    }
+    if (element.tagName === 'h3') {
+      subcategory = EString.snakeToPascal(
+        element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
+      )
+      if (!report2[lastGroupName].subcategories)
+        report2[lastGroupName].subcategories = {}
+      report2[lastGroupName].subcategories[subcategory] = {
+        main: [],
+        rows: [],
+        additions: [],
+      }
     }
     if (lastGroupName) {
       if (element?.tagName === 'h2' || element?.tagName === 'h3') continue
+      let target = report2[lastGroupName]
+
+      if (subcategory) target = target.subcategories[subcategory]
 
       if (element?.type === 'table 6' || element?.type === 'table 3') {
-        report2[lastGroupName].rows = element?.rows
+        target.rows = element?.rows
         continue
       }
 
       if (element?.value?.[0] === '[') {
-        report2[lastGroupName].additions.push(element?.value)
+        let { index, note } = element.value.match(
+          /^\[(?<index>\d)\] (?<note>.*)/,
+        ).groups
+
+        index = parseInt(index, 10) - 1
+
+        target.additions[index] = note
         continue
       }
 
-      report2[lastGroupName].main.push(element.value)
+      target.main.push(element.value)
     } else {
       main.push(element)
     }
   }
 
-  console.log(formatted)
+  // yield* fs.writeFileString(
+  //   path.join(
+  //     './out',
+  //     EString.snakeToPascal(
+  //       element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
+  //     ) + '.ts',
+  //   ),
+  //   '',
+  //   { flag: 'w' },
+  // )
+
   report = { main, report2 }
   yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
 }).pipe(
