@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
 import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
-import prettier from 'prettier'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
 
@@ -101,8 +100,9 @@ const _removeDuplicates = (keys: Key[]) =>
 // ' * but values like "a", "A", "#", "é", or "¿" are not.',
 // ' * Auto generated from MDN: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys',
 
-const fixGeneratedFolder = Command.string(
-  Command.make('biome', 'check', '--write', './generated'),
+const fixGeneratedFolder = Effect.andThen(
+  Command.string(Command.make('bunx', 'prettier', '--write', './generated')),
+  Command.string(Command.make('biome', 'check', '--write', './generated')),
 )
 
 const makeCacheError = (
@@ -131,8 +131,6 @@ const AppLayer = MdxServiceLive.pipe(
 )
 
 await Effect.gen(function* () {
-  yield* Effect.log('Making GET request to MDN...')
-
   // yield* Effect.log('Eliminating duplicate keys...')
   // const uniqueKeys = removeDuplicates(keys)
   // yield* Effect.log('Generating .d.ts file...')
@@ -231,6 +229,7 @@ await Effect.gen(function* () {
   })
 
   if (!mdast) return yield* Effect.dieMessage(`MDX AST plugin didn't work`)
+  yield* Effect.log('Parsed mdast by mdx parser')
 
   const removeEntries = (
     node: unknown,
@@ -261,6 +260,7 @@ await Effect.gen(function* () {
       (key, value) => key === 'data' && Object.entries(value).length === 0,
     ])
 
+  yield* Effect.log('Started cleaning mdast with custom passes')
   const cleaned = pipe(
     removeKeys(mdast, [
       'position',
@@ -273,8 +273,6 @@ await Effect.gen(function* () {
       'sourceType',
       'range',
     ]),
-    removeEmptyDatas,
-    parseMdxNodes,
     parseMdxNodes,
     parseMdxNodes,
     parseMdxNodes,
@@ -289,23 +287,15 @@ await Effect.gen(function* () {
     parseMdxNodes,
     parseMdxNodes,
   )
+  yield* Effect.log('Cleaned mdast with custom passes')
+  yield* Effect.log('Started writing ./mdast.json')
 
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
   yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
 
-  const formatCommentsByPrettier = (code: string) =>
-    Effect.promise(() =>
-      prettier.format(code, {
-        parser: 'typescript',
-        plugins: ['prettier-plugin-jsdoc'],
-        printWidth: 80,
-        jsdocPrintWidth: 80,
-        jsdocDescriptionWithDot: true,
-        jsdocEmptyCommentStrategy: 'remove',
-      }),
-    )
+  yield* Effect.log('Written ./mdast.json')
 
   const report: any = { main: [] } as any
 
@@ -315,6 +305,8 @@ await Effect.gen(function* () {
   let subcategoriesStack: string[] = []
   // TODO: solve this shit:
   // > [!NOTE]
+  yield* Effect.log('recreated generated directories')
+  yield* Effect.log('Started finishing touches with custom passes')
 
   for (const element of (cleaned as any).children) {
     if (element?.value?.trim?.() === '') continue
@@ -367,8 +359,10 @@ await Effect.gen(function* () {
 
     cursor.main.push(element.value)
   }
+  yield* Effect.log('Done finishing touches with custom passes')
 
   yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
+  yield* Effect.log('Written report')
 
   const walk: (
     node: any,
@@ -393,9 +387,7 @@ await Effect.gen(function* () {
       }
 
       const tsFilePath = path.join(dirPath, nodeName + '.ts')
-      const code = yield* formatCommentsByPrettier(
-        tsdocString + '\n' + additional,
-      )
+      const code = tsdocString + '\n' + additional
 
       yield* fs.writeFileString(tsFilePath, code)
     } else {
@@ -408,7 +400,10 @@ await Effect.gen(function* () {
       for (const [subNodeName, subNode] of Record.toEntries<string, any>(
         node.subcategories,
       )) {
-        yield* walk(subNode, subNodeName, [...stack, nodeName])
+        yield* walk(subNode, subNodeName, [...stack, nodeName]).pipe(
+          Effect.catchAllCause(Effect.logError),
+          Effect.forkScoped,
+        )
         indexFileBody += `
         ${renderMainModuleTsDocString(subNode.main, subNodeName)}export * as ${subNodeName} from './${'subcategories' in subNode ? `${subNodeName}/index.ts` : `${subNodeName}.ts`}'
 
@@ -416,14 +411,19 @@ await Effect.gen(function* () {
       }
 
       const tsdocString = renderMainFileTsDocString(node.main, nodeName)
-      const code = yield* formatCommentsByPrettier(tsdocString + indexFileBody)
+      const code = tsdocString + indexFileBody
 
       yield* fs.writeFileString(tsFilePath, code)
     }
   }, Effect.orDie)
 
-  yield* walk(report, 'EventDotKey').pipe(Effect.scoped)
+  yield* walk(report, 'EventDotKey').pipe(
+    Effect.awaitAllChildren,
+    Effect.scoped,
+  )
+  yield* Effect.log('Started formatting and linting.')
   yield* fixGeneratedFolder
+  yield* Effect.log('finished formatting and linting.')
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
