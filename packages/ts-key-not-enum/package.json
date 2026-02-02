@@ -25,6 +25,7 @@
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum",
   "devDependencies": {
     "@effect/language-service": "catalog:",
+    "@microsoft/tsdoc": "^0.16.0",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -98,10 +99,5 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ],
-  "dependencies": {
-    "@biomejs/js-api": "^4.0.0",
-    "@biomejs/wasm-nodejs": "^2.3.13",
-    "@microsoft/tsdoc": "^0.16.0"
-  }
+  ]
 }
