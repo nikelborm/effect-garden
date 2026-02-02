@@ -6,12 +6,14 @@ import { match, P } from 'ts-pattern'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
 
+import * as Command from '@effect/platform/Command'
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as FileSystem from '@effect/platform/FileSystem'
 import { KiB } from '@effect/platform/FileSystem'
 import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Path from '@effect/platform/Path'
+import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
 import * as EArray from 'effect/Array'
@@ -22,15 +24,20 @@ import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
+import * as Record from 'effect/Record'
+import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
+
+import { renderMainTsDoc } from './renderMainTsDoc.ts'
 
 interface Key {
   value: string
   description: string
 }
 
-const _MDN_URL =
-  'https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys'
+const MDN_URL_BASE = 'https://developer.mozilla.org'
+
+const MDN_URL = `${MDN_URL_BASE}/en-US/docs/Web/API/KeyboardEvent/key/Key_Values`
 
 // https://github.com/w3c/uievents-key/
 const MDN_MDX_URL =
@@ -86,27 +93,27 @@ const _removeDuplicates = (keys: Key[]) =>
     (a, b) => a.value === b.value,
   )
 
-const formatKeyEntry = ({ value, description }: Key) => {
-  let formattedDescription: string
+// const formatKeyEntry = ({ value, description }: Key) => {
+//   let formattedDescription: string
 
-  if (value === 'Symbol') value = 'SymbolModifier'
-  if (value === '0') value = 'Zero'
+//   if (value === 'Symbol') value = 'SymbolModifier'
+//   if (value === '0') value = 'Zero'
 
-  if (description.includes('\n')) {
-    formattedDescription = [
-      '/**',
-      ...description
-        .trim()
-        .split(/\n\s*/)
-        .map(s => ` * ${s.trim()}`),
-      ' */',
-    ].join('\n')
-  } else {
-    formattedDescription = `/** ${description} */`
-  }
+//   if (description.includes('\n')) {
+//     formattedDescription = [
+//       '/**',
+//       ...description
+//         .trim()
+//         .split(/\n\s*/)
+//         .map(s => ` * ${s.trim()}`),
+//       ' */',
+//     ].join('\n')
+//   } else {
+//     formattedDescription = `/** ${description} */`
+//   }
 
-  return `${formattedDescription}\nexport const ${value} = '${value}';`
-}
+//   return `${formattedDescription}\nexport const ${value} = '${value}';`
+// }
 
 const compactCleanup = (value: any) =>
   value.children
@@ -198,7 +205,8 @@ const parseMdxNodes = (
           },
         },
       },
-      value => ({ type: 'text', value }),
+      // I don't care about 'UI Events' string
+      () => ({ type: 'text', value: '' }),
     )
     .with({ type: 'mdxTextExpression', value: 'deprecated_inline' }, () => ({
       type: 'text',
@@ -208,12 +216,12 @@ const parseMdxNodes = (
       {
         type: 'element',
         tagName: 'a',
-        properties: P.optional({ href: P.select('url', P.string) }),
+        properties: { href: P.select('url', P.string) },
         children: [{ type: 'text', value: P.select('textAlias', P.string) }],
       },
       ({ textAlias, url }) => ({
         type: 'text',
-        value: `[${textAlias}](${url ?? 'https://www.google.com/search?q=' + textAlias})`,
+        value: `[${textAlias}](${(url[0] === '#' ? new URL(url, MDN_URL) : url[0] === '/' ? new URL(url, MDN_URL_BASE) : new URL(url)).toString()})`,
       }),
     )
     .with(
@@ -231,7 +239,7 @@ const parseMdxNodes = (
       },
       ({ textAlias, url }) => ({
         type: 'text',
-        value: `[${textAlias}](${url})`,
+        value: `[${textAlias}](${(url[0] === '#' ? new URL(url, MDN_URL) : url[0] === '/' ? new URL(url, MDN_URL_BASE) : new URL(url)).toString()})`,
       }),
     )
     .with(
@@ -387,34 +395,7 @@ const parseMdxNodes = (
       { type: 'mdxJsxFlowElement', attributes: { class: 'no-markdown' } },
       ({ attributes, ...value }) => value,
     )
-    .with(
-      {
-        type: 'mdxJsxFlowElement',
-        name: 'tr',
 
-        children: [
-          { value: P.select('keyValue') },
-          { value: P.select('description') },
-          { value: P.select('windowsVirtualKeyCode') },
-          { value: P.select('macVirtualKeyCode') },
-          { value: P.select('linuxVirtualKeyCode') },
-          { value: P.select('androidVirtualKeyCode') },
-        ],
-      },
-      value => ({ type: 'full width row', value }),
-    )
-    .with(
-      {
-        type: 'mdxJsxFlowElement',
-        name: 'tr',
-        children: [
-          { value: P.select('compositionEventDataValue') },
-          { value: P.select('symbol') },
-          { value: P.select('comments') },
-        ],
-      },
-      value => ({ type: 'row 3 width', value }),
-    )
     .with(
       {
         type: 'mdxJsxFlowElement',
@@ -423,20 +404,60 @@ const parseMdxNodes = (
           { name: 'thead' },
           {
             name: 'tbody',
-            children: P.array({
-              type: 'row 3 width',
-              value: {
-                compositionEventDataValue: P.string,
-                symbol: P.string,
-                comments: P.string,
-              },
-            }),
+            children: P.select(
+              P.array({
+                type: 'mdxJsxFlowElement',
+                name: 'tr',
+                children: [
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                ],
+              }),
+            ),
           },
         ],
       },
       value => ({
         type: 'table 3',
-        rows: value.children[1].children.map(_ => _.value),
+        rows: value.map(
+          ({
+            children: [
+              { value: compositionEventDataValue },
+              { value: symbol },
+              { value: comments },
+            ],
+          }) => {
+            const {
+              groups: { name },
+            } = compositionEventDataValue.match(
+              /`GDK_KEY_dead_(?<name>\w+)`/,
+            ) as any as { groups: { name: string } }
+
+            return EString.stripMargin(`|/**
+            | * One of the possible {@linkcode GlobalEventHandlersEventMap.compositionupdate|compositionupdate} event's data property
+            | *
+            | * ${comments}
+            | *
+            | * ${compositionEventDataValue}
+            | *
+            | * @generated
+            | */
+            |export type ${name} = "${symbol}"
+            |
+            |/**
+            | * One of the possible {@linkcode GlobalEventHandlersEventMap.compositionupdate|compositionupdate} event's data property
+            | *
+            | * ${comments}
+            | *
+            | * ${compositionEventDataValue}
+            | *
+            | * @generated
+            | */
+            |export const ${name}: ${name} = "${symbol}"
+            |`)
+          },
+        ),
       }),
     )
     .with(
@@ -446,25 +467,45 @@ const parseMdxNodes = (
         children: [
           { name: 'thead' },
           {
-            type: 'mdxJsxFlowElement',
             name: 'tbody',
-            children: P.array({
-              type: 'full width row',
-              value: {
-                keyValue: P.string,
-                description: P.string,
-                windowsVirtualKeyCode: P.string,
-                macVirtualKeyCode: P.string,
-                linuxVirtualKeyCode: P.string,
-                androidVirtualKeyCode: P.string,
-              },
-            }),
+            children: P.select(
+              P.array({
+                type: 'mdxJsxFlowElement',
+                name: 'tr',
+                children: [
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                  { type: 'text', name: 'td', value: P.string },
+                ],
+              }),
+            ),
           },
         ],
       },
       value => ({
-        type: 'table 6',
-        rows: value.children[1].children.map(_ => _.value),
+        type: 'table 3',
+        rows: value.map(
+          ({
+            children: [
+              { value: keyValue },
+              { value: description },
+              { value: windowsVirtualKeyCode },
+              { value: macVirtualKeyCode },
+              { value: linuxVirtualKeyCode },
+              { value: androidVirtualKeyCode },
+            ],
+          }) => ({
+            keyValue,
+            description,
+            windowsVirtualKeyCode,
+            macVirtualKeyCode,
+            linuxVirtualKeyCode,
+            androidVirtualKeyCode,
+          }),
+        ),
       }),
     )
     .with(P.array({ type: P.string }), values =>
@@ -479,26 +520,29 @@ const parseMdxNodes = (
     )
     .otherwise(() => node)
 
-const _generateEnumFile = (keys: Key[]) =>
-  [
-    '/**',
-    ' * @file',
-    ' * @generated',
-    ' * Here are listed all non-printable string values one can expect from $event.key.',
-    ' * For example, values like "CapsLock", "Backspace", and "AudioVolumeMute" are present,',
-    ' * but values like "a", "A", "#", "é", or "¿" are not.',
-    ' * Auto generated from MDN: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys',
-    ' */\n',
+//   [
+//     '/**',
+//     ' * @file',
+//     ' * @generated',
+//     ' * Here are listed all non-printable string values one can expect from $event.key.',
+//     ' * For example, values like "CapsLock", "Backspace", and "AudioVolumeMute" are present,',
+//     ' * but values like "a", "A", "#", "é", or "¿" are not.',
+//     ' * Auto generated from MDN: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys',
+//     ' */\n',
 
-    keys.map(formatKeyEntry).join('\n\n'),
+//     keys.map(formatKeyEntry).join('\n\n'),
 
-    '',
-  ].join('\n')
+//     '',
+//   ].join('\n')
 
 const _writeEnumFile = (content: string) =>
   Effect.flatMap(FileSystem.FileSystem, fs =>
     fs.writeFileString('./index.ts', content),
   )
+
+const fixGeneratedFolder = Command.string(
+  Command.make('biome', 'check', '--write', './generated'),
+)
 
 const makeCacheError = (
   cause: unknown,
@@ -520,6 +564,7 @@ const makeCacheError = (
 const AppLayer = MdxServiceLive.pipe(
   Layer.provideMerge(defaultMdxConfigLayer),
   Layer.provideMerge(FetchHttpClient.layer),
+  Layer.provideMerge(BunCommandExecutor.layer),
   Layer.provideMerge(BunFileSystem.layer),
   Layer.provideMerge(BunPath.layer),
 )
@@ -684,8 +729,6 @@ await Effect.gen(function* () {
       (key, value) => key === 'data' && Object.entries(value).length === 0,
     ])
 
-  const extractUniqueTypes = (node: unknown) => [...new Set(extractTypes(node))]
-
   const cleaned = pipe(
     removeKeys(mdast, [
       'position',
@@ -696,14 +739,9 @@ await Effect.gen(function* () {
       'optional',
       'comments',
       'sourceType',
-      'properties',
       'range',
     ]),
     removeEmptyDatas,
-    parseMdxNodes,
-    parseMdxNodes,
-    parseMdxNodes,
-    parseMdxNodes,
     parseMdxNodes,
     parseMdxNodes,
     parseMdxNodes,
@@ -723,57 +761,24 @@ await Effect.gen(function* () {
   // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
   // TODO: generate types as well as consts
 
-  let report_: any = {
-    uniqueTypes: extractUniqueTypes(cleaned),
-    // mdxTextExpressionNodes: collectNodesOfCertainType(
-    //   cleaned,
-    //   'mdxTextExpression',
-    // ),
-    // uniqueTypesOfMdxTextExpressionNodes: extractUniqueTypes(
-    //   collectNodesOfCertainType(cleaned, 'mdxTextExpression'),
-    // ),
-    // parsed: collectNodesOfCertainType(cleaned, [
-    //   // handled
-    //   'mdxFlowExpression',
-    //   'mdxTextExpression',
-    //   'mdxJsxTextElement',
-    //   'text',
-    //   'element',
-
-    //   // not handled
-    //   // 'mdxJsxFlowElement',
-    //   // 'mdxJsxAttribute',
-    // ]).map(e => parseMdxNodes(e as any)),
-    // datas: [...new Set(collectNodesOfCertainType(cleaned, ['root']))].map(
-    //   parseMdxNodes,
-    // ),
-    cleaned,
-    // datas: [...new Set(extractValuesAtKeys(cleaned, ['class']))].map(
-    //   parseMdxNodes,
-    // ),
-  }
-  report_ = (cleaned as any).children
-  // report_ = report_.filter((e: any) => e.tagName === 'h2')
-
   yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
 
-  yield* Effect.log('✓ All done! Successfully updated index.ts.')
+  const formatCommentsByPrettier = (code: string) =>
+    Effect.promise(() =>
+      prettier.format(code, {
+        parser: 'typescript',
+        plugins: ['prettier-plugin-jsdoc'],
+        printWidth: 80,
+        jsdocPrintWidth: 80,
+        jsdocDescriptionWithDot: true,
+        jsdocEmptyCommentStrategy: 'remove',
+      }),
+    )
 
-  // TODO: wrap
-  const formatted = Effect.promise(() =>
-    prettier.format('sourceCodeString', {
-      parser: 'typescript',
-      plugins: ['prettier-plugin-jsdoc'],
-      printWidth: 80,
-      jsdocPrintWidth: 80,
-      jsdocDescriptionWithDot: true,
-      jsdocEmptyCommentStrategy: 'remove',
-    }),
-  )
   const report: any = { main: [] } as any
 
-  yield* fs.remove('./out', { force: true, recursive: true })
-  yield* fs.makeDirectory('./out')
+  yield* fs.remove('./generated', { force: true, recursive: true })
+  yield* fs.makeDirectory('./generated')
   let cursor = report as any
   let subcategoriesStack: string[] = []
   // TODO: solve this shit:
@@ -783,42 +788,31 @@ await Effect.gen(function* () {
     if (element?.value?.trim?.() === '') continue
     if (element.tagName === 'h2' || element.tagName === 'h3') {
       const expectedStackSize = parseInt(element.tagName.slice(1), 10) - 1
-      const name = EString.snakeToPascal(
-        element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
-      )
-      if (expectedStackSize - subcategoriesStack.length === 1) {
-        if (!cursor.subcategories) cursor.subcategories = {}
 
-        const obj = {
+      if (expectedStackSize - subcategoriesStack.length > 1)
+        throw new Error(
+          'Wtf? seems like improper headings structure. trying to jump too deep without naming intermediate categories',
+        )
+
+      subcategoriesStack = [
+        ...subcategoriesStack.slice(0, expectedStackSize - 1),
+        EString.snakeToPascal(
+          element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
+        ),
+      ]
+      cursor = report
+
+      for (const subcategory of subcategoriesStack) {
+        if (!cursor.subcategories) cursor.subcategories = {}
+        const obj = cursor?.subcategories?.[subcategory] ?? {
           main: [],
           rows: [],
           additions: [],
         }
-        cursor.subcategories[name] = obj
+        cursor.subcategories[subcategory] = obj
         cursor = obj
-        subcategoriesStack.push(name)
-        continue
       }
-      if (expectedStackSize <= subcategoriesStack.length) {
-        subcategoriesStack = [
-          ...subcategoriesStack.slice(0, expectedStackSize - 1),
-          name,
-        ]
-        cursor = report
-        for (const subcategory of subcategoriesStack) {
-          if (!cursor.subcategories) cursor.subcategories = {}
-          const obj = cursor?.subcategories?.[subcategory] ?? {
-            main: [],
-            rows: [],
-            additions: [],
-          }
-          cursor.subcategories[subcategory] = obj
-          cursor = obj
-        }
-        continue
-      }
-
-      throw new Error('Wtf? seems like improper headings structure')
+      continue
     }
 
     if (element?.type === 'table 6' || element?.type === 'table 3') {
@@ -834,23 +828,74 @@ await Effect.gen(function* () {
       continue
     }
 
+    if (!element.value) {
+      console.error(element)
+      throw new Error('wtf. likely incompletely parsed object')
+    }
+
     cursor.main.push(element.value)
   }
 
-  // yield* fs.writeFileString(
-  //   path.join(
-  //     './out',
-  //     EString.snakeToPascal(
-  //       element.value.replaceAll('#', '').trim().replaceAll(' ', '_'),
-  //     ) + '.ts',
-  //   ),
-  //   '',
-  //   { flag: 'w' },
-  // )
+  yield* fs.writeFileString(
+    path.join('./generated', './report.json'),
+    JSON.stringify(report, void 0, 2),
+  )
 
-  yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
+  const walk: (
+    node: any,
+    nodeName: string,
+    stack?: string[] | undefined,
+  ) => Effect.Effect<void, never, Scope.Scope> = Effect.fn(function* (
+    node: any,
+    nodeName: string,
+    stack: string[] = [],
+  ) {
+    const isLeaf = !('subcategories' in node)
+
+    if (isLeaf) {
+      const dirPath = path.join('./generated', ...stack)
+
+      yield* fs.makeDirectory(dirPath, { recursive: true })
+      const tsdocString = renderMainTsDoc(node.main)
+      let additional = ''
+
+      if (typeof node.rows[0] === 'string') {
+        additional = node.rows.join('\n\n')
+      }
+
+      const tsFilePath = path.join(dirPath, nodeName + '.ts')
+      const code = yield* formatCommentsByPrettier(
+        tsdocString + '\n' + additional,
+      )
+
+      yield* fs.writeFileString(tsFilePath, code)
+    } else {
+      const dirPath = path.join('./generated', ...stack, nodeName)
+      yield* fs.makeDirectory(dirPath, { recursive: true })
+      const tsFilePath = path.join(dirPath, 'index.ts')
+
+      let indexFileBody = ''
+
+      for (const [subNodeName, subNode] of Record.toEntries<string, any>(
+        node.subcategories,
+      )) {
+        yield* walk(subNode, subNodeName, [...stack, nodeName])
+        indexFileBody += `\nexport * as ${subNodeName} from './${'subcategories' in subNode ? `${subNodeName}/index.ts` : `${subNodeName}.ts`}'`
+      }
+
+      const tsdocString = renderMainTsDoc(node.main)
+      const code = yield* formatCommentsByPrettier(tsdocString + indexFileBody)
+
+      yield* fs.writeFileString(tsFilePath, code)
+    }
+  }, Effect.orDie)
+
+  yield* walk(report, 'EventDotKey').pipe(Effect.scoped)
+  yield* fixGeneratedFolder
+
+  yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
-  Effect.catchAll(error => Console.error(error)),
+  Effect.catchAllCause(error => Console.error(error)),
   Effect.provide(AppLayer),
   Effect.runPromise,
 )

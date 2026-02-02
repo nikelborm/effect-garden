@@ -98,5 +98,10 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "dependencies": {
+    "@biomejs/js-api": "^4.0.0",
+    "@biomejs/wasm-nodejs": "^2.3.13",
+    "@microsoft/tsdoc": "^0.16.0"
+  }
 }
