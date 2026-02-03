@@ -1,6 +1,6 @@
 import * as tsdoc from '@microsoft/tsdoc'
 
-import { createTSDocConfiguration } from './tsdocDefinition.ts'
+import { createTSDocConfiguration } from '../../tsdocDefinition.ts'
 
 const configuration = createTSDocConfiguration()
 

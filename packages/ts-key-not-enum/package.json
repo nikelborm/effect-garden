@@ -5,10 +5,9 @@
   "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
   "license": "MIT",
   "scripts": {
-    "build": "tspc",
-    "prepack": "bun ./scrapeMDNForKeyboardButtons.ts && rm -rf dist dist-types && ./node_modules/.bin/tspc",
-    "scrape": "bun ./scrapeMDNForKeyboardButtons.ts",
-    "dev": "tspc --watch"
+    "prepack": "bun ./scripts/scrapeMDNForKeyboardButtons.ts",
+    "scrape": "bun ./scripts/scrapeMDNForKeyboardButtons.ts",
+    "dev": "clear; bun --watch ./scripts/scrapeMDNForKeyboardButtons.ts"
   },
   "files": [
     ".github/FUNDING.yml",

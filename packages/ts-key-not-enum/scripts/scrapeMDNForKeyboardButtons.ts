@@ -25,11 +25,11 @@ import * as Record from 'effect/Record'
 import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
 
-import { parseMdxNodes } from './parseMdxNodes.ts'
+import { parseMdxNodes } from './lib/parseMdxNodes.ts'
 import {
   renderFileHeaderTsDocString,
   renderMainModuleTsDocString,
-} from './renderMainTsDoc.ts'
+} from './lib/renderMainTsDoc.ts'
 
 const DEBUG = false
 
@@ -56,20 +56,18 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
   ),
 )
 
-const Base = 'EventKey'
-const affectedGeneratedPaths = [`./${Base}/`, `./${Base}.ts`]
 const fixGeneratedFolder = Effect.all([
   Effect.log('Started fixing comments with prettier.'),
-  Command.string(
-    Command.make('bunx', 'prettier', '--write', ...affectedGeneratedPaths),
-  ),
+  Command.string(Command.make('bunx', 'prettier', '--write', `./src/`)),
   Effect.log('Finished fixing comments with prettier.\n'),
   Effect.log('Started fixing everything with biome.'),
-  Command.string(
-    Command.make('biome', 'check', '--write', ...affectedGeneratedPaths),
-  ),
+  Command.string(Command.make('biome', 'check', '--write', `./src/`)),
   Effect.log('Finished fixing everything with biome.\n'),
   Effect.log('Started compiling with tspc.'),
+  Effect.flatMap(FileSystem.FileSystem, fs => {
+    const rm = (p: string) => fs.remove(p, { force: true, recursive: true })
+    return Effect.all([rm('dist'), rm('dist-types')])
+  }),
   Command.string(Command.make('bunx', 'tspc')),
   Effect.log('Finished compiling with tspc.\n'),
 ])
@@ -254,8 +252,8 @@ await Effect.gen(function* () {
 
   const report: any = { main: [] } as any
 
-  yield* fs.remove(Base, { force: true, recursive: true })
-  yield* fs.makeDirectory(Base)
+  yield* fs.remove('./src', { force: true, recursive: true })
+  yield* fs.makeDirectory('./src')
   let cursor = report as any
   let subcategoriesStack: string[] = []
   // TODO: solve this shit:
@@ -332,7 +330,7 @@ await Effect.gen(function* () {
   ) => Effect.Effect<void, never, Scope.Scope> = Effect.fn(function* (
     node: any,
     nodeName: string,
-    stack: string[] = [],
+    stack: string[] = [''],
   ) {
     const isLeaf = !('subcategories' in node)
 
@@ -476,7 +474,7 @@ await Effect.gen(function* () {
   }, Effect.orDie)
 
   yield* Effect.log('Started walking and building actual files.')
-  yield* walk(report, Base)
+  yield* walk(report, 'EventKey', ['src'])
   yield* Effect.log('Finished walking and building actual files.\n')
 
   yield* fixGeneratedFolder
