@@ -23,8 +23,10 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
+  "peerDependencies": {
+    "effect": "catalog:"
+  },
   "dependencies": {
-    "effect": "catalog:",
     "@webref/idl": "^3.72.0",
     "effect-web-audio": "workspace:*"
   },

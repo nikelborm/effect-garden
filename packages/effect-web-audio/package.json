@@ -20,8 +20,10 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
+  "peerDependencies": {
+    "effect": "catalog:"
+  },
   "dependencies": {
-    "effect": "catalog:",
     "effect-web-mediacapture-streams": "workspace:*"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio",

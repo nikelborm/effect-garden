@@ -15,7 +15,7 @@
     "index.ts",
     "package.json"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "effect": "catalog:"
   },
   "devDependencies": {

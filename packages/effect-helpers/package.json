@@ -17,7 +17,7 @@
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:"
   },
-  "dependencies": {
+  "peerDependencies": {
     "@effect/platform": "catalog:",
     "effect": "catalog:"
   }

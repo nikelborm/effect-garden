@@ -20,7 +20,7 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "effect": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-opfs",
