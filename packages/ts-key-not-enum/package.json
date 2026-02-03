@@ -11,12 +11,12 @@
   },
   "files": [
     ".github/FUNDING.yml",
-    "dist-types/index.d.ts",
-    "dist-types/index.d.ts.map",
-    "dist/index.js",
-    "dist/index.js.map",
+    "dist-types",
+    "dist",
     "index.ts",
     "package.json",
+    "!dist-types/scripts",
+    "!dist/scripts",
     "!**/*.spec.*",
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
@@ -60,7 +60,15 @@
       "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./*.ts": "./*.ts",
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
     "./internal/*": null,
     "./package.json": "./package.json"
   },

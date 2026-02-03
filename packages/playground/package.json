@@ -31,6 +31,7 @@
     "outdent": "catalog:",
     "tinybench": "catalog:",
     "ts-namespace-import": "catalog:",
+    "ts-key-not-enum": "workspace:*",
     "effect-web-audio": "workspace:*",
     "effect-web-mediacapture-streams": "workspace:*",
     "typescript": "catalog:"

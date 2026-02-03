@@ -6,7 +6,8 @@ comparison of that property with non-printable values
 This is a rewrite of `ts-key-enum`
 ([GitHub](https://github.com/nfriend/ts-key-enum/),
 [NPM](https://www.npmjs.com/package/ts-key-enum)) originally made by Nathan
-Friend ([GitHub: @nfriend](https://github.com/nfriend/)).
+Friend ([GitHub: @nfriend](https://github.com/nfriend/)). No code was copied, but
+still, kudos to you for the idea, my dear dude. 😉 🐸
 
 I brought a few improvements such as more robust scraping of keys with
 [Effect.ts](https://effect.website/), and instead of using `const enum`s my
@@ -16,11 +17,14 @@ different from using Typescript's `const enum` feature. Except it would work
 fine with `"erasableSyntaxOnly": true` in `tsconfig.json`, while `const enum`
 doesn't.
 
-## Additions (current or planned)
+## Additional features
 
-1. More information is scraped from MDN
-2. Keys grouped by categories in certain files
-3. Exports of both constants and types
+1. More information is scraped from MDN, like platform/OS specific binary codes
+   of keys, deprecation notices etc
+2. Keys grouped by logical categories in certain files, and flat barrel imports
+   available as well
+3. Both constants and string literal types are exported
+4. No enums here 💀
 
 ## Install
 
@@ -46,7 +50,7 @@ onKeyPress = (ev) => {
 }
 ```
 
-We too. With this module, you can do this instead (in a TypeScript file):
+We too. With this module, you can do this instead:
 
 ```ts
 onKeyPress = (ev) => {
@@ -60,17 +64,41 @@ onKeyPress = (ev) => {
 
 ## How to use
 
-To use this module, import all named key values either as a namespace, or import
-individual key values at the top of your TypeScript file:
-
 ```ts
+// You can use namespace imports
 import * as Key from 'ts-key-not-enum';
-// or
-import { ArrowLeft } from 'ts-key-not-enum';
+console.log(Key.ArrowLeft)
+
+// Or you can import specific keys directly
+import { ArrowRight } from 'ts-key-not-enum';
+console.log(ArrowRight)
+
+// You can either import pre-made subcategories as objects and reference their fields
+import { FunctionKeys } from 'ts-key-not-enum/subcategories';
+console.log(FunctionKeys.F8)
+
+// Or you can import specific keys from subcategory files of the same name. If
+// you'll namespace-import these files, you'll get the same subcategory objects
+import { F19 } from 'ts-key-not-enum/FunctionKeys';
+console.log(F19)
+
+// There are nested subcategories too
+import { JapaneseKeyboardsOnly } from 'ts-key-not-enum/IMEAndCompositionKeys/subcategories';
+console.log(JapaneseKeyboardsOnly.Hiragana)
+
+import { Hiragana } from 'ts-key-not-enum/IMEAndCompositionKeys/JapaneseKeyboardsOnly';
+console.log(Hiragana)
+
+// pre-made subcategory files export everything nested in them as a flat
+// structure, so IMEAndCompositionKeys will have all keys from
+// JapaneseKeyboardsOnly, DeadKeycodesForLinux etc
+import { KanjiMode } from 'ts-key-not-enum/IMEAndCompositionKeys';
+console.log(KanjiMode)
 ```
 
-See [`index.ts`](./index.ts) for a complete list of available keys. This file is
-auto-generated from the list of keys found at [MDN: Key values for keyboard
+[`index.ts`](./index.ts) is an entry point and exports all available keys. This
+file, and everything in [`src`](./src/) directory is auto-generated from
+the list of keys found at [MDN: Key values for keyboard
 events](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values)
 
 ## What's included
@@ -78,8 +106,10 @@ events](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_V
 The package contains values for all standard non-printable keys such as
 `"CapsLock"`, `"Backspace"`, and `"AudioVolumeMute"`. The package does _not_
 contain values for printable keys such as `"a"`, `"A"`, `"#"`, `"é"`, or `"¿"`,
-simply because the list of possible values is too vast to include everything. To
-test for printable values, simply use a string comparison:
+simply because the list of possible values is too vast to include everything.
+Although some symbols/modifiers are still included, for example, in
+[`DeadKeycodesForLinux.ts`](./src/IMEAndCompositionKeys/DeadKeycodesForLinux.ts).
+To test for printable values, simply use a string comparison:
 
 ```ts
 if (ev.key === 'é') { ... }
@@ -87,20 +117,16 @@ if (ev.key === 'é') { ... }
 
 ## Building
 
-Run the scraper script ([`scrapeMDNForKeyboardButtons.ts`](./scrapeMDNForKeyboardButtons.ts)) using:
+Run the scraper+generator script
+([`scrapeMDNForKeyboardButtons.ts`](./scripts/scrapeMDNForKeyboardButtons.ts))
+using:
 
 ```sh
-npm run scrape
+bun scrape
 ```
 
-This will overwrite [`index.ts`](./index.ts) with the updated list of keys found
-in MDN.
-
-Verify that the file builds without any TypeScript errors:
-
-```sh
-npm run build
-```
+This will overwrite [`index.ts`](./index.ts) and [`src`](./src/) with the
+updated list of keys found in MDN.
 
 ## License
 

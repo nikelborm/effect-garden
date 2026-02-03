@@ -1,5 +1,5 @@
 /**
- * @module EventKey
+ * @module src
  *
  * @file
  *
@@ -67,7 +67,7 @@ export * as FunctionKeys from './FunctionKeys.ts'
  *
  * @generated
  */
-export * as IMEAndCompositionKeys from './IMEAndCompositionKeys/index.ts'
+export * as IMEAndCompositionKeys from './IMEAndCompositionKeys.ts'
 /**
  * Because modern remote controls for media devices often include buttons beyond
  * the basic controls covered elsewhere in this document, key values are defined

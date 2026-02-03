@@ -58,10 +58,12 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
 
 const fixGeneratedFolder = Effect.all([
   Effect.log('Started fixing comments with prettier.'),
-  Command.string(Command.make('bunx', 'prettier', '--write', `./src/`)),
+  Command.string(
+    Command.make('bunx', 'prettier', '--write', `src`, 'index.ts'),
+  ),
   Effect.log('Finished fixing comments with prettier.\n'),
   Effect.log('Started fixing everything with biome.'),
-  Command.string(Command.make('biome', 'check', '--write', `./src/`)),
+  Command.string(Command.make('biome', 'check', '--write', `src`, 'index.ts')),
   Effect.log('Finished fixing everything with biome.\n'),
   Effect.log('Started compiling with tspc.'),
   Effect.flatMap(FileSystem.FileSystem, fs => {
@@ -252,8 +254,8 @@ await Effect.gen(function* () {
 
   const report: any = { main: [] } as any
 
-  yield* fs.remove('./src', { force: true, recursive: true })
-  yield* fs.makeDirectory('./src')
+  yield* fs.remove('./src', { recursive: true })
+  yield* fs.remove('./index.ts')
   let cursor = report as any
   let subcategoriesStack: string[] = []
   // TODO: solve this shit:
@@ -452,18 +454,14 @@ await Effect.gen(function* () {
           Effect.catchAllCause(Effect.logError),
         )
         indexFileBody += renderMainModuleTsDocString(subNode.main)
-        const relativePath =
-          'subcategories' in subNode
-            ? `${subNodeName}/index.ts`
-            : `${subNodeName}.ts`
-        indexFileBody += `export * as ${subNodeName} from './${relativePath}'\n\n`
+        indexFileBody += `export * as ${subNodeName} from './${subNodeName}.ts'\n\n`
         aggregateFileBody += `export * from './${nodeName}/${subNodeName}.ts'\n`
       }
 
       const tsdocString = renderFileHeaderTsDocString(node.main, nodeName)
 
       yield* fs.writeFileString(
-        path.join(dirPath, 'index.ts'),
+        path.join(dirPath, 'subcategories.ts'),
         tsdocString + '\n' + indexFileBody,
       )
       yield* fs.writeFileString(
@@ -474,7 +472,8 @@ await Effect.gen(function* () {
   }, Effect.orDie)
 
   yield* Effect.log('Started walking and building actual files.')
-  yield* walk(report, 'EventKey', ['src'])
+  yield* walk(report, 'src', [])
+  yield* fs.rename('src.ts', 'index.ts')
   yield* Effect.log('Finished walking and building actual files.\n')
 
   yield* fixGeneratedFolder
