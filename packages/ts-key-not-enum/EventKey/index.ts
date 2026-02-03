@@ -5,7 +5,7 @@
  * Corresponding virtual keycodes for common platforms are included where
  * available.
  *
- * @module EventDotKey
+ * @module EventKey
  *
  * @file
  * @generated

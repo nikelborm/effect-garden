@@ -16,10 +16,7 @@ moduleBlockTag._tagNameWithUpperCase =
 const fileBlockTag = new tsdoc.DocBlockTag({ configuration, tagName: '@file' })
 const generatedBlock = new tsdoc.DocBlock({
   configuration,
-  blockTag: new tsdoc.DocBlockTag({
-    configuration,
-    tagName: '@generated',
-  }),
+  blockTag: new tsdoc.DocBlockTag({ configuration, tagName: '@generated' }),
 })
 
 export const renderMainFileDocComment = (

@@ -56,16 +56,17 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
   ),
 )
 
+const Base = 'EventKey'
 const fixGeneratedFolder = Effect.all([
   Effect.log('Started fixing comments with prettier.'),
-  Command.string(Command.make('bunx', 'prettier', '--write', './generated')),
-  Effect.log('Finished fixing comments with prettier.'),
+  Command.string(Command.make('bunx', 'prettier', '--write', Base)),
+  Effect.log('Finished fixing comments with prettier.\n'),
   Effect.log('Started fixing everything with biome.'),
-  Command.string(Command.make('biome', 'check', '--write', './generated')),
-  Effect.log('Finished fixing everything with biome.'),
+  Command.string(Command.make('biome', 'check', '--write', Base)),
+  Effect.log('Finished fixing everything with biome.\n'),
   Effect.log('Started compiling with tspc.'),
   Command.string(Command.make('bunx', 'tspc')),
-  Effect.log('Finished compiling with tspc.'),
+  Effect.log('Finished compiling with tspc.\n'),
 ])
 
 const makeCacheError = (
@@ -248,8 +249,8 @@ await Effect.gen(function* () {
 
   const report: any = { main: [] } as any
 
-  yield* fs.remove('./generated', { force: true, recursive: true })
-  yield* fs.makeDirectory('./generated')
+  yield* fs.remove(Base, { force: true, recursive: true })
+  yield* fs.makeDirectory(Base)
   let cursor = report as any
   let subcategoriesStack: string[] = []
   // TODO: solve this shit:
@@ -308,7 +309,7 @@ await Effect.gen(function* () {
 
     cursor.main.push(element.value)
   }
-  yield* Effect.log('Done finishing touches with custom passes')
+  yield* Effect.log('Done finishing touches with custom passes\n')
 
   if (DEBUG) {
     yield* Effect.log('Started writing ./report.json')
@@ -331,7 +332,7 @@ await Effect.gen(function* () {
     const isLeaf = !('subcategories' in node)
 
     if (isLeaf) {
-      const dirPath = path.join('./generated', ...stack)
+      const dirPath = path.join(...stack)
 
       yield* fs.makeDirectory(dirPath, { recursive: true })
       const tsdocString = renderMainFileTsDocString(node.main, nodeName)
@@ -405,7 +406,7 @@ await Effect.gen(function* () {
 
       yield* fs.writeFileString(tsFilePath, code)
     } else {
-      const dirPath = path.join('./generated', ...stack, nodeName)
+      const dirPath = path.join(...stack, nodeName)
       yield* fs.makeDirectory(dirPath, { recursive: true })
       const tsFilePath = path.join(dirPath, 'index.ts')
 
@@ -434,11 +435,11 @@ await Effect.gen(function* () {
   }, Effect.orDie)
 
   yield* Effect.log('Started walking and building actual files.')
-  yield* walk(report, 'EventDotKey')
-  yield* Effect.log('Finished walking and building actual files.')
-  yield* Effect.log('Started formatting and linting.')
+  yield* walk(report, Base)
+  yield* Effect.log('Finished walking and building actual files.\n')
+
   yield* fixGeneratedFolder
-  yield* Effect.log('finished formatting and linting.')
+  yield* Effect.log('finished formatting and linting.\n')
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
