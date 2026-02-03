@@ -92,7 +92,7 @@ export const Tab: Tab = 'Tab'
  *
  * @generated
  */
-export type Space = 'Space'
+export type Space = ' '
 
 /**
  * The space key, `Space Bar`.
@@ -111,4 +111,4 @@ export type Space = 'Space'
  *
  * @generated
  */
-export const Space: Space = 'Space'
+export const Space: Space = ' '

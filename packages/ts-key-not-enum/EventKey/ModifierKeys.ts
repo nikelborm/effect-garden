@@ -419,7 +419,7 @@ export const Super: Super = 'Super'
  *
  * @generated
  */
-export type SymbolKey = 'SymbolKey'
+export type SymbolKey = 'Symbol'
 
 /**
  * The `Symbol` modifier key (found on certain virtual keyboards).
@@ -430,7 +430,7 @@ export type SymbolKey = 'SymbolKey'
  *
  * @generated
  */
-export const SymbolKey: SymbolKey = 'SymbolKey'
+export const SymbolKey: SymbolKey = 'Symbol'
 
 /**
  * The `Symbol Lock` key.

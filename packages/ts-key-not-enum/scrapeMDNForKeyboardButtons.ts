@@ -343,8 +343,35 @@ await Effect.gen(function* () {
       const tsdocString = renderFileHeaderTsDocString(node.main, nodeName)
 
       const tsFilePath = path.join(dirPath, nodeName + '.ts')
+      const renderRowOf3Columns = ({
+        compositionEventDataValue,
+        comments,
+        symbol,
+      }: any) => {
+        const {
+          groups: { name },
+        } = compositionEventDataValue.match(
+          /`GDK_KEY_dead_(?<name>\w+)`/,
+        ) as any as { groups: { name: string } }
+
+        const tsComment = EString.stripMargin(`|
+          |/**
+          | * One of the possible {@linkcode GlobalEventHandlersEventMap.compositionupdate|compositionupdate} event's data property
+          | *
+          | * ${comments}
+          | *
+          | * ${compositionEventDataValue}
+          | *
+          | * @generated
+          | */`)
+        return EString.stripMargin(`|${tsComment}
+        |export type ${name} = '${symbol}'
+        |${tsComment}
+        |export const ${name}: ${name} = '${symbol}'
+        |`)
+      }
       const renderRowOfSixColumns = (e: any) => {
-        let deprecated = ''
+        let deprecatedTag = ''
         const currAdditions: Set<string> = new Set()
         const indexRegexp = /\[(?<index>\d)\]/g
         const entriesCleaned = Object.entries<any>(e)
@@ -360,25 +387,22 @@ await Effect.gen(function* () {
             return [k, v.replaceAll(indexRegexp, '')]
           })
         const objClean = Object.fromEntries(entriesCleaned) as any
-        const nameDirty = objClean.keyValue
-        if (nameDirty.includes('deprecated')) {
-          deprecated = '@deprecated'
-        }
-        const nameRegexp = /`\W*"(\w+)"\W*`/
-        const nameMatched = nameDirty.match(nameRegexp)
+        const valueDirty = objClean.keyValue
+        if (valueDirty.includes('deprecated')) deprecatedTag = '@deprecated'
 
-        if (!nameMatched)
-          console.log('bad keyValue name', { nameDirty, nameMatched })
+        const valueRegexp = /`\W*"(.+)"\W*`/
+        const valueMatched = valueDirty.match(valueRegexp)
 
-        const nameClean =
-          nameDirty === '`" "` '
-            ? 'Space'
-            : nameDirty === '`"Symbol"`'
-              ? 'SymbolKey'
-              : nameMatched[1]
+        if (!valueMatched)
+          console.log('bad keyValue name', { valueDirty, valueMatched })
+
+        const value = valueMatched[1]
+        const varName =
+          value === ' ' ? 'Space' : value === 'Symbol' ? 'SymbolKey' : value
+
         if (
-          nameClean === '0' ||
-          (nameClean === 'Clear' && nodeName === 'NumericKeypadKeys')
+          value === '0"` through `"9' ||
+          (value === 'Clear' && nodeName === 'NumericKeypadKeys')
         )
           return ''
 
@@ -395,23 +419,24 @@ await Effect.gen(function* () {
           |*
           |* ${objClean.androidVirtualKeyCode ? `Android virtual key code: ${objClean.androidVirtualKeyCode}` : ''}
           |*
-          |* ${deprecated}
+          |* ${deprecatedTag}
           |* @generated
         |*/`)
         return EString.stripMargin(`|
           |${comment}
-          |export type ${nameClean} = "${nameClean}"
+          |export type ${varName} = '${value}'
           |
           |${comment}
-          |export const ${nameClean}: ${nameClean} = "${nameClean}"
+          |export const ${varName}: ${varName} = '${value}'
         |`)
       }
       const code =
         tsdocString +
         '\n' +
-        (typeof node.rows[0] === 'string'
-          ? node.rows.join('\n\n')
-          : node.rows.map(renderRowOfSixColumns).join('\n\n'))
+        (Object.entries(node.rows[0]).length === 3
+          ? node.rows.map(renderRowOf3Columns)
+          : node.rows.map(renderRowOfSixColumns)
+        ).join('\n\n')
 
       yield* fs.writeFileString(tsFilePath, code)
     } else {

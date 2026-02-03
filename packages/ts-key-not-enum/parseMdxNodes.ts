@@ -312,42 +312,11 @@ export const parseMdxNodes = (
       value => ({
         type: 'table 3',
         rows: value.map(
-          ({
-            children: [
-              { value: compositionEventDataValue },
-              { value: symbol },
-              { value: comments },
-            ],
-          }) => {
-            const {
-              groups: { name },
-            } = compositionEventDataValue.match(
-              /`GDK_KEY_dead_(?<name>\w+)`/,
-            ) as any as { groups: { name: string } }
-
-            return EString.stripMargin(`|/**
-            | * One of the possible {@linkcode GlobalEventHandlersEventMap.compositionupdate|compositionupdate} event's data property
-            | *
-            | * ${comments}
-            | *
-            | * ${compositionEventDataValue}
-            | *
-            | * @generated
-            | */
-            |export type ${name} = "${symbol}"
-            |
-            |/**
-            | * One of the possible {@linkcode GlobalEventHandlersEventMap.compositionupdate|compositionupdate} event's data property
-            | *
-            | * ${comments}
-            | *
-            | * ${compositionEventDataValue}
-            | *
-            | * @generated
-            | */
-            |export const ${name}: ${name} = "${symbol}"
-            |`)
-          },
+          ({ children: [{ value: v1 }, { value: v2 }, { value: v3 }] }) => ({
+            compositionEventDataValue: v1,
+            symbol: v2,
+            comments: v3,
+          }),
         ),
       }),
     )
