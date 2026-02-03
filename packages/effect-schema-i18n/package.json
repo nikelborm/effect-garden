@@ -31,7 +31,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/effect-schema-i18n"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

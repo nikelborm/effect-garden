@@ -36,7 +36,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/archive-compress-encrypt-and-back"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",

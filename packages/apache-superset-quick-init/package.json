@@ -55,7 +55,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/apache-superset-quick-init.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/apache-superset-quick-init"
   },
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",

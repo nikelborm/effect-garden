@@ -40,7 +40,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/effect-web-audio"
   },
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",

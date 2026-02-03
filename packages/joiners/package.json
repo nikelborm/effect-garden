@@ -45,7 +45,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/joiners.git"
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/joiners"
   },
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
