@@ -11,11 +11,18 @@ still, kudos to you for the idea, my dear dude. 😉 🐸
 
 I brought a few improvements such as more robust scraping of keys with
 [Effect.ts](https://effect.website/), and instead of using `const enum`s my
-rewrite encourages usage of namespace imports. With a bundler that's more or
+rewrite encourages usage of wildcard imports. With a bundler that's more or
 less capable of dead-code elimination, this approach would be almost no
 different from using Typescript's `const enum` feature. Except it would work
 fine with `"erasableSyntaxOnly": true` in `tsconfig.json`, while `const enum`
 doesn't.
+
+I specifically avoid saying `namespace imports`, and instead say `wildcard
+imports` to make a distinction from `ts-key-namespace`
+([NPM](https://www.npmjs.com/package/ts-key-namespace),
+[GitHub](https://github.com/Heartade/ts-key-namespace)), which exports typescript
+namespace and for this reason it's incompatible with `erasableSyntaxOnly` as
+well.
 
 ## Additional features
 
@@ -67,7 +74,7 @@ onKeyPress = (ev) => {
 ## How to use
 
 ```ts
-// You can use namespace imports
+// You can use wildcard imports
 import * as Key from 'ts-key-not-enum';
 console.log(Key.ArrowLeft)
 
@@ -80,7 +87,7 @@ import { FunctionKeys } from 'ts-key-not-enum/subcategories';
 console.log(FunctionKeys.F8)
 
 // Or you can import specific keys from subcategory files of the same name. If
-// you'll namespace-import these files, you'll get the same subcategory objects
+// you'll wildcard-import these files, you'll get the same subcategory objects
 import { F19 } from 'ts-key-not-enum/FunctionKeys';
 console.log(F19)
 
