@@ -94,7 +94,7 @@ const AppLayer = MdxServiceLive.pipe(
   Layer.provideMerge(Logger.pretty),
   Layer.provideMerge(BunPath.layer),
 )
-Logger.prettyLoggerDefault
+
 await Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
