@@ -1,6 +1,6 @@
 {
   "name": "ts-key-not-enum",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "type": "module",
   "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
   "license": "MIT",
@@ -92,18 +92,14 @@
   ],
   "contributors": [
     {
-      "name": "Nathan Friend",
-      "email": "hello@nathanfriend.io",
-      "url": "https://nathanfriend.io"
-    },
-    {
-      "name": "Nathan Friend",
-      "url": "https://www.npmjs.com/~nathanfriend"
-    },
-    {
       "name": "nikelborm",
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
+    },
+    {
+      "name": "Nathan Friend",
+      "email": "hello@nathanfriend.io",
+      "url": "https://nathanfriend.io"
     }
   ],
   "maintainers": [
