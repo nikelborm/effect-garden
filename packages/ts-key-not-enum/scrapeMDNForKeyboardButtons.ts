@@ -14,14 +14,13 @@ import * as Path from '@effect/platform/Path'
 import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
-import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Record from 'effect/Record'
 import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
@@ -32,16 +31,11 @@ import {
   renderMainModuleTsDocString,
 } from './renderMainTsDoc.ts'
 
-interface Key {
-  value: string
-  description: string
-}
+const DEBUG = false
 
 // https://github.com/w3c/uievents-key/
 const MDN_MDX_URL =
   'https://raw.githubusercontent.com/mdn/content/refs/heads/main/files/en-us/web/api/ui_events/keyboard_event_key_values/index.md'
-
-const _keyValueRegex = /"([a-z0-9_]+)"/i
 
 const fetchMdnPageContentFromGithub = Effect.gen(function* () {
   const client = yield* Effect.map(
@@ -62,48 +56,17 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
   ),
 )
 
-const OrderKey = Order.mapInput(Order.string, (e: Key) => e.value)
-
-const _removeDuplicates = (keys: Key[]) =>
-  EArray.dedupeWith<Key>(
-    EArray.sort(keys, OrderKey),
-    (a, b) => a.value === b.value,
-  )
-
-// const formatKeyEntry = ({ value, description }: Key) => {
-//   let formattedDescription: string
-
-//   if (value === 'Symbol') value = 'SymbolModifier'
-//   if (value === '0') value = 'Zero'
-
-//   if (description.includes('\n')) {
-//     formattedDescription = [
-//       '/**',
-//       ...description
-//         .trim()
-//         .split(/\n\s*/)
-//         .map(s => ` * ${s.trim()}`),
-//       ' */',
-//     ].join('\n')
-//   } else {
-//     formattedDescription = `/** ${description} */`
-//   }
-
-//   return `${formattedDescription}\nexport const ${value} = '${value}';`
-// }
-
-// '/**',
-// ' * @file',
-// ' * @generated',
-// ' * Here are listed all non-printable string values one can expect from $event.key.',
-// ' * For example, values like "CapsLock", "Backspace", and "AudioVolumeMute" are present,',
-// ' * but values like "a", "A", "#", "é", or "¿" are not.',
-// ' * Auto generated from MDN: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#Speech_recognition_keys',
-
-const fixGeneratedFolder = Effect.andThen(
+const fixGeneratedFolder = Effect.all([
+  Effect.log('Started fixing comments with prettier.'),
   Command.string(Command.make('bunx', 'prettier', '--write', './generated')),
+  Effect.log('Finished fixing comments with prettier.'),
+  Effect.log('Started fixing everything with biome.'),
   Command.string(Command.make('biome', 'check', '--write', './generated')),
-)
+  Effect.log('Finished fixing everything with biome.'),
+  Effect.log('Started compiling with tspc.'),
+  Command.string(Command.make('bunx', 'tspc')),
+  Effect.log('Finished compiling with tspc.'),
+])
 
 const makeCacheError = (
   cause: unknown,
@@ -127,17 +90,11 @@ const AppLayer = MdxServiceLive.pipe(
   Layer.provideMerge(FetchHttpClient.layer),
   Layer.provideMerge(BunCommandExecutor.layer),
   Layer.provideMerge(BunFileSystem.layer),
+  Layer.provideMerge(Logger.pretty),
   Layer.provideMerge(BunPath.layer),
 )
-
+Logger.prettyLoggerDefault
 await Effect.gen(function* () {
-  // yield* Effect.log('Eliminating duplicate keys...')
-  // const uniqueKeys = removeDuplicates(keys)
-  // yield* Effect.log('Generating .d.ts file...')
-  // const enumFile = generateEnumFile(uniqueKeys)
-  // yield* Effect.log('Writing result to index.ts...')
-  // yield* writeEnumFile(enumFile)
-
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
 
@@ -148,7 +105,6 @@ await Effect.gen(function* () {
     'scrapeMDNForKeyboardButtons',
   )
 
-  // TODO: Make use of ExecutionPlan?
   const cacheFilePath = path.join(cacheDirPath, 'page.mdx')
 
   const cacheStat = fs.stat(cacheFilePath)
@@ -224,7 +180,7 @@ await Effect.gen(function* () {
     return tree
   }
 
-  const _parsedMdx = yield* service.compileMdx(mdxPageContent, {
+  yield* service.compileMdx(mdxPageContent, {
     rehypePlugins: [logAstPlugin],
   })
 
@@ -255,11 +211,6 @@ await Effect.gen(function* () {
   const removeKeys = (node: unknown, keysToRemove: string[]): any =>
     removeEntries(node, [key => keysToRemove.includes(key)])
 
-  const removeEmptyDatas = (node: unknown): any =>
-    removeEntries(node, [
-      (key, value) => key === 'data' && Object.entries(value).length === 0,
-    ])
-
   yield* Effect.log('Started cleaning mdast with custom passes')
   const cleaned = pipe(
     removeKeys(mdast, [
@@ -288,14 +239,12 @@ await Effect.gen(function* () {
     parseMdxNodes,
   )
   yield* Effect.log('Cleaned mdast with custom passes')
-  yield* Effect.log('Started writing ./mdast.json')
 
-  // TODO: explicitly set the type of constant to reference the type below to not double the amount of types
-  // TODO: generate types as well as consts
-
-  yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
-
-  yield* Effect.log('Written ./mdast.json')
+  if (DEBUG) {
+    yield* Effect.log('Started writing ./mdast.json')
+    yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
+    yield* Effect.log('Written ./mdast.json')
+  }
 
   const report: any = { main: [] } as any
 
@@ -310,7 +259,7 @@ await Effect.gen(function* () {
 
   for (const element of (cleaned as any).children) {
     if (element?.value?.trim?.() === '') continue
-    if (element.tagName === 'h2' || element.tagName === 'h3') {
+    if (['h2', 'h3'].includes(element.tagName)) {
       const expectedStackSize = parseInt(element.tagName.slice(1), 10) - 1
 
       if (expectedStackSize - subcategoriesStack.length > 1)
@@ -339,7 +288,7 @@ await Effect.gen(function* () {
       continue
     }
 
-    if (element?.type === 'table 6' || element?.type === 'table 3') {
+    if (['table 6', 'table 3'].includes(element?.type)) {
       cursor.rows = element?.rows
       continue
     }
@@ -353,7 +302,7 @@ await Effect.gen(function* () {
     }
 
     if (!element.value) {
-      console.error(element)
+      yield* Effect.logError(element)
       throw new Error('wtf. likely incompletely parsed object')
     }
 
@@ -361,8 +310,14 @@ await Effect.gen(function* () {
   }
   yield* Effect.log('Done finishing touches with custom passes')
 
-  yield* fs.writeFileString('./report.json', JSON.stringify(report, void 0, 2))
-  yield* Effect.log('Written report')
+  if (DEBUG) {
+    yield* Effect.log('Started writing ./report.json')
+    yield* fs.writeFileString(
+      './report.json',
+      JSON.stringify(report, void 0, 2),
+    )
+    yield* Effect.log('Written report')
+  }
 
   const walk: (
     node: any,
@@ -382,73 +337,71 @@ await Effect.gen(function* () {
       const tsdocString = renderMainFileTsDocString(node.main, nodeName)
 
       const tsFilePath = path.join(dirPath, nodeName + '.ts')
+      const renderRowOfSixColumns = (e: any) => {
+        let deprecated = ''
+        const currAdditions: Set<string> = new Set()
+        const indexRegexp = /\[(?<index>\d)\]/g
+        const entriesCleaned = Object.entries<any>(e)
+          .filter(([, v]) => v.trim())
+          .map(([k, v]) => {
+            ;[...v.matchAll(indexRegexp)]
+              .map(
+                e =>
+                  node.additions[parseInt(e?.groups?.['index'] ?? '', 10) - 1],
+              )
+              .forEach(v => currAdditions.add(v))
+
+            return [k, v.replaceAll(indexRegexp, '')]
+          })
+        const objClean = Object.fromEntries(entriesCleaned) as any
+        const nameDirty = objClean.keyValue
+        if (nameDirty.includes('deprecated')) {
+          deprecated = '@deprecated'
+        }
+        const nameRegexp = /`\W*"(\w+)"\W*`/
+        const nameMatched = nameDirty.match(nameRegexp)
+
+        if (!nameMatched)
+          console.log('bad keyValue name', { nameDirty, nameMatched })
+
+        const nameClean =
+          nameDirty === '`" "` '
+            ? 'Space'
+            : nameDirty === '`"Symbol"`'
+              ? 'SymbolKey'
+              : nameMatched[1]
+        if (nameClean === '0') return ''
+
+        const comment = EString.stripMargin(`|/**
+          |* ${objClean.description || ''}
+          |*
+          |* ${[...currAdditions].join('\n\n')}
+          |*
+          |* ${objClean.windowsVirtualKeyCode ? `Windows virtual key code: ${objClean.windowsVirtualKeyCode}` : ''}
+          |*
+          |* ${objClean.macVirtualKeyCode ? `Mac virtual key code: ${objClean.macVirtualKeyCode}` : ''}
+          |*
+          |* ${objClean.linuxVirtualKeyCode ? `Linux virtual key code: ${objClean.linuxVirtualKeyCode}` : ''}
+          |*
+          |* ${objClean.androidVirtualKeyCode ? `Android virtual key code: ${objClean.androidVirtualKeyCode}` : ''}
+          |*
+          |* ${deprecated}
+          |* @generated
+        |*/`)
+        return EString.stripMargin(`|
+          |${comment}
+          |export type ${nameClean} = "${nameClean}"
+          |
+          |${comment}
+          |export const ${nameClean}: ${nameClean} = "${nameClean}"
+        |`)
+      }
       const code =
         tsdocString +
         '\n' +
         (typeof node.rows[0] === 'string'
           ? node.rows.join('\n\n')
-          : node.rows
-              .map((e: any) => {
-                let deprecated = ''
-                const currAdditions: string[] = []
-                const indexRegexp = /\[(?<index>\d)\]/g
-                const entriesCleaned = Object.entries<any>(e)
-                  .filter(([k, v]) => v.trim())
-                  .map(([k, v]) => {
-                    currAdditions.push(
-                      ...[...v.matchAll(indexRegexp)].map(
-                        e =>
-                          node.additions[
-                            parseInt(e?.groups?.['index'] ?? '', 10) - 1
-                          ],
-                      ),
-                    )
-
-                    return [k, v.replaceAll(indexRegexp, '')]
-                  })
-                const objClean = Object.fromEntries(entriesCleaned) as any
-                const nameDirty = objClean.keyValue
-                if (nameDirty.includes('deprecated')) {
-                  deprecated = '@deprecated'
-                }
-                const nameRegexp = /`\W*"(\w+)"\W*`/
-                const nameMatched = nameDirty.match(nameRegexp)
-
-                if (!nameMatched)
-                  console.log('bad name', { nameDirty, nameMatched })
-
-                const nameClean =
-                  nameDirty === '`" "` '
-                    ? 'Space'
-                    : nameDirty === '`"Symbol"`'
-                      ? 'SymbolKey'
-                      : nameMatched[1]
-
-                const comment = EString.stripMargin(`|/**
-                  |* ${objClean.description || ''}
-                  |*
-                  |* ${currAdditions.join('\n\n')}
-                  |*
-                  |* ${objClean.windowsVirtualKeyCode ? `Windows virtual key code: ${objClean.windowsVirtualKeyCode}` : ''}
-                  |*
-                  |* ${objClean.macVirtualKeyCode ? `Mac virtual key code: ${objClean.macVirtualKeyCode}` : ''}
-                  |*
-                  |* ${objClean.linuxVirtualKeyCode ? `Linux virtual key code: ${objClean.linuxVirtualKeyCode}` : ''}
-                  |*
-                  |* ${objClean.androidVirtualKeyCode ? `Android virtual key code: ${objClean.androidVirtualKeyCode}` : ''}
-                  |*
-                  |* ${deprecated}
-                  |* @generated
-                  |*/`)
-                return EString.stripMargin(`|
-                  |${comment}
-                  |export type ${nameClean} = "${nameClean}"
-                  |
-                  |${comment}
-                  |export const ${nameClean}: ${nameClean} = "${nameClean}"
-                  |`)
-              })
-              .join('\n\n'))
+          : node.rows.map(renderRowOfSixColumns).join('\n\n'))
 
       yield* fs.writeFileString(tsFilePath, code)
     } else {
@@ -465,20 +418,24 @@ await Effect.gen(function* () {
         yield* walk(subNode, subNodeName, newStack).pipe(
           Effect.catchAllCause(Effect.logError),
         )
-        indexFileBody += `
-        ${renderMainModuleTsDocString(subNode.main, subNodeName)}export * as ${subNodeName} from './${'subcategories' in subNode ? `${subNodeName}/index.ts` : `${subNodeName}.ts`}'\n\n\n\n\n\n\n\n\n\n
-
-        `
+        indexFileBody += renderMainModuleTsDocString(subNode.main, subNodeName)
+        const relativePath =
+          'subcategories' in subNode
+            ? `${subNodeName}/index.ts`
+            : `${subNodeName}.ts`
+        indexFileBody += `export * as ${subNodeName} from './${relativePath}'\n\n`
       }
 
       const tsdocString = renderMainFileTsDocString(node.main, nodeName)
-      const code = tsdocString + indexFileBody
+      const code = tsdocString + '\n' + indexFileBody
 
       yield* fs.writeFileString(tsFilePath, code)
     }
   }, Effect.orDie)
 
+  yield* Effect.log('Started walking and building actual files.')
   yield* walk(report, 'EventDotKey')
+  yield* Effect.log('Finished walking and building actual files.')
   yield* Effect.log('Started formatting and linting.')
   yield* fixGeneratedFolder
   yield* Effect.log('finished formatting and linting.')
