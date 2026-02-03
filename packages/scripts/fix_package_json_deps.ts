@@ -30,9 +30,9 @@ const deps = Schema.Record({
 const RootPackageJsonSchema = Schema.parseJson(
   Schema.Struct({
     name: Schema.NonEmptyTrimmedString,
-    devDependencies: deps.pipe(OptionalProperty),
+    dependencies: deps.pipe(OptionalProperty),
     catalog: deps,
-    dependencies: AbsentProperty,
+    devDependencies: AbsentProperty,
   }),
 )
 

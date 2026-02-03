@@ -33,7 +33,7 @@
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
-    "ts-patch": "^3.3.0",
+    "ts-patch": "catalog:",
     "typescript": "catalog:",
     "webidl2": "^24.5.0"
   },

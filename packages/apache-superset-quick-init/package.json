@@ -39,7 +39,6 @@
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "tslib": "catalog:",
-    "typescript": "catalog:",
     "vitest": "catalog:",
     "yaml": "^2.8.2"
   },

@@ -17,13 +17,12 @@
     "tsafe": "catalog:",
     "type-fest": "catalog:",
     "zod": "^4.3.5",
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "devDependencies": {
+    "ts-patch": "catalog:",
+    "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*"
   }
 }

@@ -22,7 +22,7 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@octokit/core": "^7.0.6",
+    "@octokit/core": "catalog:",
     "@octokit/request-error": "^7.1.0",
     "@octokit/types": "^16.0.0",
     "effect": "catalog:",
