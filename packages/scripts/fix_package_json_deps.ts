@@ -315,3 +315,5 @@ for (const { devDependencies } of myMonorepoPackages) {
 // "typescript": "catalog:"
 
 // ensure version field is present everywhere as well as name
+
+// Add task ensuring effect is in peer deps where necessary instead of hard deps
