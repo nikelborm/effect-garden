@@ -1,19 +1,19 @@
 /**
- * Linux generates accented characters using special **dead keys**. _Dead keys_
- * are keys which are pressed in combination with character keys to generate
- * accented forms of those characters. You can identify which specific dead key
- * was used (if more than one exists) by examining the KeyboardEvent 's
- * associated compositionupdate event's data property.
- *
- * You can find a table of the dead keys and the characters they can be used
- * with to generate accented or otherwise special characters on Linux using
- * GTK.
- *
- * The value of data will be one of the following:
- *
  * @module DeadKeycodesForLinux
  *
  * @file
+ *
+ *   Linux generates accented characters using special **dead keys**. _Dead keys_
+ *   are keys which are pressed in combination with character keys to generate
+ *   accented forms of those characters. You can identify which specific dead
+ *   key was used (if more than one exists) by examining the KeyboardEvent 's
+ *   associated compositionupdate event's data property.
+ *
+ *   You can find a table of the dead keys and the characters they can be used
+ *   with to generate accented or otherwise special characters on Linux using
+ *   GTK.
+ *
+ *   The value of data will be one of the following:
  * @generated
  */
 

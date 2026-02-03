@@ -27,7 +27,7 @@ import * as EString from 'effect/String'
 
 import { parseMdxNodes } from './parseMdxNodes.ts'
 import {
-  renderMainFileTsDocString,
+  renderFileHeaderTsDocString,
   renderMainModuleTsDocString,
 } from './renderMainTsDoc.ts'
 
@@ -57,12 +57,17 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
 )
 
 const Base = 'EventKey'
+const affectedGeneratedPaths = [`./${Base}/`, `./${Base}.ts`]
 const fixGeneratedFolder = Effect.all([
   Effect.log('Started fixing comments with prettier.'),
-  Command.string(Command.make('bunx', 'prettier', '--write', Base)),
+  Command.string(
+    Command.make('bunx', 'prettier', '--write', ...affectedGeneratedPaths),
+  ),
   Effect.log('Finished fixing comments with prettier.\n'),
   Effect.log('Started fixing everything with biome.'),
-  Command.string(Command.make('biome', 'check', '--write', Base)),
+  Command.string(
+    Command.make('biome', 'check', '--write', ...affectedGeneratedPaths),
+  ),
   Effect.log('Finished fixing everything with biome.\n'),
   Effect.log('Started compiling with tspc.'),
   Command.string(Command.make('bunx', 'tspc')),
@@ -335,7 +340,7 @@ await Effect.gen(function* () {
       const dirPath = path.join(...stack)
 
       yield* fs.makeDirectory(dirPath, { recursive: true })
-      const tsdocString = renderMainFileTsDocString(node.main, nodeName)
+      const tsdocString = renderFileHeaderTsDocString(node.main, nodeName)
 
       const tsFilePath = path.join(dirPath, nodeName + '.ts')
       const renderRowOfSixColumns = (e: any) => {
@@ -371,7 +376,11 @@ await Effect.gen(function* () {
             : nameDirty === '`"Symbol"`'
               ? 'SymbolKey'
               : nameMatched[1]
-        if (nameClean === '0') return ''
+        if (
+          nameClean === '0' ||
+          (nameClean === 'Clear' && nodeName === 'NumericKeypadKeys')
+        )
+          return ''
 
         const comment = EString.stripMargin(`|/**
           |* ${objClean.description || ''}
@@ -408,9 +417,9 @@ await Effect.gen(function* () {
     } else {
       const dirPath = path.join(...stack, nodeName)
       yield* fs.makeDirectory(dirPath, { recursive: true })
-      const tsFilePath = path.join(dirPath, 'index.ts')
 
       let indexFileBody = ''
+      let aggregateFileBody = ''
 
       for (const [subNodeName, subNode] of Record.toEntries<string, any>(
         node.subcategories,
@@ -419,18 +428,25 @@ await Effect.gen(function* () {
         yield* walk(subNode, subNodeName, newStack).pipe(
           Effect.catchAllCause(Effect.logError),
         )
-        indexFileBody += renderMainModuleTsDocString(subNode.main, subNodeName)
+        indexFileBody += renderMainModuleTsDocString(subNode.main)
         const relativePath =
           'subcategories' in subNode
             ? `${subNodeName}/index.ts`
             : `${subNodeName}.ts`
         indexFileBody += `export * as ${subNodeName} from './${relativePath}'\n\n`
+        aggregateFileBody += `export * from './${nodeName}/${subNodeName}.ts'\n`
       }
 
-      const tsdocString = renderMainFileTsDocString(node.main, nodeName)
-      const code = tsdocString + '\n' + indexFileBody
+      const tsdocString = renderFileHeaderTsDocString(node.main, nodeName)
 
-      yield* fs.writeFileString(tsFilePath, code)
+      yield* fs.writeFileString(
+        path.join(dirPath, 'index.ts'),
+        tsdocString + '\n' + indexFileBody,
+      )
+      yield* fs.writeFileString(
+        path.join(...stack, `${nodeName}.ts`),
+        aggregateFileBody,
+      )
     }
   }, Effect.orDie)
 

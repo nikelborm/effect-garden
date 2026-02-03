@@ -1,13 +1,13 @@
 /**
- * The tables below list the standard values for the
- * [`KeyboardEvent.key`](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key)
- * property, with an explanation of what the key is typically used for.
- * Corresponding virtual keycodes for common platforms are included where
- * available.
- *
  * @module EventKey
  *
  * @file
+ *
+ *   The tables below list the standard values for the
+ *   [`KeyboardEvent.key`](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key)
+ *   property, with an explanation of what the key is typically used for.
+ *   Corresponding virtual keycodes for common platforms are included where
+ *   available.
  * @generated
  */
 
@@ -15,14 +15,12 @@
  * Some keyboards offer special keys for launching or switching to certain
  * common applications. Key values for those are listed here.
  *
- * @module ApplicationSelectorKeys
  * @generated
  */
 export * as ApplicationSelectorKeys from './ApplicationSelectorKeys.ts'
 /**
  * These media keys are used specifically for controlling audio.
  *
- * @module AudioControlKeys
  * @generated
  */
 export * as AudioControlKeys from './AudioControlKeys.ts'
@@ -30,28 +28,20 @@ export * as AudioControlKeys from './AudioControlKeys.ts'
  * Some keyboards include special keys for controlling Web browsers. Those keys
  * follow.
  *
- * @module BrowserControlKeys
  * @generated
  */
 export * as BrowserControlKeys from './BrowserControlKeys.ts'
-/**
- * @module DeviceKeys
- * @generated
- */
+/** @generated */
 export * as DeviceKeys from './DeviceKeys.ts'
 /**
  * These keys control documents. In the specification, they're included in other
  * sets of keys (such as the media keys), but they are more sensibly considered
  * to be their own category.
  *
- * @module DocumentKeys
  * @generated
  */
 export * as DocumentKeys from './DocumentKeys.ts'
-/**
- * @module EditingKeys
- * @generated
- */
+/** @generated */
 export * as EditingKeys from './EditingKeys.ts'
 /**
  * While various platforms support different numbers of the general-purpose
@@ -62,7 +52,6 @@ export * as EditingKeys from './EditingKeys.ts'
  * continuing to increment the numeric portion of each key's name, so that, for
  * example, `"F24"` is a valid key value.
  *
- * @module FunctionKeys
  * @generated
  */
 export * as FunctionKeys from './FunctionKeys.ts'
@@ -76,7 +65,6 @@ export * as FunctionKeys from './FunctionKeys.ts'
  * keyboards targeting specific languages. In addition, not all keyboards have
  * all of these keys.
  *
- * @module IMEAndCompositionKeys
  * @generated
  */
 export * as IMEAndCompositionKeys from './IMEAndCompositionKeys/index.ts'
@@ -108,7 +96,6 @@ export * as IMEAndCompositionKeys from './IMEAndCompositionKeys/index.ts'
  * > keys](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values#audio_control_keys).
  * > Those keys' values will match what's documented in those tables.
  *
- * @module MediaControllerKeys
  * @generated
  */
 export * as MediaControllerKeys from './MediaControllerKeys.ts'
@@ -118,7 +105,6 @@ export * as MediaControllerKeys from './MediaControllerKeys.ts'
  * include the `Shift` and `Control` keys, and lock keys such as `Caps Lock` and
  * `NumLock`.
  *
- * @module ModifierKeys
  * @generated
  */
 export * as ModifierKeys from './ModifierKeys.ts'
@@ -126,14 +112,10 @@ export * as ModifierKeys from './ModifierKeys.ts'
  * The multimedia keys are extra buttons or keys for controlling media devices,
  * found on some keyboards.
  *
- * @module MultimediaKeys
  * @generated
  */
 export * as MultimediaKeys from './MultimediaKeys.ts'
-/**
- * @module NavigationKeys
- * @generated
- */
+/** @generated */
 export * as NavigationKeys from './NavigationKeys.ts'
 /**
  * These keys are found on the keyboard's numeric keypad. However, not all are
@@ -145,14 +127,12 @@ export * as NavigationKeys from './NavigationKeys.ts'
  *
  * > The `10` key, if present, generates events with the `key` value of `"0"`.
  *
- * @module NumericKeypadKeys
  * @generated
  */
 export * as NumericKeypadKeys from './NumericKeypadKeys.ts'
 /**
  * These keys represent buttons which commonly exist on modern smartphones.
  *
- * @module PhoneKeys
  * @generated
  */
 export * as PhoneKeys from './PhoneKeys.ts'
@@ -160,7 +140,6 @@ export * as PhoneKeys from './PhoneKeys.ts'
  * Values of `key` which have special meanings other than identifying a specific
  * key or character.
  *
- * @module SpecialValues
  * @generated
  */
 export * as SpecialValues from './SpecialValues.ts'
@@ -168,7 +147,6 @@ export * as SpecialValues from './SpecialValues.ts'
  * These special multimedia keys are used to control speech recognition
  * features.
  *
- * @module SpeechRecognitionKeys
  * @generated
  */
 export * as SpeechRecognitionKeys from './SpeechRecognitionKeys.ts'
@@ -176,17 +154,10 @@ export * as SpeechRecognitionKeys from './SpeechRecognitionKeys.ts'
  * These key values represent buttons or keys present on television devices, or
  * computers or phones which have TV support.
  *
- * @module TVControlKeys
  * @generated
  */
 export * as TVControlKeys from './TVControlKeys.ts'
-/**
- * @module UIKeys
- * @generated
- */
+/** @generated */
 export * as UIKeys from './UIKeys.ts'
-/**
- * @module WhitespaceKeys
- * @generated
- */
+/** @generated */
 export * as WhitespaceKeys from './WhitespaceKeys.ts'

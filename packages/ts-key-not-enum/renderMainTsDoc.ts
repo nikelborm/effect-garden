@@ -19,67 +19,61 @@ const generatedBlock = new tsdoc.DocBlock({
   blockTag: new tsdoc.DocBlockTag({ configuration, tagName: '@generated' }),
 })
 
-export const renderMainFileDocComment = (
-  main: string[],
-  moduleName: string,
-) => {
-  const docComment = renderMainModuleDocComment(main, moduleName)
-  const fileBlock = new tsdoc.DocBlock({
-    configuration,
-    blockTag: fileBlockTag,
-  })
-  docComment.appendCustomBlock(fileBlock)
-
-  return docComment
-}
-
-export const renderMainFileTsDocString = (
-  main: string[],
-  moduleName: string,
-) => {
-  const docComment = renderMainFileDocComment(main, moduleName)
-
-  return docComment.emitAsTsdoc()
-}
-
-export const renderMainModuleDocComment = (
-  main: string[],
-  moduleName: string,
-) => {
+const makeModuleBlock = (moduleName: string) => {
   const moduleBlock = new tsdoc.DocBlock({
     configuration,
     blockTag: moduleBlockTag,
   })
-  moduleBlock.content.appendNode(
-    new tsdoc.DocParagraph({ configuration }, [
-      new tsdoc.DocPlainText({ configuration, text: moduleName }),
-    ]),
+  moduleBlock.content.appendNodeInParagraph(
+    new tsdoc.DocPlainText({ configuration, text: moduleName }),
   )
+  return moduleBlock
+}
 
+const makeFileBlock = () =>
+  new tsdoc.DocBlock({ configuration, blockTag: fileBlockTag })
+
+const makeParagraphsFromMainLines = (main: string[]) =>
+  main
+    .flatMap(e => e.split('\n'))
+    .filter(Boolean)
+    .map(
+      text =>
+        new tsdoc.DocParagraph({ configuration }, [
+          new tsdoc.DocPlainText({ configuration, text }),
+        ]),
+    )
+
+export const renderReexportModuleDocComment = (main: string[]) => {
   const docComment = new tsdoc.DocComment({ configuration })
-  docComment.summarySection = new tsdoc.DocSection(
-    { configuration },
-    main
-      .flatMap(e => e.split('\n'))
-      .filter(Boolean)
-      .map(
-        text =>
-          new tsdoc.DocParagraph({ configuration }, [
-            new tsdoc.DocPlainText({ configuration, text }),
-          ]),
-      ),
-  )
+
+  docComment.summarySection.appendNodes(makeParagraphsFromMainLines(main))
+
   docComment.appendCustomBlock(generatedBlock)
-  docComment.appendCustomBlock(moduleBlock)
 
   return docComment
 }
 
-export const renderMainModuleTsDocString = (
+export const renderFileHeaderTsDocString = (
   main: string[],
   moduleName: string,
 ) => {
-  const docComment = renderMainModuleDocComment(main, moduleName)
+  const docComment = new tsdoc.DocComment({ configuration })
+
+  const moduleBlock = makeModuleBlock(moduleName)
+
+  const fileBlock = makeFileBlock()
+  fileBlock.content.appendNodes(makeParagraphsFromMainLines(main))
+
+  docComment.appendCustomBlock(fileBlock)
+  docComment.appendCustomBlock(moduleBlock)
+  docComment.appendCustomBlock(generatedBlock)
+
+  return docComment.emitAsTsdoc()
+}
+
+export const renderMainModuleTsDocString = (main: string[]) => {
+  const docComment = renderReexportModuleDocComment(main)
 
   return docComment.emitAsTsdoc()
 }
