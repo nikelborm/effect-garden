@@ -1,6 +1,6 @@
 {
   "name": "ts-key-not-enum",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "type": "module",
   "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
   "license": "MIT",
@@ -13,6 +13,7 @@
     ".github/FUNDING.yml",
     "dist-types",
     "dist",
+    "src",
     "index.ts",
     "package.json",
     "!dist-types/scripts",

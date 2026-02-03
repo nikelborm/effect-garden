@@ -1,28 +1,27 @@
 # ts-key-not-enum ([NPM](https://www.npmjs.com/package/ts-key-not-enum), [GitHub](https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum))
 
-Keyboard events have `.key` string property. This package allows type-safe
-comparison of that property with non-printable values
+Keyboard events have untyped `.key` string property. This package allows
+type-safe comparison of that property with non-printable values.
 
 This is a rewrite of `ts-key-enum`
 ([GitHub](https://github.com/nfriend/ts-key-enum/),
 [NPM](https://www.npmjs.com/package/ts-key-enum)) originally made by Nathan
-Friend ([GitHub: @nfriend](https://github.com/nfriend/)). No code was copied, but
-still, kudos to you for the idea, my dear dude. 😉 🐸
+Friend ([GitHub: @nfriend](https://github.com/nfriend/)). No code was copied,
+but still, kudos to you for the idea, my dear dude. 😉 🐸
 
 I brought a few improvements such as more robust scraping of keys with
 [Effect.ts](https://effect.website/), and instead of using `const enum`s my
-rewrite encourages usage of wildcard imports. With a bundler that's more or
-less capable of dead-code elimination, this approach would be almost no
-different from using Typescript's `const enum` feature. Except it would work
-fine with `"erasableSyntaxOnly": true` in `tsconfig.json`, while `const enum`
-doesn't.
+rewrite encourages usage of wildcard imports. With a bundler that's more or less
+capable of dead-code elimination, this approach would be almost no different
+from using Typescript's `const enum` feature. Except it would work fine with
+`"erasableSyntaxOnly": true` in `tsconfig.json`, while `const enum` doesn't.
 
 I specifically avoid saying `namespace imports`, and instead say `wildcard
 imports` to make a distinction from `ts-key-namespace`
 ([NPM](https://www.npmjs.com/package/ts-key-namespace),
-[GitHub](https://github.com/Heartade/ts-key-namespace)), which exports typescript
-namespace and for this reason it's incompatible with `erasableSyntaxOnly` as
-well.
+[GitHub](https://github.com/Heartade/ts-key-namespace)), which exports
+typescript namespace and for this reason it's incompatible with
+`erasableSyntaxOnly` as well.
 
 ## Additional features
 
@@ -32,8 +31,8 @@ well.
    available as well
 3. Both constants and string literal types are exported
 4. No enums here 💀
-5. No super-mega-giga-deadly-dead dependencies like bluebird, lodash,
-   request-promise etc 😊
+5. No super-mega-giga-deadly-dead dependencies like `bluebird`, `lodash`,
+   `request-promise` etc 😊
 
 ## Install
 
@@ -82,6 +81,11 @@ console.log(Key.ArrowLeft)
 import { ArrowRight } from 'ts-key-not-enum';
 console.log(ArrowRight)
 
+// No need in typeof here
+type wow = ArrowRight
+//   ^? "ArrowRight"
+
+
 // You can either import pre-made subcategories as objects and reference their fields
 import { FunctionKeys } from 'ts-key-not-enum/subcategories';
 console.log(FunctionKeys.F8)
@@ -106,8 +110,8 @@ console.log(KanjiMode)
 ```
 
 [`index.ts`](./index.ts) is an entry point and exports all available keys. This
-file, and everything in [`src`](./src/) directory is auto-generated from
-the list of keys found at [MDN: Key values for keyboard
+file, and everything in [`src`](./src/) directory is auto-generated from the
+list of keys found at [MDN: Key values for keyboard
 events](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values)
 
 ## What's included
