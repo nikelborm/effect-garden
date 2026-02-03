@@ -380,14 +380,75 @@ await Effect.gen(function* () {
 
       yield* fs.makeDirectory(dirPath, { recursive: true })
       const tsdocString = renderMainFileTsDocString(node.main, nodeName)
-      let additional = ''
-
-      if (typeof node.rows[0] === 'string') {
-        additional = node.rows.join('\n\n')
-      }
 
       const tsFilePath = path.join(dirPath, nodeName + '.ts')
-      const code = tsdocString + '\n' + additional
+      const code =
+        tsdocString +
+        '\n' +
+        (typeof node.rows[0] === 'string'
+          ? node.rows.join('\n\n')
+          : node.rows
+              .map((e: any) => {
+                let deprecated = ''
+                const currAdditions: string[] = []
+                const indexRegexp = /\[(?<index>\d)\]/g
+                const entriesCleaned = Object.entries<any>(e)
+                  .filter(([k, v]) => v.trim())
+                  .map(([k, v]) => {
+                    currAdditions.push(
+                      ...[...v.matchAll(indexRegexp)].map(
+                        e =>
+                          node.additions[
+                            parseInt(e?.groups?.['index'] ?? '', 10) - 1
+                          ],
+                      ),
+                    )
+
+                    return [k, v.replaceAll(indexRegexp, '')]
+                  })
+                const objClean = Object.fromEntries(entriesCleaned) as any
+                const nameDirty = objClean.keyValue
+                if (nameDirty.includes('deprecated')) {
+                  deprecated = '@deprecated'
+                }
+                const nameRegexp = /`\W*"(\w+)"\W*`/
+                const nameMatched = nameDirty.match(nameRegexp)
+
+                if (!nameMatched)
+                  console.log('bad name', { nameDirty, nameMatched })
+
+                const nameClean =
+                  nameDirty === '`" "` '
+                    ? 'Space'
+                    : nameDirty === '`"Symbol"`'
+                      ? 'SymbolKey'
+                      : nameMatched[1]
+
+                const comment = EString.stripMargin(`|/**
+                  |* ${objClean.description || ''}
+                  |*
+                  |* ${currAdditions.join('\n\n')}
+                  |*
+                  |* ${objClean.windowsVirtualKeyCode ? `Windows virtual key code: ${objClean.windowsVirtualKeyCode}` : ''}
+                  |*
+                  |* ${objClean.macVirtualKeyCode ? `Mac virtual key code: ${objClean.macVirtualKeyCode}` : ''}
+                  |*
+                  |* ${objClean.linuxVirtualKeyCode ? `Linux virtual key code: ${objClean.linuxVirtualKeyCode}` : ''}
+                  |*
+                  |* ${objClean.androidVirtualKeyCode ? `Android virtual key code: ${objClean.androidVirtualKeyCode}` : ''}
+                  |*
+                  |* ${deprecated}
+                  |* @generated
+                  |*/`)
+                return EString.stripMargin(`|
+                  |${comment}
+                  |export type ${nameClean} = "${nameClean}"
+                  |
+                  |${comment}
+                  |export const ${nameClean}: ${nameClean} = "${nameClean}"
+                  |`)
+              })
+              .join('\n\n'))
 
       yield* fs.writeFileString(tsFilePath, code)
     } else {
@@ -400,12 +461,12 @@ await Effect.gen(function* () {
       for (const [subNodeName, subNode] of Record.toEntries<string, any>(
         node.subcategories,
       )) {
-        yield* walk(subNode, subNodeName, [...stack, nodeName]).pipe(
+        const newStack = [...stack, nodeName]
+        yield* walk(subNode, subNodeName, newStack).pipe(
           Effect.catchAllCause(Effect.logError),
-          Effect.forkScoped,
         )
         indexFileBody += `
-        ${renderMainModuleTsDocString(subNode.main, subNodeName)}export * as ${subNodeName} from './${'subcategories' in subNode ? `${subNodeName}/index.ts` : `${subNodeName}.ts`}'
+        ${renderMainModuleTsDocString(subNode.main, subNodeName)}export * as ${subNodeName} from './${'subcategories' in subNode ? `${subNodeName}/index.ts` : `${subNodeName}.ts`}'\n\n\n\n\n\n\n\n\n\n
 
         `
       }
@@ -417,16 +478,14 @@ await Effect.gen(function* () {
     }
   }, Effect.orDie)
 
-  yield* walk(report, 'EventDotKey').pipe(
-    Effect.awaitAllChildren,
-    Effect.scoped,
-  )
+  yield* walk(report, 'EventDotKey')
   yield* Effect.log('Started formatting and linting.')
   yield* fixGeneratedFolder
   yield* Effect.log('finished formatting and linting.')
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
+  Effect.scoped,
   Effect.catchAllCause(error => Console.error(error)),
   Effect.provide(AppLayer),
   Effect.runPromise,
