@@ -1,37 +1,43 @@
-import * as tsdoc from '@microsoft/tsdoc'
+import {
+  DocBlock,
+  DocBlockTag,
+  DocComment,
+  DocParagraph,
+  DocPlainText,
+  StandardTags,
+  TSDocConfiguration,
+} from '@microsoft/tsdoc'
 
-import { createTSDocConfiguration } from '../../tsdocDefinition.ts'
+const configuration = new TSDocConfiguration()
 
-const configuration = createTSDocConfiguration()
-
-const moduleBlockTag = new tsdoc.DocBlockTag({
+const moduleBlockTag = new DocBlockTag({
   configuration,
   tagName: '@module',
 })
 
 // @ts-expect-error hack to render module declaration as a single line
 moduleBlockTag._tagNameWithUpperCase =
-  tsdoc.StandardTags.defaultValue.tagNameWithUpperCase
+  StandardTags.defaultValue.tagNameWithUpperCase
 
-const fileBlockTag = new tsdoc.DocBlockTag({ configuration, tagName: '@file' })
-const generatedBlock = new tsdoc.DocBlock({
+const fileBlockTag = new DocBlockTag({ configuration, tagName: '@file' })
+const generatedBlock = new DocBlock({
   configuration,
-  blockTag: new tsdoc.DocBlockTag({ configuration, tagName: '@generated' }),
+  blockTag: new DocBlockTag({ configuration, tagName: '@generated' }),
 })
 
 const makeModuleBlock = (moduleName: string) => {
-  const moduleBlock = new tsdoc.DocBlock({
+  const moduleBlock = new DocBlock({
     configuration,
     blockTag: moduleBlockTag,
   })
   moduleBlock.content.appendNodeInParagraph(
-    new tsdoc.DocPlainText({ configuration, text: moduleName }),
+    new DocPlainText({ configuration, text: moduleName }),
   )
   return moduleBlock
 }
 
 const makeFileBlock = () =>
-  new tsdoc.DocBlock({ configuration, blockTag: fileBlockTag })
+  new DocBlock({ configuration, blockTag: fileBlockTag })
 
 const makeParagraphsFromMainLines = (main: string[]) =>
   main
@@ -39,13 +45,13 @@ const makeParagraphsFromMainLines = (main: string[]) =>
     .filter(Boolean)
     .map(
       text =>
-        new tsdoc.DocParagraph({ configuration }, [
-          new tsdoc.DocPlainText({ configuration, text }),
+        new DocParagraph({ configuration }, [
+          new DocPlainText({ configuration, text }),
         ]),
     )
 
 export const renderReexportModuleDocComment = (main: string[]) => {
-  const docComment = new tsdoc.DocComment({ configuration })
+  const docComment = new DocComment({ configuration })
 
   docComment.summarySection.appendNodes(makeParagraphsFromMainLines(main))
 
@@ -58,7 +64,7 @@ export const renderFileHeaderTsDocString = (
   main: string[],
   moduleName: string,
 ) => {
-  const docComment = new tsdoc.DocComment({ configuration })
+  const docComment = new DocComment({ configuration })
 
   const moduleBlock = makeModuleBlock(moduleName)
 
