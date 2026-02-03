@@ -25,6 +25,8 @@ doesn't.
    available as well
 3. Both constants and string literal types are exported
 4. No enums here 💀
+5. No super-mega-giga-deadly-dead dependencies like bluebird, lodash,
+   request-promise etc 😊
 
 ## Install
 
