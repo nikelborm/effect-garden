@@ -70,6 +70,7 @@ const fixGeneratedFolder = Effect.all([
     const rm = (p: string) => fs.remove(p, { force: true, recursive: true })
     return Effect.all([rm('dist'), rm('dist-types')])
   }),
+  // TODO: properly show tspc's error output. It's currently fails silently
   Command.string(Command.make('bunx', 'tspc')),
   Effect.log('Finished compiling with tspc.\n'),
 ])
@@ -476,7 +477,6 @@ await Effect.gen(function* () {
   yield* Effect.log('Finished walking and building actual files.\n')
 
   yield* fixGeneratedFolder
-  yield* Effect.log('finished formatting and linting.\n')
 
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
