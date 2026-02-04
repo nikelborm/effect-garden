@@ -146,7 +146,8 @@ updated list of keys found in MDN.
 1. Add support for comparison with `.data` property. Currently
    `DeadKeycodesForLinux.ts` is incorrectly rendered. Symbols there are not in
    fact `.key` values. The table in MDN is supposed to be clarifying the usage
-   of hex codes of `.data` property.
+   of hex codes of `.data` property. This leads to variables with empty strings
+   in there.
 2. improve performance and use a matcher like typia instead of ts-pattern
 3. improve caching stages. And cache not only the first fetch, but also byte
    results of rendering functions. Parallelize validation and passing file
