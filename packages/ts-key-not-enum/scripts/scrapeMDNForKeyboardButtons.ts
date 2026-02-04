@@ -175,7 +175,8 @@ await Effect.gen(function* () {
     () => 'Failed to both fetch from GitHub and read from cache',
   )
 
-  yield* Effect.log('Successfully acquired MDN page contents.')
+  yield* Effect.log('Successfully acquired MDN page contents.\n')
+  yield* Effect.log('Started parsing mdast contents')
 
   const service = yield* MdxService
 
@@ -186,12 +187,10 @@ await Effect.gen(function* () {
     return tree
   }
 
-  yield* service.compileMdx(mdxPageContent, {
-    rehypePlugins: [logAstPlugin],
-  })
+  yield* service.compileMdx(mdxPageContent, { rehypePlugins: [logAstPlugin] })
 
   if (!mdast) return yield* Effect.dieMessage(`MDX AST plugin didn't work`)
-  yield* Effect.log('Parsed mdast by mdx parser')
+  yield* Effect.log('Parsed mdast by mdx parser\n')
 
   const removeEntries = (
     node: unknown,
@@ -244,12 +243,12 @@ await Effect.gen(function* () {
     parseMdxNodes,
     parseMdxNodes,
   )
-  yield* Effect.log('Cleaned mdast with custom passes')
+  yield* Effect.log('Cleaned mdast with custom passes\n')
 
   if (DEBUG) {
     yield* Effect.log('Started writing ./mdast.json')
     yield* fs.writeFileString('./mdast.json', JSON.stringify(mdast, void 0, 2))
-    yield* Effect.log('Written ./mdast.json')
+    yield* Effect.log('Written ./mdast.json\n')
   }
 
   const report: any = { main: [] } as any
