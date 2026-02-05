@@ -58,7 +58,7 @@ interface IAccordRegistry {
   readonly allAccords: Effect.Effect<AllAccordTuple>
   readonly activeAccordChanges: Stream.Stream<AllAccordUnion>
   readonly setActiveAccord: (
-    patternIndex: RecordedAccordIndexes,
+    accordIndex: RecordedAccordIndexes,
   ) => Effect.Effect<void>
 }
 

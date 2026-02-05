@@ -22,8 +22,10 @@ import {
   PatternOrderByIndex,
   PatternRegistry,
 } from './PatternRegistry.ts'
-import { PhysicalKeyboardKeyModelToUIButtonMappingService } from './PhysicalKeyboardKeyModelToUIButtonMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToUIButtonMappingService } from './PhysicalMIDIDeviceButtonModelToUIButtonMappingService.ts'
+import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
+import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
+import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
+import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -32,29 +34,50 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     dependencies: [
       PatternRegistry.Default,
       AccordRegistry.Default,
-      PhysicalKeyboardKeyModelToUIButtonMappingService.Default,
-      PhysicalMIDIDeviceButtonModelToUIButtonMappingService.Default,
+      PhysicalKeyboardButtonModelToAccordMappingService.Default,
+      PhysicalKeyboardButtonModelToPatternMappingService.Default,
+      PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
+      PhysicalMIDIDeviceButtonModelToPatternMappingService.Default,
       LoadedAssetSizeEstimationMap.Default,
     ],
     scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
-      const physicalKeyboardKeyModelToUIButtonMappingService =
-        yield* PhysicalKeyboardKeyModelToUIButtonMappingService
-
-      const physicalMIDIDeviceButtonModelToUIButtonMappingService =
-        yield* PhysicalMIDIDeviceButtonModelToUIButtonMappingService
+      const physicalKeyboardButtonModelToAccordMappingService =
+        yield* PhysicalKeyboardButtonModelToAccordMappingService
+      const physicalKeyboardButtonModelToPatternMappingService =
+        yield* PhysicalKeyboardButtonModelToPatternMappingService
+      const physicalMIDIDeviceButtonModelToAccordMappingService =
+        yield* PhysicalMIDIDeviceButtonModelToAccordMappingService
+      const physicalMIDIDeviceButtonModelToPatternMappingService =
+        yield* PhysicalMIDIDeviceButtonModelToPatternMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
         SortedMap.empty(AccordOrderById),
       )
 
+      // TODO: нужно сделать чтобы визуально прожимались только те, которые
+      // могут визуально прожиматься на текущий момент
+
+      // TODO: при одновременном нажатии нескольких клавиш (внутри секции
+      // аккордов или внутри секции паттернов, где секции не зависят друг от
+      // друга), нужно событие активации чтобы срабатывало только после того как
+      // отпущена последняя из нескольких нажатых клавиш
+
+      // TODO: в банальном варианте onDown событие ставит активную клавишу
+
+      // TODO: блокировать нажатия кнопок на ранних стадиях. Нажатие на кнопку
+      // паттерна/аккорда, как и её отпускание должны просто игнорироваться,
+      // если по логике кнопка должна быть заблокирована
+
+      // В момент активного плейбека может стать кандидатом на переключение только та кнопка паттерна аккорда
+
       const patternButtonsMapRef = yield* Ref.make<PatternButtonMap>(
         SortedMap.empty(PatternOrderByIndex),
       )
 
-      const shit =
+      const makeSortedMapUpdater =
         <
           const TReportKey extends
             | 'pressedByKeyboardKeys'
@@ -62,12 +85,12 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         >(
           key: TReportKey,
         ) =>
-        (
+        <AssignedTo>(
           map: SortedMap.SortedMap<
             PressureReport[TReportKey] extends SortedSet.SortedSet<infer V>
               ? V
               : never,
-            PhysicalButtonModel
+            PhysicalButtonModel<AssignedTo>
           >,
         ) =>
           Effect.forEach(
@@ -81,16 +104,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                     : SortedSet.remove(prevValAtKey, id as any),
               )
               if (Pattern.models(model.assignedTo))
-                yield* transformReport(model.assignedTo)(patternButtonsMapRef)
+                yield* transformReport(model.assignedTo, patternButtonsMapRef)
 
               if (Accord.models(model.assignedTo))
-                yield* transformReport(model.assignedTo)(accordButtonsMapRef)
+                yield* transformReport(model.assignedTo, accordButtonsMapRef)
             }),
             { discard: true },
           )
 
-      const updatePressedByKeyboardKeys = shit('pressedByKeyboardKeys')
-      const updatePressedByMIDIPadButtons = shit('pressedByMIDIPadButtons')
+      const updatePressedByKeyboardKeys = makeSortedMapUpdater(
+        'pressedByKeyboardKeys',
+      )
+      const updatePressedByMIDIPadButtons = makeSortedMapUpdater(
+        'pressedByMIDIPadButtons',
+      )
 
       // Seems like wont be needed, since .changes also emits on initialization
       // yield* Effect.flatMap(
@@ -113,12 +140,12 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
 
       yield* reactivelySchedule(
-        physicalKeyboardKeyModelToUIButtonMappingService.mapChanges,
+        physicalKeyboardButtonModelMappingService.mapChanges,
         updatePressedByKeyboardKeys,
       )
 
       yield* reactivelySchedule(
-        physicalMIDIDeviceButtonModelToUIButtonMappingService.mapChanges,
+        physicalMIDIDeviceButtonModelMappingService.mapChanges,
         updatePressedByMIDIPadButtons,
       )
 
@@ -129,7 +156,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             for (const [accord] of yield* accordButtonsMapRef) {
               yield* transformReportGeneric('isActive', () =>
                 Equal.equals(accord, activeAccord),
-              )(accord)(accordButtonsMapRef)
+              )(accord, accordButtonsMapRef)
             }
           }),
       )
@@ -140,7 +167,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           for (const [pattern] of yield* patternButtonsMapRef)
             yield* transformReportGeneric('isActive', () =>
               Equal.equals(pattern, activePattern),
-            )(pattern)(patternButtonsMapRef)
+            )(pattern, patternButtonsMapRef)
         }),
       )
 
@@ -180,8 +207,9 @@ const transformReportGeneric =
       previous: PressureReport[TReportKey],
     ) => PressureReport[TReportKey],
   ) =>
-  <TAssignee>(assignee: TAssignee) =>
-    Ref.update<PressureReportMap<TAssignee>>(
+  <TAssignee>(assignee: TAssignee, mapRef: PressureReportMapRef<TAssignee>) =>
+    Ref.update(
+      mapRef,
       sortedMapModify(assignee, previousReport => ({
         ...previousReport,
         [key]: transformReportField(previousReport[key]),

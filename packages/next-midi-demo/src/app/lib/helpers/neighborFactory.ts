@@ -22,14 +22,14 @@ function getCombinations<T>(size: number, array: T[]): T[][] {
 export const neighborFactory =
   <const Sets extends { setName: string; set: Set<any> }[] | []>(sets: Sets) =>
   (
-    clicks: Range<Sets['length']>,
+    handshakeCount: Range<Sets['length']>,
     startNode: GetNode<Sets>,
   ): GetNode<Sets>[] => {
-    if (clicks === 0) return [startNode]
+    if (handshakeCount === 0) return [startNode]
 
-    if (clicks > 3) return []
+    if (handshakeCount > sets.length) return []
 
-    const reducedSets = sets.map(({ set, setName }) => {
+    const setsWithExcludedStartNodeParams = sets.map(({ set, setName }) => {
       const reducedArr = []
       for (const param of set)
         if (param !== (startNode as any)[setName]) reducedArr.push(param)
@@ -38,7 +38,10 @@ export const neighborFactory =
     })
     const results = []
 
-    for (const setCombination of getCombinations(clicks, reducedSets)) {
+    for (const setCombination of getCombinations(
+      handshakeCount,
+      setsWithExcludedStartNodeParams,
+    )) {
       const totalAmountOfElements = setCombination.reduce(
         (acc, cur) => acc * cur.reducedArr.length,
         1,
@@ -67,15 +70,18 @@ export const neighborFactory =
         results.push(currentCombination as GetNode<Sets>)
       }
     }
+
     return results
   }
 
-export type Range<
+export type Range<N extends number> = _Range<N>
+
+type _Range<
   N extends number,
   Acc extends number[] = [],
 > = Acc['length'] extends N
   ? Acc[number] | N
-  : Range<N, [...Acc, Acc['length']]>
+  : _Range<N, [...Acc, Acc['length']]>
 
 export type GetNode<Arg extends { setName: string; set: Set<any> }[]> = {
   [K in Arg[number] as K['setName']]: K['set'] extends Set<infer T> ? T : never

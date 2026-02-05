@@ -215,6 +215,7 @@ https://socket.dev/npm/package/@xmldom/xmldom
 https://snyk.io/advisor/npm-package/@xmldom/xmldom
 https://www.greptile.com/
 https://www.coderabbit.ai/
+https://github.com/j178/prek
 https://www.sourcery.ai/
 
 integrate syncpack ([example](https://github.com/livestorejs/livestore/blob/dev/syncpack.config.mjs))
