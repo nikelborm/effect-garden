@@ -1,8 +1,6 @@
 import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
-import * as Option from 'effect/Option'
 import type * as Order from 'effect/Order'
 import * as SortedMap from 'effect/SortedMap'
 import type * as Stream from 'effect/Stream'
@@ -10,14 +8,12 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
-import {
-  sortedMapModify,
-  sortedMapModifyAt,
-} from '../helpers/sortedMapModifyAt.ts'
+import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 
 export const makePhysicalButtonToParamMappingService = <
   PhysicalButtonId,
   AssignedTo,
+  R,
 >(
   physicalButtonIdOrder: Order.Order<PhysicalButtonId>,
   allPhysicalButtonIds: readonly PhysicalButtonId[],
@@ -26,7 +22,9 @@ export const makePhysicalButtonToParamMappingService = <
     readonly [
       id: PhysicalButtonId,
       physicalButtonPressState: ButtonState.AllSimple,
-    ]
+    ],
+    never,
+    R
   >,
 ) =>
   Effect.gen(function* () {

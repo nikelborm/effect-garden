@@ -1,12 +1,13 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
-import * as Stream from 'effect/Stream'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
+import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
 const notesHandlingAccords = EArray.range(84, 91).map(MIDIValues.NoteId)
+const notesHandlingAccordsSet = new Set(notesHandlingAccords)
 
 // TODO: midi device selector
 export class PhysicalMIDIDeviceButtonModelToAccordMappingService extends Effect.Service<PhysicalMIDIDeviceButtonModelToAccordMappingService>()(
@@ -19,10 +20,7 @@ export class PhysicalMIDIDeviceButtonModelToAccordMappingService extends Effect.
         MIDIValues.NoteIdOrder,
         notesHandlingAccords,
         accords,
-        Stream.map(makeMIDIDeviceSliceMapStream(notesHandlingAccords), _ => [
-          _.noteId,
-          _.pressState,
-        ]),
+        makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
       ),
     ),
   },

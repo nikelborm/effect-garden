@@ -85,6 +85,35 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       appPlaybackState.isPlaying
 
+      const isPlayButtonPressable = () => {}
+
+      const isAccordButtonPressable = () => {}
+      const isPatternButtonPressable = () => {}
+      const isStrengthButtonPressable = () => {}
+
+      const isAccordButtonCurrentlyPlaying = () => {}
+      const isPatternButtonCurrentlyPlaying = () => {}
+      const isStrengthButtonCurrentlyPlaying = () => {}
+
+      const isAccordButtonWillBePlayedNext = () => {}
+      const isPatternButtonWillBePlayedNext = () => {}
+      const isStrengthButtonWillBePlayedNext = () => {}
+
+      const getAccordButtonDownloadPercent = () => {}
+      const getPatternButtonDownloadPercent = () => {}
+      const getStrengthButtonDownloadPercent = () => {}
+
+      // when isn't presently playing audio. default.
+      // pattern/accord/strength buttons states:
+
+      // 1. in-process loading, includes when the asset is 0% loaded
+      // 2. finished   loading, asset is completely loaded and written to opfs
+
+      // 1. selected as a current setting
+      // 2. not selected as a current setting
+
+      //
+
       const makeSortedMapUpdater =
         <
           const TReportKey extends
