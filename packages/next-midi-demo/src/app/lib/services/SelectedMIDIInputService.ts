@@ -10,7 +10,6 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
   'SelectedMIDIInputService',
   {
     accessors: true,
-    dependencies: [EMIDIAccess.layerSoftwareSynthSupported],
     scoped: Effect.gen(function* () {
       const selectedInputIdRef =
         yield* SubscriptionRef.make<EMIDIInput.Id | null>(null)

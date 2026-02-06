@@ -1,12 +1,7 @@
 import * as NonPrintableKey from 'ts-key-not-enum'
 
 import * as Brand from 'effect/Brand'
-import * as Data from 'effect/Data'
-import * as Either from 'effect/Either'
-import { flow } from 'effect/Function'
-import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
-import * as Tuple from 'effect/Tuple'
 
 export type NonPrintableKeyboardKeys =
   (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
@@ -26,62 +21,4 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
 export const ValidKeyboardKeyOrder = Order.mapInput(
   Order.string,
   (a: ValidKeyboardKey) => a,
-)
-
-// ======================================================
-
-export type RegisteredButtonID = Brand.Branded<
-  string,
-  'Registered button ID: non empty string'
->
-export const RegisteredButtonID = Brand.refined<RegisteredButtonID>(
-  id => !!id.length,
-  () => Brand.error('Expected non empty string to make registered button id'),
-)
-export const RegisteredButtonIdOrder = Order.mapInput(
-  Order.string,
-  (a: RegisteredButtonID) => a,
-)
-
-// ======================================================
-
-export type LayoutId = Brand.Branded<string, 'LayoutId: non empty string'>
-export const LayoutId = Brand.refined<LayoutId>(
-  id => id.length > 0,
-  () => Brand.error(`Expected layout id to be non empty string`),
-)
-
-// ======================================================
-
-export type ButtonAddressTupleUnbranded = readonly [
-  buttonId: RegisteredButtonID,
-  layoutId: LayoutId,
-]
-export type ButtonAddress = Brand.Branded<
-  ButtonAddressTupleUnbranded,
-  'ButtonAddress: a tuple of registered button id and layout id'
->
-const ButtonAddressBrand = Brand.refined<ButtonAddress>(
-  address =>
-    Tuple.isTupleOf(address, 2) &&
-    RegisteredButtonID.is(address[0]) &&
-    LayoutId.is(address[1]),
-  n => Brand.error(`Expected ${n} to be an address of a button`),
-)
-
-const makeButtonAddressEither = (
-  ...candidateAddress: ButtonAddressTupleUnbranded
-) => Either.map(ButtonAddressBrand.either(candidateAddress), Data.unsafeArray)
-
-export const ButtonAddress = Object.assign(
-  (...address: ButtonAddressTupleUnbranded) =>
-    Data.unsafeArray(
-      ButtonAddressBrand(address) as ButtonAddressTupleUnbranded,
-    ),
-  {
-    either: makeButtonAddressEither,
-    option: flow(makeButtonAddressEither, Option.getRight),
-    is: (address: ButtonAddressTupleUnbranded): address is ButtonAddress =>
-      Either.isRight(makeButtonAddressEither(...address)),
-  },
 )

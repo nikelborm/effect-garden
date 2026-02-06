@@ -32,16 +32,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
   {
     accessors: true,
-    dependencies: [
-      PatternRegistry.Default,
-      AppPlaybackStateService.Default,
-      AccordRegistry.Default,
-      PhysicalKeyboardButtonModelToAccordMappingService.Default,
-      PhysicalKeyboardButtonModelToPatternMappingService.Default,
-      PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
-      PhysicalMIDIDeviceButtonModelToPatternMappingService.Default,
-      LoadedAssetSizeEstimationMap.Default,
-    ],
     scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
@@ -83,11 +73,17 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         SortedMap.empty(PatternOrderByIndex),
       )
 
-      appPlaybackState.isPlaying
+      const isPlayStopButtonPressable = Effect.gen(function* () {
+        const isPlaying = yield* appPlaybackState.isPlaying
 
-      const isPlayButtonPressable = () => {}
+        if (isPlaying) return true
+        loadedAssetSizeEstimationMap.getCompletionStatus
+        // if currently selected asset is downloaded on 100%
+      })
 
-      const isAccordButtonPressable = () => {}
+      const isAccordButtonPressable = () => {
+        // if not currently playing asset and not already an active asset
+      }
       const isPatternButtonPressable = () => {}
       const isStrengthButtonPressable = () => {}
 
@@ -283,3 +279,5 @@ interface PressureReportMap<Key>
   extends SortedMap.SortedMap<Key, PressureReport> {}
 
 interface PressureReportMapRef<Key> extends Ref.Ref<PressureReportMap<Key>> {}
+
+UIButtonService.Default

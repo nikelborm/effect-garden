@@ -14,7 +14,6 @@ export class PhysicalKeyboardButtonModelToAccordMappingService extends Effect.Se
   'next-midi-demo/PhysicalKeyboardButtonModelToAccordMappingService',
   {
     accessors: true,
-    dependencies: [AccordRegistry.Default],
     scoped: Effect.flatMap(AccordRegistry.allAccords, accords =>
       makePhysicalButtonToParamMappingService(
         ValidKeyboardKeyOrder,

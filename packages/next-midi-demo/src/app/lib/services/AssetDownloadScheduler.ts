@@ -15,10 +15,6 @@ import { DownloadManager } from './DownloadManager.ts'
 export class AssetDownloadScheduler extends Effect.Service<AssetDownloadScheduler>()(
   'next-midi-demo/AssetDownloadScheduler',
   {
-    dependencies: [
-      CurrentlySelectedAssetState.Default,
-      DownloadManager.Default,
-    ],
     scoped: Effect.gen(function* () {
       const currentlySelectedAsset = yield* CurrentlySelectedAssetState
       const downloadManager = yield* DownloadManager

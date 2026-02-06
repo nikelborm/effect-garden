@@ -21,6 +21,17 @@ const accords = [
   { id: 28, label: 'E' },
 ] as const
 
+export class Accord<
+  Id extends number = number,
+  Label extends string = string,
+  Index extends number = number,
+> extends Data.TaggedClass('Accord')<
+  AccordMiniInfo<Id, Label> & { readonly index: Index }
+> {
+  static models = (p: unknown): p is Accord =>
+    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Accord'
+}
+
 const allAccords = accords.map(
   (info, index) => new Accord({ ...info, index }),
 ) as unknown as AllAccordTuple
@@ -84,17 +95,6 @@ export interface AccordMiniInfo<
 > {
   readonly id: Id
   readonly label: Label
-}
-
-export class Accord<
-  Id extends number = number,
-  Label extends string = string,
-  Index extends number = number,
-> extends Data.TaggedClass('Accord')<
-  AccordMiniInfo<Id, Label> & { readonly index: Index }
-> {
-  static models = (p: unknown): p is Accord =>
-    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Accord'
 }
 
 export const AccordOrderById = Order.mapInput(Order.number, (a: Accord) => a.id)

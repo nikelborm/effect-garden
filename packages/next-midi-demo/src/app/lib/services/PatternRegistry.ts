@@ -12,6 +12,21 @@ import {
 
 const patternLabels = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'] as const
 
+export class Pattern<
+  Label extends string = string,
+  Index extends number = number,
+> extends Data.TaggedClass('Pattern')<{
+  readonly label: Label
+  readonly index: Index
+}> {
+  constructor(label: Label, index: Index) {
+    super({ label, index })
+  }
+
+  static models = (p: unknown): p is Pattern =>
+    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Pattern'
+}
+
 const mapIndexToPattern = (index: RecordedPatternIndexes) =>
   new Pattern(patternLabels[index], index) as AllPatternUnion
 
@@ -63,21 +78,6 @@ type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =
         Pattern<CurrLabel, RestLabels['length']>,
       ]
     : readonly []
-
-export class Pattern<
-  Label extends string = string,
-  Index extends number = number,
-> extends Data.TaggedClass('Pattern')<{
-  readonly label: Label
-  readonly index: Index
-}> {
-  constructor(label: Label, index: Index) {
-    super({ label, index })
-  }
-
-  static models = (p: unknown): p is Pattern =>
-    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Pattern'
-}
 
 export type AllPatternTuple = _AllPatternTuple
 

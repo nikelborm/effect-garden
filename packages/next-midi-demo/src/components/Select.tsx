@@ -1,7 +1,6 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
 import * as BaseSeparator from '@base-ui/react/separator'
-import { css } from '@linaria/core'
-import { styled } from '@linaria/react'
+import { css, styled } from 'next-yak'
 import type * as React from 'react'
 
 export function ChevronUpDownSVG(props: React.ComponentProps<'svg'>) {

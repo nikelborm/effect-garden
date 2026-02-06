@@ -2,9 +2,9 @@
 /** biome-ignore-all lint/correctness/noUnusedImports: it's a prototype, so I don't care for now> */
 'use client'
 
-import { styled } from '@linaria/react'
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+import { styled } from 'next-yak'
 
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Hooks from '@effect-atom/atom-react/Hooks'

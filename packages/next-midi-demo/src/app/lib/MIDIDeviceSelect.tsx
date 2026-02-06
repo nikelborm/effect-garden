@@ -1,5 +1,5 @@
-import { styled } from '@linaria/react'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
+import { styled } from 'next-yak'
 
 import type * as Atom from '@effect-atom/atom/Atom'
 import * as Result from '@effect-atom/atom/Result'

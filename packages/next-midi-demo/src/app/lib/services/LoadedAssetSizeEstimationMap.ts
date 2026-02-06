@@ -18,7 +18,6 @@ import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
-    dependencies: [RootDirectoryHandle.Default],
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const assetSizesActuallyPresentOnDisk = Effect.map(
@@ -71,10 +70,13 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           Effect.fn(function* (currentBytes) {
             if (currentBytes !== ASSET_SIZE_BYTES)
               return 'not finished' as const
+
             const size = yield* getFileSize(getLocalAssetFileName(asset)).pipe(
               Effect.provideService(RootDirectoryHandle, rootDirectoryHandle),
             )
+
             if (size !== ASSET_SIZE_BYTES) return 'fetched, but not written'
+
             return 'finished'
           }),
         )

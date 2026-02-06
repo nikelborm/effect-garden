@@ -12,10 +12,6 @@ import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager>()(
   'next-midi-demo/OpfsWritableHandleManager',
   {
-    dependencies: [
-      RootDirectoryHandle.Default,
-      LoadedAssetSizeEstimationMap.Default,
-    ],
     scoped: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap

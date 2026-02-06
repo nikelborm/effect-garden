@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@nikelborm/effect-helpers": "workspace:*",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.4",
     "drizzle-kit": "catalog:",
     "effect": "catalog:"
   }

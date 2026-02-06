@@ -1,32 +1,32 @@
 'use client'
 
 import { Button as BaseButton } from '@base-ui/react/button'
-import { styled } from '@linaria/react'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
+import { styled } from 'next-yak'
 
+import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
-import type { RegisteredButtonID } from './branded/StoreValues.ts'
+import { accordsAtom } from './atoms/accordsAtom.ts'
+import { patternsAtom } from './atoms/patternsAtom.ts'
+import { strengthsAtom } from './atoms/strengthAtom.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
-import {
-  assertiveGetButtonById,
-  getNotePressReleaseEventsAtom,
-  isButtonPressed,
-  keyboardPressesForVirtualMIDIPadButtonsAtom,
-  // keyboardNavigationAtom,
-  registeredButtonIdsOfLayoutAtom,
-  sortedRegisteredButtonIdsAtom,
-} from './state.ts'
+import type { AllAccordUnion } from './services/AccordRegistry.ts'
+import type { AllPatternUnion } from './services/PatternRegistry.ts'
 
 export const MidiPadSlide = ({
   selectedInputPortId,
 }: {
   selectedInputPortId: EMIDIInput.Id | null
 }) => {
-  const ids = Hooks.useAtomValue(sortedRegisteredButtonIdsAtom)
+  const res = Result.all({
+    accords: Hooks.useAtomValue(accordsAtom),
+    patterns: Hooks.useAtomValue(patternsAtom),
+    strengths: Hooks.useAtomValue(strengthsAtom),
+  })
 
-  Hooks.useAtomMount(getNotePressReleaseEventsAtom(selectedInputPortId))
-  Hooks.useAtomMount(keyboardPressesForVirtualMIDIPadButtonsAtom)
+  if (!Result.isSuccess(res)) return 'wtf'
+  const { accords, patterns, strengths } = res.value
 
   return (
     <ButtonGrid
@@ -34,61 +34,44 @@ export const MidiPadSlide = ({
       aria-rowcount={LAYOUT_HEIGHT}
       aria-colcount={LAYOUT_WIDTH}
     >
-      {Array.from({ length: LAYOUT_HEIGHT }, (_, activeRowIndex) => (
-        <DisplayContentsWrapper
-          // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-          key={activeRowIndex}
-          role="row"
-          aria-rowindex={activeRowIndex}
-        >
-          {Array.from({ length: LAYOUT_WIDTH }, (_, activeColumnIndex) => (
-            <NoteButton
-              // biome-ignore lint/suspicious/noArrayIndexKey: There's no better option
-              key={activeColumnIndex}
-              columnIndex={activeColumnIndex}
-              buttonId={ids[activeRowIndex * LAYOUT_WIDTH + activeColumnIndex]!}
-            />
-          ))}
-        </DisplayContentsWrapper>
-      ))}
+      <DisplayContentsWrapper role="row" aria-rowindex={0}>
+        {Array.from(patterns, pattern => (
+          <PatternButton pattern={pattern} key={pattern.index} />
+        ))}
+      </DisplayContentsWrapper>
+      <DisplayContentsWrapper role="row" aria-rowindex={1}>
+        {Array.from(accords, accord => (
+          <AccordButton accord={accord} key={accord.index} />
+        ))}
+      </DisplayContentsWrapper>
     </ButtonGrid>
   )
 }
 
-const NoteButton = ({
-  buttonId,
-  columnIndex,
-}: {
-  buttonId: RegisteredButtonID
-  columnIndex: number
-}) => {
-  const cell = Hooks.useAtomValue(assertiveGetButtonById(buttonId))
-  const isPressed = Hooks.useAtomValue(isButtonPressed(buttonId))
-
-  if ('patternId' in cell)
-    return (
-      <NeumorphicButton
-        // data-is-externally-active={!!cell.activationReportedByDevice}
-        $isExternallyActive={isPressed}
-        data-button-id={buttonId}
-        role="gridcell"
-        aria-colindex={columnIndex}
-        type="button"
-        aria-label={'Pattern №' + cell.patternId}
-        children={cell.label}
-      />
-    )
-
+const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   return (
     <NeumorphicButton
-      // data-is-externally-active={!!cell.activationReportedByDevice}
-      data-button-id={buttonId}
-      $isExternallyActive={isPressed}
+      data-is-externally-active={false}
+      data-button-id={pattern.index}
       role="gridcell"
-      aria-colindex={columnIndex}
+      aria-colindex={pattern.index}
       type="button"
-      aria-label={cell.label + ' note button'}
-      children={cell.label}
+      aria-label={'Pattern №' + (pattern.index + 1)}
+      children={pattern.label}
+    />
+  )
+}
+
+const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
+  return (
+    <NeumorphicButton
+      data-is-externally-active={false}
+      data-button-id={accord.index}
+      role="gridcell"
+      aria-colindex={accord.index}
+      type="button"
+      aria-label={accord.label}
+      children={accord.label}
     />
   )
 }
@@ -117,7 +100,7 @@ const ButtonGrid = styled.div`
 
 const NeumorphicButton = styled(BaseButton)<{
   $isExternallyActive?: boolean | undefined
-  'data-button-id': RegisteredButtonID
+  'data-button-id': number
 }>`
   border: none;
   border-radius: 23px;

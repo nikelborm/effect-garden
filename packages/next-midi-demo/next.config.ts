@@ -1,5 +1,6 @@
 import withSerwistInit from '@serwist/next'
-import withLinaria, { type LinariaConfig } from 'next-with-linaria'
+import type { NextConfig } from 'next'
+import { withYak } from 'next-yak/withYak'
 
 import { pipe } from 'effect/Function'
 
@@ -9,7 +10,7 @@ const withSerwist = withSerwistInit({
   disable: process.env.NODE_ENV === 'development',
 })
 
-const nextConfig: LinariaConfig = {
+const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   output: 'standalone',
@@ -32,7 +33,6 @@ const nextConfig: LinariaConfig = {
   // transpilePackages: ['package-name'],
   poweredByHeader: false,
   compress: false, // should be handled by nginx
-  // linaria: {}
 }
 
-export default pipe(nextConfig, withLinaria, withSerwist)
+export default pipe(nextConfig, withYak, withSerwist)
