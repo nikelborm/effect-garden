@@ -12,11 +12,12 @@ import {
   type ValidKeyboardKey,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
-import type { PhysicalButtonModel } from '../helpers/PhysicalButtonModel.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { Accord, AccordOrderById, AccordRegistry } from './AccordRegistry.ts'
+import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
+import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
   Pattern,
   PatternOrderByIndex,
@@ -33,6 +34,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     accessors: true,
     dependencies: [
       PatternRegistry.Default,
+      AppPlaybackStateService.Default,
       AccordRegistry.Default,
       PhysicalKeyboardButtonModelToAccordMappingService.Default,
       PhysicalKeyboardButtonModelToPatternMappingService.Default,
@@ -43,6 +45,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
+      const appPlaybackState = yield* AppPlaybackStateService
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
       const physicalKeyboardButtonModelToAccordMappingService =
         yield* PhysicalKeyboardButtonModelToAccordMappingService
@@ -65,17 +68,22 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       // друга), нужно событие активации чтобы срабатывало только после того как
       // отпущена последняя из нескольких нажатых клавиш
 
+      // стейт нажатия кнопки считается так: если может нажиматься, показывается нажатие
+
       // TODO: в банальном варианте onDown событие ставит активную клавишу
 
       // TODO: блокировать нажатия кнопок на ранних стадиях. Нажатие на кнопку
       // паттерна/аккорда, как и её отпускание должны просто игнорироваться,
       // если по логике кнопка должна быть заблокирована
 
-      // В момент активного плейбека может стать кандидатом на переключение только та кнопка паттерна аккорда
+      // В момент активного плейбека может стать кандидатом на переключение
+      // только та кнопка паттерна/аккорда, которая загружена полностью
 
       const patternButtonsMapRef = yield* Ref.make<PatternButtonMap>(
         SortedMap.empty(PatternOrderByIndex),
       )
+
+      appPlaybackState.isPlaying
 
       const makeSortedMapUpdater =
         <
@@ -129,6 +137,10 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       //   physicalMIDIDeviceButtonModelToUIButtonMappingService.currentMap,
       //   updatePressedByMIDIPadButtons,
       // )
+      physicalKeyboardButtonModelToAccordMappingService.mapChanges
+      physicalKeyboardButtonModelToPatternMappingService.mapChanges
+      physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges
+      physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges
 
       const getPressureReportOfAccord =
         getPressureReportOfMapRef(accordButtonsMapRef)
@@ -139,15 +151,15 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const isPatternButtonPressed = isButtonPressed(getPressureReportOfPattern)
       const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
 
-      yield* reactivelySchedule(
-        physicalKeyboardButtonModelMappingService.mapChanges,
-        updatePressedByKeyboardKeys,
-      )
+      // yield* reactivelySchedule(
+      //   physicalKeyboardButtonModelMappingService.mapChanges,
+      //   updatePressedByKeyboardKeys,
+      // )
 
-      yield* reactivelySchedule(
-        physicalMIDIDeviceButtonModelMappingService.mapChanges,
-        updatePressedByMIDIPadButtons,
-      )
+      // yield* reactivelySchedule(
+      //   physicalMIDIDeviceButtonModelMappingService.mapChanges,
+      //   updatePressedByMIDIPadButtons,
+      // )
 
       yield* reactivelySchedule(
         accordRegistry.activeAccordChanges,

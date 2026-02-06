@@ -4,7 +4,9 @@ import * as Stream from 'effect/Stream'
 import { ButtonState } from '../branded/index.ts'
 import { ValidKeyboardKey } from '../branded/StoreValues.ts'
 
-export const makeKeyboardSliceMapStream = <Ref extends GlobalEventHandlers>(
+export const makeKeyboardButtonPressStateStreamOfSomeKeys = <
+  Ref extends GlobalEventHandlers,
+>(
   keys: Iterable<string>,
   ref?: Ref,
 ) => {
@@ -34,13 +36,13 @@ export const makeKeyboardSliceMapStream = <Ref extends GlobalEventHandlers>(
           event.target.tagName === 'TEXTAREA' ||
           event.target.isContentEditable)
       )
-        ? Option.some({
-            key: ValidKeyboardKey(event.key),
-            keyboardKeyPressState:
-              event.type === 'keydown'
-                ? ButtonState.Pressed
-                : ButtonState.NotPressed,
-          })
+        ? Option.some([
+            ValidKeyboardKey(event.key),
+
+            event.type === 'keydown'
+              ? ButtonState.Pressed
+              : ButtonState.NotPressed,
+          ] as const)
         : Option.none(),
     ),
   )

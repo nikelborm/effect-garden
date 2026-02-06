@@ -1,11 +1,10 @@
 import * as Effect from 'effect/Effect'
-import * as Stream from 'effect/Stream'
 
 import {
   ValidKeyboardKey,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
-import { makeKeyboardSliceMapStream } from '../helpers/makeKeyboardSliceMapStream.ts'
+import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
@@ -21,10 +20,7 @@ export class PhysicalKeyboardButtonModelToAccordMappingService extends Effect.Se
         ValidKeyboardKeyOrder,
         keysHandlingAccords,
         accords,
-        Stream.map(makeKeyboardSliceMapStream(keysHandlingAccords), _ => [
-          _.key,
-          _.keyboardKeyPressState,
-        ]),
+        makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingAccords),
       ),
     ),
   },

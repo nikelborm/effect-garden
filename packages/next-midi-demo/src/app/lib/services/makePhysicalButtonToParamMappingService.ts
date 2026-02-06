@@ -10,7 +10,10 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
-import { sortedMapModifyAt } from '../helpers/sortedMapModifyAt.ts'
+import {
+  sortedMapModify,
+  sortedMapModifyAt,
+} from '../helpers/sortedMapModifyAt.ts'
 
 export const makePhysicalButtonToParamMappingService = <
   PhysicalButtonId,
@@ -49,30 +52,20 @@ export const makePhysicalButtonToParamMappingService = <
     const currentMap = SubscriptionRef.get(physicalButtonIdToModelMapRef)
 
     const getPhysicalButtonModel = (id: PhysicalButtonId) =>
-      Effect.map(
-        currentMap,
-        EFunction.flow(
-          SortedMap.get(id),
-          Option.getOrElse(
-            () => new PhysicalButtonModel<AssignedTo>(ButtonState.NotPressed),
-          ),
-        ),
-      )
+      Effect.map(currentMap, SortedMap.get(id))
 
     yield* reactivelySchedule(
       buttonPressStream,
       ([id, physicalButtonPressState]) =>
         SubscriptionRef.update(
           physicalButtonIdToModelMapRef,
-          sortedMapModifyAt(id, idModelOption =>
-            Option.some(
+          sortedMapModify(
+            id,
+            buttonModel =>
               new PhysicalButtonModel(
                 physicalButtonPressState,
-                idModelOption._tag === 'Some'
-                  ? idModelOption.value?.assignedTo
-                  : undefined,
+                buttonModel?.assignedTo,
               ),
-            ),
           ),
         ),
     )
@@ -86,12 +79,9 @@ export const makePhysicalButtonToParamMappingService = <
 
 export class PhysicalButtonModel<AssignedTo> extends Data.Class<{
   buttonPressState: ButtonState.AllSimple
-  assignedTo?: AssignedTo
+  assignedTo: AssignedTo
 }> {
-  constructor(
-    buttonPressState: ButtonState.AllSimple,
-    assignedTo?: AssignedTo,
-  ) {
+  constructor(buttonPressState: ButtonState.AllSimple, assignedTo: AssignedTo) {
     super({ buttonPressState, ...(assignedTo && { assignedTo }) })
   }
 }

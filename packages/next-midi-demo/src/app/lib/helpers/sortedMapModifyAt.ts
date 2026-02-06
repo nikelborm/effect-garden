@@ -13,11 +13,14 @@ export const sortedMapModifyAt = EFunction.dual<
     f: (option: Option.Option<V>) => Option.Option<V>,
   ) => SortedMap.SortedMap<K, V>
 >(3, (self, key, f) => {
-  const value = f(SortedMap.get(self, key))
-  return Option.match(value, {
-    onNone: () => SortedMap.remove(self, key),
-    onSome: v => SortedMap.set(self, key, v),
-  })
+  const foundValue = SortedMap.get(self, key)
+  const transformedValue = f(foundValue)
+
+  if (Option.isNone(transformedValue)) {
+    if (Option.isNone(foundValue)) return self
+    return SortedMap.remove(self, key)
+  }
+  return SortedMap.set(self, key, transformedValue.value)
 })
 
 export const sortedMapModify = EFunction.dual<

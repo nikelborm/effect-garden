@@ -5,18 +5,18 @@ import * as Ref from 'effect/Ref'
 import * as Runtime from 'effect/Runtime'
 import * as Stream from 'effect/Stream'
 
-export const reactivelySchedule = <StreamA>(
-  stream: Stream.Stream<StreamA, never, never>,
-  execute: (a: StreamA) => Effect.Effect<any, never, never>,
+export const reactivelySchedule = <StreamA, StreamR, EffectR>(
+  stream: Stream.Stream<StreamA, never, StreamR>,
+  execute: (a: StreamA) => Effect.Effect<any, never, EffectR>,
 ) =>
   Effect.gen(function* () {
-    const runtime = yield* Effect.runtime()
+    const runtime = yield* Effect.runtime<StreamR | EffectR>()
     const scope = yield* Effect.scope
     const semaphore = yield* Effect.makeSemaphore(1)
     const runFork = Runtime.runFork(runtime)
 
     const runForkScoped = <A, E>(
-      effect: Effect.Effect<A, E, never>,
+      effect: Effect.Effect<A, E, StreamR | EffectR>,
       options?: Omit<Runtime.RunForkOptions, 'scope'> | undefined,
     ) => runFork(effect, { ...options, scope })
 
