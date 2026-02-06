@@ -16,6 +16,7 @@ import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { Accord, AccordOrderById, AccordRegistry } from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
+import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
@@ -36,6 +37,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
       const appPlaybackState = yield* AppPlaybackStateService
+      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
       const physicalKeyboardButtonModelToAccordMappingService =
         yield* PhysicalKeyboardButtonModelToAccordMappingService
@@ -77,13 +79,17 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         const isPlaying = yield* appPlaybackState.isPlaying
 
         if (isPlaying) return true
-        loadedAssetSizeEstimationMap.getCompletionStatus
-        // if currently selected asset is downloaded on 100%
+        const status = yield* currentlySelectedAssetState.completionStatus
+        return status === 'finished'
       })
 
-      const isAccordButtonPressable = () => {
+      const isAccordButtonPressable = Effect.fn(function* (accord: Accord) {
+        const isPlaying = yield* appPlaybackState.isPlaying
         // if not currently playing asset and not already an active asset
-      }
+        return isPlaying
+          ? false
+          : !Equal.equals(yield* accordRegistry.currentlyActiveAccord, accord)
+      })
       const isPatternButtonPressable = () => {}
       const isStrengthButtonPressable = () => {}
 
@@ -209,6 +215,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       return {
+        isPlayStopButtonPressable,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
         isPatternButtonPressed,
@@ -279,5 +286,3 @@ interface PressureReportMap<Key>
   extends SortedMap.SortedMap<Key, PressureReport> {}
 
 interface PressureReportMapRef<Key> extends Ref.Ref<PressureReportMap<Key>> {}
-
-UIButtonService.Default
