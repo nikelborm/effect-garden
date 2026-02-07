@@ -5,8 +5,9 @@ import * as Fiber from 'effect/Fiber'
 import EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
-import * as Ref from 'effect/Ref'
 import * as Schedule from 'effect/Schedule'
+import * as Stream from 'effect/Stream'
+import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
@@ -14,9 +15,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
     accessors: true,
     effect: Effect.gen(function* () {
       const audioContext = new AudioContext()
-      const state = yield* Ref.make<AppPlaybackState>({ _tag: 'NotPlaying' })
+      const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
+        _tag: 'NotPlaying',
+      })
       const fadeTime = 0.1 // seconds
 
+      const current = SubscriptionRef.get(stateRef)
       const arrayOfCleanupFibers = []
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
@@ -26,10 +30,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const createSilentByDefaultPlayback = () => {}
 
       const play = Effect.fn(function* (buffer: AudioBuffer) {
-        const currentStatus = yield* Ref.get(state)
+        const currentStatus = yield* current
         switch (currentStatus._tag) {
           case 'NotPlaying':
-            return yield* Ref.set(state, {
+            return yield* SubscriptionRef.set(stateRef, {
               _tag: 'PlayingAsset' as const,
               current: yield* createImmediatelyLoudPlayback(
                 audioContext,
@@ -58,7 +62,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             // ).pipe(
             //   Effect.tap(() => cleanupPlayback(oldPlayback)),
             //   Effect.zipRight(
-            //     Ref.update(state, s =>
+            //     SubscriptionRef.update(state, s =>
             //       s._tag === 'ScheduledChange'
             //         ? {
             //             _tag: 'PlayingAsset' as const,
@@ -69,7 +73,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             //   ),
             //   Effect.fork,
             // )
-            // yield* Ref.set(state, {
+            // yield* SubscriptionRef.set(state, {
             //   _tag: 'ScheduledChange' as const,
             //   current: oldPlayback,
             //   next: nextPlayback,
@@ -100,14 +104,14 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             // const newFiber = yield* cleanupPlayback(current).pipe(
             //   Effect.delay(Duration.seconds(fadeTime + 0.1)),
             //   Effect.zipRight(
-            //     Ref.update(state, () => ({
+            //     SubscriptionRef.update(state, () => ({
             //       _tag: 'PlayingAsset' as const,
             //       current: newNextPlayback,
             //     })),
             //   ),
             //   Effect.fork,
             // )
-            // yield* Ref.set(state, {
+            // yield* SubscriptionRef.set(state, {
             //   _tag: 'ScheduledChange',
             //   current: current,
             //   next: newNextPlayback,
@@ -119,7 +123,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       })
 
       const stop = () =>
-        Ref.getAndSet(state, { _tag: 'NotPlaying' }).pipe(
+        SubscriptionRef.getAndSet(stateRef, { _tag: 'NotPlaying' }).pipe(
           Effect.flatMap(s => {
             if (s._tag === 'NotPlaying') return Effect.void
 
@@ -141,12 +145,17 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           }),
         )
 
-      const isPlaying = Effect.map(
-        Ref.get(state),
-        current => current._tag !== 'NotPlaying',
-      )
+      const isPlaying = (current: AppPlaybackState) =>
+        current._tag !== 'NotPlaying'
+      const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
+      const latestIsPlayingFlagStream = Stream.map(stateRef.changes, isPlaying)
 
-      return { play, stop, isPlaying }
+      return {
+        play,
+        stop,
+        isCurrentlyPlayingEffect,
+        latestIsPlayingFlagStream,
+      }
     }),
   },
 ) {}

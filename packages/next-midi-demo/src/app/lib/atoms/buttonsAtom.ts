@@ -4,6 +4,7 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Stream from 'effect/Stream'
 
 import { AccordRegistry } from '../services/AccordRegistry.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
@@ -50,3 +51,30 @@ const AppLayer = UIButtonService.Default.pipe(
 )
 
 const runtime = Atom.runtime(AppLayer)
+
+// UIButtonService.getPressureReportOfPattern
+// UIButtonService.getPressureReportOfAccord
+
+export const isAccordButtonPressableAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getAccordButtonPressabilityChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+  ),
+)
+
+export const isPatternButtonPressableAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getPatternButtonPressabilityChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+  ),
+)
+
+export const isStrengthButtonPressableAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getStrengthButtonPressabilityChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+  ),
+)

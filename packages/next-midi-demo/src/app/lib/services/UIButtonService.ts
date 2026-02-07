@@ -5,6 +5,7 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
+import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
 import { ButtonState } from '../branded/index.ts'
@@ -15,6 +16,7 @@ import {
 } from '../branded/StoreValues.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
+import { streamAll } from '../helpers/streamAll.ts'
 import {
   Accord,
   AccordOrderById,
@@ -85,59 +87,72 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       const isPlayStopButtonPressable = Effect.gen(function* () {
-        const isPlaying = yield* appPlaybackState.isPlaying
+        const isPlaying = yield* appPlaybackState.isCurrentlyPlayingEffect
 
         if (isPlaying) return true
         const status = yield* currentlySelectedAssetState.completionStatus
         return status === 'finished'
       })
 
-      const isAccordButtonPressable = Effect.fn(function* (
+      const isPressable = <E, R>(
+        self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
+      ) =>
+        self.pipe(
+          Stream.map(
+            _ =>
+              _.doesParamDifferFromTheCurrentlyActive &&
+              (!_.isPlaying ||
+                _.completionStatusOfTheAssetThisButtonWouldSelect ===
+                  'finished'),
+          ),
+          Stream.changes,
+        )
+
+      const getAccordButtonPressabilityChangesStream = (
         accord: AllAccordUnion,
-      ) {
-        const isPlaying = yield* appPlaybackState.isPlaying
-        const completionStatusOfTheAssetThisButtonWouldSelect =
-          yield* currentlySelectedAssetState.completionStatusOfPatched(accord)
-        const doesAccordDifferFromTheCurrentlyActive = !Equal.equals(
-          accord,
-          yield* accordRegistry.currentlyActiveAccord,
-        )
-        return (
-          doesAccordDifferFromTheCurrentlyActive &&
-          (!isPlaying ||
-            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
-        )
-      })
-      const isPatternButtonPressable = Effect.fn(function* (
+      ) =>
+        streamAll({
+          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+          // Completion status of the asset this button would select
+          completionStatusOfTheAssetThisButtonWouldSelect:
+            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+              accord,
+            ),
+          doesParamDifferFromTheCurrentlyActive: Stream.map(
+            accordRegistry.activeAccordChanges,
+            activeAccord => !Equal.equals(accord, activeAccord),
+          ),
+        }).pipe(isPressable)
+
+      const getPatternButtonPressabilityChangesStream = (
         pattern: AllPatternUnion,
-      ) {
-        const isPlaying = yield* appPlaybackState.isPlaying
-        const completionStatusOfTheAssetThisButtonWouldSelect =
-          yield* currentlySelectedAssetState.completionStatusOfPatched(pattern)
-        const doesPatternDifferFromTheCurrentlyActive = !Equal.equals(
-          pattern,
-          yield* patternRegistry.currentlyActivePattern,
-        )
-        return (
-          doesPatternDifferFromTheCurrentlyActive &&
-          (!isPlaying ||
-            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
-        )
-      })
-      const isStrengthButtonPressable = Effect.fn(function* (
-        strength: Strength,
-      ) {
-        const isPlaying = yield* appPlaybackState.isPlaying
-        const completionStatusOfTheAssetThisButtonWouldSelect =
-          yield* currentlySelectedAssetState.completionStatusOfPatched(strength)
-        const doesStrengthDifferFromTheCurrentlyActive =
-          strength !== (yield* strengthRegistry.currentlyActiveStrength)
-        return (
-          doesStrengthDifferFromTheCurrentlyActive &&
-          (!isPlaying ||
-            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
-        )
-      })
+      ) =>
+        streamAll({
+          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+          // Completion status of the asset this button would select
+          completionStatusOfTheAssetThisButtonWouldSelect:
+            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+              pattern,
+            ),
+          doesParamDifferFromTheCurrentlyActive: Stream.map(
+            patternRegistry.activePatternChanges,
+            activePattern => !Equal.equals(pattern, activePattern),
+          ),
+        }).pipe(isPressable)
+
+      const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
+        streamAll({
+          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+          // Completion status of the asset this button would select
+          completionStatusOfTheAssetThisButtonWouldSelect:
+            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+              strength,
+            ),
+          doesParamDifferFromTheCurrentlyActive: Stream.map(
+            strengthRegistry.activeStrengthChanges,
+            activeStrength => !Equal.equals(strength, activeStrength),
+          ),
+        }).pipe(isPressable)
 
       const isAccordButtonCurrentlyPlaying = () => {}
       const isPatternButtonCurrentlyPlaying = () => {}
@@ -264,9 +279,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         isPlayStopButtonPressable,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
-        isAccordButtonPressable,
-        isPatternButtonPressable,
-        isStrengthButtonPressable,
+        getAccordButtonPressabilityChangesStream,
+        getPatternButtonPressabilityChangesStream,
+        getStrengthButtonPressabilityChangesStream,
         isPatternButtonPressed,
         isAccordButtonPressed,
       }
@@ -335,3 +350,12 @@ interface PressureReportMap<Key>
   extends SortedMap.SortedMap<Key, PressureReport> {}
 
 interface PressureReportMapRef<Key> extends Ref.Ref<PressureReportMap<Key>> {}
+
+interface ButtonPressabilityDecisionRequirements {
+  readonly isPlaying: boolean
+  readonly completionStatusOfTheAssetThisButtonWouldSelect:
+    | 'not finished'
+    | 'fetched, but not written'
+    | 'finished'
+  readonly doesParamDifferFromTheCurrentlyActive: boolean
+}

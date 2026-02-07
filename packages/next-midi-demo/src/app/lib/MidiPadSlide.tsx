@@ -8,6 +8,10 @@ import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { accordsAtom } from './atoms/accordsAtom.ts'
+import {
+  isAccordButtonPressableAtom,
+  isPatternButtonPressableAtom,
+} from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
@@ -47,33 +51,55 @@ export const MidiPadSlide = ({
     </ButtonGrid>
   )
 }
-
+// isAccordButtonPressableAtom
+// isPatternButtonPressableAtom
+// isStrengthButtonPressableAtom
 const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
-  return (
-    <NeumorphicButton
-      data-is-externally-active={false}
-      data-button-id={pattern.index}
-      role="gridcell"
-      aria-colindex={pattern.index}
-      type="button"
-      aria-label={'Pattern №' + (pattern.index + 1)}
-      children={pattern.label}
-    />
+  const { value: isPressable } = Hooks.useAtomSuspense(
+    isPatternButtonPressableAtom(pattern),
   )
+  return (
+    <pre>
+      {pattern.label}
+      <br />
+      pressable: {isPressable ? 'Y' : 'N'}
+    </pre>
+  )
+  // return (
+  //   <NeumorphicButton
+  //     data-is-externally-active={false}
+  //     data-button-id={pattern.index}
+  //     role="gridcell"
+  //     aria-colindex={pattern.index}
+  //     type="button"
+  //     aria-label={'Pattern №' + (pattern.index + 1)}
+  //     children={pattern.label}
+  //   />
+  // )
 }
 
 const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
-  return (
-    <NeumorphicButton
-      data-is-externally-active={false}
-      data-button-id={accord.index}
-      role="gridcell"
-      aria-colindex={accord.index}
-      type="button"
-      aria-label={accord.label}
-      children={accord.label}
-    />
+  const { value: isPressable } = Hooks.useAtomSuspense(
+    isAccordButtonPressableAtom(accord),
   )
+  return (
+    <pre>
+      {accord.label}
+      <br />
+      pressable: {isPressable ? 'Y' : 'N'}
+    </pre>
+  )
+  // return (
+  //   <NeumorphicButton
+  //     data-is-externally-active={false}
+  //     data-button-id={accord.index}
+  //     role="gridcell"
+  //     aria-colindex={accord.index}
+  //     type="button"
+  //     aria-label={accord.label}
+  //     children={accord.label}
+  //   />
+  // )
 }
 
 const ButtonGrid = styled.div`
