@@ -245,7 +245,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
           getMapCombinerStream<AllAccordUnion>(),
           Stream.changes,
-          Stream.share({ capacity: 'unbounded', replay: 1 }),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
@@ -272,7 +272,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
           getMapCombinerStream<AllPatternUnion>(),
           Stream.changes,
-          Stream.share({ capacity: 'unbounded', replay: 1 }),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isPatternButtonPressedFlagChangesStream = (

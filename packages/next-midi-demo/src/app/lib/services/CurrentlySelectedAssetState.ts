@@ -40,7 +40,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        Stream.share({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const completionStatus = Effect.flatMap(

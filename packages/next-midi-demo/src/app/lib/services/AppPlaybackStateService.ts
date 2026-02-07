@@ -161,7 +161,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
         Stream.map(isPlaying),
         Stream.changes,
-        Stream.share({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {

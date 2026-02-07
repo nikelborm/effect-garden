@@ -49,7 +49,7 @@ export class AccordRegistry
       const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
         Stream.map(mapIndexToAccord),
         Stream.changes,
-        Stream.share({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {

@@ -44,7 +44,7 @@ export class PatternRegistry
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
         Stream.map(mapIndexToPattern),
         Stream.changes,
-        Stream.share({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {
