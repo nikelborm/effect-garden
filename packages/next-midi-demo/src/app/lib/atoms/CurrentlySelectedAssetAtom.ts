@@ -2,34 +2,23 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
-import {
-  CurrentlySelectedAccordIndexState,
-  CurrentlySelectedAssetState,
-  CurrentlySelectedPatternIndexState,
-  CurrentlySelectedStrengthState,
-} from '../services/CurrentlySelectedAssetState.ts'
+import { AccordRegistry } from '../services/AccordRegistry.ts'
+import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
+import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
+import { PatternRegistry } from '../services/PatternRegistry.ts'
+import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
+import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 
-const CurrentlySelectedAssetAtomRuntime = Atom.runtime(
-  Layer.mergeAll(
-    CurrentlySelectedAccordIndexState.Default,
-    CurrentlySelectedPatternIndexState.Default,
-    CurrentlySelectedStrengthState.Default,
-    CurrentlySelectedAssetState.Default,
-  ),
+const layer = CurrentlySelectedAssetState.Default.pipe(
+  Layer.provide(LoadedAssetSizeEstimationMap.Default),
+  Layer.provide(RootDirectoryHandle.Default),
+  Layer.provide(PatternRegistry.Default),
+  Layer.provide(AccordRegistry.Default),
+  Layer.provide(StrengthRegistry.Default),
 )
 
-export const setAccordAtom = CurrentlySelectedAssetAtomRuntime.fn(
-  CurrentlySelectedAccordIndexState.set,
-)
+const runtime = Atom.runtime(layer)
 
-export const setPatternAtom = CurrentlySelectedAssetAtomRuntime.fn(
-  CurrentlySelectedPatternIndexState.set,
-)
-
-export const setStrengthAtom = CurrentlySelectedAssetAtomRuntime.fn(
-  CurrentlySelectedStrengthState.set,
-)
-
-export const currentAssetAtom = CurrentlySelectedAssetAtomRuntime.atom(
+export const currentAssetAtom = runtime.atom(
   Stream.unwrap(CurrentlySelectedAssetState.changes),
 )

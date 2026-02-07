@@ -5,3 +5,5 @@ import { PatternRegistry } from '../services/PatternRegistry.ts'
 const runtime = Atom.runtime(PatternRegistry.Default)
 
 export const patternsAtom = runtime.atom(PatternRegistry.allPatterns)
+
+export const setActivePatternAtom = runtime.fn(PatternRegistry.setActivePattern)
