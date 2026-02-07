@@ -6,6 +6,7 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
 
+import type { Strength } from '../audioAssetHelpers.ts'
 import { ButtonState } from '../branded/index.ts'
 import { type NoteId, NoteIdOrder } from '../branded/MIDIValues.ts'
 import {
@@ -14,20 +15,27 @@ import {
 } from '../branded/StoreValues.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
-import { Accord, AccordOrderById, AccordRegistry } from './AccordRegistry.ts'
+import {
+  Accord,
+  AccordOrderById,
+  AccordRegistry,
+  type AllAccordUnion,
+} from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
-  Pattern,
+  type AllPatternUnion,
   PatternOrderByIndex,
   PatternRegistry,
+  Pattern as pattern,
 } from './PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
+import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -36,6 +44,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
+      const strengthRegistry = yield* StrengthRegistry
       const appPlaybackState = yield* AppPlaybackStateService
       const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
@@ -83,15 +92,52 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         return status === 'finished'
       })
 
-      const isAccordButtonPressable = Effect.fn(function* (accord: Accord) {
+      const isAccordButtonPressable = Effect.fn(function* (
+        accord: AllAccordUnion,
+      ) {
         const isPlaying = yield* appPlaybackState.isPlaying
-        // if not currently playing asset and not already an active asset
-        return isPlaying
-          ? false
-          : !Equal.equals(yield* accordRegistry.currentlyActiveAccord, accord)
+        const completionStatusOfTheAssetThisButtonWouldSelect =
+          yield* currentlySelectedAssetState.completionStatusOfPatched(accord)
+        const doesAccordDifferFromTheCurrentlyActive = !Equal.equals(
+          accord,
+          yield* accordRegistry.currentlyActiveAccord,
+        )
+        return (
+          doesAccordDifferFromTheCurrentlyActive &&
+          (!isPlaying ||
+            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
+        )
       })
-      const isPatternButtonPressable = () => {}
-      const isStrengthButtonPressable = () => {}
+      const isPatternButtonPressable = Effect.fn(function* (
+        pattern: AllPatternUnion,
+      ) {
+        const isPlaying = yield* appPlaybackState.isPlaying
+        const completionStatusOfTheAssetThisButtonWouldSelect =
+          yield* currentlySelectedAssetState.completionStatusOfPatched(pattern)
+        const doesPatternDifferFromTheCurrentlyActive = !Equal.equals(
+          pattern,
+          yield* patternRegistry.currentlyActivePattern,
+        )
+        return (
+          doesPatternDifferFromTheCurrentlyActive &&
+          (!isPlaying ||
+            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
+        )
+      })
+      const isStrengthButtonPressable = Effect.fn(function* (
+        strength: Strength,
+      ) {
+        const isPlaying = yield* appPlaybackState.isPlaying
+        const completionStatusOfTheAssetThisButtonWouldSelect =
+          yield* currentlySelectedAssetState.completionStatusOfPatched(strength)
+        const doesStrengthDifferFromTheCurrentlyActive =
+          strength !== (yield* strengthRegistry.currentlyActiveStrength)
+        return (
+          doesStrengthDifferFromTheCurrentlyActive &&
+          (!isPlaying ||
+            completionStatusOfTheAssetThisButtonWouldSelect === 'finished')
+        )
+      })
 
       const isAccordButtonCurrentlyPlaying = () => {}
       const isPatternButtonCurrentlyPlaying = () => {}
@@ -142,7 +188,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                     ? SortedSet.add(prevValAtKey, id as any)
                     : SortedSet.remove(prevValAtKey, id as any),
               )
-              if (Pattern.models(model.assignedTo))
+              if (pattern.models(model.assignedTo))
                 yield* transformReport(model.assignedTo, patternButtonsMapRef)
 
               if (Accord.models(model.assignedTo))
@@ -218,6 +264,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         isPlayStopButtonPressable,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
+        isAccordButtonPressable,
+        isPatternButtonPressable,
+        isStrengthButtonPressable,
         isPatternButtonPressed,
         isAccordButtonPressed,
       }
@@ -280,7 +329,7 @@ export interface PressureReport {
 
 interface AccordButtonMap extends PressureReportMap<Accord> {}
 
-interface PatternButtonMap extends PressureReportMap<Pattern> {}
+interface PatternButtonMap extends PressureReportMap<pattern> {}
 
 interface PressureReportMap<Key>
   extends SortedMap.SortedMap<Key, PressureReport> {}
