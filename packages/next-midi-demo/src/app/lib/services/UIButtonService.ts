@@ -100,11 +100,29 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         self.pipe(
           Stream.map(
             _ =>
-              _.doesParamDifferFromTheCurrentlyActive &&
+              !_.isActiveParam &&
               (!_.isPlaying ||
                 _.completionStatusOfTheAssetThisButtonWouldSelect ===
                   'finished'),
           ),
+          Stream.changes,
+        )
+
+      const getIsActiveAccordStream = (accord: AllAccordUnion) =>
+        accordRegistry.activeAccordChanges.pipe(
+          Stream.map(Equal.equals(accord)),
+          Stream.changes,
+        )
+
+      const getIsActivePatternStream = (pattern: AllPatternUnion) =>
+        patternRegistry.activePatternChanges.pipe(
+          Stream.map(Equal.equals(pattern)),
+          Stream.changes,
+        )
+
+      const getIsActiveStrengthStream = (strength: Strength) =>
+        strengthRegistry.activeStrengthChanges.pipe(
+          Stream.map(Equal.equals(strength)),
           Stream.changes,
         )
 
@@ -118,10 +136,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               accord,
             ),
-          doesParamDifferFromTheCurrentlyActive: Stream.map(
-            accordRegistry.activeAccordChanges,
-            activeAccord => !Equal.equals(accord, activeAccord),
-          ),
+          isActiveParam: getIsActiveAccordStream(accord),
         }).pipe(isPressable)
 
       const getPatternButtonPressabilityChangesStream = (
@@ -134,10 +149,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               pattern,
             ),
-          doesParamDifferFromTheCurrentlyActive: Stream.map(
-            patternRegistry.activePatternChanges,
-            activePattern => !Equal.equals(pattern, activePattern),
-          ),
+          isActiveParam: getIsActivePatternStream(pattern),
         }).pipe(isPressable)
 
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
@@ -148,10 +160,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               strength,
             ),
-          doesParamDifferFromTheCurrentlyActive: Stream.map(
-            strengthRegistry.activeStrengthChanges,
-            activeStrength => !Equal.equals(strength, activeStrength),
-          ),
+          isActiveParam: getIsActiveStrengthStream(strength),
         }).pipe(isPressable)
 
       const isAccordButtonCurrentlyPlaying = () => {}
@@ -279,6 +288,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         isPlayStopButtonPressable,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
+        getIsActiveAccordStream,
+        getIsActivePatternStream,
+        getIsActiveStrengthStream,
         getAccordButtonPressabilityChangesStream,
         getPatternButtonPressabilityChangesStream,
         getStrengthButtonPressabilityChangesStream,
@@ -357,5 +369,5 @@ interface ButtonPressabilityDecisionRequirements {
     | 'not finished'
     | 'fetched, but not written'
     | 'finished'
-  readonly doesParamDifferFromTheCurrentlyActive: boolean
+  readonly isActiveParam: boolean
 }

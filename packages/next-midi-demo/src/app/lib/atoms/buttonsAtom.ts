@@ -78,3 +78,21 @@ export const isStrengthButtonPressableAtom = Atom.family(
     s => runtime.atom(s),
   ),
 )
+
+export const isAccordActiveAtom = Atom.family(
+  EFunction.flow(UIButtonService.getIsActiveAccordStream, Stream.unwrap, s =>
+    runtime.atom(s),
+  ),
+)
+
+export const isPatternActiveAtom = Atom.family(
+  EFunction.flow(UIButtonService.getIsActivePatternStream, Stream.unwrap, s =>
+    runtime.atom(s),
+  ),
+)
+
+export const isStrengthActiveAtom = Atom.family(
+  EFunction.flow(UIButtonService.getIsActiveStrengthStream, Stream.unwrap, s =>
+    runtime.atom(s),
+  ),
+)
