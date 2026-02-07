@@ -135,3 +135,30 @@ export const isPatternPressedAtom = Atom.family(
     Atom.withServerValueInitial,
   ),
 )
+
+export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isAccordButtonCurrentlyPlaying,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isPatternButtonCurrentlyPlaying,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isStrengthButtonCurrentlyPlaying,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)

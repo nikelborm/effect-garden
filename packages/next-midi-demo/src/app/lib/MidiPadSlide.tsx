@@ -9,9 +9,11 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { accordsAtom } from './atoms/accordsAtom.ts'
 import {
+  isAccordButtonCurrentlyPlayingAtom,
   isAccordButtonPressableAtom,
   isAccordPressedAtom,
   isAccordSelectedAtom,
+  isPatternButtonCurrentlyPlayingAtom,
   isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
@@ -61,6 +63,13 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   )
   const isActiveRes = Hooks.useAtomValue(isPatternSelectedAtom(pattern))
   const isPressedRes = Hooks.useAtomValue(isPatternPressedAtom(pattern))
+  const isPlayingRes = Hooks.useAtomValue(
+    isPatternButtonCurrentlyPlayingAtom(pattern),
+  )
+  if (!Result.isSuccess(isPlayingRes)) {
+    console.log(`wtf pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
+    return 'wtf'
+  }
   if (!Result.isSuccess(isPressableRes)) {
     console.log(
       `wtf. pattern № ${pattern.index} isPressableRes`,
@@ -79,6 +88,7 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   const { value: isPressable } = isPressableRes
   const { value: isActive } = isActiveRes
   const { value: isPressed } = isPressedRes
+  const { value: isPlaying } = isPlayingRes
 
   return (
     <DebugButton>
@@ -89,6 +99,8 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
       Active: {isActive ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
+      <br />
+      Playing: {isPlaying ? Yes : No}
     </DebugButton>
   )
   // return (
@@ -108,6 +120,13 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
   const isActiveRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
   const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
+  const isPlayingRes = Hooks.useAtomValue(
+    isAccordButtonCurrentlyPlayingAtom(accord),
+  )
+  if (!Result.isSuccess(isPlayingRes)) {
+    console.log(`wtf accord №${accord.index}. isPlayingRes`, isPlayingRes)
+    return 'wtf'
+  }
   if (!Result.isSuccess(isPressableRes)) {
     console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
     return 'wtf'
@@ -124,6 +143,7 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const { value: isPressable } = isPressableRes
   const { value: isActive } = isActiveRes
   const { value: isPressed } = isPressedRes
+  const { value: isPlaying } = isPlayingRes
 
   return (
     <DebugButton>
@@ -134,6 +154,8 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
       Active: {isActive ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
+      <br />
+      Playing: {isPlaying ? Yes : No}
     </DebugButton>
   )
   // return (
@@ -162,7 +184,7 @@ const ButtonGrid = styled.div`
   --num-elements: 8;
   --num-rows: 2;
   --num-column: 8;
-  --viewport-vertical-size: 200px;
+  --viewport-vertical-size: 250px;
   --viewport-horizontal-size: 1600px;
   --num-row-gaps: calc(var(--num-rows) - 1);
   --num-column-gaps: calc(var(--num-column) - 1);

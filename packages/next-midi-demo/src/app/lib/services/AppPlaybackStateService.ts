@@ -5,9 +5,13 @@ import * as Fiber from 'effect/Fiber'
 import EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
+import * as Record from 'effect/Record'
 import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
+import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
+
+import type { CurrentSelectedAsset } from './CurrentlySelectedAssetState.ts'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
@@ -30,7 +34,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const createSilentByDefaultPlayback = () => {}
       // SubscriptionRef.updateEffect
 
-      const play = Effect.fn(function* (buffer: AudioBuffer) {
+      const play = Effect.fn(function* (
+        buffer: AudioBuffer,
+        asset: CurrentSelectedAsset,
+      ) {
         const currentStatus = yield* current
         switch (currentStatus._tag) {
           case 'NotPlaying':
@@ -40,6 +47,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                 audioContext,
                 buffer,
               ),
+              currentAsset: asset,
               playbackStartedAtSecond: audioContext.currentTime,
             })
           case 'PlayingAsset': {
@@ -161,6 +169,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         stop,
         isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
+        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
+          e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
+        ),
       }
     }),
   },
@@ -226,11 +237,15 @@ export type AppPlaybackState =
   | {
       readonly _tag: 'PlayingAsset'
       readonly playbackStartedAtSecond: number
+      readonly currentAsset: CurrentSelectedAsset
+
       readonly current: AudioPlayback
     }
   | {
       readonly _tag: 'ScheduledChange'
       readonly playbackStartedAtSecond: number
+      readonly currentAsset: CurrentSelectedAsset
+
       readonly current: AudioPlayback
       readonly next: AudioPlayback
       readonly cleanupFiber: Fiber.RuntimeFiber<void, never>

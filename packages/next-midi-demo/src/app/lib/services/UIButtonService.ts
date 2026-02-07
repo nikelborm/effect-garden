@@ -16,7 +16,6 @@ import {
   type ValidKeyboardKey,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
-import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   type Accord,
@@ -137,7 +136,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       ) =>
         streamAll({
           isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          // Completion status of the asset this button would select
           completionStatusOfTheAssetThisButtonWouldSelect:
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               accord,
@@ -154,7 +152,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       ) =>
         streamAll({
           isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          // Completion status of the asset this button would select
           completionStatusOfTheAssetThisButtonWouldSelect:
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               pattern,
@@ -165,7 +162,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
         streamAll({
           isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          // Completion status of the asset this button would select
           completionStatusOfTheAssetThisButtonWouldSelect:
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               strength,
@@ -173,26 +169,38 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           isSelectedParam: getIsSelectedStrengthStream(strength),
         }).pipe(isPressable)
 
-      const isAccordButtonCurrentlyPlaying = () => {}
-      const isPatternButtonCurrentlyPlaying = () => {}
-      const isStrengthButtonCurrentlyPlaying = () => {}
+      const isAccordButtonCurrentlyPlaying = (accord: AllAccordUnion) =>
+        appPlaybackState.playbackPublicInfoChangesStream.pipe(
+          Stream.map(
+            pb =>
+              pb._tag !== 'NotPlaying' &&
+              Equal.equals(pb.currentAsset.accord, accord),
+          ),
+          Stream.changes,
+        )
+      const isPatternButtonCurrentlyPlaying = (pattern: AllPatternUnion) =>
+        appPlaybackState.playbackPublicInfoChangesStream.pipe(
+          Stream.map(
+            pb =>
+              pb._tag !== 'NotPlaying' &&
+              Equal.equals(pb.currentAsset.pattern, pattern),
+          ),
+          Stream.changes,
+        )
+      const isStrengthButtonCurrentlyPlaying = (strength: Strength) =>
+        appPlaybackState.playbackPublicInfoChangesStream.pipe(
+          Stream.map(
+            pb =>
+              pb._tag !== 'NotPlaying' && pb.currentAsset.strength === strength,
+          ),
+          Stream.changes,
+        )
 
-      const isAccordButtonWillBePlayedNext = () => {}
-      const isPatternButtonWillBePlayedNext = () => {}
-      const isStrengthButtonWillBePlayedNext = () => {}
+      // Currently selected asset is always the asset that will be played next
 
       const getAccordButtonDownloadPercent = () => {}
       const getPatternButtonDownloadPercent = () => {}
       const getStrengthButtonDownloadPercent = () => {}
-
-      // when isn't presently playing audio. default.
-      // pattern/accord/strength buttons states:
-
-      // 1. in-process loading, includes when the asset is 0% loaded
-      // 2. finished   loading, asset is completely loaded and written to opfs
-
-      // 1. selected as a current setting
-      // 2. not selected as a current setting
 
       const getMapCombinerStream =
         <T>() =>
@@ -302,6 +310,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         getAccordButtonPressabilityChangesStream,
         getPatternButtonPressabilityChangesStream,
         getStrengthButtonPressabilityChangesStream,
+        isAccordButtonCurrentlyPlaying,
+        isPatternButtonCurrentlyPlaying,
+        isStrengthButtonCurrentlyPlaying,
         isAccordButtonPressedFlagChangesStream,
         isPatternButtonPressedFlagChangesStream,
       }
@@ -326,34 +337,6 @@ const getPressureReportOfMapRef =
     Effect.map(
       Ref.get(assigneeMapRef),
       EFunction.flow(SortedMap.get(assignee), defaultReportOnNone),
-    )
-
-const transformReportGeneric =
-  <const TReportKey extends keyof PressureReport>(
-    key: TReportKey,
-    transformReportField: (
-      previous: PressureReport[TReportKey],
-    ) => PressureReport[TReportKey],
-  ) =>
-  <TAssignee>(assignee: TAssignee, mapRef: PressureReportMapRef<TAssignee>) =>
-    Ref.update(
-      mapRef,
-      sortedMapModify(assignee, previousReport => ({
-        ...previousReport,
-        [key]: transformReportField(previousReport[key]),
-      })),
-    )
-
-const isButtonPressed =
-  <TAssignee>(
-    getReport: (assignee: TAssignee) => Effect.Effect<PressureReport>,
-  ) =>
-  (assignee: TAssignee) =>
-    Effect.map(
-      getReport(assignee),
-      report =>
-        SortedSet.size(report.pressedByKeyboardKeys) > 0 ||
-        SortedSet.size(report.pressedByMIDIPadButtons) > 0,
     )
 
 export interface PressureReport {

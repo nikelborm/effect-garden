@@ -106,9 +106,10 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
   },
 ) {}
 
-interface CurrentSelectedAsset {
+export interface CurrentSelectedAsset {
   readonly strength: Strength
   readonly pattern: AllPatternUnion
   readonly accord: AllAccordUnion
 }
-type Patch = AllPatternUnion | AllAccordUnion | Strength
+
+export type Patch = AllPatternUnion | AllAccordUnion | Strength
