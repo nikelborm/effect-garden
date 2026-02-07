@@ -54,22 +54,31 @@ export const MidiPadSlide = ({
     </ButtonGrid>
   )
 }
-// isAccordButtonPressableAtom
-// isPatternButtonPressableAtom
-// isStrengthButtonPressableAtom
+
 const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
-  const res = Result.all({
-    isPressable: Hooks.useAtomValue(isPatternButtonPressableAtom(pattern)),
-    isActive: Hooks.useAtomValue(isPatternSelectedAtom(pattern)),
-    isPressed: Hooks.useAtomValue(isPatternPressedAtom(pattern)),
-  })
-
-  if (Result.isFailure(res)) {
-    console.log(res)
-    return 'wtf. failure of pattern button'
+  const isPressableRes = Hooks.useAtomValue(
+    isPatternButtonPressableAtom(pattern),
+  )
+  const isActiveRes = Hooks.useAtomValue(isPatternSelectedAtom(pattern))
+  const isPressedRes = Hooks.useAtomValue(isPatternPressedAtom(pattern))
+  if (!Result.isSuccess(isPressableRes)) {
+    console.log(
+      `wtf. pattern № ${pattern.index} isPressableRes`,
+      isPressableRes,
+    )
+    return 'wtf'
   }
-
-  const { isPressable, isActive, isPressed } = res.value ?? {}
+  if (!Result.isSuccess(isActiveRes)) {
+    console.log(`wtf. pattern № ${pattern.index} isActiveRes`, isActiveRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isPressedRes)) {
+    console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
+  const { value: isPressable } = isPressableRes
+  const { value: isActive } = isActiveRes
+  const { value: isPressed } = isPressedRes
 
   return (
     <DebugButton>
@@ -96,11 +105,26 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
 }
 
 const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
-  const { value: isPressable } = Hooks.useAtomValue(
-    isAccordButtonPressableAtom(accord),
-  )
-  const { value: isActive } = Hooks.useAtomValue(isAccordSelectedAtom(accord))
-  const { value: isPressed } = Hooks.useAtomValue(isAccordPressedAtom(accord))
+  const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
+  const isActiveRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
+  const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
+  if (!Result.isSuccess(isPressableRes)) {
+    console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isActiveRes)) {
+    console.log(`wtf accord №${accord.index}. isActiveRes`, isActiveRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isPressedRes)) {
+    console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
+
+  const { value: isPressable } = isPressableRes
+  const { value: isActive } = isActiveRes
+  const { value: isPressed } = isPressedRes
+
   return (
     <DebugButton>
       {accord.label}

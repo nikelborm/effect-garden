@@ -4,6 +4,7 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Logger from 'effect/Logger'
 import * as Stream from 'effect/Stream'
 
 import { AccordRegistry } from '../services/AccordRegistry.ts'
@@ -55,6 +56,7 @@ const AppLayer = UIButtonService.Default.pipe(
   Layer.provide(AccordRegistry.Default),
   Layer.provide(PatternRegistry.Default),
   Layer.provide(StrengthRegistry.Default),
+  Layer.provide(Logger.pretty),
 )
 
 const runtime = Atom.runtime(AppLayer)

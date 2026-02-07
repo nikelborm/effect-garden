@@ -40,7 +40,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        Stream.share({ capacity: 'unbounded' }),
+        Stream.share({ capacity: 'unbounded', replay: 1 }),
       )
 
       const completionStatus = Effect.flatMap(
@@ -91,7 +91,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
             applyPatch,
             estimationMap.getAssetFetchingCompletionStatusChangesStream,
           ),
-          { switch: true },
+          { switch: true, concurrency: 1 },
         )
       }
 

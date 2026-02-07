@@ -37,25 +37,31 @@ const allPatterns = patternLabels.map(
 export class PatternRegistry
   extends Effect.Service<PatternRegistry>()('next-midi-demo/PatternRegistry', {
     accessors: true,
-    effect: Effect.map(
-      SubscriptionRef.make<RecordedPatternIndexes>(0),
-      currentPatternIndexRef => ({
+    scoped: Effect.gen(function* () {
+      const currentPatternIndexRef =
+        yield* SubscriptionRef.make<RecordedPatternIndexes>(0)
+
+      const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
+        Stream.map(mapIndexToPattern),
+        Stream.changes,
+        Stream.share({ capacity: 'unbounded', replay: 1 }),
+      )
+
+      return {
         currentlySelectedPattern: Effect.map(
           SubscriptionRef.get(currentPatternIndexRef),
           mapIndexToPattern,
         ),
         allPatterns: Effect.succeed(allPatterns),
-        selectedPatternChanges: Stream.map(
-          currentPatternIndexRef.changes,
-          mapIndexToPattern,
-        ),
+        selectedPatternChanges,
         selectPattern: (patternIndex: RecordedPatternIndexes) => {
           const trustedIndex =
             Schema.decodeSync(PatternIndexSchema)(patternIndex)
+
           return SubscriptionRef.set(currentPatternIndexRef, trustedIndex)
         },
-      }),
-    ),
+      }
+    }),
   })
   implements IPatternRegistry {}
 

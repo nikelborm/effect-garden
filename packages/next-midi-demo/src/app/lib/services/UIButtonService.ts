@@ -16,11 +16,10 @@ import {
   type ValidKeyboardKey,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
-import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
-  Accord,
+  type Accord,
   AccordOrderById,
   AccordRegistry,
   type AllAccordUnion,
@@ -33,7 +32,7 @@ import {
   type AllPatternUnion,
   PatternOrderByIndex,
   PatternRegistry,
-  Pattern as pattern,
+  type Pattern as pattern,
 } from './PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
@@ -114,6 +113,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         accordRegistry.selectedAccordChanges.pipe(
           Stream.map(Equal.equals(accord)),
           Stream.changes,
+          Stream.tap(isSelected =>
+            Effect.log(
+              `Accord index=${accord.index} is ${isSelected ? '' : 'not '}selected`,
+            ),
+          ),
         )
 
       const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
@@ -139,7 +143,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               accord,
             ),
           isSelectedParam: getIsSelectedAccordStream(accord),
-        }).pipe(isPressable)
+        }).pipe(
+          Stream.tap(e => Effect.log('marker1', e)),
+          Stream.tapErrorCause(e => Effect.logError('marker2', e)),
+          isPressable,
+        )
 
       const getPatternButtonPressabilityChangesStream = (
         pattern: AllPatternUnion,
@@ -186,61 +194,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       // 1. selected as a current setting
       // 2. not selected as a current setting
 
-      //
-
-      const makeSortedMapUpdater =
-        <
-          const TReportKey extends
-            | 'pressedByKeyboardKeys'
-            | 'pressedByMIDIPadButtons',
-        >(
-          key: TReportKey,
-        ) =>
-        <AssignedTo>(
-          map: SortedMap.SortedMap<
-            PressureReport[TReportKey] extends SortedSet.SortedSet<infer V>
-              ? V
-              : never,
-            PhysicalButtonModel<AssignedTo>
-          >,
-        ) =>
-          Effect.forEach(
-            map,
-            Effect.fn(function* ([id, model]) {
-              const transformReport = transformReportGeneric(
-                key,
-                prevValAtKey =>
-                  model.buttonPressState === ButtonState.Pressed
-                    ? SortedSet.add(prevValAtKey, id as any)
-                    : SortedSet.remove(prevValAtKey, id as any),
-              )
-              if (pattern.models(model.assignedTo))
-                yield* transformReport(model.assignedTo, patternButtonsMapRef)
-
-              if (Accord.models(model.assignedTo))
-                yield* transformReport(model.assignedTo, accordButtonsMapRef)
-            }),
-            { discard: true },
-          )
-
-      const updatePressedByKeyboardKeys = makeSortedMapUpdater(
-        'pressedByKeyboardKeys',
-      )
-      const updatePressedByMIDIPadButtons = makeSortedMapUpdater(
-        'pressedByMIDIPadButtons',
-      )
-
-      // Seems like wont be needed, since .changes also emits on initialization
-      // yield* Effect.flatMap(
-      //   physicalKeyboardKeyModelToUIButtonMappingService.currentMap,
-      //   updatePressedByKeyboardKeys,
-      // )
-
-      // yield* Effect.flatMap(
-      //   physicalMIDIDeviceButtonModelToUIButtonMappingService.currentMap,
-      //   updatePressedByMIDIPadButtons,
-      // )
-
       const getMapCombinerStream =
         <T>() =>
         <E, R>(
@@ -283,7 +236,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges,
           ),
           getMapCombinerStream<AllAccordUnion>(),
-          Stream.share({ capacity: 'unbounded' }),
+          Stream.changes,
+          Stream.share({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
@@ -296,6 +250,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
           ),
           Stream.changes,
+          Stream.tap(isPressed =>
+            Effect.log(
+              `accord index=${accord.index} is ${isPressed ? '' : 'not '}pressed`,
+            ),
+          ),
         )
 
       const PatternPressAggregateStream =
@@ -304,7 +263,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges,
           ),
           getMapCombinerStream<AllPatternUnion>(),
-          Stream.share({ capacity: 'unbounded' }),
+          Stream.changes,
+          Stream.share({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isPatternButtonPressedFlagChangesStream = (
@@ -319,6 +279,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
           ),
           Stream.changes,
+          Stream.tap(isPressed =>
+            Effect.log(
+              `pattern index=${pattern.index} is ${isPressed ? '' : 'not '}pressed`,
+            ),
+          ),
         )
 
       const getPressureReportOfAccord =
@@ -326,41 +291,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       const getPressureReportOfPattern =
         getPressureReportOfMapRef(patternButtonsMapRef)
-
-      // const isPatternButtonPressed = isButtonPressed(getPressureReportOfPattern)
-      // const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
-
-      // yield* reactivelySchedule(
-      //   physicalKeyboardButtonModelMappingService.mapChanges,
-      //   updatePressedByKeyboardKeys,
-      // )
-
-      // yield* reactivelySchedule(
-      //   physicalMIDIDeviceButtonModelMappingService.mapChanges,
-      //   updatePressedByMIDIPadButtons,
-      // )
-
-      yield* reactivelySchedule(
-        accordRegistry.selectedAccordChanges,
-        selectedAccord =>
-          Effect.gen(function* () {
-            for (const [accord] of yield* accordButtonsMapRef) {
-              yield* transformReportGeneric('isActive', () =>
-                Equal.equals(accord, selectedAccord),
-              )(accord, accordButtonsMapRef)
-            }
-          }),
-      )
-
-      yield* reactivelySchedule(
-        patternRegistry.selectedPatternChanges,
-        Effect.fn(function* (selectedPattern) {
-          for (const [pattern] of yield* patternButtonsMapRef)
-            yield* transformReportGeneric('isActive', () =>
-              Equal.equals(pattern, selectedPattern),
-            )(pattern, patternButtonsMapRef)
-        }),
-      )
 
       return {
         isPlayStopButtonPressable,

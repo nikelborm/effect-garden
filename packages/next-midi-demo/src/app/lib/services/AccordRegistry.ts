@@ -42,25 +42,30 @@ const mapIndexToAccord = (index: RecordedAccordIndexes) =>
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
     accessors: true,
-    effect: Effect.map(
-      SubscriptionRef.make<RecordedAccordIndexes>(0),
-      currentAccordIndexRef => ({
+    scoped: Effect.gen(function* () {
+      const currentAccordIndexRef =
+        yield* SubscriptionRef.make<RecordedAccordIndexes>(0)
+
+      const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
+        Stream.map(mapIndexToAccord),
+        Stream.changes,
+        Stream.share({ capacity: 'unbounded', replay: 1 }),
+      )
+
+      return {
         currentlySelectedAccord: Effect.map(
           SubscriptionRef.get(currentAccordIndexRef),
           mapIndexToAccord,
         ),
         allAccords: Effect.succeed(allAccords),
-        selectedAccordChanges: Stream.map(
-          currentAccordIndexRef.changes,
-          mapIndexToAccord,
-        ),
+        selectedAccordChanges,
         selectAccord: (accordIndex: RecordedAccordIndexes) => {
           const trustedIndex = Schema.decodeSync(AccordIndexSchema)(accordIndex)
 
           return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
         },
-      }),
-    ),
+      }
+    }),
   })
   implements IAccordRegistry {}
 

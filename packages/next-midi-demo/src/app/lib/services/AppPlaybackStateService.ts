@@ -13,7 +13,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
   'next-midi-demo/AppPlaybackStateService',
   {
     accessors: true,
-    effect: Effect.gen(function* () {
+    scoped: Effect.gen(function* () {
       const audioContext = new AudioContext()
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
@@ -150,7 +150,11 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         current._tag !== 'NotPlaying'
 
       const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
-      const latestIsPlayingFlagStream = Stream.map(stateRef.changes, isPlaying)
+      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
+        Stream.map(isPlaying),
+        Stream.changes,
+        Stream.share({ capacity: 'unbounded', replay: 1 }),
+      )
 
       return {
         play,
