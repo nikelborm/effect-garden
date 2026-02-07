@@ -15,10 +15,10 @@ export class StrengthRegistry
       effect: Effect.map(
         SubscriptionRef.make<Strength>('m'),
         currentStrengthRef => ({
-          currentlyActiveStrength: SubscriptionRef.get(currentStrengthRef),
+          currentlySelectedStrength: SubscriptionRef.get(currentStrengthRef),
           allStrengths: Effect.succeed(allStrengths),
-          activeStrengthChanges: currentStrengthRef.changes,
-          setActiveStrength: (strength: Strength) => {
+          selectedStrengthChanges: currentStrengthRef.changes,
+          selectStrength: (strength: Strength) => {
             const trustedStrength = Schema.decodeSync(StrengthSchema)(strength)
 
             return SubscriptionRef.set(currentStrengthRef, trustedStrength)
@@ -30,10 +30,10 @@ export class StrengthRegistry
   implements IStrengthRegistry {}
 
 interface IStrengthRegistry {
-  readonly currentlyActiveStrength: Effect.Effect<Strength>
+  readonly currentlySelectedStrength: Effect.Effect<Strength>
   readonly allStrengths: Effect.Effect<AllStrengthTuple>
-  readonly activeStrengthChanges: Stream.Stream<Strength>
-  readonly setActiveStrength: (strength: Strength) => Effect.Effect<void>
+  readonly selectedStrengthChanges: Stream.Stream<Strength>
+  readonly selectStrength: (strength: Strength) => Effect.Effect<void>
 }
 
 export type AllStrengthTuple = readonly ['s', 'm', 'v']

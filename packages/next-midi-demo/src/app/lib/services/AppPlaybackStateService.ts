@@ -28,6 +28,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       // audioContext.decodeAudioData()
 
       const createSilentByDefaultPlayback = () => {}
+      // SubscriptionRef.updateEffect
 
       const play = Effect.fn(function* (buffer: AudioBuffer) {
         const currentStatus = yield* current
@@ -147,6 +148,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
+
       const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
       const latestIsPlayingFlagStream = Stream.map(stateRef.changes, isPlaying)
 

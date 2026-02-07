@@ -9,10 +9,12 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { accordsAtom } from './atoms/accordsAtom.ts'
 import {
-  isAccordActiveAtom,
   isAccordButtonPressableAtom,
-  isPatternActiveAtom,
+  isAccordPressedAtom,
+  isAccordSelectedAtom,
   isPatternButtonPressableAtom,
+  isPatternPressedAtom,
+  isPatternSelectedAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
@@ -33,7 +35,6 @@ export const MidiPadSlide = ({
 
   if (!Result.isSuccess(res)) return 'wtf'
   const { accords, patterns, strengths } = res.value
-
   return (
     <ButtonGrid
       role="grid"
@@ -57,12 +58,19 @@ export const MidiPadSlide = ({
 // isPatternButtonPressableAtom
 // isStrengthButtonPressableAtom
 const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
-  const { value: isPressable } = Hooks.useAtomSuspense(
-    isPatternButtonPressableAtom(pattern),
-  )
-  const { value: isActive } = Hooks.useAtomSuspense(
-    isPatternActiveAtom(pattern),
-  )
+  const res = Result.all({
+    isPressable: Hooks.useAtomValue(isPatternButtonPressableAtom(pattern)),
+    isActive: Hooks.useAtomValue(isPatternSelectedAtom(pattern)),
+    isPressed: Hooks.useAtomValue(isPatternPressedAtom(pattern)),
+  })
+
+  if (Result.isFailure(res)) {
+    console.log(res)
+    return 'wtf. failure of pattern button'
+  }
+
+  const { isPressable, isActive, isPressed } = res.value ?? {}
+
   return (
     <DebugButton>
       {pattern.label}
@@ -70,6 +78,8 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
       Pressable: {isPressable ? Yes : No}
       <br />
       Active: {isActive ? Yes : No}
+      <br />
+      Pressed: {isPressed ? Yes : No}
     </DebugButton>
   )
   // return (
@@ -86,10 +96,11 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
 }
 
 const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
-  const { value: isPressable } = Hooks.useAtomSuspense(
+  const { value: isPressable } = Hooks.useAtomValue(
     isAccordButtonPressableAtom(accord),
   )
-  const { value: isActive } = Hooks.useAtomSuspense(isAccordActiveAtom(accord))
+  const { value: isActive } = Hooks.useAtomValue(isAccordSelectedAtom(accord))
+  const { value: isPressed } = Hooks.useAtomValue(isAccordPressedAtom(accord))
   return (
     <DebugButton>
       {accord.label}
@@ -97,6 +108,8 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
       Pressable: {isPressable ? Yes : No}
       <br />
       Active: {isActive ? Yes : No}
+      <br />
+      Pressed: {isPressed ? Yes : No}
     </DebugButton>
   )
   // return (
@@ -125,8 +138,8 @@ const ButtonGrid = styled.div`
   --num-elements: 8;
   --num-rows: 2;
   --num-column: 8;
-  --viewport-vertical-size: 20vh;
-  --viewport-horizontal-size: 60vw;
+  --viewport-vertical-size: 200px;
+  --viewport-horizontal-size: 1600px;
   --num-row-gaps: calc(var(--num-rows) - 1);
   --num-column-gaps: calc(var(--num-column) - 1);
   --size-taken-by-row-gaps: calc(var(--one-gap-size) * var(--num-row-gaps));

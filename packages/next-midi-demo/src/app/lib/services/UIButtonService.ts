@@ -1,7 +1,9 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
+import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
+import * as Order from 'effect/Order'
 import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
@@ -100,7 +102,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         self.pipe(
           Stream.map(
             _ =>
-              !_.isActiveParam &&
+              !_.isSelectedParam &&
               (!_.isPlaying ||
                 _.completionStatusOfTheAssetThisButtonWouldSelect ===
                   'finished'),
@@ -108,20 +110,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.changes,
         )
 
-      const getIsActiveAccordStream = (accord: AllAccordUnion) =>
-        accordRegistry.activeAccordChanges.pipe(
+      const getIsSelectedAccordStream = (accord: AllAccordUnion) =>
+        accordRegistry.selectedAccordChanges.pipe(
           Stream.map(Equal.equals(accord)),
           Stream.changes,
         )
 
-      const getIsActivePatternStream = (pattern: AllPatternUnion) =>
-        patternRegistry.activePatternChanges.pipe(
+      const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
+        patternRegistry.selectedPatternChanges.pipe(
           Stream.map(Equal.equals(pattern)),
           Stream.changes,
         )
 
-      const getIsActiveStrengthStream = (strength: Strength) =>
-        strengthRegistry.activeStrengthChanges.pipe(
+      const getIsSelectedStrengthStream = (strength: Strength) =>
+        strengthRegistry.selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
           Stream.changes,
         )
@@ -136,7 +138,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               accord,
             ),
-          isActiveParam: getIsActiveAccordStream(accord),
+          isSelectedParam: getIsSelectedAccordStream(accord),
         }).pipe(isPressable)
 
       const getPatternButtonPressabilityChangesStream = (
@@ -149,7 +151,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               pattern,
             ),
-          isActiveParam: getIsActivePatternStream(pattern),
+          isSelectedParam: getIsSelectedPatternStream(pattern),
         }).pipe(isPressable)
 
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
@@ -160,7 +162,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
               strength,
             ),
-          isActiveParam: getIsActiveStrengthStream(strength),
+          isSelectedParam: getIsSelectedStrengthStream(strength),
         }).pipe(isPressable)
 
       const isAccordButtonCurrentlyPlaying = () => {}
@@ -238,10 +240,86 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       //   physicalMIDIDeviceButtonModelToUIButtonMappingService.currentMap,
       //   updatePressedByMIDIPadButtons,
       // )
-      physicalKeyboardButtonModelToAccordMappingService.mapChanges
-      physicalKeyboardButtonModelToPatternMappingService.mapChanges
-      physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges
-      physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges
+
+      const getMapCombinerStream =
+        <T>() =>
+        <E, R>(
+          self: Stream.Stream<
+            | SortedMap.SortedMap<ValidKeyboardKey, PhysicalButtonModel<T>>
+            | SortedMap.SortedMap<NoteId, PhysicalButtonModel<T>>,
+            E,
+            R
+          >,
+        ) =>
+          Stream.scan(
+            self,
+            HashMap.empty<T, SortedSet.SortedSet<ValidKeyboardKey | NoteId>>(),
+            (previousMap, latestMap) => {
+              let newMap = previousMap
+              for (const [physicalButtonId, physicalButtonModel] of latestMap)
+                newMap = HashMap.modifyAt(
+                  newMap,
+                  physicalButtonModel.assignedTo,
+                  EFunction.flow(
+                    Option.orElseSome(() => SortedSet.empty(noteOrKeyOrder)),
+                    Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
+                      (physicalButtonModel.buttonPressState ===
+                        ButtonState.Pressed
+                        ? SortedSet.add
+                        : SortedSet.remove)(
+                        setOfPhysicalIdsTheButtonIsPressedBy,
+                        physicalButtonId,
+                      ),
+                    ),
+                  ),
+                )
+              return newMap
+            },
+          )
+
+      const AccordPressAggregateStream =
+        yield* physicalKeyboardButtonModelToAccordMappingService.mapChanges.pipe(
+          Stream.merge(
+            physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges,
+          ),
+          getMapCombinerStream<AllAccordUnion>(),
+          Stream.share({ capacity: 'unbounded' }),
+        )
+
+      const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
+        AccordPressAggregateStream.pipe(
+          Stream.map(
+            EFunction.flow(
+              HashMap.get(accord),
+              Option.map(set => SortedSet.size(set) !== 0),
+              Option.getOrElse(() => false),
+            ),
+          ),
+          Stream.changes,
+        )
+
+      const PatternPressAggregateStream =
+        yield* physicalKeyboardButtonModelToPatternMappingService.mapChanges.pipe(
+          Stream.merge(
+            physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges,
+          ),
+          getMapCombinerStream<AllPatternUnion>(),
+          Stream.share({ capacity: 'unbounded' }),
+        )
+
+      const isPatternButtonPressedFlagChangesStream = (
+        pattern: AllPatternUnion,
+      ) =>
+        PatternPressAggregateStream.pipe(
+          Stream.map(
+            EFunction.flow(
+              HashMap.get(pattern),
+              Option.map(set => SortedSet.size(set) !== 0),
+              Option.getOrElse(() => false),
+            ),
+          ),
+          Stream.changes,
+        )
 
       const getPressureReportOfAccord =
         getPressureReportOfMapRef(accordButtonsMapRef)
@@ -249,8 +327,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getPressureReportOfPattern =
         getPressureReportOfMapRef(patternButtonsMapRef)
 
-      const isPatternButtonPressed = isButtonPressed(getPressureReportOfPattern)
-      const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
+      // const isPatternButtonPressed = isButtonPressed(getPressureReportOfPattern)
+      // const isAccordButtonPressed = isButtonPressed(getPressureReportOfAccord)
 
       // yield* reactivelySchedule(
       //   physicalKeyboardButtonModelMappingService.mapChanges,
@@ -263,23 +341,23 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       // )
 
       yield* reactivelySchedule(
-        accordRegistry.activeAccordChanges,
-        activeAccord =>
+        accordRegistry.selectedAccordChanges,
+        selectedAccord =>
           Effect.gen(function* () {
             for (const [accord] of yield* accordButtonsMapRef) {
               yield* transformReportGeneric('isActive', () =>
-                Equal.equals(accord, activeAccord),
+                Equal.equals(accord, selectedAccord),
               )(accord, accordButtonsMapRef)
             }
           }),
       )
 
       yield* reactivelySchedule(
-        patternRegistry.activePatternChanges,
-        Effect.fn(function* (activePattern) {
+        patternRegistry.selectedPatternChanges,
+        Effect.fn(function* (selectedPattern) {
           for (const [pattern] of yield* patternButtonsMapRef)
             yield* transformReportGeneric('isActive', () =>
-              Equal.equals(pattern, activePattern),
+              Equal.equals(pattern, selectedPattern),
             )(pattern, patternButtonsMapRef)
         }),
       )
@@ -288,14 +366,14 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         isPlayStopButtonPressable,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
-        getIsActiveAccordStream,
-        getIsActivePatternStream,
-        getIsActiveStrengthStream,
+        getIsSelectedAccordStream,
+        getIsSelectedPatternStream,
+        getIsSelectedStrengthStream,
         getAccordButtonPressabilityChangesStream,
         getPatternButtonPressabilityChangesStream,
         getStrengthButtonPressabilityChangesStream,
-        isPatternButtonPressed,
-        isAccordButtonPressed,
+        isAccordButtonPressedFlagChangesStream,
+        isPatternButtonPressedFlagChangesStream,
       }
     }),
   },
@@ -369,5 +447,16 @@ interface ButtonPressabilityDecisionRequirements {
     | 'not finished'
     | 'fetched, but not written'
     | 'finished'
-  readonly isActiveParam: boolean
+  readonly isSelectedParam: boolean
 }
+
+const noteOrKeyOrder = Order.make(
+  (self: ValidKeyboardKey | NoteId, that: ValidKeyboardKey | NoteId) =>
+    typeof self === 'number' && typeof that === 'number'
+      ? NoteIdOrder(self, that)
+      : typeof self === 'string' && typeof that === 'string'
+        ? ValidKeyboardKeyOrder(self, that)
+        : typeof self === 'number' && typeof that === 'string'
+          ? 1
+          : -1,
+)

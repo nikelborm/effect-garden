@@ -21,21 +21,27 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
   'next-midi-demo/CurrentlySelectedAssetState',
   {
     accessors: true,
-    effect: Effect.gen(function* () {
+    scoped: Effect.gen(function* () {
       const accordRegistry = yield* AccordRegistry
       const patternRegistry = yield* PatternRegistry
       const strengthRegistry = yield* StrengthRegistry
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const currentEffect: Effect.Effect<CurrentSelectedAsset> = Effect.all({
-        accord: accordRegistry.currentlyActiveAccord,
-        pattern: patternRegistry.currentlyActivePattern,
-        strength: strengthRegistry.currentlyActiveStrength,
+        accord: accordRegistry.currentlySelectedAccord,
+        pattern: patternRegistry.currentlySelectedPattern,
+        strength: strengthRegistry.currentlySelectedStrength,
       })
-      const selectedAssetChangesStream = streamAll({
-        strength: strengthRegistry.activeStrengthChanges,
-        accord: accordRegistry.activeAccordChanges,
-        pattern: patternRegistry.activePatternChanges,
-      })
+
+      const selectedAssetChangesStream = yield* streamAll({
+        strength: strengthRegistry.selectedStrengthChanges,
+        accord: accordRegistry.selectedAccordChanges,
+        pattern: patternRegistry.selectedPatternChanges,
+      }).pipe(
+        Stream.tap(selectedAsset =>
+          Effect.log('Selected asset stream value: ', selectedAsset),
+        ),
+        Stream.share({ capacity: 'unbounded' }),
+      )
 
       const completionStatus = Effect.flatMap(
         currentEffect,
@@ -47,6 +53,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
             strength,
           }),
       )
+
       const makePatchApplier =
         (patch: Patch) =>
         ({ accord, pattern, strength }: CurrentSelectedAsset) =>

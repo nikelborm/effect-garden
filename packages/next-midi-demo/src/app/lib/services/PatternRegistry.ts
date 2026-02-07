@@ -40,16 +40,16 @@ export class PatternRegistry
     effect: Effect.map(
       SubscriptionRef.make<RecordedPatternIndexes>(0),
       currentPatternIndexRef => ({
-        currentlyActivePattern: Effect.map(
+        currentlySelectedPattern: Effect.map(
           SubscriptionRef.get(currentPatternIndexRef),
           mapIndexToPattern,
         ),
         allPatterns: Effect.succeed(allPatterns),
-        activePatternChanges: Stream.map(
+        selectedPatternChanges: Stream.map(
           currentPatternIndexRef.changes,
           mapIndexToPattern,
         ),
-        setActivePattern: (patternIndex: RecordedPatternIndexes) => {
+        selectPattern: (patternIndex: RecordedPatternIndexes) => {
           const trustedIndex =
             Schema.decodeSync(PatternIndexSchema)(patternIndex)
           return SubscriptionRef.set(currentPatternIndexRef, trustedIndex)
@@ -60,10 +60,10 @@ export class PatternRegistry
   implements IPatternRegistry {}
 
 interface IPatternRegistry {
-  readonly currentlyActivePattern: Effect.Effect<AllPatternUnion>
+  readonly currentlySelectedPattern: Effect.Effect<AllPatternUnion>
   readonly allPatterns: Effect.Effect<AllPatternTuple>
-  readonly activePatternChanges: Stream.Stream<AllPatternUnion>
-  readonly setActivePattern: (
+  readonly selectedPatternChanges: Stream.Stream<AllPatternUnion>
+  readonly selectPattern: (
     patternIndex: RecordedPatternIndexes,
   ) => Effect.Effect<void>
 }

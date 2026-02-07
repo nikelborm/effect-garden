@@ -36,6 +36,13 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
   ),
 )
 
+// const MIDIButtonMappingsLayer = EFunction.pipe(
+//   PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
+//   Layer.merge(
+//     PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
+//   ),
+// )
+
 const AppLayer = UIButtonService.Default.pipe(
   Layer.provide(PhysicalKeyboardButtonModelToAccordMappingService.Default),
   Layer.provide(PhysicalKeyboardButtonModelToPatternMappingService.Default),
@@ -60,6 +67,7 @@ export const isAccordButtonPressableAtom = Atom.family(
     UIButtonService.getAccordButtonPressabilityChangesStream,
     Stream.unwrap,
     s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )
 
@@ -68,6 +76,7 @@ export const isPatternButtonPressableAtom = Atom.family(
     UIButtonService.getPatternButtonPressabilityChangesStream,
     Stream.unwrap,
     s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )
 
@@ -76,23 +85,51 @@ export const isStrengthButtonPressableAtom = Atom.family(
     UIButtonService.getStrengthButtonPressabilityChangesStream,
     Stream.unwrap,
     s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )
 
-export const isAccordActiveAtom = Atom.family(
-  EFunction.flow(UIButtonService.getIsActiveAccordStream, Stream.unwrap, s =>
-    runtime.atom(s),
+export const isAccordSelectedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getIsSelectedAccordStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )
 
-export const isPatternActiveAtom = Atom.family(
-  EFunction.flow(UIButtonService.getIsActivePatternStream, Stream.unwrap, s =>
-    runtime.atom(s),
+export const isPatternSelectedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getIsSelectedPatternStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )
 
-export const isStrengthActiveAtom = Atom.family(
-  EFunction.flow(UIButtonService.getIsActiveStrengthStream, Stream.unwrap, s =>
-    runtime.atom(s),
+export const isStrengthSelectedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getIsSelectedStrengthStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const isAccordPressedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isAccordButtonPressedFlagChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const isPatternPressedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isPatternButtonPressedFlagChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
   ),
 )

@@ -45,16 +45,16 @@ export class AccordRegistry
     effect: Effect.map(
       SubscriptionRef.make<RecordedAccordIndexes>(0),
       currentAccordIndexRef => ({
-        currentlyActiveAccord: Effect.map(
+        currentlySelectedAccord: Effect.map(
           SubscriptionRef.get(currentAccordIndexRef),
           mapIndexToAccord,
         ),
         allAccords: Effect.succeed(allAccords),
-        activeAccordChanges: Stream.map(
+        selectedAccordChanges: Stream.map(
           currentAccordIndexRef.changes,
           mapIndexToAccord,
         ),
-        setActiveAccord: (accordIndex: RecordedAccordIndexes) => {
+        selectAccord: (accordIndex: RecordedAccordIndexes) => {
           const trustedIndex = Schema.decodeSync(AccordIndexSchema)(accordIndex)
 
           return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
@@ -65,10 +65,10 @@ export class AccordRegistry
   implements IAccordRegistry {}
 
 interface IAccordRegistry {
-  readonly currentlyActiveAccord: Effect.Effect<AllAccordUnion>
+  readonly currentlySelectedAccord: Effect.Effect<AllAccordUnion>
   readonly allAccords: Effect.Effect<AllAccordTuple>
-  readonly activeAccordChanges: Stream.Stream<AllAccordUnion>
-  readonly setActiveAccord: (
+  readonly selectedAccordChanges: Stream.Stream<AllAccordUnion>
+  readonly selectAccord: (
     accordIndex: RecordedAccordIndexes,
   ) => Effect.Effect<void>
 }

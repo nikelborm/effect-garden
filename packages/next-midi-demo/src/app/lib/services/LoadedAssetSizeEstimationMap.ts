@@ -69,7 +69,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           HashMap.modifyAt(
             asset,
             EFunction.flow(
-              Option.orElse(() => Option.some(0)),
+              Option.orElseSome(() => 0),
               Option.map(previousBytes => previousBytes + bytesDownloaded),
             ),
           ),
@@ -95,6 +95,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
 
           const size = yield* getFileSize(getLocalAssetFileName(asset)).pipe(
             Effect.provideService(RootDirectoryHandle, rootDirectoryHandle),
+            Effect.catchTag('OPFSError', err =>
+              Effect.log(err).pipe(Effect.andThen(0)),
+            ),
           )
 
           if (size !== ASSET_SIZE_BYTES) return 'fetched, but not written'
