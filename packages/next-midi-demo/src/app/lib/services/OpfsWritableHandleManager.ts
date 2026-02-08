@@ -43,14 +43,21 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
               close: Effect.promise(() => writablePointingAtTheEnd.close()),
             }
           },
-          Effect.acquireRelease(writable => writable.close),
-          Effect.map(e => e.appendDataToTheEndOfFile),
         ),
         size: 1,
       })
 
       return {
-        getWriter: (selector: AssetPointer) => pool.get(selector),
+        getWriter: (selector: AssetPointer) =>
+          pool.get(selector).pipe(
+            Effect.acquireRelease(e => e.close),
+            Effect.acquireRelease(e =>
+              Effect.log(
+                `OPFS writer finalizer is run a=${selector.accordIndex} p=${selector.patternIndex} s=${selector.strength}`,
+                selector,
+              ),
+            ),
+          ),
       }
     }),
   },

@@ -33,7 +33,15 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           ),
           HashMap.fromIterable,
         ),
-      ).pipe(Effect.orDie)
+      ).pipe(
+        Effect.orDie,
+        Effect.tapDefect(defectCause =>
+          Effect.logError(
+            'Defect while getting asset sizes actually present on disk',
+            defectCause,
+          ),
+        ),
+      )
 
       const assetToSizeHashMapRef = yield* Effect.flatMap(
         assetSizesActuallyPresentOnDisk,

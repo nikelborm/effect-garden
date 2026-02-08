@@ -67,22 +67,22 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     isPatternButtonCurrentlyPlayingAtom(pattern),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
+    // console.log(`wtf pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    console.log(
-      `wtf. pattern № ${pattern.index} isPressableRes`,
-      isPressableRes,
-    )
+    // console.log(
+    //   `wtf. pattern № ${pattern.index} isPressableRes`,
+    //   isPressableRes,
+    // )
     return 'wtf'
   }
   if (!Result.isSuccess(isActiveRes)) {
-    console.log(`wtf. pattern № ${pattern.index} isActiveRes`, isActiveRes)
+    // console.log(`wtf. pattern № ${pattern.index} isActiveRes`, isActiveRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    // console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
     return 'wtf'
   }
   const { value: isPressable } = isPressableRes
@@ -128,15 +128,15 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
+    // console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isActiveRes)) {
-    console.log(`wtf accord №${accord.index}. isActiveRes`, isActiveRes)
+    // console.log(`wtf accord №${accord.index}. isActiveRes`, isActiveRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    // console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
 

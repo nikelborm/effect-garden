@@ -120,13 +120,21 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
   yield* opfs.getWriter(asset).pipe(
     Stream.scoped,
     Stream.cross(getStreamOfRemoteAsset(asset, currentBytes)),
-    Stream.flatMap(([writeToOPFS, byteArray]) => writeToOPFS(byteArray.buffer)),
+    Stream.flatMap(([{ appendDataToTheEndOfFile }, byteArray]) =>
+      appendDataToTheEndOfFile(byteArray.buffer),
+    ),
     Stream.orDie,
     Stream.runDrain,
+    Effect.tapDefect(defectCause =>
+      Effect.logError('Defect while downloading asset: ', defectCause),
+    ),
   )
 })
 
-const getStreamOfRemoteAsset = (asset: AssetPointer, resumeFromByte?: number) =>
+export const getStreamOfRemoteAsset = (
+  asset: AssetPointer,
+  resumeFromByte?: number,
+) =>
   Effect.gen(function* () {
     const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient)
     const response = yield* client.get(

@@ -1,5 +1,7 @@
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
+import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
+import * as BrowserHttpClient from '@effect/platform-browser/BrowserHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
@@ -9,8 +11,11 @@ import * as Stream from 'effect/Stream'
 
 import { AccordRegistry } from '../services/AccordRegistry.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
+import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
+import { DownloadManager } from '../services/DownloadManager.ts'
 import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
+import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager.ts'
 import { PatternRegistry } from '../services/PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from '../services/PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from '../services/PhysicalKeyboardButtonModelToPatternMappingService.ts'
@@ -50,6 +55,11 @@ const AppLayer = UIButtonService.Default.pipe(
 
   Layer.provide(MIDIButtonMappingsLayer),
   Layer.provide(AppPlaybackStateService.Default),
+  Layer.provide(AssetDownloadScheduler.Default),
+  Layer.provide(DownloadManager.Default),
+  Layer.provide(OpfsWritableHandleManager.Default),
+  // Layer.provide(BrowserHttpClient.layerXMLHttpRequest),
+  Layer.provide(FetchHttpClient.layer),
   Layer.provide(CurrentlySelectedAssetState.Default),
   Layer.provide(LoadedAssetSizeEstimationMap.Default),
   Layer.provide(RootDirectoryHandle.Default),

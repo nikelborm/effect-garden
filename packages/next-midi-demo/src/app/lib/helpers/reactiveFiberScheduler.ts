@@ -1,9 +1,9 @@
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as EFunction from 'effect/Function'
-import * as Ref from 'effect/Ref'
 import * as Runtime from 'effect/Runtime'
 import * as Stream from 'effect/Stream'
+import * as SynchronizedRef from 'effect/SynchronizedRef'
 
 export const reactivelySchedule = <StreamA, StreamR, EffectR>(
   stream: Stream.Stream<StreamA, never, StreamR>,
@@ -12,7 +12,6 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
   Effect.gen(function* () {
     const runtime = yield* Effect.runtime<StreamR | EffectR>()
     const scope = yield* Effect.scope
-    const semaphore = yield* Effect.makeSemaphore(1)
     const runFork = Runtime.runFork(runtime)
 
     const runForkScoped = <A, E>(
@@ -20,16 +19,18 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
       options?: Omit<Runtime.RunForkOptions, 'scope'> | undefined,
     ) => runFork(effect, { ...options, scope })
 
-    const planExecutionRef = yield* Ref.make<null | Fiber.RuntimeFiber<
-      void,
-      never
-    >>(null)
+    const planExecutionRef =
+      yield* SynchronizedRef.make<null | Fiber.RuntimeFiber<void, never>>(null)
 
-    const scheduleNew = Effect.fn(function* (a: StreamA) {
-      const executionFiber = yield* planExecutionRef
-      if (executionFiber) yield* Fiber.interrupt(executionFiber)
-      yield* Ref.set(planExecutionRef, runForkScoped(execute(a)))
-    }, semaphore.withPermits(1))
+    const scheduleNew = (a: StreamA) =>
+      SynchronizedRef.updateEffect(
+        planExecutionRef,
+        Effect.fn(function* (executionFiber) {
+          if (executionFiber) yield* Fiber.interrupt(executionFiber)
+
+          return runForkScoped(execute(a))
+        }),
+      )
 
     EFunction.pipe(
       stream,

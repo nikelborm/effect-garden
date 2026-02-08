@@ -24,6 +24,7 @@ import {
   type AllAccordUnion,
 } from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
+import { AssetDownloadScheduler } from './AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
@@ -50,6 +51,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const appPlaybackState = yield* AppPlaybackStateService
       const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
       const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
+      const assetDownloadScheduler = yield* AssetDownloadScheduler
       const physicalKeyboardButtonModelToAccordMappingService =
         yield* PhysicalKeyboardButtonModelToAccordMappingService
       const physicalKeyboardButtonModelToPatternMappingService =
@@ -141,11 +143,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               accord,
             ),
           isSelectedParam: getIsSelectedAccordStream(accord),
-        }).pipe(
-          Stream.tap(e => Effect.log('marker1', e)),
-          Stream.tapErrorCause(e => Effect.logError('marker2', e)),
-          isPressable,
-        )
+        }).pipe(isPressable)
 
       const getPatternButtonPressabilityChangesStream = (
         pattern: AllPatternUnion,
