@@ -2,7 +2,11 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import type { AssetPointer, Strength } from '../audioAssetHelpers.ts'
+import {
+  type AssetPointer,
+  type Strength,
+  TaggedPatternPointer,
+} from '../audioAssetHelpers.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   Accord,
@@ -57,8 +61,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       const makePatchApplier =
         (patch: Patch) =>
         ({ accord, pattern, strength }: CurrentSelectedAsset) =>
-          ({
-            _tag: 'pattern',
+          TaggedPatternPointer.make({
             accordIndex: accord.index,
             // @ts-expect-error ts is wrong. patternIndex might, OR MIGHT NOT be overwritten, so it's not a senseless assignment
             patternIndex: pattern.index,
@@ -68,7 +71,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
               : Accord.models(patch)
                 ? { accordIndex: patch.index }
                 : { strength: patch }),
-          }) satisfies AssetPointer
+          })
 
       const getPatchedAssetFetchingCompletionStatus = (patch: Patch) => {
         const applyPatch = makePatchApplier(patch)

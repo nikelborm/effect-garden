@@ -57,6 +57,15 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           ),
         )
 
+      const getCurrentDownloadedBytesStream = (asset: AssetPointer) =>
+        Stream.map(
+          assetToSizeHashMapRef.changes,
+          EFunction.flow(
+            HashMap.get(asset),
+            Option.getOrElse(() => 0),
+          ),
+        )
+
       const getAssetFetchedSizeChangesStream = (asset: AssetPointer) =>
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(
@@ -98,26 +107,34 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         )
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
-        Effect.fn(function* (currentBytes: number) {
-          if (currentBytes !== ASSET_SIZE_BYTES) return 'not finished' as const
+        Effect.fn(function* (
+          currentBytes: number,
+        ): Effect.fn.Return<AssetCompletionStatus> {
+          if (currentBytes !== ASSET_SIZE_BYTES)
+            return { status: 'not finished' as const, currentBytes }
 
-          const size = yield* getFileSize(getLocalAssetFileName(asset)).pipe(
+          const sizeOnDisk = yield* EFunction.pipe(
+            getFileSize(getLocalAssetFileName(asset)),
             Effect.provideService(RootDirectoryHandle, rootDirectoryHandle),
             Effect.catchTag('OPFSError', err =>
-              Effect.log(err).pipe(Effect.andThen(0)),
+              Effect.logError(
+                'OPFS Error while getting written on-disk size of asset',
+                err,
+              ).pipe(Effect.andThen(0)),
             ),
           )
 
-          if (size !== ASSET_SIZE_BYTES) return 'fetched, but not written'
+          if (sizeOnDisk !== ASSET_SIZE_BYTES)
+            return { status: 'fetched, but not written' as const }
 
-          return 'finished'
+          return { status: 'finished' as const }
         })
 
       const getAssetFetchingCompletionStatusChangesStream = (
         asset: AssetPointer,
       ) =>
         Stream.mapEffect(
-          getCurrentDownloadedBytes(asset),
+          getCurrentDownloadedBytesStream(asset),
           mapCurrentFetchedBytesToCompletionStatus(asset),
         )
 
@@ -129,7 +146,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
 
       const areAllBytesFetched = EFunction.flow(
         getAssetFetchingCompletionStatus,
-        Effect.map(status => status !== 'not finished'),
+        Effect.map(({ status }) => status !== 'not finished'),
       )
 
       return {
@@ -146,3 +163,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
     }),
   },
 ) {}
+
+export type AssetCompletionStatus =
+  | { status: 'not finished'; currentBytes: number }
+  | { status: 'fetched, but not written' }
+  | { status: 'finished' }

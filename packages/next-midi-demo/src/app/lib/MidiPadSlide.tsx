@@ -9,6 +9,7 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import { accordsAtom } from './atoms/accordsAtom.ts'
 import {
+  accordButtonDownloadPercentAtom,
   isAccordButtonCurrentlyPlayingAtom,
   isAccordButtonPressableAtom,
   isAccordPressedAtom,
@@ -17,6 +18,7 @@ import {
   isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
+  patternButtonDownloadPercentAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
@@ -66,6 +68,9 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   const isPlayingRes = Hooks.useAtomValue(
     isPatternButtonCurrentlyPlayingAtom(pattern),
   )
+  const downloadPercentRes = Hooks.useAtomValue(
+    patternButtonDownloadPercentAtom(pattern),
+  )
   if (!Result.isSuccess(isPlayingRes)) {
     // console.log(`wtf pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
     return 'wtf'
@@ -85,10 +90,15 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     // console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
     return 'wtf'
   }
+  if (!Result.isSuccess(downloadPercentRes)) {
+    // console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
   const { value: isPressable } = isPressableRes
   const { value: isActive } = isActiveRes
   const { value: isPressed } = isPressedRes
   const { value: isPlaying } = isPlayingRes
+  const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton>
@@ -101,6 +111,8 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
       Pressed: {isPressed ? Yes : No}
       <br />
       Playing: {isPlaying ? Yes : No}
+      <br />
+      Fetched: {downloadPercent}%
     </DebugButton>
   )
   // return (
@@ -123,6 +135,9 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const isPlayingRes = Hooks.useAtomValue(
     isAccordButtonCurrentlyPlayingAtom(accord),
   )
+  const downloadPercentRes = Hooks.useAtomValue(
+    accordButtonDownloadPercentAtom(accord),
+  )
   if (!Result.isSuccess(isPlayingRes)) {
     console.log(`wtf accord №${accord.index}. isPlayingRes`, isPlayingRes)
     return 'wtf'
@@ -139,11 +154,16 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
     // console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
+  if (!Result.isSuccess(downloadPercentRes)) {
+    // console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
 
   const { value: isPressable } = isPressableRes
   const { value: isActive } = isActiveRes
   const { value: isPressed } = isPressedRes
   const { value: isPlaying } = isPlayingRes
+  const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton>
@@ -156,6 +176,8 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
       Pressed: {isPressed ? Yes : No}
       <br />
       Playing: {isPlaying ? Yes : No}
+      <br />
+      Fetched: {downloadPercent}%
     </DebugButton>
   )
   // return (

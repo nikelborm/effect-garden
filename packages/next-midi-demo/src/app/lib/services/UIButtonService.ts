@@ -16,6 +16,7 @@ import {
   type ValidKeyboardKey,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
+import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   type Accord,
@@ -26,7 +27,10 @@ import {
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from './AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
-import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
+import {
+  type AssetCompletionStatus,
+  LoadedAssetSizeEstimationMap,
+} from './LoadedAssetSizeEstimationMap.ts'
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
   type AllPatternUnion,
@@ -92,7 +96,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         const isPlaying = yield* appPlaybackState.isCurrentlyPlayingEffect
 
         if (isPlaying) return true
-        const status = yield* currentlySelectedAssetState.completionStatus
+        const { status } = yield* currentlySelectedAssetState.completionStatus
         return status === 'finished'
       })
 
@@ -104,7 +108,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             _ =>
               !_.isSelectedParam &&
               (!_.isPlaying ||
-                _.completionStatusOfTheAssetThisButtonWouldSelect ===
+                _.completionStatusOfTheAssetThisButtonWouldSelect.status ===
                   'finished'),
           ),
           Stream.changes,
@@ -196,9 +200,47 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       // Currently selected asset is always the asset that will be played next
 
-      const getAccordButtonDownloadPercent = () => {}
-      const getPatternButtonDownloadPercent = () => {}
-      const getStrengthButtonDownloadPercent = () => {}
+      const getAccordButtonDownloadPercent = (accord: AllAccordUnion) =>
+        currentlySelectedAssetState
+          .getPatchedAssetFetchingCompletionStatusChangesStream(accord)
+          .pipe(
+            Stream.map(s =>
+              s.status === 'not finished'
+                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
+                : s.status === 'fetched, but not written'
+                  ? 99
+                  : 100,
+            ),
+            Stream.changes,
+          )
+
+      const getPatternButtonDownloadPercent = (pattern: AllPatternUnion) =>
+        currentlySelectedAssetState
+          .getPatchedAssetFetchingCompletionStatusChangesStream(pattern)
+          .pipe(
+            Stream.map(s =>
+              s.status === 'not finished'
+                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
+                : s.status === 'fetched, but not written'
+                  ? 99
+                  : 100,
+            ),
+            Stream.changes,
+          )
+
+      const getStrengthButtonDownloadPercent = (strength: Strength) =>
+        currentlySelectedAssetState
+          .getPatchedAssetFetchingCompletionStatusChangesStream(strength)
+          .pipe(
+            Stream.map(s =>
+              s.status === 'not finished'
+                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
+                : s.status === 'fetched, but not written'
+                  ? 99
+                  : 100,
+            ),
+            Stream.changes,
+          )
 
       const getMapCombinerStream =
         <T>() =>
@@ -311,6 +353,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         isAccordButtonCurrentlyPlaying,
         isPatternButtonCurrentlyPlaying,
         isStrengthButtonCurrentlyPlaying,
+        getAccordButtonDownloadPercent,
+        getPatternButtonDownloadPercent,
+        getStrengthButtonDownloadPercent,
         isAccordButtonPressedFlagChangesStream,
         isPatternButtonPressedFlagChangesStream,
       }
@@ -354,10 +399,7 @@ interface PressureReportMapRef<Key> extends Ref.Ref<PressureReportMap<Key>> {}
 
 interface ButtonPressabilityDecisionRequirements {
   readonly isPlaying: boolean
-  readonly completionStatusOfTheAssetThisButtonWouldSelect:
-    | 'not finished'
-    | 'fetched, but not written'
-    | 'finished'
+  readonly completionStatusOfTheAssetThisButtonWouldSelect: AssetCompletionStatus
   readonly isSelectedParam: boolean
 }
 

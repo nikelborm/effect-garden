@@ -172,3 +172,30 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
     Atom.withServerValueInitial,
   ),
 )
+
+export const accordButtonDownloadPercentAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getAccordButtonDownloadPercent,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const patternButtonDownloadPercentAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getPatternButtonDownloadPercent,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const strengthButtonDownloadPercentAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.getStrengthButtonDownloadPercent,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
