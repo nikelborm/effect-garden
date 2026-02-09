@@ -18,10 +18,16 @@ import {
   isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
+  isStrengthButtonCurrentlyPlayingAtom,
+  isStrengthButtonPressableAtom,
+  isStrengthPressedAtom,
+  isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
+  strengthButtonDownloadPercentAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
+import type { Strength } from './audioAssetHelpers.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
 import type { AllAccordUnion } from './services/AccordRegistry.ts'
 import type { AllPatternUnion } from './services/PatternRegistry.ts'
@@ -55,6 +61,12 @@ export const MidiPadSlide = ({
           <AccordButton accord={accord} key={accord.index} />
         ))}
       </DisplayContentsWrapper>
+      <DisplayContentsWrapper role="row" aria-rowindex={2}>
+        {Array.from(strengths, strength => (
+          <StrengthButton strength={strength} key={strength} />
+        ))}
+        <PlaybackButton />
+      </DisplayContentsWrapper>
     </ButtonGrid>
   )
 }
@@ -63,7 +75,7 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   const isPressableRes = Hooks.useAtomValue(
     isPatternButtonPressableAtom(pattern),
   )
-  const isActiveRes = Hooks.useAtomValue(isPatternSelectedAtom(pattern))
+  const isSelectedRes = Hooks.useAtomValue(isPatternSelectedAtom(pattern))
   const isPressedRes = Hooks.useAtomValue(isPatternPressedAtom(pattern))
   const isPlayingRes = Hooks.useAtomValue(
     isPatternButtonCurrentlyPlayingAtom(pattern),
@@ -82,8 +94,8 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     // )
     return 'wtf'
   }
-  if (!Result.isSuccess(isActiveRes)) {
-    // console.log(`wtf. pattern № ${pattern.index} isActiveRes`, isActiveRes)
+  if (!Result.isSuccess(isSelectedRes)) {
+    // console.log(`wtf. pattern № ${pattern.index} isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
@@ -95,18 +107,18 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     return 'wtf'
   }
   const { value: isPressable } = isPressableRes
-  const { value: isActive } = isActiveRes
+  const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
   const { value: isPlaying } = isPlayingRes
   const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton>
-      {pattern.label}
+      Pattern: {pattern.label}
       <br />
       Pressable: {isPressable ? Yes : No}
       <br />
-      Active: {isActive ? Yes : No}
+      Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
       <br />
@@ -130,7 +142,7 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
 
 const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
-  const isActiveRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
+  const isSelectedRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
   const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
   const isPlayingRes = Hooks.useAtomValue(
     isAccordButtonCurrentlyPlayingAtom(accord),
@@ -146,8 +158,8 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
     // console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(isActiveRes)) {
-    // console.log(`wtf accord №${accord.index}. isActiveRes`, isActiveRes)
+  if (!Result.isSuccess(isSelectedRes)) {
+    // console.log(`wtf accord №${accord.index}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
@@ -160,18 +172,18 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   }
 
   const { value: isPressable } = isPressableRes
-  const { value: isActive } = isActiveRes
+  const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
   const { value: isPlaying } = isPlayingRes
   const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton>
-      {accord.label}
+      Accord: {accord.label}
       <br />
       Pressable: {isPressable ? Yes : No}
       <br />
-      Active: {isActive ? Yes : No}
+      Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
       <br />
@@ -191,6 +203,87 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   //     children={accord.label}
   //   />
   // )
+}
+
+const StrengthButton = ({ strength }: { strength: Strength }) => {
+  const isPressableRes = Hooks.useAtomValue(
+    isStrengthButtonPressableAtom(strength),
+  )
+  const isSelectedRes = Hooks.useAtomValue(isStrengthSelectedAtom(strength))
+  const isPressedRes = Hooks.useAtomValue(isStrengthPressedAtom(strength))
+  const isPlayingRes = Hooks.useAtomValue(
+    isStrengthButtonCurrentlyPlayingAtom(strength),
+  )
+  const downloadPercentRes = Hooks.useAtomValue(
+    strengthButtonDownloadPercentAtom(strength),
+  )
+  if (!Result.isSuccess(isPlayingRes)) {
+    console.log(`wtf strength ${strength}. isPlayingRes`, isPlayingRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isPressableRes)) {
+    // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isSelectedRes)) {
+    // console.log(`wtf strength ${strength}. isSelectedRes`, isSelectedRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(isPressedRes)) {
+    // console.log(`wtf strength ${strength}. isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
+  if (!Result.isSuccess(downloadPercentRes)) {
+    // console.log(`wtf strength ${strength}. isPressedRes`, isPressedRes)
+    return 'wtf'
+  }
+
+  const { value: isPressable } = isPressableRes
+  const { value: isSelected } = isSelectedRes
+  const { value: isPressed } = isPressedRes
+  const { value: isPlaying } = isPlayingRes
+  const { value: downloadPercent } = downloadPercentRes
+
+  return (
+    <DebugButton>
+      Strength: {strength}
+      <br />
+      Pressable: {isPressable ? Yes : No}
+      <br />
+      Selected: {isSelected ? Yes : No}
+      <br />
+      Pressed: {isPressed ? Yes : No}
+      <br />
+      Playing: {isPlaying ? Yes : No}
+      <br />
+      Fetched: {downloadPercent}%
+    </DebugButton>
+  )
+  // return (
+  //   <NeumorphicButton
+  //     data-is-externally-active={false}
+  //     data-button-id={strength}
+  //     role="gridcell"
+  //     aria-colindex={strength}
+  //     type="button"
+  //     aria-label={strength.label}
+  //     children={strength.label}
+  //   />
+  // )
+}
+
+const PlaybackButton = () => {
+  const isPressable = true
+  // const isPressable = true
+  return (
+    <DebugButton>
+      Playback control
+      <br />
+      Shape: triangle
+      <br />
+      Pressable: {isPressable ? Yes : No}
+    </DebugButton>
+  )
 }
 
 const Yes = <span style={{ color: 'yellow' }}>Yes</span>

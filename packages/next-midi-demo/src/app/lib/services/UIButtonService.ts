@@ -334,6 +334,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
         )
 
+      const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
+        Stream.succeed(false)
+
       const getPressureReportOfAccord =
         getPressureReportOfMapRef(accordButtonsMapRef)
 
@@ -358,6 +361,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         getStrengthButtonDownloadPercent,
         isAccordButtonPressedFlagChangesStream,
         isPatternButtonPressedFlagChangesStream,
+        isStrengthButtonPressedFlagChangesStream,
       }
     }),
   },

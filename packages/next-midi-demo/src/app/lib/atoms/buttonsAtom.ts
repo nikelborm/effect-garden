@@ -1,7 +1,6 @@
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
-import * as BrowserHttpClient from '@effect/platform-browser/BrowserHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
@@ -19,8 +18,10 @@ import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager
 import { PatternRegistry } from '../services/PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from '../services/PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from '../services/PhysicalKeyboardButtonModelToPatternMappingService.ts'
+import { PhysicalKeyboardButtonModelToStrengthMappingService } from '../services/PhysicalKeyboardButtonModelToStrengthMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from '../services/PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from '../services/PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
+import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from '../services/PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
@@ -29,6 +30,7 @@ import { UIButtonService } from '../services/UIButtonService.ts'
 const MIDIButtonMappingsLayer = EFunction.pipe(
   PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
   Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
+  Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
   Layer.provide(SelectedMIDIInputService.Default),
   Layer.provide(EMIDIAccess.layerSoftwareSynthSupported),
   Layer.catchAll(midiAccessErr =>
@@ -38,6 +40,7 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
       ),
       PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
       PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
+      PhysicalMIDIDeviceButtonModelToStrengthMappingService.OnMIDIDisabled,
     ),
   ),
 )
@@ -52,6 +55,7 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
 const AppLayer = UIButtonService.Default.pipe(
   Layer.provide(PhysicalKeyboardButtonModelToAccordMappingService.Default),
   Layer.provide(PhysicalKeyboardButtonModelToPatternMappingService.Default),
+  Layer.provide(PhysicalKeyboardButtonModelToStrengthMappingService.Default),
 
   Layer.provide(MIDIButtonMappingsLayer),
   Layer.provide(AppPlaybackStateService.Default),
@@ -140,6 +144,15 @@ export const isAccordPressedAtom = Atom.family(
 export const isPatternPressedAtom = Atom.family(
   EFunction.flow(
     UIButtonService.isPatternButtonPressedFlagChangesStream,
+    Stream.unwrap,
+    s => runtime.atom(s),
+    Atom.withServerValueInitial,
+  ),
+)
+
+export const isStrengthPressedAtom = Atom.family(
+  EFunction.flow(
+    UIButtonService.isStrengthButtonPressedFlagChangesStream,
     Stream.unwrap,
     s => runtime.atom(s),
     Atom.withServerValueInitial,
