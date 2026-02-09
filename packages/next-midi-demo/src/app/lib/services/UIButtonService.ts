@@ -40,8 +40,10 @@ import {
 } from './PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
+import { PhysicalKeyboardButtonModelToStrengthMappingService } from './PhysicalKeyboardButtonModelToStrengthMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
+import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
@@ -60,10 +62,14 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         yield* PhysicalKeyboardButtonModelToAccordMappingService
       const physicalKeyboardButtonModelToPatternMappingService =
         yield* PhysicalKeyboardButtonModelToPatternMappingService
+      const physicalKeyboardButtonModelToStrengthMappingService =
+        yield* PhysicalKeyboardButtonModelToStrengthMappingService
       const physicalMIDIDeviceButtonModelToAccordMappingService =
         yield* PhysicalMIDIDeviceButtonModelToAccordMappingService
       const physicalMIDIDeviceButtonModelToPatternMappingService =
         yield* PhysicalMIDIDeviceButtonModelToPatternMappingService
+      const physicalMIDIDeviceButtonModelToStrengthMappingService =
+        yield* PhysicalMIDIDeviceButtonModelToStrengthMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
         SortedMap.empty(AccordOrderById),
@@ -334,8 +340,32 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
         )
 
+      const StrengthPressAggregateStream =
+        yield* physicalKeyboardButtonModelToStrengthMappingService.mapChanges.pipe(
+          Stream.merge(
+            physicalMIDIDeviceButtonModelToStrengthMappingService.mapChanges,
+          ),
+          getMapCombinerStream<Strength>(),
+          Stream.changes,
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        )
+
       const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
-        Stream.succeed(false)
+        StrengthPressAggregateStream.pipe(
+          Stream.map(
+            EFunction.flow(
+              HashMap.get(strength),
+              Option.map(set => SortedSet.size(set) !== 0),
+              Option.getOrElse(() => false),
+            ),
+          ),
+          Stream.changes,
+          Stream.tap(isPressed =>
+            Effect.log(
+              `strength=${strength} is ${isPressed ? '' : 'not '}pressed`,
+            ),
+          ),
+        )
 
       const getPressureReportOfAccord =
         getPressureReportOfMapRef(accordButtonsMapRef)
