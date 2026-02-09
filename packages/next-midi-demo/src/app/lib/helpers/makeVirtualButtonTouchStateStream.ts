@@ -26,28 +26,16 @@ export const makeVirtualButtonTouchStateStream = <
     Stream.merge(
       Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointercancel'),
     ),
-    Stream.filterMap(event => {
-      // assertElementWithDataset(event.target)
-
-      return Option.some({
-        eventType: event.type as
+    Stream.mapAccum(
+      SortedMap.empty<number, ElementWithDataset | 'irrelevantElement'>(
+        Order.number,
+      ),
+      (acc, { clientX, clientY, currentTarget, type, pointerId, target }) => {
+        const eventType = type as
           | 'pointerdown'
           | 'pointermove'
           | 'pointerup'
-          | 'pointercancel',
-        clientX: event.clientX,
-        clientY: event.clientY,
-        pointerId: event.pointerId,
-        target: event.target,
-        currentTarget: event.currentTarget,
-      })
-    }),
-    Stream.mapAccum(
-      SortedMap.empty<number, Element | 'irrelevantElement'>(Order.number),
-      (
-        acc,
-        { clientX, clientY, currentTarget, eventType, pointerId, target },
-      ) => {
+          | 'pointercancel'
         const makePressStream = <T>(t: T) =>
           Stream.succeed([t, ButtonState.Pressed] as const)
 
