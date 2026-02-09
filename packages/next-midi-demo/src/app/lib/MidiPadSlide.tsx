@@ -18,6 +18,7 @@ import {
   isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
+  isPlayStopButtonPressableAtom,
   isStrengthButtonCurrentlyPlayingAtom,
   isStrengthButtonPressableAtom,
   isStrengthPressedAtom,
@@ -273,8 +274,12 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
 }
 
 const PlaybackButton = () => {
-  const isPressable = true
-  // const isPressable = true
+  const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
+  if (!Result.isSuccess(isPressableRes)) {
+    // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
+    return 'wtf'
+  }
+  const { value: isPressable } = isPressableRes
   return (
     <DebugButton>
       Playback control

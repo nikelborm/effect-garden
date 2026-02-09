@@ -58,6 +58,19 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
           }),
       )
 
+      const completionStatusChangesStream = Stream.flatMap(
+        selectedAssetChangesStream,
+        ({ accord, pattern, strength }) =>
+          estimationMap.getAssetFetchingCompletionStatusChangesStream(
+            TaggedPatternPointer.make({
+              accordIndex: accord.index,
+              patternIndex: pattern.index,
+              strength,
+            }),
+          ),
+        { switch: true, concurrency: 1 },
+      )
+
       const makePatchApplier =
         (patch: Patch) =>
         ({ accord, pattern, strength }: CurrentSelectedAsset) =>
@@ -101,6 +114,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       return {
         current: currentEffect,
         completionStatus,
+        completionStatusChangesStream,
         getPatchedAssetFetchingCompletionStatus,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,

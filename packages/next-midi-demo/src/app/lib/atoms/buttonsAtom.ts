@@ -212,3 +212,10 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
     Atom.withServerValueInitial,
   ),
 )
+
+export const isPlayStopButtonPressableAtom = EFunction.pipe(
+  UIButtonService.playStopButtonPressableFlagChangesStream,
+  Stream.unwrap,
+  s => runtime.atom(s),
+  Atom.withServerValueInitial,
+)

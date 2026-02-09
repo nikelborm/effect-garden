@@ -98,13 +98,21 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         SortedMap.empty(PatternOrderByIndex),
       )
 
-      const isPlayStopButtonPressable = Effect.gen(function* () {
-        const isPlaying = yield* appPlaybackState.isCurrentlyPlayingEffect
-
-        if (isPlaying) return true
-        const { status } = yield* currentlySelectedAssetState.completionStatus
-        return status === 'finished'
-      })
+      const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
+        appPlaybackState.latestIsPlayingFlagStream,
+        Stream.flatMap(
+          isPlaying =>
+            isPlaying
+              ? Stream.succeed(true)
+              : Stream.map(
+                  currentlySelectedAssetState.completionStatusChangesStream,
+                  ({ status }) => status === 'finished',
+                ),
+          { switch: true, concurrency: 1 },
+        ),
+        Stream.changes,
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
 
       const isPressable = <E, R>(
         self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
@@ -374,7 +382,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         getPressureReportOfMapRef(patternButtonsMapRef)
 
       return {
-        isPlayStopButtonPressable,
+        playStopButtonPressableFlagChangesStream,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
         getIsSelectedAccordStream,
