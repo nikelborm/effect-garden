@@ -114,7 +114,7 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton>
+    <DebugButton data-pattern-index={pattern.index}>
       Pattern: {pattern.label}
       <br />
       Pressable: {isPressable ? Yes : No}
@@ -179,7 +179,7 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton>
+    <DebugButton data-accord-index={accord.index}>
       Accord: {accord.label}
       <br />
       Pressable: {isPressable ? Yes : No}
@@ -246,7 +246,7 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton>
+    <DebugButton data-strength={strength}>
       Strength: {strength}
       <br />
       Pressable: {isPressable ? Yes : No}
@@ -321,6 +321,9 @@ const ButtonGrid = styled.div`
 
   /* place-items: center; */
   place-content: center;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  user-select: none;
 `
 
 const DebugButton = styled.pre`

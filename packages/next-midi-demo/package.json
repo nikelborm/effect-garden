@@ -17,7 +17,7 @@
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "^0.87.1",
     "@fp-ts/optic": "^0.25.0",
-    "@serwist/next": "^9.5.4",
+    "@serwist/next": "^9.5.5",
     "@wyw-in-js/babel-preset": "catalog:",
     "effect": "catalog:",
     "effect-web-audio": "workspace:*",
@@ -27,7 +27,7 @@
     "postcss-styled-syntax": "^0.7.1",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "serwist": "^9.5.4",
+    "serwist": "^9.5.5",
     "ts-key-not-enum": "workspace:*"
   },
   "devDependencies": {
