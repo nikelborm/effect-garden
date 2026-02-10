@@ -276,8 +276,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         <T>() =>
         <E, R>(
           self: Stream.Stream<
-            | SortedMap.SortedMap<ValidKeyboardKeyData, PhysicalButtonModel<T>>
-            | SortedMap.SortedMap<NoteIdData, PhysicalButtonModel<T>>,
+            SupportedKeyData extends infer Key
+              ? Key extends any
+                ? SortedMap.SortedMap<Key, PhysicalButtonModel<T>>
+                : never
+              : never,
             E,
             R
           >,
@@ -313,6 +316,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.merge(
             physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges,
           ),
+          Stream.merge(virtualPadButtonModelToAccordMappingService.mapChanges),
           getMapCombinerStream<AllAccordUnion>(),
           Stream.changes,
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),

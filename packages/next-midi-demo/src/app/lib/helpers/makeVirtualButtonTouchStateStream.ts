@@ -1,6 +1,7 @@
 import { OptionalProperty } from '@nikelborm/effect-helpers'
 
 import * as EFunction from 'effect/Function'
+import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
@@ -90,23 +91,33 @@ export const makeVirtualButtonTouchStateStream = <
             onSome: elementWithDesiredDataset =>
               [
                 SortedMap.set(acc, pointerId, elementWithDesiredDataset),
-                makePressStream(elementWithDesiredDataset),
+                Iterable.some(acc, ([, el]) => el === elementWithDesiredDataset)
+                  ? Stream.empty
+                  : makePressStream(elementWithDesiredDataset),
               ] as const,
           })
 
         const previousElementOption = SortedMap.get(acc, pointerId)
+        const mapWithoutCurrentPointerId = SortedMap.remove(acc, pointerId)
 
-        if (eventType === 'pointerup' || eventType === 'pointercancel')
+        if (eventType === 'pointerup' || eventType === 'pointercancel') {
           return [
-            SortedMap.remove(acc, pointerId),
+            mapWithoutCurrentPointerId,
             previousElementOption.pipe(
               Option.filter(e => e !== 'irrelevantElement'),
               Option.match({
                 onNone: () => Stream.empty,
-                onSome: makeReleaseStream,
+                onSome: elementWithDesiredDataset =>
+                  Iterable.some(
+                    mapWithoutCurrentPointerId,
+                    ([, el]) => el === elementWithDesiredDataset,
+                  )
+                    ? Stream.empty
+                    : makeReleaseStream(elementWithDesiredDataset),
               }),
             ),
           ] as const
+        }
 
         if (Option.isNone(previousElementOption)) return [acc, Stream.empty]
         const previousElement = previousElementOption.value
@@ -114,22 +125,28 @@ export const makeVirtualButtonTouchStateStream = <
         const releaseStreamOfPreviousElement =
           previousElement === 'irrelevantElement'
             ? Stream.empty
-            : makeReleaseStream(previousElement)
+            : Iterable.some(
+                  mapWithoutCurrentPointerId,
+                  ([, el]) => el === previousElement,
+                )
+              ? Stream.empty
+              : makeReleaseStream(previousElement)
 
         return EFunction.pipe(
           document.elementFromPoint(clientX, clientY),
           getTargetWithDesiredDataset,
           Option.match({
-            onSome: latestElement =>
-              latestElement === previousElement
-                ? [acc, Stream.empty]
-                : [
-                    SortedMap.set(acc, pointerId, latestElement),
-                    Stream.concat(
-                      makePressStream(latestElement),
-                      releaseStreamOfPreviousElement,
-                    ),
-                  ],
+            onSome: latestElement => {
+              if (latestElement === previousElement) return [acc, Stream.empty]
+
+              return [
+                SortedMap.set(acc, pointerId, latestElement),
+                Stream.concat(
+                  makePressStream(latestElement),
+                  releaseStreamOfPreviousElement,
+                ),
+              ]
+            },
             onNone: () => [
               SortedMap.set(acc, pointerId, 'irrelevantElement' as const),
               releaseStreamOfPreviousElement,
