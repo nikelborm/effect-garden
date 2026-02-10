@@ -57,6 +57,7 @@ import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './Physical
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToAccordMappingService } from './VirtualPadButtonModelToAccordMappingService.ts'
+import { VirtualPadButtonModelToPatternMappingService } from './VirtualPadButtonModelToPatternMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -86,6 +87,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       const virtualPadButtonModelToAccordMappingService =
         yield* VirtualPadButtonModelToAccordMappingService
+      const virtualPadButtonModelToPatternMappingService =
+        yield* VirtualPadButtonModelToPatternMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
         SortedMap.empty(AccordOrderByIndex),
@@ -344,6 +347,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.merge(
             physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges,
           ),
+          Stream.merge(virtualPadButtonModelToPatternMappingService.mapChanges),
           getMapCombinerStream<AllPatternUnion>(),
           Stream.changes,
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
