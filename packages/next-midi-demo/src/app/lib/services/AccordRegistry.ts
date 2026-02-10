@@ -1,3 +1,4 @@
+import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as Order from 'effect/Order'
@@ -21,23 +22,49 @@ const accords = [
   { id: 28, label: 'E' },
 ] as const
 
+export type AccordIndex<
+  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
+> = Brand.Branded<Index, 'AccordIndex: integer in range 0-7'>
+export const AccordIndex = Brand.refined<AccordIndex>(
+  n => Number.isSafeInteger(n) && n >= 0 && n < 8,
+  n => Brand.error(`Expected ${n} to be an integer in range 0-7`),
+)
+
+export class AccordIndexData<
+  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
+> extends Data.TaggedClass('AccordIndex')<{
+  value: AccordIndex<Index>
+}> {
+  constructor(index: number) {
+    super({
+      value: AccordIndex(index as RecordedAccordIndexes) as AccordIndex<Index>,
+    })
+  }
+}
+
+export const AccordIndexDataOrder = Order.mapInput(
+  Order.number,
+  (a: AccordIndexData) => a.value,
+)
+
 export class Accord<
   Id extends number = number,
   Label extends string = string,
-  Index extends number = number,
+  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
 > extends Data.TaggedClass('Accord')<
-  AccordMiniInfo<Id, Label> & { readonly index: Index }
+  AccordMiniInfo<Id, Label> & { readonly index: AccordIndex<Index> }
 > {
   static models = (p: unknown): p is Accord =>
     typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Accord'
 }
 
 const allAccords = accords.map(
-  (info, index) => new Accord({ ...info, index }),
+  (info, index) =>
+    new Accord({ ...info, index: AccordIndex(index as RecordedAccordIndexes) }),
 ) as unknown as AllAccordTuple
 
 const mapIndexToAccord = (index: RecordedAccordIndexes) =>
-  new Accord({ index, ...accords[index] }) as AllAccordUnion
+  new Accord({ index: AccordIndex(index), ...accords[index] }) as AllAccordUnion
 
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
@@ -64,6 +91,8 @@ export class AccordRegistry
 
           return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
         },
+        getAccordByIndex: (accordIndex: RecordedAccordIndexes) =>
+          allAccords[Schema.decodeSync(AccordIndexSchema)(accordIndex)],
       }
     }),
   })
@@ -86,7 +115,11 @@ type _AllAccordTuple<
 ]
   ? readonly [
       ..._AllAccordTuple<RestLabels>,
-      Accord<Current['id'], Current['label'], RestLabels['length']>,
+      Accord<
+        Current['id'],
+        Current['label'],
+        Extract<RestLabels['length'], RecordedAccordIndexes>
+      >,
     ]
   : readonly []
 
@@ -102,4 +135,7 @@ export interface AccordMiniInfo<
   readonly label: Label
 }
 
-export const AccordOrderById = Order.mapInput(Order.number, (a: Accord) => a.id)
+export const AccordOrderByIndex = Order.mapInput(
+  Order.number,
+  (a: Accord) => a.index,
+)

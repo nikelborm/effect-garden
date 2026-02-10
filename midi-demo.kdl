@@ -1,35 +1,39 @@
 pane_frames false
 layout {
   pane split_direction="vertical" {
-    pane {
-      name "Next.js Demo"
-      cwd "./packages/next-midi-demo"
-      command "bun"
-      args "dev"
+    pane split_direction="horizontal" {
+      pane {
+        name "Next.js dev"
+        cwd "./packages/next-midi-demo"
+        command "bun"
+        args "dev"
+      }
+      pane {
+        name "Next.js tsc watch"
+        cwd "./packages/next-midi-demo"
+        command "bunx"
+        args "tsc" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
+      }
     }
     pane split_direction="horizontal" {
       pane {
-        name "MIDI"
+        name "MIDI tsc watch"
         cwd "./packages/effect-web-midi"
         command "bun"
         args "dev"
       }
       pane {
-        name "MediaCapture"
+        name "MediaCapture tsc watch"
         cwd "./packages/effect-web-mediacapture-streams"
         command "bun"
         args "dev"
       }
       pane {
-        name "Audio"
+        name "Audio tsc watch"
         cwd "./packages/effect-web-audio"
         command "bun"
         args "dev"
       }
     }
-    // Optional: Adds a status bar at the bottom
-    // pane size=1 borderless=true {
-    //   plugin location="zellij:status-bar"
-    // }
   }
 }

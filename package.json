@@ -96,11 +96,6 @@
     "drizzle-kit": "^0.31.9"
   },
   "packageManager": "bun@1.3.0",
-  "patchedDependencies": {
-    "effect@3.17.9": "patches/effect@3.17.9.patch",
-    "effect@3.17.10": "patches/effect@3.17.10.patch",
-    "effect@3.17.13": "patches/effect@3.17.13.patch"
-  },
   "scripts": {
     "build": "turbo run build --continue=dependencies-successful",
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",

@@ -27,7 +27,9 @@ import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   type Accord,
-  AccordOrderById,
+  type AccordIndexData,
+  AccordIndexDataOrder,
+  AccordOrderByIndex,
   AccordRegistry,
   type AllAccordUnion,
 } from './AccordRegistry.ts'
@@ -41,6 +43,8 @@ import {
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
   type AllPatternUnion,
+  type PatternIndexData,
+  PatternIndexDataOrder,
   PatternOrderByIndex,
   PatternRegistry,
   type Pattern as pattern,
@@ -84,7 +88,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         yield* VirtualPadButtonModelToAccordMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
-        SortedMap.empty(AccordOrderById),
+        SortedMap.empty(AccordOrderByIndex),
       )
 
       // TODO: нужно сделать чтобы визуально прожимались только те, которые
@@ -280,10 +284,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         ) =>
           Stream.scan(
             self,
-            HashMap.empty<
-              T,
-              SortedSet.SortedSet<ValidKeyboardKeyData | NoteIdData>
-            >(),
+            HashMap.empty<T, SortedSet.SortedSet<SupportedKeyData>>(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -291,9 +292,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   newMap,
                   physicalButtonModel.assignedTo,
                   EFunction.flow(
-                    Option.orElseSome(() =>
-                      SortedSet.empty(noteDataOrKeyDataOrder),
-                    ),
+                    Option.orElseSome(() => SortedSet.empty(OrderByKeyData)),
                     Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
                       (physicalButtonModel.buttonPressState ===
                         ButtonState.Pressed
@@ -462,16 +461,34 @@ interface ButtonPressabilityDecisionRequirements {
   readonly isSelectedParam: boolean
 }
 
-const noteDataOrKeyDataOrder = Order.make(
-  (
-    self: ValidKeyboardKeyData | NoteIdData,
-    that: ValidKeyboardKeyData | NoteIdData,
-  ) =>
-    self._tag === 'NoteId' && that._tag === 'NoteId'
-      ? NoteIdDataOrder(self, that)
-      : self._tag === 'ValidKeyboardKey' && that._tag === 'ValidKeyboardKey'
-        ? ValidKeyboardKeyDataOrder(self, that)
-        : typeof self === 'number' && typeof that === 'string'
-          ? 1
-          : -1,
+const asd = {
+  NoteId: 0,
+  ValidKeyboardKey: 1,
+  AccordIndex: 2,
+  PatternIndex: 3,
+} as const
+
+const OrderByKeyData = Order.combine(
+  Order.mapInput(Order.number, (a: SupportedKeyData) => asd[a._tag]),
+  Order.make((self: SupportedKeyData, that: SupportedKeyData) => {
+    if (self._tag === 'NoteId' && that._tag === 'NoteId')
+      return NoteIdDataOrder(self, that)
+
+    if (self._tag === 'ValidKeyboardKey' && that._tag === 'ValidKeyboardKey')
+      return ValidKeyboardKeyDataOrder(self, that)
+
+    if (self._tag === 'AccordIndex' && that._tag === 'AccordIndex')
+      return AccordIndexDataOrder(self, that)
+
+    if (self._tag === 'PatternIndex' && that._tag === 'PatternIndex')
+      return PatternIndexDataOrder(self, that)
+
+    throw new Error('Unsortable')
+  }),
 )
+
+type SupportedKeyData =
+  | ValidKeyboardKeyData
+  | NoteIdData
+  | AccordIndexData
+  | PatternIndexData
