@@ -43,15 +43,23 @@ export const makeVirtualButtonTouchStateStream = <
   )
 
   return EFunction.pipe(
-    Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerdown'),
+    Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerdown', {
+      bufferSize: 'unbounded',
+    }),
     Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointermove'),
+      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointermove', {
+        bufferSize: 'unbounded',
+      }),
     ),
     Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerup'),
+      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerup', {
+        bufferSize: 'unbounded',
+      }),
     ),
     Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointercancel'),
+      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointercancel', {
+        bufferSize: 'unbounded',
+      }),
     ),
     Stream.mapAccum(
       SortedMap.empty<number, ElementWithDataset | 'irrelevantElement'>(
@@ -138,12 +146,29 @@ export const makeVirtualButtonTouchStateStream = <
           Option.match({
             onSome: latestElement => {
               if (latestElement === previousElement) return [acc, Stream.empty]
+              if (previousElement === 'irrelevantElement')
+                return [
+                  SortedMap.set(acc, pointerId, latestElement),
+                  Iterable.some(
+                    mapWithoutCurrentPointerId,
+                    ([, el]) => el === latestElement,
+                  )
+                    ? Stream.empty
+                    : makePressStream(latestElement),
+                ]
 
               return [
                 SortedMap.set(acc, pointerId, latestElement),
                 Stream.concat(
-                  makePressStream(latestElement),
-                  releaseStreamOfPreviousElement,
+                  Iterable.some(acc, ([, el]) => el === latestElement)
+                    ? Stream.empty
+                    : makePressStream(latestElement),
+                  Iterable.some(
+                    mapWithoutCurrentPointerId,
+                    ([, el]) => el === previousElement,
+                  )
+                    ? Stream.empty
+                    : makeReleaseStream(previousElement),
                 ),
               ]
             },

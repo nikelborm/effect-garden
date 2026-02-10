@@ -3,11 +3,10 @@ import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import type * as Order from 'effect/Order'
 import * as SortedMap from 'effect/SortedMap'
-import type * as Stream from 'effect/Stream'
+import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
-import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 
 export const makePhysicalButtonToParamMappingService = <
@@ -52,20 +51,24 @@ export const makePhysicalButtonToParamMappingService = <
     const getPhysicalButtonModel = (id: PhysicalButtonId) =>
       Effect.map(currentMap, SortedMap.get(id))
 
-    yield* reactivelySchedule(
-      buttonPressStream,
-      ([id, physicalButtonPressState]) =>
-        SubscriptionRef.update(
-          physicalButtonIdToModelMapRef,
-          sortedMapModify(
-            id,
-            buttonModel =>
-              new PhysicalButtonModel(
-                physicalButtonPressState,
-                buttonModel?.assignedTo,
-              ),
+    yield* buttonPressStream.pipe(
+      Stream.mapEffect(
+        ([id, physicalButtonPressState]) =>
+          SubscriptionRef.update(
+            physicalButtonIdToModelMapRef,
+            sortedMapModify(
+              id,
+              buttonModel =>
+                new PhysicalButtonModel(
+                  physicalButtonPressState,
+                  buttonModel?.assignedTo,
+                ),
+            ),
           ),
-        ),
+        { concurrency: 1 },
+      ),
+      Stream.runDrain,
+      Effect.forkScoped,
     )
 
     return {
