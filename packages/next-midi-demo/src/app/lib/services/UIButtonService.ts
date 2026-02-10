@@ -55,9 +55,14 @@ import { PhysicalKeyboardButtonModelToStrengthMappingService } from './PhysicalK
 import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
-import { StrengthRegistry } from './StrengthRegistry.ts'
+import {
+  type StrengthData,
+  StrengthDataOrder,
+  StrengthRegistry,
+} from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToAccordMappingService } from './VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from './VirtualPadButtonModelToPatternMappingService.ts'
+import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -89,6 +94,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         yield* VirtualPadButtonModelToAccordMappingService
       const virtualPadButtonModelToPatternMappingService =
         yield* VirtualPadButtonModelToPatternMappingService
+      const virtualPadButtonModelToStrengthMappingService =
+        yield* VirtualPadButtonModelToStrengthMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
         SortedMap.empty(AccordOrderByIndex),
@@ -377,6 +384,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.merge(
             physicalMIDIDeviceButtonModelToStrengthMappingService.mapChanges,
           ),
+          Stream.merge(
+            virtualPadButtonModelToStrengthMappingService.mapChanges,
+          ),
           getMapCombinerStream<Strength>(),
           Stream.changes,
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
@@ -474,6 +484,7 @@ const asd = {
   ValidKeyboardKey: 1,
   AccordIndex: 2,
   PatternIndex: 3,
+  Strength: 4,
 } as const
 
 const OrderByKeyData = Order.combine(
@@ -491,6 +502,9 @@ const OrderByKeyData = Order.combine(
     if (self._tag === 'PatternIndex' && that._tag === 'PatternIndex')
       return PatternIndexDataOrder(self, that)
 
+    if (self._tag === 'Strength' && that._tag === 'Strength')
+      return StrengthDataOrder(self, that)
+
     throw new Error('Unsortable')
   }),
 )
@@ -499,4 +513,5 @@ type SupportedKeyData =
   | ValidKeyboardKeyData
   | NoteIdData
   | AccordIndexData
+  | StrengthData
   | PatternIndexData

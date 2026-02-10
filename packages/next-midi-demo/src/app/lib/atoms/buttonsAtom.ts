@@ -28,6 +28,7 @@ import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { UIButtonService } from '../services/UIButtonService.ts'
 import { VirtualPadButtonModelToAccordMappingService } from '../services/VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from '../services/VirtualPadButtonModelToPatternMappingService.ts'
+import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
 
 const MIDIButtonMappingsLayer = EFunction.pipe(
   PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
@@ -60,6 +61,7 @@ const AppLayer = UIButtonService.Default.pipe(
   Layer.provide(PhysicalKeyboardButtonModelToStrengthMappingService.Default),
   Layer.provide(VirtualPadButtonModelToAccordMappingService.Default),
   Layer.provide(VirtualPadButtonModelToPatternMappingService.Default),
+  Layer.provide(VirtualPadButtonModelToStrengthMappingService.Default),
 
   Layer.provide(MIDIButtonMappingsLayer),
   Layer.provide(AppPlaybackStateService.Default),

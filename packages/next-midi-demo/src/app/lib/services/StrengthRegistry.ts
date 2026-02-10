@@ -1,4 +1,6 @@
+import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
 import type * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -6,6 +8,22 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
 
 const allStrengths = ['s', 'm', 'v'] as const
+
+export class StrengthData extends Data.TaggedClass('Strength')<{
+  value: Strength
+}> {
+  constructor(strength: string) {
+    if (strength !== 's' && strength !== 'm' && strength !== 'v')
+      throw new Error(
+        `StrengthData expected strength, but got: ${JSON.stringify(strength)}`,
+      )
+    super({ value: strength })
+  }
+}
+export const StrengthDataOrder = Order.mapInput(
+  Order.string,
+  (_: StrengthData) => _.value,
+)
 
 export class StrengthRegistry
   extends Effect.Service<StrengthRegistry>()(
