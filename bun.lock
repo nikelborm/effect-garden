@@ -132,6 +132,9 @@
     },
     "packages/effect-helpers": {
       "name": "@nikelborm/effect-helpers",
+      "dependencies": {
+        "@types/node": "^25.2.2",
+      },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
@@ -339,6 +342,7 @@
         "@effect/platform-browser": "catalog:",
         "@effect/platform-bun": "^0.87.1",
         "@fp-ts/optic": "^0.25.0",
+        "@nikelborm/effect-helpers": "workspace:*",
         "@serwist/next": "^9.5.5",
         "@wyw-in-js/babel-preset": "catalog:",
         "effect": "catalog:",

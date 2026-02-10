@@ -9,8 +9,14 @@ import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPres
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-const notesHandlingStrengths = EArray.range(76, 78).map(MIDIValues.NoteId)
-const notesHandlingStrengthsSet = new Set(notesHandlingStrengths)
+const notes = EArray.range(76, 78)
+const noteDatasHandlingStrengths = Array.from(
+  notes,
+  note => new MIDIValues.NoteIdData(note),
+)
+const notesHandlingStrengthsSet = new Set(
+  noteDatasHandlingStrengths.map(_ => _.value),
+)
 
 // TODO: midi device selector
 export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effect.Service<PhysicalMIDIDeviceButtonModelToStrengthMappingService>()(
@@ -19,8 +25,8 @@ export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effec
     accessors: true,
     scoped: Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
       makePhysicalButtonToParamMappingService(
-        MIDIValues.NoteIdOrder,
-        notesHandlingStrengths,
+        MIDIValues.NoteIdDataOrder,
+        noteDatasHandlingStrengths,
         strengths,
         makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
       ),
@@ -30,7 +36,7 @@ export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effec
   static OnMIDIDisabled = Layer.succeed(
     this,
     this.make({
-      currentMap: Effect.succeed(SortedMap.empty(MIDIValues.NoteIdOrder)),
+      currentMap: Effect.succeed(SortedMap.empty(MIDIValues.NoteIdDataOrder)),
       mapChanges: Stream.empty,
       getPhysicalButtonModel: () => Effect.succeedNone,
     }),

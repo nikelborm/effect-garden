@@ -2,17 +2,16 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
-import { ValidKeyboardKey } from '../branded/StoreValues.ts'
+import {
+  type ValidKeyboardKey,
+  ValidKeyboardKeyData,
+} from '../branded/StoreValues.ts'
 
-export const makeKeyboardButtonPressStateStreamOfSomeKeys = <
-  Ref extends GlobalEventHandlers,
->(
-  keys: Iterable<string>,
-  ref?: Ref,
+export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
+  keysToFocusOn: Set<ValidKeyboardKey>,
+  ref?: GlobalEventHandlers,
 ) => {
   const refWithFallback = ref ?? globalThis.window
-
-  const keySet = new Set(keys)
 
   if (!refWithFallback) return Stream.empty
 
@@ -25,7 +24,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = <
       }),
     ),
     Stream.filterMap(event =>
-      keySet.has(event.key as string) &&
+      keysToFocusOn.has(event.key as ValidKeyboardKey) &&
       !event.ctrlKey &&
       !event.shiftKey &&
       !event.altKey &&
@@ -37,7 +36,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = <
           event.target.isContentEditable)
       )
         ? Option.some([
-            ValidKeyboardKey(event.key),
+            new ValidKeyboardKeyData(event.key),
 
             event.type === 'keydown'
               ? ButtonState.Pressed

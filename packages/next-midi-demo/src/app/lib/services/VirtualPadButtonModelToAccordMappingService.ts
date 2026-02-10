@@ -1,25 +1,25 @@
-import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
+import * as Order from 'effect/Order'
+import * as Stream from 'effect/Stream'
 
-import * as MIDIValues from '../branded/MIDIValues.ts'
-import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
+import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
-const notesHandlingAccords = EArray.range(84, 91).map(MIDIValues.NoteId)
-const notesHandlingAccordsSet = new Set(notesHandlingAccords)
-
-// TODO: midi device selector
 export class VirtualPadButtonModelToAccordMappingService extends Effect.Service<VirtualPadButtonModelToAccordMappingService>()(
   'next-midi-demo/VirtualPadButtonModelToAccordMappingService',
   {
     accessors: true,
     scoped: Effect.flatMap(AccordRegistry.allAccords, accords =>
       makePhysicalButtonToParamMappingService(
-        MIDIValues.NoteIdOrder,
-        notesHandlingAccords,
+        Order.number,
+        accords.map(e => e.index),
         accords,
-        makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
+        Stream.map(
+          makeVirtualButtonTouchStateStream(new Set(['accordIndex'] as const)),
+          ([element, state]) =>
+            [parseInt(element.accordIndex, 10), state] as const,
+        ),
       ),
     ),
   },

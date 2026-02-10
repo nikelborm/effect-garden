@@ -1,20 +1,46 @@
+import { OptionalProperty } from '@nikelborm/effect-helpers'
+
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
+import * as Schema from 'effect/Schema'
 import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
 
 export const makeVirtualButtonTouchStateStream = <
-  Ref extends GlobalEventHandlers,
+  const DatasetKeys extends string,
 >(
-  keys: string[],
-  ref?: Ref,
+  keysOfDatasetToLookFor: Set<DatasetKeys>,
+  ref?: GlobalEventHandlers,
 ) => {
   const refWithFallback = ref ?? globalThis.window
 
   if (!refWithFallback) return Stream.empty
+
+  type IsNonDistributableUnion<A> = [A] extends [infer U]
+    ? U extends any // distribute
+      ? A extends U // if only one key in a union (full union can be assigned to any union element)
+        ? true
+        : false
+      : never
+    : never
+
+  type Dataset =
+    IsNonDistributableUnion<DatasetKeys> extends true
+      ? { readonly [datasetKey in DatasetKeys]-?: string }
+      : { readonly [datasetKey in DatasetKeys]+?: string }
+
+  const DatasetSchema = Schema.Struct(
+    Object.fromEntries(
+      Array.from(keysOfDatasetToLookFor, key => [
+        key,
+        OptionalProperty(Schema.String),
+      ]),
+    ),
+  )
+
   return EFunction.pipe(
     Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerdown'),
     Stream.merge(
@@ -42,29 +68,29 @@ export const makeVirtualButtonTouchStateStream = <
         const makeReleaseStream = <T>(t: T) =>
           Stream.succeed([t, ButtonState.NotPressed] as const)
 
-        const targetToGoodOption = (t: unknown) =>
+        const getTargetWithDesiredDataset = (t: unknown) =>
           EFunction.pipe(
             Option.fromNullable(t),
             Option.filter(isElementWithDataset),
             Option.flatMapNullable(
               emergeUpToDesiredTarget(
                 parentElement => parentElement !== currentTarget,
-                keys,
+                keysOfDatasetToLookFor,
               ),
             ),
           )
 
         if (eventType === 'pointerdown')
-          return Option.match(targetToGoodOption(target), {
+          return Option.match(getTargetWithDesiredDataset(target), {
             onNone: () =>
               [
                 SortedMap.set(acc, pointerId, 'irrelevantElement'),
                 Stream.empty,
               ] as const,
-            onSome: goodTarget =>
+            onSome: elementWithDesiredDataset =>
               [
-                SortedMap.set(acc, pointerId, goodTarget),
-                makePressStream(goodTarget),
+                SortedMap.set(acc, pointerId, elementWithDesiredDataset),
+                makePressStream(elementWithDesiredDataset),
               ] as const,
           })
 
@@ -92,7 +118,7 @@ export const makeVirtualButtonTouchStateStream = <
 
         return EFunction.pipe(
           document.elementFromPoint(clientX, clientY),
-          targetToGoodOption,
+          getTargetWithDesiredDataset,
           Option.match({
             onSome: latestElement =>
               latestElement === previousElement
@@ -113,13 +139,20 @@ export const makeVirtualButtonTouchStateStream = <
       },
     ),
     Stream.flatten(),
+    Stream.map(
+      ([e, state]) =>
+        [
+          Schema.decodeUnknownSync(DatasetSchema)(e.dataset) as Dataset,
+          state,
+        ] as const,
+    ),
   )
 }
 
 const emergeUpToDesiredTarget =
   (
     continueSearchWhile: (target: ElementWithDataset) => boolean,
-    keysOfDatasetToLookFor: string[],
+    keysOfDatasetToLookFor: Set<string>,
   ) =>
   (baseTarget: ElementWithDataset) => {
     let target: ElementWithDataset | null = baseTarget
@@ -128,8 +161,8 @@ const emergeUpToDesiredTarget =
     // event listener. there's no point in going past the event listener
     while (target && continueSearchWhile(target)) {
       if (target.dataset)
-        for (const k of keysOfDatasetToLookFor)
-          if (k in target.dataset) return target
+        for (const keyCandidate of keysOfDatasetToLookFor)
+          if (keyCandidate in target.dataset) return target
 
       target = target.parentElement as ElementWithDataset
     }

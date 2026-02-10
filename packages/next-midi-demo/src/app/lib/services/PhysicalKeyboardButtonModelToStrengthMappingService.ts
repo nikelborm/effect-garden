@@ -1,14 +1,21 @@
 import * as Effect from 'effect/Effect'
 
 import {
-  ValidKeyboardKey,
-  ValidKeyboardKeyOrder,
+  ValidKeyboardKeyData,
+  ValidKeyboardKeyDataOrder,
 } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-const keysHandlingStrengths = Array.from('asd', ValidKeyboardKey)
+const keys = 'asd'
+const keyDatasHandlingStrengths = Array.from(
+  keys,
+  key => new ValidKeyboardKeyData(key),
+)
+const keysHandlingStrengthsSet = new Set(
+  keyDatasHandlingStrengths.map(_ => _.value),
+)
 
 export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.Service<PhysicalKeyboardButtonModelToStrengthMappingService>()(
   'next-midi-demo/PhysicalKeyboardButtonModelToStrengthMappingService',
@@ -16,10 +23,10 @@ export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.
     accessors: true,
     scoped: Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
       makePhysicalButtonToParamMappingService(
-        ValidKeyboardKeyOrder,
-        keysHandlingStrengths,
+        ValidKeyboardKeyDataOrder,
+        keyDatasHandlingStrengths,
         strengths,
-        makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengths),
+        makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
       ),
     ),
   },

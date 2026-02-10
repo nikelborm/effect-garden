@@ -11,9 +11,16 @@ import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
 import { ButtonState } from '../branded/index.ts'
-import { type NoteId, NoteIdOrder } from '../branded/MIDIValues.ts'
+import {
+  type NoteId,
+  type NoteIdData,
+  NoteIdDataOrder,
+  NoteIdOrder,
+} from '../branded/MIDIValues.ts'
 import {
   type ValidKeyboardKey,
+  type ValidKeyboardKeyData,
+  ValidKeyboardKeyDataOrder,
   ValidKeyboardKeyOrder,
 } from '../branded/StoreValues.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
@@ -45,6 +52,7 @@ import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalM
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
+import { VirtualPadButtonModelToAccordMappingService } from './VirtualPadButtonModelToAccordMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -64,12 +72,16 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         yield* PhysicalKeyboardButtonModelToPatternMappingService
       const physicalKeyboardButtonModelToStrengthMappingService =
         yield* PhysicalKeyboardButtonModelToStrengthMappingService
+
       const physicalMIDIDeviceButtonModelToAccordMappingService =
         yield* PhysicalMIDIDeviceButtonModelToAccordMappingService
       const physicalMIDIDeviceButtonModelToPatternMappingService =
         yield* PhysicalMIDIDeviceButtonModelToPatternMappingService
       const physicalMIDIDeviceButtonModelToStrengthMappingService =
         yield* PhysicalMIDIDeviceButtonModelToStrengthMappingService
+
+      const virtualPadButtonModelToAccordMappingService =
+        yield* VirtualPadButtonModelToAccordMappingService
 
       const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
         SortedMap.empty(AccordOrderById),
@@ -260,15 +272,18 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         <T>() =>
         <E, R>(
           self: Stream.Stream<
-            | SortedMap.SortedMap<ValidKeyboardKey, PhysicalButtonModel<T>>
-            | SortedMap.SortedMap<NoteId, PhysicalButtonModel<T>>,
+            | SortedMap.SortedMap<ValidKeyboardKeyData, PhysicalButtonModel<T>>
+            | SortedMap.SortedMap<NoteIdData, PhysicalButtonModel<T>>,
             E,
             R
           >,
         ) =>
           Stream.scan(
             self,
-            HashMap.empty<T, SortedSet.SortedSet<ValidKeyboardKey | NoteId>>(),
+            HashMap.empty<
+              T,
+              SortedSet.SortedSet<ValidKeyboardKeyData | NoteIdData>
+            >(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -276,7 +291,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   newMap,
                   physicalButtonModel.assignedTo,
                   EFunction.flow(
-                    Option.orElseSome(() => SortedSet.empty(noteOrKeyOrder)),
+                    Option.orElseSome(() =>
+                      SortedSet.empty(noteDataOrKeyDataOrder),
+                    ),
                     Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
                       (physicalButtonModel.buttonPressState ===
                         ButtonState.Pressed
@@ -445,12 +462,15 @@ interface ButtonPressabilityDecisionRequirements {
   readonly isSelectedParam: boolean
 }
 
-const noteOrKeyOrder = Order.make(
-  (self: ValidKeyboardKey | NoteId, that: ValidKeyboardKey | NoteId) =>
-    typeof self === 'number' && typeof that === 'number'
-      ? NoteIdOrder(self, that)
-      : typeof self === 'string' && typeof that === 'string'
-        ? ValidKeyboardKeyOrder(self, that)
+const noteDataOrKeyDataOrder = Order.make(
+  (
+    self: ValidKeyboardKeyData | NoteIdData,
+    that: ValidKeyboardKeyData | NoteIdData,
+  ) =>
+    self._tag === 'NoteId' && that._tag === 'NoteId'
+      ? NoteIdDataOrder(self, that)
+      : self._tag === 'ValidKeyboardKey' && that._tag === 'ValidKeyboardKey'
+        ? ValidKeyboardKeyDataOrder(self, that)
         : typeof self === 'number' && typeof that === 'string'
           ? 1
           : -1,

@@ -29,7 +29,7 @@ export const makeMIDINoteButtonPressStream = (
     Stream.map(
       ({ midiMessage: { _tag, note } }) =>
         [
-          MIDIValues.NoteId(note),
+          new MIDIValues.NoteIdData(note),
           _tag === 'Note Press' ? ButtonState.Pressed : ButtonState.NotPressed,
         ] as const,
     ),

@@ -18,6 +18,13 @@ const ID = Schema.Number.pipe(
   Schema.asSchema,
 )
 
+const makeBrandSchema: <S extends Schema.Schema.Any, B extends string | symbol>(
+  brand: B,
+  annotations?: Schema.Annotations.Schema<
+    Schema.Schema.Type<S> & Brand.Brand<B>
+  >,
+) => <SubS extends S>(self: SubS) => Schema.brand<SubS, B> = Schema.brand as any
+
 export const buildEntityPartsPrefixed = (prefix: string) => {
   const withOpenApiAnnotations = _withOpenApiAnnotationsForStructs(prefix)
   const withIdsAnnotations = withSchemaIdAndIdentifierAnnotations(prefix)
@@ -47,7 +54,7 @@ export const buildEntityPartsPrefixed = (prefix: string) => {
 
     type EntityId = typeof EntityId
 
-    const withEntityIdBrandSchema = Schema.brand(EntityId)
+    const withEntityIdBrandSchema = makeBrandSchema(EntityId)
 
     const BrandContainer = {
       [`with${EntityId}Brand`]: withEntityIdBrandSchema,

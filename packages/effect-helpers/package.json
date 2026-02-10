@@ -19,6 +19,7 @@
   },
   "peerDependencies": {
     "@effect/platform": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "@types/node": "^25.2.2"
   }
 }
