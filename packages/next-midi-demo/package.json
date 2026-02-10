@@ -24,7 +24,7 @@
     "effect-web-audio": "workspace:*",
     "effect-web-midi": "workspace:*",
     "next": "catalog:",
-    "next-yak": "^9.1.0",
+    "next-yak": "^9.2.0",
     "postcss-styled-syntax": "^0.7.1",
     "react": "catalog:",
     "react-dom": "catalog:",

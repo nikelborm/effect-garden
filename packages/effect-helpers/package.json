@@ -20,6 +20,6 @@
   "peerDependencies": {
     "@effect/platform": "catalog:",
     "effect": "catalog:",
-    "@types/node": "^25.2.2"
+    "@types/node": "^25.2.3"
   }
 }
