@@ -27,7 +27,7 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
           const logWithPriorityTier = (
             message: string,
             ...rest: ReadonlyArray<any>
-          ) => Effect.log(`[TIER=${priorityTier}] ` + message, ...rest)
+          ) => Effect.logDebug(`[TIER=${priorityTier}] ` + message, ...rest)
 
           const currentTierAssetsToDownload = getNeighborMIDIPadButtons(
             priorityTier,

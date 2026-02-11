@@ -35,4 +35,4 @@ const nextConfig: NextConfig = {
   compress: false, // should be handled by nginx
 }
 
-export default pipe(nextConfig, withYak, withSerwist)
+export default pipe(nextConfig, withYak)
