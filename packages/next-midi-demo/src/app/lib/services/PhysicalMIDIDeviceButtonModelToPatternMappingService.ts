@@ -37,6 +37,7 @@ export class PhysicalMIDIDeviceButtonModelToPatternMappingService extends Effect
     this,
     this.make({
       currentMap: Effect.succeed(SortedMap.empty(MIDIValues.NoteIdDataOrder)),
+      latestPhysicalButtonModelsStream: Stream.empty,
       mapChanges: Stream.empty,
       getPhysicalButtonModel: () => Effect.succeedNone,
     }),

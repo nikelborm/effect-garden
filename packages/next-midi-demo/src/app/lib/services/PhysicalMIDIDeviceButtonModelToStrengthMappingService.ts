@@ -38,6 +38,7 @@ export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effec
     this.make({
       currentMap: Effect.succeed(SortedMap.empty(MIDIValues.NoteIdDataOrder)),
       mapChanges: Stream.empty,
+      latestPhysicalButtonModelsStream: Stream.empty,
       getPhysicalButtonModel: () => Effect.succeedNone,
     }),
   )

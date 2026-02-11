@@ -1,0 +1,102 @@
+I'm developing a web application with reactivity based on Effect.ts streams.
+
+## Present design
+
+In the app I have 3 rows of buttons. Each row has some options of a param
+specific to that row, a person can choose from. The user can press buttons
+according to one of the 8 accords, one of the 8 patterns and one of the 3
+strengths. The application initially started as a MIDI pad inside a browser, and
+pressing each of the buttons played a sound of according pattern, accord and
+strength.
+
+Currently we have a system that handles various touch sources and merges streams
+of actuations into one stream for each of the 3 parameters. It means that I have
+3 separate streams (per each individual param) of latest pressure maps.
+
+Each pressure map has specific parameter as a map key like accord object,
+pattern object, or strength object. And as map values it has a set of currently
+active pressure sources: like be it an object representing a key on a keyboard,
+a button on a physical connected MIDI pad, a finger pressing against the screen
+right in the place of the desired UI button that selects one of the accords or
+patterns etc. If a user simultaneously holds 2 input sources of the same param
+and the same option from the ones available for that param, it would be
+reflected in the according map value as a Set of 2 elements: a specific keyboard
+key instance and specific midi note id instance (which is received on press of a
+specific button). In short - the system was designed to handle the general
+use-case of parallel touch.
+
+The additional complexity also comes from the fact that some of the buttons can
+per app logic be in a disabled state. I can give you a few examples: a button is
+disabled because it compositionally incompatible with other selected params, or
+because the samples that are intended to play after that button is pressed are
+not yet fully downloaded. The map represents not the buttons that are logically
+can be pressed and are pressed. The map represents the aggregated signal from
+the outside world, which could not conform to what the app considers a valid
+state.
+
+
+## Future design
+
+The app is now being requalified into a different kind of music application and
+the system no longer follows the requirements. I no longer need the ability to
+render parallel touches of different buttons. Instead they are now radio
+buttons. Which means each of the sets of buttons (pattern selectors, accord
+selectors, and strength selectors) now can only have 1 (!) active option (active
+doesn't mean currently pressed, it means the one selected) out of the number of
+available options in the Set. I don't want to throw away the whole system of
+handling parallel touch. I want every time the stream of latest press map
+snapshots passes a new snapshot, to make a decision if I want to update the
+selected element or not. The thing I'm considering now is how to handle complex
+cases when for example accord-3 is pressed at the same time with accord-4 and
+the user starts releasing the buttons.
+
+Which item should be left active in the end? When does the switch of param
+happens? When do take into account if the button is disabled: in the end, when
+it's released, or at the moment it's pressed. I have a few potential designs:
+
+- We can per each button press release if the button is enabled during release
+  (because the button's availability state can change during the button's press)
+  release (when the set of actuations loses the last element) send a command to
+  set the new latest active param value. This option seems more responsive to
+  user input, but can make the application feel jittery (although it might not
+  actually, because handling simultaneous presses is an edge case that should be
+  pretty rare). Example:
+  - user holds accord-1, accord-2, accord-3 buttons. accord-2 is disabled
+    because it's not yet downloaded. And the map will still contain the
+    accord-2, because, again, it represents the incoming signal.
+  - user releases accord-3
+  - accord-3 becomes active
+  - user releases accord-2
+  - accord-2 is currently disabled at the moment of release, so accord-3 stays
+    active
+  - user releases accord-1
+  - accord-1 becomes active
+- We can wait until all buttons are released and in order of their release,
+starting from the most recent, look for valid options, and when the most recent
+valid option is found, set this element as active. What difficult to
+conceptualize here are 2 things. The first one is the fact that the act of
+pressing down is not simultaneous with other presses down. So that the map of
+simultaneously pressed buttons only gains this trait when the user already holds
+one button, and another just got pressed. The second difficult thing is that
+while holding one button, the user can press and release as many other buttons
+in the same row, as they want. And how do I what do I do with the history of
+actively pressed elements, when the same element can appear twice with their
+release event
+- we can select the new option, just the moment the map goes from state only one
+accord is pressed, to none of the accords are currently pressed effectively
+ignoring all of the history of previously pressed elements. If the last released
+element is invalid button, we just do nothing.
+- instead of reacting on-release, we can react on-press, which would make the
+application feel even more instantaneous
+- maybe other options
+
+## My request to you
+
+1. review each of the potential designs and suggest which one will be the most
+   intuitive to the end user, which one will be the easiest to implement. (DO NOT
+   WRITE ANY CODE!)
+2. Suggest a list of potential fundamental flows in my logic of handling
+   parallel events
+3. Suggest a list of things I haven't considered, that would affect the design
+4. Suggest a list of new potential designs that could be used here and which I
+   haven't already listed and considered

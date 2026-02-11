@@ -1,13 +1,14 @@
 import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Option from 'effect/Option'
 import type * as Order from 'effect/Order'
+import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
-import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../branded/index.ts'
-import { sortedMapModify } from '../helpers/sortedMapModifyAt.ts'
 
 export const makePhysicalButtonToParamMappingService = <
   PhysicalButtonId,
@@ -32,7 +33,7 @@ export const makePhysicalButtonToParamMappingService = <
         'Assertion failed: allEntities.length !== allPhysicalButtonIds.length',
       )
 
-    const physicalButtonIdToModelMapRef = yield* SubscriptionRef.make(
+    const physicalButtonIdToModelMapRef = yield* Ref.make(
       SortedMap.make(physicalButtonIdOrder)(
         ...EArray.zipWith(
           allEntities,
@@ -46,34 +47,57 @@ export const makePhysicalButtonToParamMappingService = <
       ),
     )
 
-    const currentMap = SubscriptionRef.get(physicalButtonIdToModelMapRef)
+    const currentMap = Ref.get(physicalButtonIdToModelMapRef)
 
     const getPhysicalButtonModel = (id: PhysicalButtonId) =>
       Effect.map(currentMap, SortedMap.get(id))
 
-    yield* buttonPressStream.pipe(
+    // TODO: maybe move {id -> ButtonModel.assignedTo} into a separate map?
+
+    // This separation on 2 streams have 2 non atomic Ref method calls. And it's
+    // fine because the keys of the map are permanent, and the value, the first
+    // call depends on (previousButtonModel.assignedTo) is permanent
+    const latestPhysicalButtonModelsStream = yield* buttonPressStream.pipe(
       Stream.mapEffect(
         ([id, physicalButtonPressState]) =>
-          SubscriptionRef.update(
-            physicalButtonIdToModelMapRef,
-            sortedMapModify(
-              id,
-              buttonModel =>
-                new PhysicalButtonModel(
-                  physicalButtonPressState,
-                  buttonModel?.assignedTo,
-                ),
+          Effect.map(
+            Ref.get(physicalButtonIdToModelMapRef),
+            EFunction.flow(
+              SortedMap.get(id),
+              Option.map(
+                previousButtonModel =>
+                  [
+                    id,
+                    new PhysicalButtonModel(
+                      physicalButtonPressState,
+                      previousButtonModel.assignedTo,
+                    ),
+                  ] as const,
+              ),
             ),
           ),
         { concurrency: 1 },
       ),
-      Stream.runDrain,
-      Effect.forkScoped,
+      Stream.filterMap(e => e),
+      Stream.broadcastDynamic({ capacity: 'unbounded' }),
+    )
+
+    const mapChanges = yield* latestPhysicalButtonModelsStream.pipe(
+      Stream.mapEffect(
+        ([id, latestButtonModel]) =>
+          Ref.updateAndGet(
+            physicalButtonIdToModelMapRef,
+            SortedMap.set(id, latestButtonModel),
+          ),
+        { concurrency: 1 },
+      ),
+      Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
     )
 
     return {
       currentMap,
-      mapChanges: physicalButtonIdToModelMapRef.changes,
+      latestPhysicalButtonModelsStream,
+      mapChanges,
       getPhysicalButtonModel,
     }
   })
@@ -83,6 +107,6 @@ export class PhysicalButtonModel<AssignedTo> extends Data.Class<{
   assignedTo: AssignedTo
 }> {
   constructor(buttonPressState: ButtonState.AllSimple, assignedTo: AssignedTo) {
-    super({ buttonPressState, ...(assignedTo && { assignedTo }) })
+    super({ buttonPressState, assignedTo })
   }
 }

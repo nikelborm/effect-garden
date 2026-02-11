@@ -145,10 +145,10 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       ) =>
         self.pipe(
           Stream.map(
-            _ =>
-              !_.isSelectedParam &&
-              (!_.isPlaying ||
-                _.completionStatusOfTheAssetThisButtonWouldSelect.status ===
+            req =>
+              !req.isSelectedParam &&
+              (!req.isPlaying ||
+                req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
                   'finished'),
           ),
           Stream.changes,
@@ -331,6 +331,54 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.changes,
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
+
+      yield* physicalKeyboardButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
+        Stream.merge(
+          physicalMIDIDeviceButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.merge(
+          virtualPadButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
+          ButtonState.isPressed(buttonPressState)
+            ? accordRegistry.selectAccord(assignedTo.index)
+            : Effect.void,
+        ),
+        Stream.runDrain,
+        Effect.forkScoped,
+      )
+
+      yield* physicalKeyboardButtonModelToPatternMappingService.latestPhysicalButtonModelsStream.pipe(
+        Stream.merge(
+          physicalMIDIDeviceButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.merge(
+          virtualPadButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
+          ButtonState.isPressed(buttonPressState)
+            ? patternRegistry.selectPattern(assignedTo.index)
+            : Effect.void,
+        ),
+        Stream.runDrain,
+        Effect.forkScoped,
+      )
+
+      yield* physicalKeyboardButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
+        Stream.merge(
+          physicalMIDIDeviceButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.merge(
+          virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
+        ),
+        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
+          ButtonState.isPressed(buttonPressState)
+            ? strengthRegistry.selectStrength(assignedTo)
+            : Effect.void,
+        ),
+        Stream.runDrain,
+        Effect.forkScoped,
+      )
 
       const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
         AccordPressAggregateStream.pipe(

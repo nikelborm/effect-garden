@@ -16,11 +16,12 @@ export const sortedMapModifyAt = EFunction.dual<
   const foundValue = SortedMap.get(self, key)
   const transformedValue = f(foundValue)
 
-  if (Option.isNone(transformedValue)) {
-    if (Option.isNone(foundValue)) return self
-    return SortedMap.remove(self, key)
-  }
-  return SortedMap.set(self, key, transformedValue.value)
+  if (Option.isSome(transformedValue))
+    return SortedMap.set(self, key, transformedValue.value)
+
+  if (Option.isNone(foundValue)) return self
+
+  return SortedMap.remove(self, key)
 })
 
 export const sortedMapModify = EFunction.dual<
