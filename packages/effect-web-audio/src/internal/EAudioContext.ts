@@ -1,5 +1,8 @@
-import type * as EMediaDeviceInfo from 'effect-web-mediacapture-streams/EMediaDeviceInfo'
-import type * as EMediaDevices from 'effect-web-mediacapture-streams/EMediaDevices'
+import type { EMediaDeviceInfo } from 'effect-web-mediacapture-streams/EMediaDeviceInfo'
+import type { enumerate } from 'effect-web-mediacapture-streams/EMediaDevices'
+export type _1 = EMediaDeviceInfo
+export type _2 = typeof enumerate
+
 import type * as MediaBrand from 'effect-web-mediacapture-streams/MediaBrand'
 
 import * as Context from 'effect/Context'
@@ -350,9 +353,8 @@ export interface MakeAudioContextOptions extends AudioContextOptions {
    * {@linkcode EAudioContext}. This can take one of the following value types:
    *
    * - {@linkcode MediaBrand.AudioSinkId} retrieved for example from the
-   *   {@linkcode EMediaDeviceInfo.EMediaDeviceInfo.deviceId|deviceId} of
-   *   {@linkcode EMediaDeviceInfo.EMediaDeviceInfo|EMediaDeviceInfo} returned
-   *   by {@linkcode EMediaDevices.enumerate}
+   *   {@linkcode EMediaDeviceInfo.deviceId|deviceId} of
+   *   {@linkcode EMediaDeviceInfo} returned by {@linkcode enumerate}
    * - An object representing different options for a sink ID. Currently, this
    *   takes a single property, type, with a value of none. Setting this
    *   parameter causes the audio to be processed without being played through
@@ -410,11 +412,11 @@ export interface DecodeAudioDataSourceFirst {
    *
    *
    * @param context
-   * @param audioBuffer
+   * @param encodedAudioBuffer
    */
   (
     context: EAudioContextInstance,
-    audioBuffer: ArrayBuffer,
+    encodedAudioBuffer: ArrayBuffer,
   ): DecodeAudioDataResult
 }
 
@@ -423,9 +425,9 @@ export interface DecodeAudioDataSourceLast {
   /**
    *
    *
-   * @param audioBuffer
+   * @param encodedAudioBuffer
    */
-  (audioBuffer: ArrayBuffer): DecodeAudioDataSourceLastSecondPart
+  (encodedAudioBuffer: ArrayBuffer): DecodeAudioDataSourceLastSecondPart
 }
 
 // TODO: example in JSDoc
@@ -444,3 +446,6 @@ export type DecodeAudioDataResult = Effect.Effect<
   | AudioErrors.CannotDecodeAudioDataEmptyBufferError
   | AudioErrors.CannotDecodeAudioDataUnrecognizedEncodingFormat
 >
+
+export const currentTime = (context: EAudioContextInstance) =>
+  Effect.sync(() => assumeImpl(context)._audioContext.currentTime)

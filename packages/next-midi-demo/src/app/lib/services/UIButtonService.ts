@@ -124,22 +124,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         SortedMap.empty(PatternOrderByIndex),
       )
 
-      const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
-        appPlaybackState.latestIsPlayingFlagStream,
-        Stream.flatMap(
-          isPlaying =>
-            isPlaying
-              ? Stream.succeed(true)
-              : Stream.map(
-                  currentlySelectedAssetState.completionStatusChangesStream,
-                  ({ status }) => status === 'finished',
-                ),
-          { switch: true, concurrency: 1 },
-        ),
-        Stream.changes,
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
-
       const isPressable = <E, R>(
         self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
       ) =>
@@ -247,7 +231,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             Stream.map(s =>
               s.status === 'not finished'
                 ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'fetched, but not written'
+                : s.status === 'almost finished: fetched, but not written'
                   ? 99
                   : 100,
             ),
@@ -261,7 +245,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             Stream.map(s =>
               s.status === 'not finished'
                 ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'fetched, but not written'
+                : s.status === 'almost finished: fetched, but not written'
                   ? 99
                   : 100,
             ),
@@ -275,7 +259,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             Stream.map(s =>
               s.status === 'not finished'
                 ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'fetched, but not written'
+                : s.status === 'almost finished: fetched, but not written'
                   ? 99
                   : 100,
             ),
@@ -494,7 +478,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         getPressureReportOfMapRef(patternButtonsMapRef)
 
       return {
-        playStopButtonPressableFlagChangesStream,
         getPressureReportOfAccord,
         getPressureReportOfPattern,
         getIsSelectedAccordStream,

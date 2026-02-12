@@ -24,6 +24,7 @@ import {
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
+  playCurrentlySelected,
   strengthButtonDownloadPercentAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
@@ -275,13 +276,20 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
 
 const PlaybackButton = () => {
   const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
+  const [playresult, play] = Hooks.useAtom(playCurrentlySelected)
+  console.log('playresult', playresult)
   if (!Result.isSuccess(isPressableRes)) {
     // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   const { value: isPressable } = isPressableRes
   return (
-    <DebugButton>
+    <DebugButton
+      onClick={() => {
+        console.log('isPressable', isPressable)
+        if (isPressable) play()
+      }}
+    >
       Playback control
       <br />
       Shape: triangle

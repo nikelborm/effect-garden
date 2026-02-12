@@ -47,27 +47,31 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
+      const mapAssetToTaggedPatternPointer = ({
+        accord,
+        pattern,
+        strength,
+      }: CurrentSelectedAsset) =>
+        TaggedPatternPointer.make({
+          accordIndex: accord.index,
+          patternIndex: pattern.index,
+          strength,
+        })
+
       const completionStatus = Effect.flatMap(
         currentEffect,
-        ({ accord, pattern, strength }) =>
-          estimationMap.getAssetFetchingCompletionStatus({
-            _tag: 'pattern',
-            accordIndex: accord.index,
-            patternIndex: pattern.index,
-            strength,
-          }),
+        EFunction.flow(
+          mapAssetToTaggedPatternPointer,
+          estimationMap.getAssetFetchingCompletionStatus,
+        ),
       )
 
       const completionStatusChangesStream = Stream.flatMap(
         selectedAssetChangesStream,
-        ({ accord, pattern, strength }) =>
-          estimationMap.getAssetFetchingCompletionStatusChangesStream(
-            TaggedPatternPointer.make({
-              accordIndex: accord.index,
-              patternIndex: pattern.index,
-              strength,
-            }),
-          ),
+        EFunction.flow(
+          mapAssetToTaggedPatternPointer,
+          estimationMap.getAssetFetchingCompletionStatusChangesStream,
+        ),
         { switch: true, concurrency: 1 },
       )
 

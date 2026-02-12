@@ -6,6 +6,7 @@
     "noUnusedLocals": false,
 
     "verbatimModuleSyntax": true,
+    "preserveValueImports": false,
     "importHelpers": true,
     "moduleDetection": "force",
     "useDefineForClassFields": true,

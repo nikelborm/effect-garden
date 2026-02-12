@@ -125,7 +125,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           )
 
           if (sizeOnDisk !== ASSET_SIZE_BYTES)
-            return { status: 'fetched, but not written' as const }
+            return {
+              status: 'almost finished: fetched, but not written' as const,
+            }
 
           return { status: 'finished' as const }
         })
@@ -166,5 +168,5 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
 
 export type AssetCompletionStatus =
   | { status: 'not finished'; currentBytes: number }
-  | { status: 'fetched, but not written' }
+  | { status: 'almost finished: fetched, but not written' }
   | { status: 'finished' }

@@ -3,6 +3,7 @@ export {
   type AudioSinkOptions,
   type AudioSinkType,
   assert,
+  currentTime,
   type DecodeAudioData,
   type DecodeAudioDataResult,
   type DecodeAudioDataSourceFirst,

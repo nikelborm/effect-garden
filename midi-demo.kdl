@@ -17,19 +17,19 @@ layout {
     }
     pane split_direction="horizontal" {
       pane {
-        name "MIDI tsc watch"
+        name "Web MIDI tsc watch"
         cwd "./packages/effect-web-midi"
         command "bun"
         args "dev"
       }
       pane {
-        name "MediaCapture tsc watch"
+        name "Web MediaCapture tsc watch"
         cwd "./packages/effect-web-mediacapture-streams"
         command "bun"
         args "dev"
       }
       pane {
-        name "Audio tsc watch"
+        name "Web Audio tsc watch"
         cwd "./packages/effect-web-audio"
         command "bun"
         args "dev"

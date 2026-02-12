@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tspc",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",
-    "dev": "tspc --watch"
+    "dev": "tspc --watch --preserveWatchOutput false"
   },
   "files": [
     ".github/FUNDING.yml",

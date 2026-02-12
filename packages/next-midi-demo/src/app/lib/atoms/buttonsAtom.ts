@@ -56,27 +56,31 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
 // )
 
 const AppLayer = UIButtonService.Default.pipe(
-  Layer.provide(PhysicalKeyboardButtonModelToAccordMappingService.Default),
-  Layer.provide(PhysicalKeyboardButtonModelToPatternMappingService.Default),
-  Layer.provide(PhysicalKeyboardButtonModelToStrengthMappingService.Default),
-  Layer.provide(VirtualPadButtonModelToAccordMappingService.Default),
-  Layer.provide(VirtualPadButtonModelToPatternMappingService.Default),
-  Layer.provide(VirtualPadButtonModelToStrengthMappingService.Default),
+  Layer.provideMerge(PhysicalKeyboardButtonModelToAccordMappingService.Default),
+  Layer.provideMerge(
+    PhysicalKeyboardButtonModelToPatternMappingService.Default,
+  ),
+  Layer.provideMerge(
+    PhysicalKeyboardButtonModelToStrengthMappingService.Default,
+  ),
+  Layer.provideMerge(VirtualPadButtonModelToAccordMappingService.Default),
+  Layer.provideMerge(VirtualPadButtonModelToPatternMappingService.Default),
+  Layer.provideMerge(VirtualPadButtonModelToStrengthMappingService.Default),
 
-  Layer.provide(MIDIButtonMappingsLayer),
-  Layer.provide(AppPlaybackStateService.Default),
-  Layer.provide(AssetDownloadScheduler.Default),
-  Layer.provide(DownloadManager.Default),
-  Layer.provide(OpfsWritableHandleManager.Default),
-  // Layer.provide(BrowserHttpClient.layerXMLHttpRequest),
-  Layer.provide(FetchHttpClient.layer),
-  Layer.provide(CurrentlySelectedAssetState.Default),
-  Layer.provide(LoadedAssetSizeEstimationMap.Default),
-  Layer.provide(RootDirectoryHandle.Default),
-  Layer.provide(AccordRegistry.Default),
-  Layer.provide(PatternRegistry.Default),
-  Layer.provide(StrengthRegistry.Default),
-  Layer.provide(Logger.pretty),
+  Layer.provideMerge(MIDIButtonMappingsLayer),
+  Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
+  Layer.provideMerge(AssetDownloadScheduler.Default),
+  Layer.provideMerge(DownloadManager.Default),
+  Layer.provideMerge(OpfsWritableHandleManager.Default),
+  // Layer.provideMerge(BrowserHttpClient.layerXMLHttpRequest),
+  Layer.provideMerge(FetchHttpClient.layer),
+  Layer.provideMerge(CurrentlySelectedAssetState.Default),
+  Layer.provideMerge(LoadedAssetSizeEstimationMap.Default),
+  Layer.provideMerge(RootDirectoryHandle.Default),
+  Layer.provideMerge(AccordRegistry.Default),
+  Layer.provideMerge(PatternRegistry.Default),
+  Layer.provideMerge(StrengthRegistry.Default),
+  Layer.provideMerge(Logger.pretty),
 )
 
 const runtime = Atom.runtime(AppLayer)
@@ -220,7 +224,7 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
 )
 
 export const isPlayStopButtonPressableAtom = EFunction.pipe(
-  UIButtonService.playStopButtonPressableFlagChangesStream,
+  AppPlaybackStateService.playStopButtonPressableFlagChangesStream,
   Stream.unwrap,
   s => runtime.atom(s),
   Atom.withServerValueInitial,
@@ -231,3 +235,10 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
 // Atom.keepAlive,
 
 // Atom.withServerValueInitial,
+
+export const playCurrentlySelected = runtime.fn(() =>
+  AppPlaybackStateService.playCurrentlySelected.pipe(
+    Effect.orDie,
+    Effect.tapErrorCause(e => Effect.logError(e)),
+  ),
+)

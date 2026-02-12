@@ -1,8 +1,11 @@
+import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
+import * as EAudioContext from 'effect-web-audio/EAudioContext'
+
 import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
-import EFunction from 'effect/Function'
+import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
@@ -11,14 +14,30 @@ import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { CurrentSelectedAsset } from './CurrentlySelectedAssetState.ts'
+import {
+  getLocalAssetFileName,
+  TaggedPatternPointer,
+} from '../audioAssetHelpers.ts'
+import { getFileHandle, readFileBuffer } from '../opfs.ts'
+import {
+  CurrentlySelectedAssetState,
+  type CurrentSelectedAsset,
+} from './CurrentlySelectedAssetState.ts'
+import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const audioContext = new AudioContext()
+      const audioContext = yield* EAudioContext.make()
+      const audioContextImplHack =
+        audioContext as EAudioContext.EAudioContextInstance & {
+          _audioContext: AudioContext
+        }
+      const rootDirectoryHandle = yield* RootDirectoryHandle
+      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
+
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
       })
@@ -29,27 +48,72 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
 
-      // audioContext.decodeAudioData()
-
       const createSilentByDefaultPlayback = () => {}
       // SubscriptionRef.updateEffect
 
-      const play = Effect.fn(function* (
-        buffer: AudioBuffer,
-        asset: CurrentSelectedAsset,
-      ) {
+      const playCurrentlySelected = Effect.gen(function* () {
+        const currentStatus = yield* current
+        if (currentStatus._tag !== 'NotPlaying')
+          return yield* Effect.die(
+            'Play command can only be called on not-initialized player',
+          )
+
+        const { status } = yield* currentlySelectedAssetState.completionStatus
+
+        if (status !== 'finished')
+          return yield* Effect.die(
+            'Play command should only be called when the current asset finished loading',
+          )
+
+        const asset = yield* currentlySelectedAssetState.current
+
+        const assetFileHandle = yield* getFileHandle({
+          dirHandle: rootDirectoryHandle,
+          fileName: getLocalAssetFileName(
+            new TaggedPatternPointer({
+              accordIndex: asset.accord.index,
+              patternIndex: asset.pattern.index,
+              strength: asset.strength,
+            }),
+          ),
+        })
+
+        const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
+
+        const data = yield* EAudioContext.decodeAudioData(
+          audioContext,
+          fileArrayBuffer,
+        )
+
+        const dataImplHack = data as EAudioBuffer.EAudioBuffer & {
+          _audioBuffer: AudioBuffer
+        }
+        const time = yield* EAudioContext.currentTime(audioContext)
+
+        yield* SubscriptionRef.set(stateRef, {
+          _tag: 'PlayingAsset' as const,
+          current: yield* createImmediatelyLoudPlayback(
+            audioContextImplHack._audioContext,
+            dataImplHack._audioBuffer,
+            time,
+          ),
+          currentAsset: asset,
+          playbackStartedAtSecond: time,
+        })
+
+        yield* Effect.log('started playing')
+      }).pipe(
+        Effect.asVoid,
+        Effect.tapErrorCause(e => Effect.logError(e)),
+      )
+
+      const changeAsset = Effect.fn(function* (asset: CurrentSelectedAsset) {
         const currentStatus = yield* current
         switch (currentStatus._tag) {
           case 'NotPlaying':
-            return yield* SubscriptionRef.set(stateRef, {
-              _tag: 'PlayingAsset' as const,
-              current: yield* createImmediatelyLoudPlayback(
-                audioContext,
-                buffer,
-              ),
-              currentAsset: asset,
-              playbackStartedAtSecond: audioContext.currentTime,
-            })
+            return yield* Effect.die(
+              'Change asset command can only be called on initialized player',
+            )
           case 'PlayingAsset': {
             // const nextPlayback = createPlayback(buffer)
             // const oldPlayback = currentStatus.current
@@ -132,18 +196,26 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       })
 
       const stop = () =>
-        SubscriptionRef.getAndSet(stateRef, { _tag: 'NotPlaying' }).pipe(
-          Effect.flatMap(s => {
-            if (s._tag === 'NotPlaying') return Effect.void
+        EFunction.pipe(
+          Effect.all({
+            time: EAudioContext.currentTime(audioContext),
+            preState: SubscriptionRef.getAndSet(stateRef, {
+              _tag: 'NotPlaying',
+            }),
+          }),
+          Effect.flatMap(({ time, preState }) => {
+            if (preState._tag === 'NotPlaying') return Effect.void
 
             const nodes =
-              s._tag === 'PlayingAsset' ? [s.current] : [s.current, s.next]
+              preState._tag === 'PlayingAsset'
+                ? [preState.current]
+                : [preState.current, preState.next]
             return Effect.forEach(
               nodes,
               p => {
                 p.gainNode.gain.exponentialRampToValueAtTime(
                   0.001,
-                  audioContext.currentTime + fadeTime,
+                  time + fadeTime,
                 )
                 return cleanupPlayback(p).pipe(
                   Effect.delay(Duration.seconds(fadeTime + 0.1)),
@@ -164,8 +236,27 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
+      const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
+        latestIsPlayingFlagStream,
+        Stream.flatMap(
+          isPlaying =>
+            isPlaying
+              ? Stream.succeed(true)
+              : Stream.map(
+                  currentlySelectedAssetState.completionStatusChangesStream,
+                  ({ status }) => status === 'finished',
+                ),
+          { switch: true, concurrency: 1 },
+        ),
+        Stream.changes,
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
+
+      currentlySelectedAssetState.changes.pipe(Stream.map(e => e))
+
       return {
-        play,
+        playStopButtonPressableFlagChangesStream,
+        playCurrentlySelected,
         stop,
         isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
@@ -192,9 +283,10 @@ const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) =>
 const createImmediatelyLoudPlayback = (
   audioContext: AudioContext,
   buffer: AudioBuffer,
+  time: number,
 ) =>
   Effect.map(createPlayback(audioContext, buffer), pb => {
-    pb.gainNode.gain.setValueAtTime(1, audioContext.currentTime)
+    pb.gainNode.gain.setValueAtTime(1, time)
     pb.bufferSource.start()
     return pb
   })
