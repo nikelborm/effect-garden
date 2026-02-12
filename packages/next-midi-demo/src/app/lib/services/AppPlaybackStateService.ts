@@ -36,7 +36,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           _audioContext: AudioContext
         }
       const rootDirectoryHandle = yield* RootDirectoryHandle
-      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
+      const selectedAssetState = yield* CurrentlySelectedAssetState
 
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
@@ -50,62 +50,94 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const createSilentByDefaultPlayback = () => {}
       // SubscriptionRef.updateEffect
+      const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
+        function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
+          const assetFileHandle = yield* getFileHandle({
+            dirHandle: rootDirectoryHandle,
+            fileName: getLocalAssetFileName(
+              new TaggedPatternPointer({
+                accordIndex: accord.index,
+                patternIndex: pattern.index,
+                strength,
+              }),
+            ),
+          })
 
-      const playCurrentlySelected = Effect.gen(function* () {
-        const currentStatus = yield* current
-        if (currentStatus._tag !== 'NotPlaying')
-          return yield* Effect.die(
-            'Play command can only be called on not-initialized player',
+          const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
+
+          return yield* EAudioContext.decodeAudioData(
+            audioContext,
+            fileArrayBuffer,
           )
+        },
+      )
 
-        const { status } = yield* currentlySelectedAssetState.completionStatus
-
-        if (status !== 'finished')
+      const makeNewPlayingAssetState = Effect.gen(function* () {
+        if (!(yield* selectedAssetState.isFinishedCompletely))
           return yield* Effect.die(
             'Play command should only be called when the current asset finished loading',
           )
 
-        const asset = yield* currentlySelectedAssetState.current
+        const currentAsset = yield* selectedAssetState.current
 
-        const assetFileHandle = yield* getFileHandle({
-          dirHandle: rootDirectoryHandle,
-          fileName: getLocalAssetFileName(
-            new TaggedPatternPointer({
-              accordIndex: asset.accord.index,
-              patternIndex: asset.pattern.index,
-              strength: asset.strength,
-            }),
-          ),
-        })
+        const audioBuffer = yield* getAudioBufferOfAsset(currentAsset)
 
-        const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
-
-        const data = yield* EAudioContext.decodeAudioData(
-          audioContext,
-          fileArrayBuffer,
-        )
-
-        const dataImplHack = data as EAudioBuffer.EAudioBuffer & {
+        const audioBufferImplHack = audioBuffer as EAudioBuffer.EAudioBuffer & {
           _audioBuffer: AudioBuffer
         }
+
         const time = yield* EAudioContext.currentTime(audioContext)
 
-        yield* SubscriptionRef.set(stateRef, {
-          _tag: 'PlayingAsset' as const,
-          current: yield* createImmediatelyLoudPlayback(
-            audioContextImplHack._audioContext,
-            dataImplHack._audioBuffer,
-            time,
-          ),
-          currentAsset: asset,
-          playbackStartedAtSecond: time,
-        })
+        const playback = yield* createImmediatelyLoudPlayback(
+          audioContextImplHack._audioContext,
+          audioBufferImplHack._audioBuffer,
+          time,
+        )
 
         yield* Effect.log('started playing')
-      }).pipe(
-        Effect.asVoid,
-        Effect.tapErrorCause(e => Effect.logError(e)),
-      )
+
+        return {
+          _tag: 'PlayingAsset' as const,
+          current: playback,
+          currentAsset,
+          playbackStartedAtSecond: time,
+        }
+      })
+
+      const cleanupPlaybacks = Effect.fn(function* (
+        state: PlayingAppPlaybackStates,
+      ) {
+        const playbacksToCleanup =
+          state._tag === 'PlayingAsset'
+            ? [state.current]
+            : [state.current, state.next]
+
+        const time = yield* EAudioContext.currentTime(audioContext)
+
+        yield* Effect.forEach(
+          playbacksToCleanup,
+          p => {
+            p.gainNode.gain.exponentialRampToValueAtTime(0.001, time + fadeTime)
+            return cleanupPlayback(p).pipe(
+              Effect.delay(Duration.seconds(fadeTime + 0.1)),
+            )
+          },
+          { discard: true },
+        ).pipe(Effect.forkDaemon)
+      })
+
+      const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
+        stateRef,
+        Effect.fn(function* (state) {
+          const isStopped = state._tag === 'NotPlaying'
+
+          if (isStopped) return yield* makeNewPlayingAssetState
+
+          yield* cleanupPlaybacks(state)
+
+          return { _tag: 'NotPlaying' }
+        }),
+      ).pipe(Effect.tapErrorCause(Effect.logError))
 
       const changeAsset = Effect.fn(function* (asset: CurrentSelectedAsset) {
         const currentStatus = yield* current
@@ -195,37 +227,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         }
       })
 
-      const stop = () =>
-        EFunction.pipe(
-          Effect.all({
-            time: EAudioContext.currentTime(audioContext),
-            preState: SubscriptionRef.getAndSet(stateRef, {
-              _tag: 'NotPlaying',
-            }),
-          }),
-          Effect.flatMap(({ time, preState }) => {
-            if (preState._tag === 'NotPlaying') return Effect.void
-
-            const nodes =
-              preState._tag === 'PlayingAsset'
-                ? [preState.current]
-                : [preState.current, preState.next]
-            return Effect.forEach(
-              nodes,
-              p => {
-                p.gainNode.gain.exponentialRampToValueAtTime(
-                  0.001,
-                  time + fadeTime,
-                )
-                return cleanupPlayback(p).pipe(
-                  Effect.delay(Duration.seconds(fadeTime + 0.1)),
-                )
-              },
-              { discard: true },
-            )
-          }),
-        )
-
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
 
@@ -243,7 +244,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             isPlaying
               ? Stream.succeed(true)
               : Stream.map(
-                  currentlySelectedAssetState.completionStatusChangesStream,
+                  selectedAssetState.completionStatusChangesStream,
                   ({ status }) => status === 'finished',
                 ),
           { switch: true, concurrency: 1 },
@@ -252,11 +253,11 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      currentlySelectedAssetState.changes.pipe(Stream.map(e => e))
+      selectedAssetState.changes.pipe(Stream.map(e => e))
 
       return {
         playStopButtonPressableFlagChangesStream,
-        playCurrentlySelected,
+        switchPlayPauseFromCurrentlySelected,
         stop,
         isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
@@ -272,6 +273,7 @@ const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) =>
   Effect.sync(() => {
     const bufferSource = audioContext.createBufferSource()
     const gainNode = audioContext.createGain()
+    bufferSource.loop = true
     bufferSource.buffer = buffer
     bufferSource.connect(gainNode)
 
@@ -319,13 +321,13 @@ const cleanupPlayback = ({ bufferSource, gainNode }: AudioPlayback) =>
     bufferSource.disconnect()
     gainNode.disconnect()
   })
+
 export type AudioPlayback = {
   readonly bufferSource: AudioBufferSourceNode
   readonly gainNode: GainNode
 }
 
-export type AppPlaybackState =
-  | { readonly _tag: 'NotPlaying' }
+export type PlayingAppPlaybackStates =
   | {
       readonly _tag: 'PlayingAsset'
       readonly playbackStartedAtSecond: number
@@ -342,3 +344,7 @@ export type AppPlaybackState =
       readonly next: AudioPlayback
       readonly cleanupFiber: Fiber.RuntimeFiber<void, never>
     }
+
+export type AppPlaybackState =
+  | { readonly _tag: 'NotPlaying' }
+  | PlayingAppPlaybackStates

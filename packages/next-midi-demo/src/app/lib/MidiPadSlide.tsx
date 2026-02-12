@@ -24,8 +24,8 @@ import {
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
-  playCurrentlySelected,
   strengthButtonDownloadPercentAtom,
+  switchPlayPauseFnAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
@@ -276,7 +276,7 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
 
 const PlaybackButton = () => {
   const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
-  const [playresult, play] = Hooks.useAtom(playCurrentlySelected)
+  const [playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
   console.log('playresult', playresult)
   if (!Result.isSuccess(isPressableRes)) {
     // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
@@ -285,9 +285,9 @@ const PlaybackButton = () => {
   const { value: isPressable } = isPressableRes
   return (
     <DebugButton
-      onClick={() => {
+      onMouseDown={() => {
         console.log('isPressable', isPressable)
-        if (isPressable) play()
+        if (isPressable) playPause()
       }}
     >
       Playback control

@@ -7,7 +7,7 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
 
-const allStrengths = ['s', 'm', 'v'] as const
+const allStrengths = ['m', 'v', 's'] as const
 
 export class StrengthData extends Data.TaggedClass('Strength')<{
   value: Strength
@@ -54,4 +54,4 @@ interface IStrengthRegistry {
   readonly selectStrength: (strength: Strength) => Effect.Effect<void>
 }
 
-export type AllStrengthTuple = readonly ['s', 'm', 'v']
+export type AllStrengthTuple = typeof allStrengths

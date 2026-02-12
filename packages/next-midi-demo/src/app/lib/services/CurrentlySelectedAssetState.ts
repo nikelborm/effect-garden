@@ -66,6 +66,11 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         ),
       )
 
+      const isFinishedCompletely = Effect.map(
+        completionStatus,
+        ({ status }) => status === 'finished',
+      )
+
       const completionStatusChangesStream = Stream.flatMap(
         selectedAssetChangesStream,
         EFunction.flow(
@@ -118,6 +123,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       return {
         current: currentEffect,
         completionStatus,
+        isFinishedCompletely,
         completionStatusChangesStream,
         getPatchedAssetFetchingCompletionStatus,
         getPatchedAssetFetchingCompletionStatusChangesStream,

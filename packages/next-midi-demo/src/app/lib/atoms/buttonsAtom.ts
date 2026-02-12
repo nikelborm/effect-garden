@@ -233,12 +233,11 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
 // TODO: add to all atoms
 // Atom.withLabel('notePressReleaseEvents'),
 // Atom.keepAlive,
-
 // Atom.withServerValueInitial,
 
-export const playCurrentlySelected = runtime.fn(() =>
-  AppPlaybackStateService.playCurrentlySelected.pipe(
+export const switchPlayPauseFnAtom = runtime.fn(() =>
+  AppPlaybackStateService.switchPlayPauseFromCurrentlySelected.pipe(
     Effect.orDie,
-    Effect.tapErrorCause(e => Effect.logError(e)),
+    Effect.tapErrorCause(Effect.logError),
   ),
 )
