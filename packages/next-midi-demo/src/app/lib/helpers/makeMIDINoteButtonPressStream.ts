@@ -13,8 +13,10 @@ export const makeMIDINoteButtonPressStream = (
 ) =>
   SelectedMIDIInputService.changes.pipe(
     Stream.unwrap,
-    Stream.flatMap(inputId =>
-      inputId ? EMIDIInput.makeMessagesStreamById(inputId) : Stream.empty,
+    Stream.flatMap(
+      inputId =>
+        inputId ? EMIDIInput.makeMessagesStreamById(inputId) : Stream.empty,
+      { switch: true, concurrency: 1 },
     ),
     Stream.catchTag('PortNotFound', () =>
       Stream.dieMessage('it should not be possible to pass invalid id'),

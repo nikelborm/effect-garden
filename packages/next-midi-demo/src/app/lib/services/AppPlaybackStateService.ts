@@ -139,6 +139,64 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         }),
       ).pipe(Effect.tapErrorCause(Effect.logError))
 
+      const changeAsset2 = (asset: CurrentSelectedAsset) =>
+        SubscriptionRef.updateEffect(
+          stateRef,
+          Effect.fn(function* (oldPlayback) {
+            if (oldPlayback._tag === 'PlayingAsset') {
+              const time = yield* EAudioContext.currentTime(audioContext)
+
+              const audioBuffer = yield* getAudioBufferOfAsset(asset)
+
+              const audioBufferImplHack =
+                audioBuffer as EAudioBuffer.EAudioBuffer & {
+                  _audioBuffer: AudioBuffer
+                }
+
+              const nextPlayback = yield* createPlayback(
+                audioContextImplHack._audioContext,
+                audioBufferImplHack._audioBuffer,
+              )
+
+              oldPlayback.current.gainNode.gain.exponentialRampToValueAtTime(
+                0.001,
+                time + fadeTime,
+              )
+              nextPlayback.gainNode.gain.setValueAtTime(0.001, time)
+              nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+                1,
+                time + fadeTime,
+              )
+              nextPlayback.bufferSource.start()
+              const cleanupFiber = yield* EFunction.pipe(
+                Effect.sleep(Duration.seconds(fadeTime + 0.1)),
+                Effect.andThen(cleanupPlayback(oldPlayback.current)),
+                Effect.zipRight(
+                  SubscriptionRef.update(stateRef, s =>
+                    s._tag === 'ScheduledChange'
+                      ? {
+                          _tag: 'PlayingAsset' as const,
+                          current: nextPlayback,
+                          playbackStartedAtSecond: s.playbackStartedAtSecond,
+                          // ????? currentAsset
+                          currentAsset: s.currentAsset,
+                        }
+                      : s,
+                  ),
+                ),
+                Effect.fork,
+              )
+              return {
+                _tag: 'ScheduledChange' as const,
+                current: oldPlayback,
+                next: nextPlayback,
+                cleanupFiber,
+              } as any as PlayingAppPlaybackStates
+            }
+            return {} as any as PlayingAppPlaybackStates
+          }),
+        )
+
       const changeAsset = Effect.fn(function* (asset: CurrentSelectedAsset) {
         const currentStatus = yield* current
         switch (currentStatus._tag) {
@@ -147,44 +205,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               'Change asset command can only be called on initialized player',
             )
           case 'PlayingAsset': {
-            // const nextPlayback = createPlayback(buffer)
-            // const oldPlayback = currentStatus.current
-            // oldPlayback.gainNode.gain.exponentialRampToValueAtTime(
-            //   0.001,
-            //   audioContext.currentTime + fadeTime,
-            // )
-            // nextPlayback.gainNode.gain.setValueAtTime(
-            //   0.001,
-            //   audioContext.currentTime,
-            // )
-            // nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-            //   1,
-            //   audioContext.currentTime + fadeTime,
-            // )
-            // nextPlayback.bufferSource.start()
-            // const cleanupFiber = yield* Effect.sleep(
-            //   Duration.seconds(fadeTime + 0.1),
-            // ).pipe(
-            //   Effect.tap(() => cleanupPlayback(oldPlayback)),
-            //   Effect.zipRight(
-            //     SubscriptionRef.update(state, s =>
-            //       s._tag === 'ScheduledChange'
-            //         ? {
-            //             _tag: 'PlayingAsset' as const,
-            //             current: nextPlayback,
-            //           }
-            //         : s,
-            //     ),
-            //   ),
-            //   Effect.fork,
-            // )
-            // yield* SubscriptionRef.set(state, {
-            //   _tag: 'ScheduledChange' as const,
-            //   current: oldPlayback,
-            //   next: nextPlayback,
-            //   cleanupFiber,
-            // })
-
             break
           }
           case 'ScheduledChange': {
