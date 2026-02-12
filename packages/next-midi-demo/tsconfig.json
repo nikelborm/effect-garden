@@ -55,7 +55,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "src/sw.mts"
+    "src/sw.ts"
   ],
   "exclude": [
     ".github",

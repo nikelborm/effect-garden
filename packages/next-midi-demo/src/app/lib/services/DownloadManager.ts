@@ -4,6 +4,7 @@ import * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
 import * as MutableHashMap from 'effect/MutableHashMap'
+import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
 
 import { type AssetPointer, getRemoteAssetPath } from '../audioAssetHelpers.ts'
@@ -115,19 +116,24 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
   yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
 
   const estimationMap = yield* LoadedAssetSizeEstimationMap
-  const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
 
-  yield* opfs.getWriter(asset).pipe(
-    Stream.scoped,
-    Stream.cross(getStreamOfRemoteAsset(asset, currentBytes)),
-    Stream.flatMap(([{ appendDataToTheEndOfFile }, byteArray]) =>
+  yield* Effect.gen(function* () {
+    const { appendDataToTheEndOfFile } = yield* opfs.getWriter(asset)
+    const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
+
+    return Stream.tap(getStreamOfRemoteAsset(asset, currentBytes), byteArray =>
       appendDataToTheEndOfFile(byteArray.buffer),
-    ),
-    Stream.orDie,
-    Stream.runDrain,
+    )
+  }).pipe(
     Effect.tapDefect(defectCause =>
       Effect.logError('Defect while downloading asset: ', defectCause),
     ),
+    Stream.unwrapScoped,
+    Stream.retry(
+      Schedule.intersect(Schedule.recurs(3), Schedule.exponential('1 second')),
+    ),
+    Stream.orDie,
+    Stream.runDrain,
   )
 })
 

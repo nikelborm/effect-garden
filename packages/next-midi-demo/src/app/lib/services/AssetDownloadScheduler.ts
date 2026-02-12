@@ -73,11 +73,10 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
           yield* Stream.mapEffect(
             Stream.fromIterable(currentTierAssetsToDownload),
             Effect.fn(function* (asset: PatternPointer) {
-              const attemptStart = downloadManager
-                .startOrContinueOrIgnoreCompletedCached(
+              const attemptStart =
+                downloadManager.startOrContinueOrIgnoreCompletedCached(
                   new TaggedPatternPointer(asset),
                 )
-                .pipe(Effect.orDie)
 
               let result = yield* attemptStart
 

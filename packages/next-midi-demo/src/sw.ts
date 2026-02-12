@@ -2,7 +2,7 @@
 
 import { defaultCache } from '@serwist/next/worker'
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist'
-import { Serwist } from 'serwist'
+import { NetworkOnly, Serwist } from 'serwist'
 
 declare global {
   interface ServiceWorkerGlobalScope extends SerwistGlobalConfig {
@@ -10,15 +10,24 @@ declare global {
   }
 }
 
-const sw = self as unknown as ServiceWorkerGlobalScope
+declare const self: ServiceWorkerGlobalScope
+
+// manifest will be injected here in-place
+const manifest = self.__SW_MANIFEST
 
 const serwist = new Serwist({
-  ...(sw.__SW_MANIFEST ? { precacheEntries: sw.__SW_MANIFEST } : {}),
+  precacheEntries: manifest!,
 
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: defaultCache, // Standard strategies for fonts/images/apis
+  runtimeCaching: [
+    {
+      matcher: ({ url }) => url.pathname.startsWith('/samples/'),
+      handler: new NetworkOnly(),
+    },
+    ...defaultCache,
+  ],
 })
 
 serwist.addEventListeners()

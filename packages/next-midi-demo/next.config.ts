@@ -5,15 +5,39 @@ import { withYak } from 'next-yak/withYak'
 import { pipe } from 'effect/Function'
 
 const withSerwist = withSerwistInit({
-  swSrc: 'src/sw.mts', // Your worker source
-  swDest: 'public/sw.js', // Where the compiled worker goes
+  swSrc: 'src/sw.ts',
+  swDest: 'public/sw.js',
   disable: process.env.NODE_ENV === 'development',
+
+  // This prevents files in /public/samples from being precached
+  exclude: [
+    // default exclusion:
+    /\.map$/,
+    /^manifest.*\.js$/,
+    // Excludes everything in public/samples
+    /^samples\/.*$/,
+  ],
 })
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  headers() {
+    return [
+      {
+        // Match all files under /samples/
+        source: '/samples/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+        ],
+      },
+    ]
+  },
   reactCompiler: true,
-  output: 'standalone',
+  // output: 'standalone',
   experimental: {
     // turbopackFileSystemCacheForDev: true,
     // turbopackFileSystemCacheForBuild: true,
@@ -35,4 +59,4 @@ const nextConfig: NextConfig = {
   compress: false, // should be handled by nginx
 }
 
-export default pipe(nextConfig, withYak)
+export default pipe(nextConfig, withYak, withSerwist)
