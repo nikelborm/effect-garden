@@ -1,3 +1,4 @@
+import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
@@ -220,6 +221,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               pb._tag !== 'NotPlaying' && pb.currentAsset.strength === strength,
           ),
           Stream.changes,
+          Stream.tap(a =>
+            Effect.log(
+              `Strength ${strength} button is ${a ? '' : 'not '}pressable`,
+            ),
+          ),
         )
 
       // Currently selected asset is always the asset that will be played next
@@ -339,6 +345,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           }),
         ),
         Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )
 
@@ -365,6 +372,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           }),
         ),
         Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )
 
@@ -391,6 +399,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           }),
         ),
         Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )
 

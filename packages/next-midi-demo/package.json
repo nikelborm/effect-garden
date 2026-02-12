@@ -10,7 +10,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
-    "@base-ui/react": "^1.1.0",
+    "@base-ui/react": "^1.2.0",
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
     "@effect/platform": "catalog:",

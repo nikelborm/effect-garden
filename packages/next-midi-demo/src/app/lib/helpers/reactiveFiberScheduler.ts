@@ -12,7 +12,15 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
   Effect.gen(function* () {
     const runtime = yield* Effect.runtime<StreamR | EffectR>()
     const scope = yield* Effect.scope
-    const runFork = Runtime.runFork(runtime)
+    const runFork = <A, E>(
+      effect: Effect.Effect<A, E, StreamR | EffectR>,
+      options?: Runtime.RunForkOptions | undefined,
+    ) =>
+      Runtime.runFork(
+        runtime,
+        Effect.tapErrorCause(effect, Effect.logError),
+        options,
+      )
 
     const runForkScoped = <A, E>(
       effect: Effect.Effect<A, E, StreamR | EffectR>,

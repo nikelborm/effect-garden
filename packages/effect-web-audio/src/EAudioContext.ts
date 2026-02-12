@@ -11,7 +11,7 @@ export {
   type DecodeAudioDataSourceLastSecondPart,
   decodeAudioData,
   EAudioContext,
-  type EAudioContextInstance,
+  type EAudioContextInstance as Instance,
   is,
   type MakeAudioContextOptions,
   make,

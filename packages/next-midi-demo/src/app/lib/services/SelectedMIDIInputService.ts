@@ -23,6 +23,7 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
           { concurrency: 1 },
         ),
         Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )
 

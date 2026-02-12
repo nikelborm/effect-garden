@@ -31,10 +31,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
     accessors: true,
     scoped: Effect.gen(function* () {
       const audioContext = yield* EAudioContext.make()
-      const audioContextImplHack =
-        audioContext as EAudioContext.EAudioContextInstance & {
-          _audioContext: AudioContext
-        }
+      const audioContextImplHack = audioContext as EAudioContext.Instance & {
+        _audioContext: AudioContext
+      }
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const selectedAssetState = yield* CurrentlySelectedAssetState
 
@@ -123,7 +122,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             )
           },
           { discard: true },
-        ).pipe(Effect.forkDaemon)
+        ).pipe(Effect.tapErrorCause(Effect.logError), Effect.forkDaemon)
       })
 
       const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
@@ -139,13 +138,11 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         }),
       ).pipe(Effect.tapErrorCause(Effect.logError))
 
-      const changeAsset2 = (asset: CurrentSelectedAsset) =>
+      const changeAsset = (asset: CurrentSelectedAsset) =>
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
             if (oldPlayback._tag === 'PlayingAsset') {
-              const time = yield* EAudioContext.currentTime(audioContext)
-
               const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
               const audioBufferImplHack =
@@ -158,55 +155,98 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                 audioBufferImplHack._audioBuffer,
               )
 
+              const secondsSinceAudioContextInit =
+                yield* EAudioContext.currentTime(audioContext)
+
+              const secondsPassedSincePlaybackStart =
+                secondsSinceAudioContextInit -
+                oldPlayback.playbackStartedAtSecond
+
+              const nextTickIndexSincePlaybackStart = Math.ceil(
+                secondsPassedSincePlaybackStart / tickSizeInSeconds,
+              )
+
+              const nextTickStartsAtSecondsSincePlaybackStart =
+                nextTickIndexSincePlaybackStart * tickSizeInSeconds
+
+              const nextTickStartsAtSecondsSinceContextInit =
+                oldPlayback.playbackStartedAtSecond +
+                nextTickStartsAtSecondsSincePlaybackStart
+
+              const fadingEndsAt = nextTickStartsAtSecondsSinceContextInit
+
+              const fadingStartsAt = fadingEndsAt - fadeTime
+
+              oldPlayback.current.gainNode.gain.setValueAtTime(
+                1,
+                fadingStartsAt,
+              )
               oldPlayback.current.gainNode.gain.exponentialRampToValueAtTime(
                 0.001,
-                time + fadeTime,
+                fadingEndsAt,
               )
-              nextPlayback.gainNode.gain.setValueAtTime(0.001, time)
+
+              const secondsSinceLatestTrackLoopStart =
+                secondsPassedSincePlaybackStart % trackSizeInSeconds
+
+              const nextTickIndexSinceLatestTrackLoopStart = Math.ceil(
+                secondsSinceLatestTrackLoopStart / tickSizeInSeconds,
+              )
+
+              // nextPlayback.gainNode.gain.setValueAtTime(
+              //   0.001,
+              //   nextTickStartsAtSecondsSinceContextInit - fadeTime,
+              // )
               nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
                 1,
-                time + fadeTime,
+                nextTickStartsAtSecondsSinceContextInit,
               )
-              nextPlayback.bufferSource.start()
+              nextPlayback.bufferSource.start(
+                // nextTickStartsAtSecondsSinceContextInit - fadeTime,
+                nextTickStartsAtSecondsSinceContextInit,
+                nextTickIndexSinceLatestTrackLoopStart * tickSizeInSeconds,
+              )
               const cleanupFiber = yield* EFunction.pipe(
                 Effect.sleep(Duration.seconds(fadeTime + 0.1)),
-                Effect.andThen(cleanupPlayback(oldPlayback.current)),
-                Effect.zipRight(
-                  SubscriptionRef.update(stateRef, s =>
-                    s._tag === 'ScheduledChange'
-                      ? {
-                          _tag: 'PlayingAsset' as const,
-                          current: nextPlayback,
-                          playbackStartedAtSecond: s.playbackStartedAtSecond,
-                          // ????? currentAsset
-                          currentAsset: s.currentAsset,
-                        }
-                      : s,
-                  ),
-                ),
+                // Effect.andThen(cleanupPlayback(oldPlayback.current)),
+                // Effect.zipRight(
+                //   SubscriptionRef.update(stateRef, s =>
+                //     s._tag === 'ScheduledChange'
+                //       ? {
+                //           _tag: 'PlayingAsset' as const,
+                //           current: nextPlayback,
+                //           playbackStartedAtSecond: s.playbackStartedAtSecond,
+                //           // ????? currentAsset
+                //           currentAsset: s.currentAsset,
+                //         }
+                //       : s,
+                //   ),
+                // ),
+                Effect.tapErrorCause(Effect.logError),
                 Effect.fork,
               )
               return {
                 _tag: 'ScheduledChange' as const,
-                current: oldPlayback,
+                current: oldPlayback.current,
                 next: nextPlayback,
+                currentAsset: oldPlayback.currentAsset,
+                playbackStartedAtSecond: oldPlayback.playbackStartedAtSecond,
                 cleanupFiber,
-              } as any as PlayingAppPlaybackStates
+              } satisfies PlayingAppPlaybackStates
             }
-            return {} as any as PlayingAppPlaybackStates
+            return oldPlayback
           }),
         )
 
-      const changeAsset = Effect.fn(function* (asset: CurrentSelectedAsset) {
+      const changeAsset_old = Effect.fn(function* (
+        asset: CurrentSelectedAsset,
+      ) {
         const currentStatus = yield* current
         switch (currentStatus._tag) {
           case 'NotPlaying':
             return yield* Effect.die(
               'Change asset command can only be called on initialized player',
             )
-          case 'PlayingAsset': {
-            break
-          }
           case 'ScheduledChange': {
             yield* Fiber.interrupt(currentStatus.cleanupFiber)
             yield* cleanupPlayback(currentStatus.next)
@@ -254,7 +294,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
         Stream.map(isPlaying),
         Stream.changes,
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        // I have zero fucking idea why, but this fucking 2 is holy and cannot
+        // be changed.
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 2 }),
       )
 
       const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
@@ -273,7 +315,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      selectedAssetState.changes.pipe(Stream.map(e => e))
+      yield* selectedAssetState.changes.pipe(
+        Stream.tap(changeAsset),
+        Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
+        Effect.forkScoped,
+      )
 
       return {
         playStopButtonPressableFlagChangesStream,
@@ -313,13 +360,23 @@ const createImmediatelyLoudPlayback = (
     return pb
   })
 
-const getAbsoluteNextTick = (
-  audioContext: AudioContext,
-  secondsThatHavePassedFromAudioContextInitWhenPlaybackStarted: number,
+const ticksPerTrack = 8
+const tickSizeInSeconds = 1
+const trackSizeInSeconds = ticksPerTrack * tickSizeInSeconds
+
+const getSecondsSinceAudioContextInitNextTickWillStartAt = (
+  secondsSinceAudioContextInit: number,
+  secondsBetweenAudioContextInitAndPlaybackStart: number,
 ) => {
   const secondsPassedSincePlaybackStart =
-    audioContext.currentTime -
-    secondsThatHavePassedFromAudioContextInitWhenPlaybackStarted
+    secondsSinceAudioContextInit -
+    secondsBetweenAudioContextInitAndPlaybackStart
+
+  const nextTickIndex = Math.ceil(
+    secondsPassedSincePlaybackStart / tickSizeInSeconds,
+  )
+
+  return nextTickIndex * tickSizeInSeconds
 }
 
 const silencePlaybackAtNextTick = () => []

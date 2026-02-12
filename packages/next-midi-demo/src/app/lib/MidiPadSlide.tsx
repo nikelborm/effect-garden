@@ -86,26 +86,29 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     patternButtonDownloadPercentAtom(pattern),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    // console.log(`wtf pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
+    console.log(`wtf. pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    // console.log(
-    //   `wtf. pattern № ${pattern.index} isPressableRes`,
-    //   isPressableRes,
-    // )
+    console.log(
+      `wtf. pattern № ${pattern.index} isPressableRes`,
+      isPressableRes,
+    )
     return 'wtf'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    // console.log(`wtf. pattern № ${pattern.index} isSelectedRes`, isSelectedRes)
+    console.log(`wtf. pattern № ${pattern.index} isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    // console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(downloadPercentRes)) {
-    // console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    console.log(
+      `wtf. pattern № ${pattern.index} downloadPercentRes`,
+      downloadPercentRes,
+    )
     return 'wtf'
   }
   const { value: isPressable } = isPressableRes
@@ -153,23 +156,26 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
     accordButtonDownloadPercentAtom(accord),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf accord №${accord.index}. isPlayingRes`, isPlayingRes)
+    console.log(`wtf. accord №${accord.index}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    // console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
+    console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    // console.log(`wtf accord №${accord.index}. isSelectedRes`, isSelectedRes)
+    console.log(`wtf accord №${accord.index}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    // console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(downloadPercentRes)) {
-    // console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    console.log(
+      `wtf accord №${accord.index}. downloadPercentRes`,
+      downloadPercentRes,
+    )
     return 'wtf'
   }
 
@@ -220,23 +226,26 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
     strengthButtonDownloadPercentAtom(strength),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf strength ${strength}. isPlayingRes`, isPlayingRes)
+    console.log(`wtf. strength ${strength}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
+    console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    // console.log(`wtf strength ${strength}. isSelectedRes`, isSelectedRes)
+    console.log(`wtf. strength ${strength}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    // console.log(`wtf strength ${strength}. isPressedRes`, isPressedRes)
+    console.log(`wtf. strength ${strength}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(downloadPercentRes)) {
-    // console.log(`wtf strength ${strength}. isPressedRes`, isPressedRes)
+    console.log(
+      `wtf. strength ${strength}. downloadPercentRes`,
+      downloadPercentRes,
+    )
     return 'wtf'
   }
 
@@ -279,7 +288,7 @@ const PlaybackButton = () => {
   const [playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
   console.log('playresult', playresult)
   if (!Result.isSuccess(isPressableRes)) {
-    // console.log(`wtf strength ${strength}. isPressableRes`, isPressableRes)
+    console.log(`wtf playback button. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   const { value: isPressable } = isPressableRes
