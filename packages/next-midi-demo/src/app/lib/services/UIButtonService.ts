@@ -339,10 +339,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         Stream.merge(
           virtualPadButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
         ),
-        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
-          ButtonState.isPressed(buttonPressState)
-            ? accordRegistry.selectAccord(assignedTo.index)
-            : Effect.void,
+        Stream.tap(
+          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
+            if (ButtonState.isNotPressed(buttonPressState)) return
+
+            const isAccordButtonPressable = yield* EFunction.pipe(
+              getAccordButtonPressabilityChangesStream(assignedTo),
+              Stream.take(1),
+              Stream.runHead,
+              Effect.map(Option.getOrThrow),
+            )
+
+            if (isAccordButtonPressable)
+              yield* accordRegistry.selectAccord(assignedTo.index)
+          }),
         ),
         Stream.runDrain,
         Effect.forkScoped,
@@ -355,10 +365,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         Stream.merge(
           virtualPadButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
         ),
-        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
-          ButtonState.isPressed(buttonPressState)
-            ? patternRegistry.selectPattern(assignedTo.index)
-            : Effect.void,
+        Stream.tap(
+          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
+            if (ButtonState.isNotPressed(buttonPressState)) return
+
+            const isPatternButtonPressable = yield* EFunction.pipe(
+              getPatternButtonPressabilityChangesStream(assignedTo),
+              Stream.take(1),
+              Stream.runHead,
+              Effect.map(Option.getOrThrow),
+            )
+
+            if (isPatternButtonPressable)
+              yield* patternRegistry.selectPattern(assignedTo.index)
+          }),
         ),
         Stream.runDrain,
         Effect.forkScoped,
@@ -371,10 +391,20 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         Stream.merge(
           virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
         ),
-        Stream.mapEffect(([, { buttonPressState, assignedTo }]) =>
-          ButtonState.isPressed(buttonPressState)
-            ? strengthRegistry.selectStrength(assignedTo)
-            : Effect.void,
+        Stream.tap(
+          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
+            if (ButtonState.isNotPressed(buttonPressState)) return
+
+            const isStrengthButtonPressable = yield* EFunction.pipe(
+              getStrengthButtonPressabilityChangesStream(assignedTo),
+              Stream.take(1),
+              Stream.runHead,
+              Effect.map(Option.getOrThrow),
+            )
+
+            if (isStrengthButtonPressable)
+              yield* strengthRegistry.selectStrength(assignedTo)
+          }),
         ),
         Stream.runDrain,
         Effect.forkScoped,

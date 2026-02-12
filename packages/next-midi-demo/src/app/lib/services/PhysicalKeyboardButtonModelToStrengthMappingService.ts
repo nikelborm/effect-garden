@@ -8,7 +8,7 @@ import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKey
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-const keys = 'asd'
+const keys = 'asdфыв'
 const keyDatasHandlingStrengths = Array.from(
   keys,
   key => new ValidKeyboardKeyData(key),
@@ -25,7 +25,7 @@ export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.
       makePhysicalButtonToParamMappingService(
         ValidKeyboardKeyDataOrder,
         keyDatasHandlingStrengths,
-        strengths,
+        [...strengths, ...strengths],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
       ),
     ),

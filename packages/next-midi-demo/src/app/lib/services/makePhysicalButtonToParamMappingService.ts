@@ -54,7 +54,7 @@ export const makePhysicalButtonToParamMappingService = <
 
     // TODO: maybe move {id -> ButtonModel.assignedTo} into a separate map?
 
-    // This separation on 2 streams have 2 non atomic Ref method calls. And it's
+    // These 2 separate streams have 2 non atomic Ref method calls. And it's
     // fine because the keys of the map are permanent, and the value, the first
     // call depends on (previousButtonModel.assignedTo) is permanent
     const latestPhysicalButtonModelsStream = yield* buttonPressStream.pipe(

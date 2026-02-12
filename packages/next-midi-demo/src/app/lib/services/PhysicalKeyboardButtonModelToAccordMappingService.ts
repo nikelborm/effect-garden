@@ -8,7 +8,8 @@ import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKey
 import { AccordRegistry } from './AccordRegistry.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
-const keys = 'qwertyui'
+const keys = 'qwertyuiйцукенгш'
+
 const keyDatasHandlingAccords = Array.from(
   keys,
   key => new ValidKeyboardKeyData(key),
@@ -25,7 +26,7 @@ export class PhysicalKeyboardButtonModelToAccordMappingService extends Effect.Se
       makePhysicalButtonToParamMappingService(
         ValidKeyboardKeyDataOrder,
         keyDatasHandlingAccords,
-        accords,
+        [...accords, ...accords],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingAccordsSet),
       ),
     ),

@@ -1,5 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
@@ -19,10 +20,13 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
     scoped: Effect.gen(function* () {
       const currentlySelectedAsset = yield* CurrentlySelectedAssetState
       const downloadManager = yield* DownloadManager
+      const allDownloadedRef = yield* Ref.make(false)
 
       const executeLatestPlan = Effect.fn(
         'AssetDownloadScheduler.executeLatestPlan',
       )(function* (currentlySelectedAsset: PatternPointer) {
+        if (yield* allDownloadedRef) return
+
         for (const priorityTier of priorityTiers) {
           const logWithPriorityTier = (
             message: string,
@@ -108,6 +112,8 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
             { concurrency: MAX_PARALLEL_ASSET_DOWNLOADS, unordered: true },
           ).pipe(Stream.runDrain)
         }
+
+        yield* Ref.set(allDownloadedRef, true)
       })
 
       yield* reactivelySchedule(
