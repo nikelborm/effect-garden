@@ -6,7 +6,6 @@ import * as Logger from 'effect/Logger'
 import * as Stream from 'effect/Stream'
 
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
-import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
@@ -17,7 +16,6 @@ const AppLayer = UIButtonService.Default.pipe(
   Layer.provideMerge(VirtualPadButtonModelToStrengthMappingService.Default),
 
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
-  Layer.provideMerge(AssetDownloadScheduler.Default),
   Layer.provideMerge(FetchHttpClient.layer),
   Layer.provideMerge(CurrentlySelectedAssetState.Default),
   Layer.provideMerge(LoadedAssetSizeEstimationMap.Default),
@@ -71,3 +69,5 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
     Atom.withServerValueInitial,
   ),
 )
+
+export const strengthsAtom = runtime.atom(StrengthRegistry.allStrengths)

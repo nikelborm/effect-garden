@@ -12,8 +12,8 @@ import {
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
   strengthButtonDownloadPercentAtom,
+  strengthsAtom,
 } from './atoms/buttonsAtom.ts'
-import { strengthsAtom } from './atoms/strengthAtom.ts'
 import type { Strength } from './audioAssetHelpers.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
 
@@ -139,46 +139,6 @@ const DebugButton = styled.pre`
   cursor: pointer;
   width: 100%;
   height: 100%;
-`
-
-const NeumorphicButton = styled(BaseButton)<{
-  $isExternallyActive?: boolean | undefined
-  'data-button-id': number
-}>`
-  border: none;
-  border-radius: 23px;
-  color: wheat;
-  cursor: pointer;
-  width: 100%;
-  height: 100%;
-  box-shadow:  5px  5px 13px #53665b,
-              -5px -5px 13px #738c7d;
-  align-content: center;
-  text-align: center;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-
-  /* released */
-  background-image: linear-gradient(145deg, #6a8174, #596d61);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-
-    /* hidden by default */
-    opacity: ${({ $isExternallyActive }) => ($isExternallyActive ? 1 : 0)};
-
-    /* pressed */
-    background: linear-gradient(145deg, #596d61, #6a8174);
-    transition: opacity 300ms ease;
-  }
-
-  &:active::before {
-    opacity: 1;
-  }
 `
 
 const DisplayContentsWrapper = styled.div`
