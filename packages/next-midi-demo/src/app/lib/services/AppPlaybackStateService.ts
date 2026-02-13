@@ -3,17 +3,15 @@ import type * as Fiber from 'effect/Fiber'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import {
-  CurrentlySelectedAssetState,
-  type CurrentSelectedAsset,
-} from './CurrentlySelectedAssetState.ts'
+import type { CurrentSelectedAsset } from './CurrentlySelectedAssetState.ts'
+import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const selectedAssetState = yield* CurrentlySelectedAssetState
+      const strengthRegistry = yield* StrengthRegistry
 
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
@@ -31,7 +29,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           Effect.andThen(Effect.log('Finished changing the playing asset')),
         )
 
-      yield* selectedAssetState.changes.pipe(
+      yield* strengthRegistry.selectedStrengthChanges.pipe(
         Stream.tap(changeAsset),
         Stream.runDrain,
         Effect.tapErrorCause(Effect.logError),

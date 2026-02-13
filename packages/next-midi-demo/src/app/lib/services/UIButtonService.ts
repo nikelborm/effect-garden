@@ -4,14 +4,13 @@ import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import * as ButtonState from '../helpers/ButtonState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
-import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
+import type { AssetCompletionStatus } from './CurrentlySelectedAssetState.ts'
 import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
@@ -22,7 +21,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     scoped: Effect.gen(function* () {
       const strengthRegistry = yield* StrengthRegistry
       const appPlaybackState = yield* AppPlaybackStateService
-      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
 
       const virtualPadButtonModelToStrengthMappingService =
         yield* VirtualPadButtonModelToStrengthMappingService
@@ -30,7 +28,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getIsSelectedStrengthStream = (strength: Strength) =>
         strengthRegistry.selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
-          Stream.changes,
           Stream.tap(isSelected =>
             Effect.log(
               `Strength=${strength} is ${isSelected ? '' : 'not '}selected`,
@@ -41,10 +38,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
         streamAll({
           isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          completionStatusOfTheAssetThisButtonWouldSelect:
-            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-              strength,
-            ),
+          completionStatusOfTheAssetThisButtonWouldSelect: Stream.succeed({
+            status: 'finished',
+          } as AssetCompletionStatus),
           isSelectedParam: getIsSelectedStrengthStream(strength),
         }).pipe(
           Stream.map(
@@ -54,7 +50,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                 req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
                   'finished'),
           ),
-          Stream.changes,
         )
 
       yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
@@ -90,7 +85,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const StrengthPressAggregateStream =
         yield* virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
           Stream.scan(
-            HashMap.empty<Strength, HashSet.HashSet<SupportedKeyData>>(),
+            HashMap.empty<Strength, HashSet.HashSet<StrengthData>>(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -142,19 +137,3 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     }),
   },
 ) {}
-
-const asd = {
-  Strength: 4,
-} as const
-
-const OrderByKeyData = Order.combine(
-  Order.mapInput(Order.number, (a: SupportedKeyData) => asd[a._tag]),
-  Order.make((self: SupportedKeyData, that: SupportedKeyData) => {
-    if (self._tag === 'Strength' && that._tag === 'Strength')
-      return Order.string(self.value, that.value)
-
-    throw new Error('Unsortable')
-  }),
-)
-
-type SupportedKeyData = StrengthData
