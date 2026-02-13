@@ -1,19 +1,17 @@
 pane_frames false
 layout {
-  pane split_direction="vertical" {
-    pane split_direction="horizontal" {
-      pane {
-        name "Next.js dev"
-        cwd "./packages/next-midi-demo"
-        command "bun"
-        args "dev"
-      }
-      pane {
-        name "Next.js tsc watch"
-        cwd "./packages/next-midi-demo"
-        command "bunx"
-        args "tsc" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
-      }
+  pane split_direction="horizontal" {
+    pane {
+      name "Next.js dev"
+      cwd "./packages/next-midi-demo"
+      command "bun"
+      args "dev"
+    }
+    pane {
+      name "Next.js tsc watch"
+      cwd "./packages/next-midi-demo"
+      command "bunx"
+      args "tsc" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
     }
   }
 }

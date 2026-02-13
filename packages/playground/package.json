@@ -10,16 +10,9 @@
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@effect/sql": "catalog:",
-    "@effect/sql-pg": "catalog:",
-    "@effect/typeclass": "catalog:",
-    "@effect/vitest": "catalog:",
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "effect": "catalog:",
-    "effect-octokit-layer": "catalog:",
-    "outdent": "catalog:",
-    "tinybench": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:"
   }
