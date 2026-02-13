@@ -52,22 +52,4 @@ export const isStrengthPressedAtom = Atom.family(
   ),
 )
 
-export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.isStrengthButtonCurrentlyPlaying,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
-)
-
-export const strengthButtonDownloadPercentAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getStrengthButtonDownloadPercent,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
-)
-
 export const strengthsAtom = runtime.atom(StrengthRegistry.allStrengths)

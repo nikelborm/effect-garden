@@ -1,17 +1,14 @@
 'use client'
 
-import { Button as BaseButton } from '@base-ui/react/button'
 import { styled } from 'next-yak'
 
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import {
-  isStrengthButtonCurrentlyPlayingAtom,
   isStrengthButtonPressableAtom,
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
-  strengthButtonDownloadPercentAtom,
   strengthsAtom,
 } from './atoms/buttonsAtom.ts'
 import type { Strength } from './audioAssetHelpers.ts'
@@ -47,16 +44,6 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
   )
   const isSelectedRes = Hooks.useAtomValue(isStrengthSelectedAtom(strength))
   const isPressedRes = Hooks.useAtomValue(isStrengthPressedAtom(strength))
-  const isPlayingRes = Hooks.useAtomValue(
-    isStrengthButtonCurrentlyPlayingAtom(strength),
-  )
-  const downloadPercentRes = Hooks.useAtomValue(
-    strengthButtonDownloadPercentAtom(strength),
-  )
-  if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. strength ${strength}. isPlayingRes`, isPlayingRes)
-    return 'wtf'
-  }
   if (!Result.isSuccess(isPressableRes)) {
     console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
     return 'wtf'
@@ -69,19 +56,10 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
     console.log(`wtf. strength ${strength}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(downloadPercentRes)) {
-    console.log(
-      `wtf. strength ${strength}. downloadPercentRes`,
-      downloadPercentRes,
-    )
-    return 'wtf'
-  }
 
   const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
-  const { value: isPlaying } = isPlayingRes
-  const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton data-strength={strength}>
@@ -92,10 +70,6 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
       Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
-      <br />
-      Playing: {isPlaying ? Yes : No}
-      <br />
-      Fetched: {downloadPercent}%
     </DebugButton>
   )
 }
