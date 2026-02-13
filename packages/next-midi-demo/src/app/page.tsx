@@ -5,19 +5,13 @@ import { styled } from 'next-yak'
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
-import { isStrengthSelectedAtom, strengthsAtom } from './atoms/buttonsAtom.ts'
-import type { Strength } from './helpers/audioAssetHelpers.ts'
+import { isStrengthSelectedAtom } from './atoms/buttonsAtom.ts'
+import { allStrengths, type Strength } from './services/UIButtonService.ts'
 
 const LAYOUT_HEIGHT = 2
 const LAYOUT_WIDTH = 8
 
 export default function Home() {
-  const res = Result.all({
-    strengths: Hooks.useAtomValue(strengthsAtom),
-  })
-
-  if (!Result.isSuccess(res)) return 'wtf'
-  const { strengths } = res.value
   return (
     <ButtonGrid
       role="grid"
@@ -25,7 +19,7 @@ export default function Home() {
       aria-colcount={LAYOUT_WIDTH}
     >
       <DisplayContentsWrapper role="row" aria-rowindex={2}>
-        {Array.from(strengths, strength => (
+        {Array.from(allStrengths, strength => (
           <StrengthButton strength={strength} key={strength} />
         ))}
       </DisplayContentsWrapper>

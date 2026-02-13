@@ -3,13 +3,10 @@ import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
+import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import * as ButtonState from '../helpers/ButtonState.ts'
-import type { AssetCompletionStatus } from '../helpers/CurrentlySelectedAssetState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
-import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
-import { StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
@@ -17,14 +14,48 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
   {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const strengthRegistry = yield* StrengthRegistry
-      const appPlaybackState = yield* AppPlaybackStateService
+      const selectedStrengthRef = yield* SubscriptionRef.make<Strength>('m')
+      const selectedStrengthChanges = selectedStrengthRef.changes
 
-      const virtualPadButtonModelToStrengthMappingService =
+      const selectStrength = (strength: Strength) =>
+        SubscriptionRef.set(selectedStrengthRef, strength)
+
+      const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
+        _tag: 'NotPlaying',
+      })
+
+      const changeAsset = (latestAsset: any) =>
+        SubscriptionRef.updateEffect(
+          stateRef,
+          Effect.fn(function* (oldPlayback) {
+            yield* Effect.log('Attempting to change the playing asset')
+            // imagine here would be conditions reacting to the previous state
+            return oldPlayback
+          }),
+        ).pipe(
+          Effect.andThen(Effect.log('Finished changing the playing asset')),
+        )
+
+      yield* selectedStrengthChanges.pipe(
+        Stream.tap(changeAsset),
+        Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
+        Effect.forkScoped,
+      )
+
+      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
+        Stream.map(cur => cur._tag !== 'NotPlaying'),
+        Stream.changes,
+        // I have zero fucking idea why, but this fucking 2 is holy and cannot
+        // be changed.
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
+
+      const { latestPhysicalButtonModelsStream } =
         yield* VirtualPadButtonModelToStrengthMappingService
 
       const getIsSelectedStrengthStream = (strength: Strength) =>
-        strengthRegistry.selectedStrengthChanges.pipe(
+        selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
           Stream.tap(isSelected =>
             Effect.log(
@@ -36,7 +67,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
         Stream.map(
           streamAll({
-            isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+            isPlaying: latestIsPlayingFlagStream,
+            // taken externally, and could change over time
             completionStatusOfTheAssetThisButtonWouldSelect: Stream.succeed({
               status: 'finished',
             } as AssetCompletionStatus),
@@ -49,7 +81,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                 'finished'),
         )
 
-      yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
+      yield* latestPhysicalButtonModelsStream.pipe(
         Stream.tap(() =>
           Effect.log(
             'VIRTUAL PAD button model to STRENGTH stream received value',
@@ -70,8 +102,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               isStrengthButtonPressable,
             )
 
-            if (isStrengthButtonPressable)
-              yield* strengthRegistry.selectStrength(assignedTo)
+            if (isStrengthButtonPressable) yield* selectStrength(assignedTo)
           }),
         ),
         Stream.runDrain,
@@ -83,3 +114,17 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
     }),
   },
 ) {}
+
+export const allStrengths = ['m', 'v', 's'] as const
+export type AllStrengthTuple = typeof allStrengths
+export type AppPlaybackState =
+  | { readonly _tag: 'NotPlaying' }
+  | { readonly _tag: 'Playing' }
+export type Strength = AllStrengthTuple[number]
+export interface CurrentSelectedAsset {
+  readonly strength: Strength
+}
+export type AssetCompletionStatus =
+  | { status: 'not finished'; currentBytes: number }
+  | { status: 'almost finished: fetched, but not written' }
+  | { status: 'finished' }

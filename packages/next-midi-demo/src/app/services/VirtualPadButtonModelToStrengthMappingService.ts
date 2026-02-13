@@ -6,9 +6,9 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 
-import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import { type AllSimple, NotPressed } from '../helpers/ButtonState.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
+import type { Strength } from './UIButtonService.ts'
 
 export class VirtualPadButtonModelToStrengthMappingService extends Effect.Service<VirtualPadButtonModelToStrengthMappingService>()(
   'next-midi-demo/VirtualPadButtonModelToStrengthMappingService',
