@@ -22,7 +22,6 @@
     "@wyw-in-js/babel-preset": "catalog:",
     "effect": "catalog:",
     "effect-web-audio": "workspace:*",
-    "effect-web-midi": "workspace:*",
     "next": "catalog:",
     "next-yak": "^9.2.0",
     "postcss-styled-syntax": "^0.7.1",

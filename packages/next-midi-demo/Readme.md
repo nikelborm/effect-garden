@@ -1,4 +1,4 @@
-# demo usage of effect-web-midi
+# demo music app
 
 ## TODO
 

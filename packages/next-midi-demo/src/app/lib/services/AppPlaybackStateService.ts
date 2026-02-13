@@ -22,10 +22,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const current = SubscriptionRef.get(stateRef)
 
-      const changesStream = yield* stateRef.changes.pipe(
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
-
       const changeAsset = (asset: CurrentSelectedAsset) =>
         SubscriptionRef.updateEffect(
           stateRef,
@@ -37,12 +33,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           Effect.andThen(Effect.log('Finished changing the playing asset')),
         )
 
-      const isPlaying = (current: AppPlaybackState) =>
-        current._tag !== 'NotPlaying'
-
-      const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
-      const latestIsPlayingFlagStream = yield* changesStream.pipe(
-        Stream.map(isPlaying),
+      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
+        Stream.map(cur => cur._tag !== 'NotPlaying'),
         Stream.changes,
         // I have zero fucking idea why, but this fucking 2 is holy and cannot
         // be changed.
@@ -57,9 +49,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       )
 
       return {
-        isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream: Stream.map(changesStream, e =>
+        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
           e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
         ),
       }
