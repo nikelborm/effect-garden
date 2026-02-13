@@ -36,13 +36,4 @@ export const isStrengthSelectedAtom = Atom.family(
   ),
 )
 
-export const isStrengthPressedAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.isStrengthButtonPressedFlagChangesStream,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
-)
-
 export const strengthsAtom = runtime.atom(StrengthRegistry.allStrengths)

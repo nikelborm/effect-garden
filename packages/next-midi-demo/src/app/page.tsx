@@ -7,7 +7,6 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 
 import {
   isStrengthButtonPressableAtom,
-  isStrengthPressedAtom,
   isStrengthSelectedAtom,
   strengthsAtom,
 } from './atoms/buttonsAtom.ts'
@@ -43,24 +42,24 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
     isStrengthButtonPressableAtom(strength),
   )
   const isSelectedRes = Hooks.useAtomValue(isStrengthSelectedAtom(strength))
-  const isPressedRes = Hooks.useAtomValue(isStrengthPressedAtom(strength))
 
   if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
+    console.log(
+      `strength ${strength} is not success. isPressableRes: `,
+      isPressableRes,
+    )
     return 'loading...'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    console.log(`wtf. strength ${strength}. isSelectedRes`, isSelectedRes)
-    return 'loading...'
-  }
-  if (!Result.isSuccess(isPressedRes)) {
-    console.log(`wtf. strength ${strength}. isPressedRes`, isPressedRes)
+    console.log(
+      `strength ${strength} is not success. isSelectedRes: `,
+      isSelectedRes,
+    )
     return 'loading...'
   }
 
   const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
-  const { value: isPressed } = isPressedRes
 
   return (
     <DebugButton data-strength={strength}>
@@ -69,8 +68,6 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
       Pressable: {isPressable ? Yes : No}
       <br />
       Selected: {isSelected ? Yes : No}
-      <br />
-      Pressed: {isPressed ? Yes : No}
     </DebugButton>
   )
 }

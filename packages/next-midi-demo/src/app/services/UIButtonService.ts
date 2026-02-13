@@ -1,8 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
-import * as HashMap from 'effect/HashMap'
-import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
@@ -82,55 +80,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         Effect.forkScoped,
       )
 
-      const StrengthPressAggregateStream =
-        virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
-          Stream.scan(
-            HashMap.empty<Strength, HashSet.HashSet<Strength>>(),
-            (previousMap, latestMap) => {
-              let newMap = previousMap
-              for (const [physicalButtonId, physicalButtonModel] of latestMap)
-                newMap = HashMap.modifyAt(
-                  newMap,
-                  physicalButtonModel.assignedTo,
-                  EFunction.flow(
-                    Option.orElseSome(() => HashSet.empty()),
-                    Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
-                      (physicalButtonModel.buttonPressState ===
-                        ButtonState.Pressed
-                        ? HashSet.add
-                        : HashSet.remove)(
-                        setOfPhysicalIdsTheButtonIsPressedBy,
-                        physicalButtonId,
-                      ),
-                    ),
-                  ),
-                )
-              return newMap
-            },
-          ),
-        )
-
-      const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
-        StrengthPressAggregateStream.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(strength),
-              Option.map(set => HashSet.size(set) !== 0),
-              Option.getOrElse(() => false),
-            ),
-          ),
-          Stream.changes,
-          Stream.tap(isPressed =>
-            Effect.log(
-              `strength=${strength} is ${isPressed ? '' : 'not '}pressed`,
-            ),
-          ),
-        )
-
       return {
         getIsSelectedStrengthStream,
         getStrengthButtonPressabilityChangesStream,
-        isStrengthButtonPressedFlagChangesStream,
       }
     }),
   },
