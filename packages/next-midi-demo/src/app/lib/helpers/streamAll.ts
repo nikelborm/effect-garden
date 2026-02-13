@@ -1,3 +1,4 @@
+import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
@@ -18,6 +19,11 @@ export const streamAll = <
         ...previous,
         [updatedParam]: newParamValue,
       }),
+    ),
+    Stream.tap(state =>
+      Effect.log(
+        `streamAll gathered keys ${Object.keys(state).length} / ${streamCount}`,
+      ),
     ),
     Stream.filter(state => Object.keys(state).length === streamCount),
   )

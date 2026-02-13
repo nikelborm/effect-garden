@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   headers() {
     return [
       {
-        // Match all files under /samples/
         source: '/samples/:path*',
         headers: [
           {
@@ -21,26 +20,10 @@ const nextConfig: NextConfig = {
     ]
   },
   reactCompiler: true,
-  // output: 'standalone',
-  experimental: {
-    // turbopackFileSystemCacheForDev: true,
-    // turbopackFileSystemCacheForBuild: true,
-  },
+  experimental: {},
   typedRoutes: true,
-
-  // turbopack: {
-  //   rules: {
-  //     '*.wav': {
-  //       loaders: ['file-loader'],
-  //       as: 'url',
-  //     },
-  //   },
-  // },
-
-  // probably will be needed later for some of the internal libraries
-  // transpilePackages: ['package-name'],
   poweredByHeader: false,
-  compress: false, // should be handled by nginx
+  compress: false,
 }
 
 export default pipe(nextConfig, withYak)
