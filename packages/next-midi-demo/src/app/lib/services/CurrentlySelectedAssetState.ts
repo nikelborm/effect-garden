@@ -80,6 +80,11 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         { switch: true, concurrency: 1 },
       )
 
+      const isFinishedCompletelyChangesStream = Stream.map(
+        completionStatusChangesStream,
+        ({ status }) => status === 'finished',
+      )
+
       const makePatchApplier =
         (patch: Patch) =>
         ({ accord, pattern, strength }: CurrentSelectedAsset) =>
@@ -94,17 +99,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
                 ? { accordIndex: patch.index }
                 : { strength: patch }),
           })
-
-      const getPatchedAssetFetchingCompletionStatus = (patch: Patch) => {
-        const applyPatch = makePatchApplier(patch)
-        return Effect.flatMap(
-          currentEffect,
-          EFunction.flow(
-            applyPatch,
-            estimationMap.getAssetFetchingCompletionStatus,
-          ),
-        )
-      }
 
       const getPatchedAssetFetchingCompletionStatusChangesStream = (
         patch: Patch,
@@ -124,8 +118,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         current: currentEffect,
         completionStatus,
         isFinishedCompletely,
-        completionStatusChangesStream,
-        getPatchedAssetFetchingCompletionStatus,
+        isFinishedCompletelyChangesStream,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }

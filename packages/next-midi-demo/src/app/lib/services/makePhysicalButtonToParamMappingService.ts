@@ -61,7 +61,7 @@ export const makePhysicalButtonToParamMappingService = <
       Stream.mapEffect(
         ([id, physicalButtonPressState]) =>
           Effect.map(
-            Ref.get(physicalButtonIdToModelMapRef),
+            currentMap,
             EFunction.flow(
               SortedMap.get(id),
               Option.map(

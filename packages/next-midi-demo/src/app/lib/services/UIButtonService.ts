@@ -154,12 +154,22 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         patternRegistry.selectedPatternChanges.pipe(
           Stream.map(Equal.equals(pattern)),
           Stream.changes,
+          Stream.tap(isSelected =>
+            Effect.log(
+              `Pattern index=${pattern.index} is ${isSelected ? '' : 'not '}selected`,
+            ),
+          ),
         )
 
       const getIsSelectedStrengthStream = (strength: Strength) =>
         strengthRegistry.selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
           Stream.changes,
+          Stream.tap(isSelected =>
+            Effect.log(
+              `Strength=${strength} is ${isSelected ? '' : 'not '}selected`,
+            ),
+          ),
         )
 
       const getAccordButtonPressabilityChangesStream = (
@@ -323,11 +333,28 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         )
 
       yield* physicalKeyboardButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
+        Stream.tap(() =>
+          Effect.log(
+            'Physical KEYBOARD button model to ACCORD stream received value',
+          ),
         ),
         Stream.merge(
-          virtualPadButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
+          physicalMIDIDeviceButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'Physical MIDI device button model to ACCORD stream received value',
+              ),
+            ),
+          ),
+        ),
+        Stream.merge(
+          virtualPadButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'VIRTUAL PAD button model to ACCORD stream received value',
+              ),
+            ),
+          ),
         ),
         Stream.tap(
           Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
@@ -350,11 +377,28 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       yield* physicalKeyboardButtonModelToPatternMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
+        Stream.tap(() =>
+          Effect.log(
+            'Physical KEYBOARD button model to PATTERN stream received value',
+          ),
         ),
         Stream.merge(
-          virtualPadButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
+          physicalMIDIDeviceButtonModelToPatternMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'Physical MIDI device button model to PATTERN stream received value',
+              ),
+            ),
+          ),
+        ),
+        Stream.merge(
+          virtualPadButtonModelToPatternMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'VIRTUAL PAD button model to PATTERN stream received value',
+              ),
+            ),
+          ),
         ),
         Stream.tap(
           Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
@@ -377,11 +421,28 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       yield* physicalKeyboardButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
+        Stream.tap(() =>
+          Effect.log(
+            'Physical KEYBOARD button model to STRENGTH stream received value',
+          ),
         ),
         Stream.merge(
-          virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
+          physicalMIDIDeviceButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'Physical MIDI device button model to STRENGTH stream received value',
+              ),
+            ),
+          ),
+        ),
+        Stream.merge(
+          virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
+            Stream.tap(() =>
+              Effect.log(
+                'VIRTUAL PAD button model to STRENGTH stream received value',
+              ),
+            ),
+          ),
         ),
         Stream.tap(
           Effect.fn(function* ([, { buttonPressState, assignedTo }]) {

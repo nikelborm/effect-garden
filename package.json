@@ -101,6 +101,7 @@
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
     "lint": "biome check --write",
+    "max": "zellij --layout midi-demo.kdl attach --create max",
     "lint:css": "PATTERN='packages/*/src/**/*.{ts,tsx}'; chokidar $PATTERN --initial --command \"stylelint '$PATTERN'\"",
     "todo-lint:css": "bunx onchange \"**/*\" -- bunx prettier --write --ignore-unknown {{changed}}"
   },

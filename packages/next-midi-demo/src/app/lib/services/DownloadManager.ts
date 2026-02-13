@@ -125,8 +125,8 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
       appendDataToTheEndOfFile(byteArray.buffer),
     )
   }).pipe(
-    Effect.tapDefect(defectCause =>
-      Effect.logError('Defect while downloading asset: ', defectCause),
+    Effect.tapErrorCause(cause =>
+      Effect.logError('Failure while downloading asset: ', cause),
     ),
     Stream.unwrapScoped,
     Stream.retry(

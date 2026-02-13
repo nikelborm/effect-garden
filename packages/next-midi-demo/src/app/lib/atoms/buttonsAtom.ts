@@ -34,8 +34,8 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
   PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
   Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
   Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
-  Layer.provide(SelectedMIDIInputService.Default),
-  Layer.provide(EMIDIAccess.layerSoftwareSynthSupported),
+  Layer.provideMerge(SelectedMIDIInputService.Default),
+  Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
   Layer.catchAll(midiAccessErr =>
     Layer.mergeAll(
       Layer.effectDiscard(

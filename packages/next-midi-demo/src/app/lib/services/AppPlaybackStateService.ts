@@ -43,12 +43,16 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const fadeTime = 0.1 // seconds
 
       const current = SubscriptionRef.get(stateRef)
+
+      const changesStream = yield* stateRef.changes.pipe(
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
       const arrayOfCleanupFibers = []
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
 
       const createSilentByDefaultPlayback = () => {}
-      // SubscriptionRef.updateEffect
+
       const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
         function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
           const assetFileHandle = yield* getFileHandle({
@@ -128,6 +132,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
         stateRef,
         Effect.fn(function* (state) {
+          yield* Effect.log('Switch play pause from currently selected')
           const isStopped = state._tag === 'NotPlaying'
 
           if (isStopped) return yield* makeNewPlayingAssetState
@@ -142,6 +147,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
+            yield* Effect.log('Attempting to change the playing asset')
             if (oldPlayback._tag === 'PlayingAsset') {
               const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
@@ -207,7 +213,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                 nextTickIndexSinceLatestTrackLoopStart * tickSizeInSeconds,
               )
               const cleanupFiber = yield* EFunction.pipe(
-                Effect.sleep(Duration.seconds(fadeTime + 0.1)),
+                Effect.succeed(1),
+                Effect.asVoid,
+                // Effect.sleep(Duration.seconds(fadeTime + 0.1)),
                 // Effect.andThen(cleanupPlayback(oldPlayback.current)),
                 // Effect.zipRight(
                 //   SubscriptionRef.update(stateRef, s =>
@@ -225,6 +233,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                 Effect.tapErrorCause(Effect.logError),
                 Effect.fork,
               )
+
               return {
                 _tag: 'ScheduledChange' as const,
                 current: oldPlayback.current,
@@ -236,6 +245,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             }
             return oldPlayback
           }),
+        ).pipe(
+          Effect.andThen(Effect.log('Finished changing the playing asset')),
         )
 
       const changeAsset_old = Effect.fn(function* (
@@ -291,7 +302,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         current._tag !== 'NotPlaying'
 
       const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
-      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
+      const latestIsPlayingFlagStream = yield* changesStream.pipe(
         Stream.map(isPlaying),
         Stream.changes,
         // I have zero fucking idea why, but this fucking 2 is holy and cannot
@@ -305,14 +316,15 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           isPlaying =>
             isPlaying
               ? Stream.succeed(true)
-              : Stream.map(
-                  selectedAssetState.completionStatusChangesStream,
-                  ({ status }) => status === 'finished',
-                ),
+              : selectedAssetState.isFinishedCompletelyChangesStream,
           { switch: true, concurrency: 1 },
         ),
         Stream.changes,
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({
+          capacity: 1,
+          strategy: 'suspend',
+          replay: 1,
+        }),
       )
 
       yield* selectedAssetState.changes.pipe(
@@ -328,7 +340,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         stop,
         isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
+        playbackPublicInfoChangesStream: Stream.map(changesStream, e =>
           e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
         ),
       }
