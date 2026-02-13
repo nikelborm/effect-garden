@@ -2,10 +2,9 @@ import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
-import type * as Order from 'effect/Order'
 import * as Ref from 'effect/Ref'
-import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
 import * as ButtonState from '../helpers/ButtonState.ts'
@@ -15,7 +14,6 @@ export const makePhysicalButtonToParamMappingService = <
   AssignedTo,
   R,
 >(
-  physicalButtonIdOrder: Order.Order<PhysicalButtonId>,
   allPhysicalButtonIds: readonly PhysicalButtonId[],
   allEntities: readonly AssignedTo[],
   buttonPressStream: Stream.Stream<
@@ -34,7 +32,7 @@ export const makePhysicalButtonToParamMappingService = <
       )
 
     const physicalButtonIdToModelMapRef = yield* Ref.make(
-      SortedMap.make(physicalButtonIdOrder)(
+      HashMap.make(
         ...EArray.zipWith(
           allEntities,
           allPhysicalButtonIds,
@@ -50,7 +48,7 @@ export const makePhysicalButtonToParamMappingService = <
     const currentMap = Ref.get(physicalButtonIdToModelMapRef)
 
     const getPhysicalButtonModel = (id: PhysicalButtonId) =>
-      Effect.map(currentMap, SortedMap.get(id))
+      Effect.map(currentMap, HashMap.get(id))
 
     // TODO: maybe move {id -> ButtonModel.assignedTo} into a separate map?
 
@@ -63,7 +61,7 @@ export const makePhysicalButtonToParamMappingService = <
           Effect.map(
             currentMap,
             EFunction.flow(
-              SortedMap.get(id),
+              HashMap.get(id),
               Option.map(
                 previousButtonModel =>
                   [
@@ -87,7 +85,7 @@ export const makePhysicalButtonToParamMappingService = <
         ([id, latestButtonModel]) =>
           Ref.updateAndGet(
             physicalButtonIdToModelMapRef,
-            SortedMap.set(id, latestButtonModel),
+            HashMap.set(id, latestButtonModel),
           ),
         { concurrency: 1 },
       ),

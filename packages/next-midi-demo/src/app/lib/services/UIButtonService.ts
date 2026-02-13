@@ -12,12 +12,7 @@ import * as ButtonState from '../helpers/ButtonState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
-import type { AssetCompletionStatus } from './LoadedAssetSizeEstimationMap.ts'
-import {
-  type StrengthData,
-  StrengthDataOrder,
-  StrengthRegistry,
-} from './StrengthRegistry.ts'
+import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
@@ -148,12 +143,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
   },
 ) {}
 
-interface ButtonPressabilityDecisionRequirements {
-  readonly isPlaying: boolean
-  readonly completionStatusOfTheAssetThisButtonWouldSelect: AssetCompletionStatus
-  readonly isSelectedParam: boolean
-}
-
 const asd = {
   Strength: 4,
 } as const
@@ -162,7 +151,7 @@ const OrderByKeyData = Order.combine(
   Order.mapInput(Order.number, (a: SupportedKeyData) => asd[a._tag]),
   Order.make((self: SupportedKeyData, that: SupportedKeyData) => {
     if (self._tag === 'Strength' && that._tag === 'Strength')
-      return StrengthDataOrder(self, that)
+      return Order.string(self.value, that.value)
 
     throw new Error('Unsortable')
   }),
