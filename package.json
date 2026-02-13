@@ -8,15 +8,7 @@
     "stylelint-config-standard": "^40.0.0",
     "@linaria/postcss-linaria": "^7.0.0",
     "@linaria/stylelint-config-standard-linaria": "^7.0.0",
-    "@nikelborm/apache-superset-quick-init": "workspace:*",
-    "@nikelborm/backend-config": "workspace:*",
-    "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
-    "@nikelborm/effect-landscape": "workspace:*",
-    "@nikelborm/effect-schema-i18n": "workspace:*",
-    "@nikelborm/git-dl": "workspace:*",
-    "@nikelborm/github-extract-issues": "workspace:*",
-    "@nikelborm/joiners": "workspace:*",
     "@nikelborm/playground": "workspace:*",
     "@nikelborm/scripts": "workspace:*",
     "effect-opfs": "workspace:*",
@@ -31,7 +23,6 @@
     "next-midi-demo": "workspace:*",
     "postcss-styled-syntax": "^0.7.1",
     "stylelint-config-styled-components": "^0.1.1",
-    "ts-key-not-enum": "workspace:*",
     "turbo": "catalog:"
   },
   "catalog": {
