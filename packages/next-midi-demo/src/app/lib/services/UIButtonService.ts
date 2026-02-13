@@ -4,7 +4,6 @@ import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
-import type * as SortedMap from 'effect/SortedMap'
 import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
@@ -15,7 +14,6 @@ import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import type { AssetCompletionStatus } from './LoadedAssetSizeEstimationMap.ts'
-import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import {
   type StrengthData,
   StrengthDataOrder,
@@ -98,45 +96,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             Stream.changes,
           )
 
-      const getMapCombinerStream =
-        <T>() =>
-        <E, R>(
-          self: Stream.Stream<
-            SupportedKeyData extends infer Key
-              ? Key extends any
-                ? SortedMap.SortedMap<Key, PhysicalButtonModel<T>>
-                : never
-              : never,
-            E,
-            R
-          >,
-        ) =>
-          Stream.scan(
-            self,
-            HashMap.empty<T, SortedSet.SortedSet<SupportedKeyData>>(),
-            (previousMap, latestMap) => {
-              let newMap = previousMap
-              for (const [physicalButtonId, physicalButtonModel] of latestMap)
-                newMap = HashMap.modifyAt(
-                  newMap,
-                  physicalButtonModel.assignedTo,
-                  EFunction.flow(
-                    Option.orElseSome(() => SortedSet.empty(OrderByKeyData)),
-                    Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
-                      (physicalButtonModel.buttonPressState ===
-                        ButtonState.Pressed
-                        ? SortedSet.add
-                        : SortedSet.remove)(
-                        setOfPhysicalIdsTheButtonIsPressedBy,
-                        physicalButtonId,
-                      ),
-                    ),
-                  ),
-                )
-              return newMap
-            },
-          )
-
       yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
         Stream.tap(() =>
           Effect.log(
@@ -165,7 +124,30 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       const StrengthPressAggregateStream =
         yield* virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
-          getMapCombinerStream<Strength>(),
+          Stream.scan(
+            HashMap.empty<Strength, SortedSet.SortedSet<SupportedKeyData>>(),
+            (previousMap, latestMap) => {
+              let newMap = previousMap
+              for (const [physicalButtonId, physicalButtonModel] of latestMap)
+                newMap = HashMap.modifyAt(
+                  newMap,
+                  physicalButtonModel.assignedTo,
+                  EFunction.flow(
+                    Option.orElseSome(() => SortedSet.empty(OrderByKeyData)),
+                    Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
+                      (physicalButtonModel.buttonPressState ===
+                        ButtonState.Pressed
+                        ? SortedSet.add
+                        : SortedSet.remove)(
+                        setOfPhysicalIdsTheButtonIsPressedBy,
+                        physicalButtonId,
+                      ),
+                    ),
+                  ),
+                )
+              return newMap
+            },
+          ),
           Stream.changes,
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
