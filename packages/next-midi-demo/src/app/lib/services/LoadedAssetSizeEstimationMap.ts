@@ -1,9 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
-import * as HashMap from 'effect/HashMap'
-import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
-import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AssetPointer } from '../audioAssetHelpers.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
@@ -12,55 +9,11 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
     effect: Effect.gen(function* () {
-      const assetSizesActuallyPresentOnDisk = Effect.succeed(HashMap.empty())
-
-      const assetToSizeHashMapRef = yield* Effect.flatMap(
-        assetSizesActuallyPresentOnDisk,
-        SubscriptionRef.make,
-      )
-
       const getCurrentDownloadedBytes = (asset: AssetPointer) =>
-        Effect.map(
-          SubscriptionRef.get(assetToSizeHashMapRef),
-          EFunction.flow(
-            HashMap.get(asset as any as never),
-            Option.getOrElse(() => 0),
-          ),
-        )
+        Effect.succeed(50)
 
       const getCurrentDownloadedBytesStream = (asset: AssetPointer) =>
-        Stream.map(
-          assetToSizeHashMapRef.changes,
-          EFunction.flow(
-            HashMap.get(asset as any as never),
-            Option.getOrElse(() => 0),
-          ),
-        )
-
-      const getAssetFetchedSizeChangesStream = (asset: AssetPointer) =>
-        assetToSizeHashMapRef.changes.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(asset as any as never),
-              Option.getOrElse(() => 0),
-            ),
-          ),
-          Stream.changes,
-        )
-
-      const bytesToCompletionProgress = (currentBytes: number) =>
-        currentBytes / ASSET_SIZE_BYTES
-
-      const getCompletionProgressFrom0To1 = EFunction.flow(
-        getCurrentDownloadedBytes,
-        Effect.map(bytesToCompletionProgress),
-      )
-
-      const getAssetFetchingCompletionProgressChangesFrom0To1Stream =
-        EFunction.flow(
-          getAssetFetchedSizeChangesStream,
-          Stream.map(bytesToCompletionProgress),
-        )
+        Stream.succeed(50)
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
         Effect.fn(function* (
@@ -93,19 +46,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           mapCurrentFetchedBytesToCompletionStatus(asset),
         )
 
-      const areAllBytesFetched = EFunction.flow(
-        getAssetFetchingCompletionStatus,
-        Effect.map(({ status }) => status !== 'not finished'),
-      )
-
       return {
-        assetSizesActuallyPresentOnDisk,
-        areAllBytesFetched,
-        getCurrentDownloadedBytes,
-        getAssetFetchedSizeChangesStream,
-        getAssetFetchingCompletionProgressChangesFrom0To1Stream,
         getAssetFetchingCompletionStatusChangesStream,
-        getCompletionProgressFrom0To1,
         getAssetFetchingCompletionStatus,
       }
     }),

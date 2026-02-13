@@ -20,8 +20,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         _tag: 'NotPlaying',
       })
 
-      const current = SubscriptionRef.get(stateRef)
-
       const changeAsset = (asset: CurrentSelectedAsset) =>
         SubscriptionRef.updateEffect(
           stateRef,

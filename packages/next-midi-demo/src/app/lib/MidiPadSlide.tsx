@@ -15,7 +15,9 @@ import {
   strengthsAtom,
 } from './atoms/buttonsAtom.ts'
 import type { Strength } from './audioAssetHelpers.ts'
-import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
+
+export const LAYOUT_HEIGHT = 2
+export const LAYOUT_WIDTH = 8
 
 export const MidiPadSlide = () => {
   const res = Result.all({
