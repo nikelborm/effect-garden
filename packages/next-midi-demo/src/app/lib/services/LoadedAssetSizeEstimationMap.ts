@@ -1,47 +1,18 @@
-import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
-import type * as Types from 'effect/Types'
 
-import {
-  type AssetPointer,
-  getAssetFromLocalFileName,
-  getLocalAssetFileName,
-} from '../audioAssetHelpers.ts'
+import type { AssetPointer } from '../audioAssetHelpers.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
-import { getFileSize, listEntries } from '../opfs.ts'
-import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
     effect: Effect.gen(function* () {
-      const rootDirectoryHandle = yield* RootDirectoryHandle
-      const assetSizesActuallyPresentOnDisk = Effect.map(
-        listEntries(rootDirectoryHandle),
-        EFunction.flow(
-          EArray.filter(e => e.kind === 'file'),
-          EArray.filterMap(fileEntry =>
-            Option.map(
-              getAssetFromLocalFileName(fileEntry.name),
-              asset => [asset, fileEntry.size] satisfies Types.TupleOf<2, any>,
-            ),
-          ),
-          HashMap.fromIterable,
-        ),
-      ).pipe(
-        Effect.orDie,
-        Effect.tapDefect(defectCause =>
-          Effect.logError(
-            'Defect while getting asset sizes actually present on disk',
-            defectCause,
-          ),
-        ),
-      )
+      const assetSizesActuallyPresentOnDisk = Effect.succeed(HashMap.empty())
 
       const assetToSizeHashMapRef = yield* Effect.flatMap(
         assetSizesActuallyPresentOnDisk,
@@ -52,7 +23,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         Effect.map(
           SubscriptionRef.get(assetToSizeHashMapRef),
           EFunction.flow(
-            HashMap.get(asset),
+            HashMap.get(asset as any as never),
             Option.getOrElse(() => 0),
           ),
         )
@@ -61,7 +32,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         Stream.map(
           assetToSizeHashMapRef.changes,
           EFunction.flow(
-            HashMap.get(asset),
+            HashMap.get(asset as any as never),
             Option.getOrElse(() => 0),
           ),
         )
@@ -70,26 +41,11 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(
             EFunction.flow(
-              HashMap.get(asset),
+              HashMap.get(asset as any as never),
               Option.getOrElse(() => 0),
             ),
           ),
           Stream.changes,
-        )
-
-      const increaseAssetSize = (
-        asset: AssetPointer,
-        bytesDownloaded: number,
-      ) =>
-        SubscriptionRef.update(
-          assetToSizeHashMapRef,
-          HashMap.modifyAt(
-            asset,
-            EFunction.flow(
-              Option.orElseSome(() => 0),
-              Option.map(previousBytes => previousBytes + bytesDownloaded),
-            ),
-          ),
         )
 
       const bytesToCompletionProgress = (currentBytes: number) =>
@@ -113,16 +69,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           if (currentBytes !== ASSET_SIZE_BYTES)
             return { status: 'not finished' as const, currentBytes }
 
-          const sizeOnDisk = yield* EFunction.pipe(
-            getFileSize(getLocalAssetFileName(asset)),
-            Effect.provideService(RootDirectoryHandle, rootDirectoryHandle),
-            Effect.catchTag('OPFSError', err =>
-              Effect.logError(
-                'OPFS Error while getting written on-disk size of asset',
-                err,
-              ).pipe(Effect.andThen(0)),
-            ),
-          )
+          const sizeOnDisk = yield* Effect.succeed(46)
 
           if (sizeOnDisk !== ASSET_SIZE_BYTES)
             return {
@@ -152,7 +99,6 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       )
 
       return {
-        increaseAssetSize,
         assetSizesActuallyPresentOnDisk,
         areAllBytesFetched,
         getCurrentDownloadedBytes,
