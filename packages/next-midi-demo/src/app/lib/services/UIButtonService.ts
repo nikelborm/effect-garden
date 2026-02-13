@@ -9,7 +9,6 @@ import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
 import { ButtonState } from '../branded/index.ts'
-import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
@@ -67,34 +66,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
           isSelectedParam: getIsSelectedStrengthStream(strength),
         }).pipe(isPressable)
-
-      const isStrengthButtonCurrentlyPlaying = (strength: Strength) =>
-        appPlaybackState.playbackPublicInfoChangesStream.pipe(
-          Stream.map(
-            pb =>
-              pb._tag !== 'NotPlaying' && pb.currentAsset.strength === strength,
-          ),
-          Stream.changes,
-          Stream.tap(a =>
-            Effect.log(
-              `Strength ${strength} button is ${a ? '' : 'not '}pressable`,
-            ),
-          ),
-        )
-
-      const getStrengthButtonDownloadPercent = (strength: Strength) =>
-        currentlySelectedAssetState
-          .getPatchedAssetFetchingCompletionStatusChangesStream(strength)
-          .pipe(
-            Stream.map(s =>
-              s.status === 'not finished'
-                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'almost finished: fetched, but not written'
-                  ? 99
-                  : 100,
-            ),
-            Stream.changes,
-          )
 
       yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
         Stream.tap(() =>
@@ -172,8 +143,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       return {
         getIsSelectedStrengthStream,
         getStrengthButtonPressabilityChangesStream,
-        isStrengthButtonCurrentlyPlaying,
-        getStrengthButtonDownloadPercent,
         isStrengthButtonPressedFlagChangesStream,
       }
     }),
