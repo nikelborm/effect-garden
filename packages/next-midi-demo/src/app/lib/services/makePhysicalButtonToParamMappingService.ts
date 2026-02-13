@@ -8,7 +8,7 @@ import * as Ref from 'effect/Ref'
 import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../branded/index.ts'
+import * as ButtonState from '../helpers/ButtonState.ts'
 
 export const makePhysicalButtonToParamMappingService = <
   PhysicalButtonId,

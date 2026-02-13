@@ -8,7 +8,7 @@ import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
-import { ButtonState } from '../branded/index.ts'
+import * as ButtonState from '../helpers/ButtonState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
@@ -32,20 +32,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const virtualPadButtonModelToStrengthMappingService =
         yield* VirtualPadButtonModelToStrengthMappingService
 
-      const isPressable = <E, R>(
-        self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
-      ) =>
-        self.pipe(
-          Stream.map(
-            req =>
-              !req.isSelectedParam &&
-              (!req.isPlaying ||
-                req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
-                  'finished'),
-          ),
-          Stream.changes,
-        )
-
       const getIsSelectedStrengthStream = (strength: Strength) =>
         strengthRegistry.selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
@@ -65,7 +51,16 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               strength,
             ),
           isSelectedParam: getIsSelectedStrengthStream(strength),
-        }).pipe(isPressable)
+        }).pipe(
+          Stream.map(
+            req =>
+              !req.isSelectedParam &&
+              (!req.isPlaying ||
+                req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
+                  'finished'),
+          ),
+          Stream.changes,
+        )
 
       yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
         Stream.tap(() =>
@@ -82,6 +77,10 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               Stream.take(1),
               Stream.runHead,
               Effect.map(Option.getOrThrow),
+            )
+            yield* Effect.log(
+              'isStrengthButtonPressable: ',
+              isStrengthButtonPressable,
             )
 
             if (isStrengthButtonPressable)

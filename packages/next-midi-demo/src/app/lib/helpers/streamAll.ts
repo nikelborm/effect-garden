@@ -22,7 +22,7 @@ export const streamAll = <
     ),
     Stream.tap(state =>
       Effect.log(
-        `streamAll gathered keys ${Object.keys(state).length} / ${streamCount}`,
+        `streamAll gathered keys ${Object.keys(state).length} / ${streamCount}: ${Object.keys(state).join(', ')}`,
       ),
     ),
     Stream.filter(state => Object.keys(state).length === streamCount),

@@ -2,11 +2,10 @@ import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../branded/index.ts'
+import * as ButtonState from './ButtonState.ts'
 
 export const OptionalProperty = Schema.optionalWith({ exact: true }) as <
   S extends Schema.Schema.All,

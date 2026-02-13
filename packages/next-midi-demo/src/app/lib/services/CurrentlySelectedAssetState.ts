@@ -27,21 +27,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const mapAssetToTaggedPatternPointer = ({
-        strength,
-      }: CurrentSelectedAsset) =>
-        TaggedPatternPointer.make({
-          strength,
-        })
-
-      const completionStatus = Effect.flatMap(
-        currentEffect,
-        EFunction.flow(
-          mapAssetToTaggedPatternPointer,
-          estimationMap.getAssetFetchingCompletionStatus,
-        ),
-      )
-
       const makePatchApplier = (patch: Patch) => () =>
         TaggedPatternPointer.make({
           strength: patch,
@@ -63,7 +48,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
       return {
         current: currentEffect,
-        completionStatus,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }

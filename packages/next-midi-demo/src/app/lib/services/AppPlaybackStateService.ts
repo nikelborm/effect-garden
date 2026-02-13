@@ -1,7 +1,6 @@
 import * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
 import * as Stream from 'effect/Stream'
-import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
@@ -20,7 +19,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         _tag: 'NotPlaying',
       })
 
-      const changeAsset = (asset: CurrentSelectedAsset) =>
+      const changeAsset = () =>
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
@@ -31,6 +30,13 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           Effect.andThen(Effect.log('Finished changing the playing asset')),
         )
 
+      yield* selectedAssetState.changes.pipe(
+        Stream.tap(changeAsset),
+        Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
+        Effect.forkScoped,
+      )
+
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
         Stream.map(cur => cur._tag !== 'NotPlaying'),
         Stream.changes,
@@ -39,18 +45,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 2 }),
       )
 
-      yield* selectedAssetState.changes.pipe(
-        Stream.tap(changeAsset),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
-      )
-
       return {
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
-          e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
-        ),
       }
     }),
   },
