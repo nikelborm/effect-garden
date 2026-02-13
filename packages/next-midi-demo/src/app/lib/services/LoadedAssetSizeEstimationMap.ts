@@ -1,5 +1,4 @@
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
 import type { AssetPointer } from '../audioAssetHelpers.ts'
@@ -9,12 +8,6 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
     effect: Effect.gen(function* () {
-      const getCurrentDownloadedBytes = (asset: AssetPointer) =>
-        Effect.succeed(50)
-
-      const getCurrentDownloadedBytesStream = (asset: AssetPointer) =>
-        Stream.succeed(50)
-
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
         Effect.fn(function* (
           currentBytes: number,
@@ -36,13 +29,13 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         asset: AssetPointer,
       ) =>
         Stream.mapEffect(
-          getCurrentDownloadedBytesStream(asset),
+          Effect.succeed(50),
           mapCurrentFetchedBytesToCompletionStatus(asset),
         )
 
       const getAssetFetchingCompletionStatus = (asset: AssetPointer) =>
         Effect.flatMap(
-          getCurrentDownloadedBytes(asset),
+          Effect.succeed(50),
           mapCurrentFetchedBytesToCompletionStatus(asset),
         )
 

@@ -42,31 +42,10 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         ),
       )
 
-      const isFinishedCompletely = Effect.map(
-        completionStatus,
-        ({ status }) => status === 'finished',
-      )
-
-      const completionStatusChangesStream = Stream.flatMap(
-        selectedAssetChangesStream,
-        EFunction.flow(
-          mapAssetToTaggedPatternPointer,
-          estimationMap.getAssetFetchingCompletionStatusChangesStream,
-        ),
-        { switch: true, concurrency: 1 },
-      )
-
-      const isFinishedCompletelyChangesStream = Stream.map(
-        completionStatusChangesStream,
-        ({ status }) => status === 'finished',
-      )
-
-      const makePatchApplier =
-        (patch: Patch) =>
-        ({ strength }: CurrentSelectedAsset) =>
-          TaggedPatternPointer.make({
-            strength: patch,
-          })
+      const makePatchApplier = (patch: Patch) => () =>
+        TaggedPatternPointer.make({
+          strength: patch,
+        })
 
       const getPatchedAssetFetchingCompletionStatusChangesStream = (
         patch: Patch,
@@ -85,8 +64,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       return {
         current: currentEffect,
         completionStatus,
-        isFinishedCompletely,
-        isFinishedCompletelyChangesStream,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }
