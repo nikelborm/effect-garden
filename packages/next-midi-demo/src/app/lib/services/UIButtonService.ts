@@ -2,12 +2,12 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
+import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
-import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
-import type { Strength } from '../audioAssetHelpers.ts'
+import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import * as ButtonState from '../helpers/ButtonState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
@@ -90,7 +90,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const StrengthPressAggregateStream =
         yield* virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
           Stream.scan(
-            HashMap.empty<Strength, SortedSet.SortedSet<SupportedKeyData>>(),
+            HashMap.empty<Strength, HashSet.HashSet<SupportedKeyData>>(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -98,12 +98,12 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   newMap,
                   physicalButtonModel.assignedTo,
                   EFunction.flow(
-                    Option.orElseSome(() => SortedSet.empty(OrderByKeyData)),
+                    Option.orElseSome(() => HashSet.empty()),
                     Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
                       (physicalButtonModel.buttonPressState ===
                         ButtonState.Pressed
-                        ? SortedSet.add
-                        : SortedSet.remove)(
+                        ? HashSet.add
+                        : HashSet.remove)(
                         setOfPhysicalIdsTheButtonIsPressedBy,
                         physicalButtonId,
                       ),
@@ -122,7 +122,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             EFunction.flow(
               HashMap.get(strength),
-              Option.map(set => SortedSet.size(set) !== 0),
+              Option.map(set => HashSet.size(set) !== 0),
               Option.getOrElse(() => false),
             ),
           ),

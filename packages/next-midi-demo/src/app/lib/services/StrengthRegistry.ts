@@ -4,7 +4,7 @@ import * as Schema from 'effect/Schema'
 import type * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
+import { type Strength, StrengthSchema } from '../helpers/audioAssetHelpers.ts'
 
 const allStrengths = ['m', 'v', 's'] as const
 

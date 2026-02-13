@@ -1,12 +1,7 @@
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import {
-  type AssetPointer,
-  type Strength,
-  TaggedPatternPointer,
-} from '../audioAssetHelpers.ts'
+import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelectedAssetState>()(

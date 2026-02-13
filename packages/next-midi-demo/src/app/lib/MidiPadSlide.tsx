@@ -11,7 +11,7 @@ import {
   isStrengthSelectedAtom,
   strengthsAtom,
 } from './atoms/buttonsAtom.ts'
-import type { Strength } from './audioAssetHelpers.ts'
+import type { Strength } from './helpers/audioAssetHelpers.ts'
 
 export const LAYOUT_HEIGHT = 2
 export const LAYOUT_WIDTH = 8
