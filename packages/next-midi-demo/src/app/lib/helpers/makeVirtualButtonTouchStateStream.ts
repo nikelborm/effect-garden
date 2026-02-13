@@ -1,5 +1,3 @@
-import { OptionalProperty } from '@nikelborm/effect-helpers'
-
 import * as EFunction from 'effect/Function'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
@@ -9,6 +7,12 @@ import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
+
+export const OptionalProperty = Schema.optionalWith({ exact: true }) as <
+  S extends Schema.Schema.All,
+>(
+  self: S,
+) => Schema.optionalWith<S, { exact: true }>
 
 export const makeVirtualButtonTouchStateStream = <
   const DatasetKeys extends string,
