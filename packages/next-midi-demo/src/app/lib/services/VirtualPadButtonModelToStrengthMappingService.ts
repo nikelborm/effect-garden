@@ -1,4 +1,3 @@
-import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
@@ -7,36 +6,28 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 
+import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import { type AllSimple, NotPressed } from '../helpers/ButtonState.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
-import { StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 
 export class VirtualPadButtonModelToStrengthMappingService extends Effect.Service<VirtualPadButtonModelToStrengthMappingService>()(
   'next-midi-demo/VirtualPadButtonModelToStrengthMappingService',
   {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const strengths = yield* StrengthRegistry.allStrengths
       const physicalButtonIdToModelMapRef = yield* Ref.make(
         HashMap.make(
-          ...EArray.zipWith(
-            strengths,
-            strengths.map(strength => new StrengthData(strength)),
-            (assignedTo, id) =>
-              [id, new PhysicalButtonModel(NotPressed, assignedTo)] as const,
-          ),
+          ['s' as const, new PhysicalButtonModel(NotPressed, 's' as const)],
+          ['m' as const, new PhysicalButtonModel(NotPressed, 'm' as const)],
+          ['v' as const, new PhysicalButtonModel(NotPressed, 'v' as const)],
         ),
       )
 
       const currentMap = Ref.get(physicalButtonIdToModelMapRef)
 
-      const getPhysicalButtonModel = (id: StrengthData) =>
-        Effect.map(currentMap, HashMap.get(id))
-
       const buttonPressStream = Stream.map(
         makeVirtualButtonTouchStateStream(new Set(['strength'] as const)),
-        ([element, state]) =>
-          [new StrengthData(element.strength), state] as const,
+        ([element, state]) => [element.strength as Strength, state] as const,
       )
 
       const latestPhysicalButtonModelsStream = buttonPressStream.pipe(
@@ -73,12 +64,7 @@ export class VirtualPadButtonModelToStrengthMappingService extends Effect.Servic
         { concurrency: 1 },
       )
 
-      return {
-        currentMap,
-        latestPhysicalButtonModelsStream,
-        mapChanges,
-        getPhysicalButtonModel,
-      }
+      return { mapChanges, latestPhysicalButtonModelsStream }
     }),
   },
 ) {}

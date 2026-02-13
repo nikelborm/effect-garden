@@ -11,7 +11,7 @@ import * as ButtonState from '../helpers/ButtonState.ts'
 import type { AssetCompletionStatus } from '../helpers/CurrentlySelectedAssetState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
-import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
+import { StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
@@ -85,7 +85,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const StrengthPressAggregateStream =
         virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
           Stream.scan(
-            HashMap.empty<Strength, HashSet.HashSet<StrengthData>>(),
+            HashMap.empty<Strength, HashSet.HashSet<Strength>>(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
