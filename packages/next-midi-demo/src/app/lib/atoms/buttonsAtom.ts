@@ -7,7 +7,6 @@ import * as Stream from 'effect/Stream'
 
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
-import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { UIButtonService } from '../services/UIButtonService.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
@@ -18,7 +17,6 @@ const AppLayer = UIButtonService.Default.pipe(
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
   Layer.provideMerge(FetchHttpClient.layer),
   Layer.provideMerge(CurrentlySelectedAssetState.Default),
-  Layer.provideMerge(LoadedAssetSizeEstimationMap.Default),
   Layer.provideMerge(StrengthRegistry.Default),
   Layer.provideMerge(Logger.pretty),
 )

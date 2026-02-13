@@ -2,8 +2,11 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import { type Strength, TaggedPatternPointer } from '../audioAssetHelpers.ts'
-import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
+import {
+  type AssetPointer,
+  type Strength,
+  TaggedPatternPointer,
+} from '../audioAssetHelpers.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelectedAssetState>()(
@@ -12,7 +15,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
     accessors: true,
     scoped: Effect.gen(function* () {
       const strengthRegistry = yield* StrengthRegistry
-      const estimationMap = yield* LoadedAssetSizeEstimationMap
 
       const selectedAssetChangesStream =
         yield* strengthRegistry.selectedStrengthChanges.pipe(
@@ -27,13 +29,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       ) =>
         Stream.flatMap(
           selectedAssetChangesStream,
-          EFunction.flow(
-            () =>
-              TaggedPatternPointer.make({
-                strength: patch,
-              }),
-            estimationMap.getAssetFetchingCompletionStatusChangesStream,
-          ),
+          () => Stream.succeed({ status: 'finished' } as AssetCompletionStatus),
           { switch: true, concurrency: 1 },
         )
 
@@ -50,3 +46,8 @@ export interface CurrentSelectedAsset {
 }
 
 export type Patch = Strength
+
+export type AssetCompletionStatus =
+  | { status: 'not finished'; currentBytes: number }
+  | { status: 'almost finished: fetched, but not written' }
+  | { status: 'finished' }
