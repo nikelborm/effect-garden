@@ -34,20 +34,19 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         )
 
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
-        streamAll({
-          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          completionStatusOfTheAssetThisButtonWouldSelect: Stream.succeed({
-            status: 'finished',
-          } as AssetCompletionStatus),
-          isSelectedParam: getIsSelectedStrengthStream(strength),
-        }).pipe(
-          Stream.map(
-            req =>
-              !req.isSelectedParam &&
-              (!req.isPlaying ||
-                req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
-                  'finished'),
-          ),
+        Stream.map(
+          streamAll({
+            isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+            completionStatusOfTheAssetThisButtonWouldSelect: Stream.succeed({
+              status: 'finished',
+            } as AssetCompletionStatus),
+            isStrengthSelected: getIsSelectedStrengthStream(strength),
+          }),
+          req =>
+            !req.isStrengthSelected &&
+            (!req.isPlaying ||
+              req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
+                'finished'),
         )
 
       yield* virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
@@ -80,10 +79,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         Effect.forkScoped,
       )
 
-      return {
-        getIsSelectedStrengthStream,
-        getStrengthButtonPressabilityChangesStream,
-      }
+      return { getIsSelectedStrengthStream }
     }),
   },
 ) {}

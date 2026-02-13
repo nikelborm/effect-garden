@@ -5,11 +5,7 @@ import { styled } from 'next-yak'
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
-import {
-  isStrengthButtonPressableAtom,
-  isStrengthSelectedAtom,
-  strengthsAtom,
-} from './atoms/buttonsAtom.ts'
+import { isStrengthSelectedAtom, strengthsAtom } from './atoms/buttonsAtom.ts'
 import type { Strength } from './helpers/audioAssetHelpers.ts'
 
 const LAYOUT_HEIGHT = 2
@@ -38,18 +34,8 @@ export default function Home() {
 }
 
 const StrengthButton = ({ strength }: { strength: Strength }) => {
-  const isPressableRes = Hooks.useAtomValue(
-    isStrengthButtonPressableAtom(strength),
-  )
   const isSelectedRes = Hooks.useAtomValue(isStrengthSelectedAtom(strength))
 
-  if (!Result.isSuccess(isPressableRes)) {
-    console.log(
-      `strength ${strength} is not success. isPressableRes: `,
-      isPressableRes,
-    )
-    return 'loading...'
-  }
   if (!Result.isSuccess(isSelectedRes)) {
     console.log(
       `strength ${strength} is not success. isSelectedRes: `,
@@ -58,14 +44,11 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
     return 'loading...'
   }
 
-  const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
 
   return (
     <DebugButton data-strength={strength}>
       Strength: {strength}
-      <br />
-      Pressable: {isPressable ? Yes : No}
       <br />
       Selected: {isSelected ? Yes : No}
     </DebugButton>

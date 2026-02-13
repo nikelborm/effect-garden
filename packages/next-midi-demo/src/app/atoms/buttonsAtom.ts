@@ -18,15 +18,6 @@ const AppLayer = UIButtonService.Default.pipe(
 
 const runtime = Atom.runtime(AppLayer)
 
-export const isStrengthButtonPressableAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getStrengthButtonPressabilityChangesStream,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
-)
-
 export const isStrengthSelectedAtom = Atom.family(
   EFunction.flow(
     UIButtonService.getIsSelectedStrengthStream,
