@@ -55,10 +55,6 @@ if (!existsSync(join(rootDir, '.git')))
     "WTF??? The script assumes it's deleting files from a project root folder, but there's no .git folder in it.",
   )
 
-try {
-  await import(join(import.meta.dirname, './stop_dev_compose.ts'))
-} catch (_) {}
-
 await cleanTree(rootDir)
 
 await passthroughSpawn(
