@@ -15,19 +15,5 @@ layout {
         args "tsc" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
       }
     }
-    pane split_direction="horizontal" {
-      pane {
-        name "Web MediaCapture tsc watch"
-        cwd "./packages/effect-web-mediacapture-streams"
-        command "bun"
-        args "dev"
-      }
-      pane {
-        name "Web Audio tsc watch"
-        cwd "./packages/effect-web-audio"
-        command "bun"
-        args "dev"
-      }
-    }
   }
 }

@@ -12,8 +12,6 @@
     "@nikelborm/scripts": "workspace:*",
     "@nikelborm/tsconfig": "workspace:*",
     "chokidar-cli": "^3.0.0",
-    "effect-web-audio": "workspace:*",
-    "effect-web-mediacapture-streams": "workspace:*",
     "next-midi-demo": "workspace:*",
     "postcss-styled-syntax": "^0.7.1",
     "stylelint-config-styled-components": "^0.1.1",

@@ -21,8 +21,6 @@
     "outdent": "catalog:",
     "tinybench": "catalog:",
     "ts-namespace-import": "catalog:",
-    "effect-web-audio": "workspace:*",
-    "effect-web-mediacapture-streams": "workspace:*",
     "typescript": "catalog:"
   }
 }

@@ -17,7 +17,6 @@
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "^0.87.1",
     "effect": "catalog:",
-    "effect-web-audio": "workspace:*",
     "next": "catalog:",
     "next-yak": "^9.2.0",
     "postcss-styled-syntax": "^0.7.1",
