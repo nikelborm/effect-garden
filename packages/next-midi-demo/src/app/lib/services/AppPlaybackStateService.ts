@@ -19,11 +19,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         _tag: 'NotPlaying',
       })
 
-      const changeAsset = () =>
+      const changeAsset = (latestAsset: any) =>
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
             yield* Effect.log('Attempting to change the playing asset')
+            // imagine here would be conditions reacting to the previous state
             return oldPlayback
           }),
         ).pipe(

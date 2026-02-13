@@ -3,7 +3,6 @@ import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
 import { type Strength, TaggedPatternPointer } from '../audioAssetHelpers.ts'
-import { streamAll } from '../helpers/streamAll.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
@@ -18,14 +17,13 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         strength: strengthRegistry.currentlySelectedStrength,
       })
 
-      const selectedAssetChangesStream = yield* streamAll({
-        strength: strengthRegistry.selectedStrengthChanges,
-      }).pipe(
-        Stream.tap(selectedAsset =>
-          Effect.log('Selected asset stream value: ', selectedAsset),
-        ),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
+      const selectedAssetChangesStream =
+        yield* strengthRegistry.selectedStrengthChanges.pipe(
+          Stream.tap(selectedAsset =>
+            Effect.log('Selected asset stream value: ', selectedAsset),
+          ),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        )
 
       const makePatchApplier = (patch: Patch) => () =>
         TaggedPatternPointer.make({
