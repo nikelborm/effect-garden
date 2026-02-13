@@ -13,9 +13,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
     scoped: Effect.gen(function* () {
       const strengthRegistry = yield* StrengthRegistry
       const estimationMap = yield* LoadedAssetSizeEstimationMap
-      const currentEffect: Effect.Effect<CurrentSelectedAsset> = Effect.all({
-        strength: strengthRegistry.currentlySelectedStrength,
-      })
 
       const selectedAssetChangesStream =
         yield* strengthRegistry.selectedStrengthChanges.pipe(
@@ -25,27 +22,22 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
-      const makePatchApplier = (patch: Patch) => () =>
-        TaggedPatternPointer.make({
-          strength: patch,
-        })
-
       const getPatchedAssetFetchingCompletionStatusChangesStream = (
         patch: Patch,
-      ) => {
-        const applyPatch = makePatchApplier(patch)
-        return Stream.flatMap(
+      ) =>
+        Stream.flatMap(
           selectedAssetChangesStream,
           EFunction.flow(
-            applyPatch,
+            () =>
+              TaggedPatternPointer.make({
+                strength: patch,
+              }),
             estimationMap.getAssetFetchingCompletionStatusChangesStream,
           ),
           { switch: true, concurrency: 1 },
         )
-      }
 
       return {
-        current: currentEffect,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }
