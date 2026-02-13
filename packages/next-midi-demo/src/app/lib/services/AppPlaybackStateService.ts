@@ -3,7 +3,7 @@ import type * as Fiber from 'effect/Fiber'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { CurrentSelectedAsset } from './CurrentlySelectedAssetState.ts'
+import type { CurrentSelectedAsset } from '../helpers/CurrentlySelectedAssetState.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(

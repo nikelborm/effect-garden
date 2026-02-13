@@ -8,9 +8,9 @@ import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../helpers/audioAssetHelpers.ts'
 import * as ButtonState from '../helpers/ButtonState.ts'
+import type { AssetCompletionStatus } from '../helpers/CurrentlySelectedAssetState.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
-import type { AssetCompletionStatus } from './CurrentlySelectedAssetState.ts'
 import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
@@ -83,7 +83,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       )
 
       const StrengthPressAggregateStream =
-        yield* virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
+        virtualPadButtonModelToStrengthMappingService.mapChanges.pipe(
           Stream.scan(
             HashMap.empty<Strength, HashSet.HashSet<StrengthData>>(),
             (previousMap, latestMap) => {
@@ -108,8 +108,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               return newMap
             },
           ),
-          Stream.changes,
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
