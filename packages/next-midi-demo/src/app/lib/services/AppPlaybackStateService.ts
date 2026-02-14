@@ -142,7 +142,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
-            yield* Effect.log('Attempting to change the playing asset')
             if (oldPlayback._tag === 'PlayingAsset') {
               const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
@@ -240,8 +239,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             }
             return oldPlayback
           }),
-        ).pipe(
-          Effect.andThen(Effect.log('Finished changing the playing asset')),
         )
 
       const changeAsset_old = Effect.fn(function* (
@@ -297,11 +294,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         current._tag !== 'NotPlaying'
 
       const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
-      const latestIsPlayingFlagStream = yield* changesStream.pipe(
+      const latestIsPlayingFlagStream = changesStream.pipe(
         Stream.map(isPlaying),
         Stream.changes,
-        Stream.rechunk(1),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+
+        // Stream.rechunk(1),
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
