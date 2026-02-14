@@ -1,5 +1,3 @@
-import { holdLatestValue } from '@nikelborm/effect-helpers'
-
 import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
@@ -59,7 +57,7 @@ export const makePhysicalButtonToParamMappingService = <
     // These 2 separate streams have 2 non atomic Ref method calls. And it's
     // fine because the keys of the map are permanent, and the value, the first
     // call depends on (previousButtonModel.assignedTo) is permanent
-    const latestPhysicalButtonModelsStream = buttonPressStream.pipe(
+    const latestPhysicalButtonModelsStream = yield* buttonPressStream.pipe(
       Stream.mapEffect(
         ([id, physicalButtonPressState]) =>
           Effect.map(
@@ -81,7 +79,7 @@ export const makePhysicalButtonToParamMappingService = <
         { concurrency: 1 },
       ),
       Stream.filterMap(e => e),
-      // Stream.broadcastDynamic({ capacity: 'unbounded' }),
+      Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
 
     const mapChanges = yield* latestPhysicalButtonModelsStream.pipe(
@@ -93,7 +91,7 @@ export const makePhysicalButtonToParamMappingService = <
           ),
         { concurrency: 1 },
       ),
-      holdLatestValue,
+      Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
     )
 
     return {

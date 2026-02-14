@@ -1,14 +1,8 @@
-import { holdLatestValue } from '@nikelborm/effect-helpers'
-
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import {
-  type AssetPointer,
-  type Strength,
-  TaggedPatternPointer,
-} from '../audioAssetHelpers.ts'
+import { type Strength, TaggedPatternPointer } from '../audioAssetHelpers.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   Accord,
@@ -46,7 +40,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        holdLatestValue,
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const mapAssetToTaggedPatternPointer = ({

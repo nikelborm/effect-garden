@@ -1,5 +1,3 @@
-import { holdLatestValue } from '@nikelborm/effect-helpers'
-
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
@@ -77,9 +75,9 @@ export class AccordRegistry
 
       const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
         Stream.changes,
+        // Stream.rechunk(1),
         Stream.map(mapIndexToAccord),
-        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-        holdLatestValue,
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {

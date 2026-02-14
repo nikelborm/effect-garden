@@ -1,16 +1,10 @@
-import { holdLatestValue } from '@nikelborm/effect-helpers'
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
-import * as Context from 'effect/Context'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as EFunction from 'effect/Function'
-import * as Layer from 'effect/Layer'
-import * as Option from 'effect/Option'
-import * as Record from 'effect/Record'
-import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -45,7 +39,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const current = SubscriptionRef.get(stateRef)
 
-      const changesStream = yield* stateRef.changes.pipe(holdLatestValue)
+      const changesStream = yield* stateRef.changes.pipe(
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
       const arrayOfCleanupFibers = []
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
@@ -304,7 +300,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const latestIsPlayingFlagStream = yield* changesStream.pipe(
         Stream.map(isPlaying),
         Stream.changes,
-        holdLatestValue,
+        Stream.rechunk(1),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
@@ -317,7 +314,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           { switch: true, concurrency: 1 },
         ),
         Stream.changes,
-        holdLatestValue,
+        // Stream.rechunk(1),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       yield* selectedAssetState.changes.pipe(
