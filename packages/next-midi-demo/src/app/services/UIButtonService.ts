@@ -1,13 +1,9 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
+import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
-
-import * as ButtonState from '../helpers/ButtonState.ts'
-import { streamAll } from '../helpers/streamAll.ts'
-import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -17,19 +13,19 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const selectedStrengthRef = yield* SubscriptionRef.make<Strength>('m')
       const selectedStrengthChanges = selectedStrengthRef.changes
 
-      const selectStrength = (strength: Strength) =>
-        SubscriptionRef.set(selectedStrengthRef, strength)
-
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
       })
 
-      const changeAsset = (latestAsset: any) =>
+      const changeAsset = (_latestAsset: any) =>
         SubscriptionRef.updateEffect(
           stateRef,
           Effect.fn(function* (oldPlayback) {
             yield* Effect.log('Attempting to change the playing asset')
-            // imagine here would be conditions reacting to the previous state
+            if (oldPlayback._tag === 'Playing') {
+              // imagine here would be some audio decoding, cleanup of
+              // previous audio, and playing the new audio based on _latestAsset
+            }
             return oldPlayback
           }),
         ).pipe(
@@ -38,21 +34,15 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       yield* selectedStrengthChanges.pipe(
         Stream.tap(changeAsset),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
+        drainLogErrorsForkScoped,
       )
 
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
-        Stream.map(cur => cur._tag !== 'NotPlaying'),
+        Stream.map(cur => cur._tag === 'Playing'),
         Stream.changes,
-        // I have zero fucking idea why, but this fucking 2 is holy and cannot
-        // be changed.
+        // PLEASE SOMEBODY EXPLAIN TO ME WHY REMOVING THIS FIXES THE ISSUE
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
-
-      const { latestPhysicalButtonModelsStream } =
-        yield* VirtualPadButtonModelToStrengthMappingService
 
       const getIsSelectedStrengthStream = (strength: Strength) =>
         selectedStrengthChanges.pipe(
@@ -64,50 +54,34 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
         )
 
-      const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
-        Stream.map(
-          streamAll({
-            isPlaying: latestIsPlayingFlagStream,
-            // taken externally, and could change over time
-            completionStatusOfTheAssetThisButtonWouldSelect: Stream.succeed({
-              status: 'finished',
-            } as AssetCompletionStatus),
-            isStrengthSelected: getIsSelectedStrengthStream(strength),
-          }),
-          req =>
-            !req.isStrengthSelected &&
-            (!req.isPlaying ||
-              req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
-                'finished'),
-        )
-
-      yield* latestPhysicalButtonModelsStream.pipe(
-        Stream.tap(() =>
+      yield* Schedule.spaced('1 second').pipe(
+        Schedule.compose(Schedule.recurs(2)),
+        Stream.fromSchedule,
+        Stream.map(i => allStrengths[(i + 1) % 3] as Strength),
+        Stream.tap(newStrength =>
           Effect.log(
-            'VIRTUAL PAD button model to STRENGTH stream received value',
+            `Simulated button press caused by external device. Requested to set new strength=${newStrength}`,
           ),
         ),
         Stream.tap(
-          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
-            if (ButtonState.isNotPressed(buttonPressState)) return
+          Effect.fn(function* (newStrength) {
+            // I oversimplified the condition here. Let's just say, we cannot
+            // change press the button to select the asset, while it's playing
+            const isStrengthButtonPressable =
+              yield* latestIsPlayingFlagStream.pipe(
+                forceTakeFirstValueFromStream,
+                Effect.map(isPlaying => !isPlaying),
+              )
 
-            const isStrengthButtonPressable = yield* EFunction.pipe(
-              getStrengthButtonPressabilityChangesStream(assignedTo),
-              Stream.take(1),
-              Stream.runHead,
-              Effect.map(Option.getOrThrow),
-            )
             yield* Effect.log(
-              'isStrengthButtonPressable: ',
-              isStrengthButtonPressable,
+              `isStrengthButtonPressable: ${isStrengthButtonPressable}`,
             )
 
-            if (isStrengthButtonPressable) yield* selectStrength(assignedTo)
+            if (isStrengthButtonPressable)
+              yield* SubscriptionRef.set(selectedStrengthRef, newStrength)
           }),
         ),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
+        drainLogErrorsForkScoped,
       )
 
       return { getIsSelectedStrengthStream }
@@ -115,16 +89,19 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
   },
 ) {}
 
-export const allStrengths = ['m', 'v', 's'] as const
-export type AllStrengthTuple = typeof allStrengths
-export type AppPlaybackState =
+const drainLogErrorsForkScoped = <A, E, R>(self: Stream.Stream<A, E, R>) =>
+  self.pipe(
+    Stream.runDrain,
+    Effect.tapErrorCause(Effect.logError),
+    Effect.forkScoped,
+  )
+
+const forceTakeFirstValueFromStream = <A, E, R>(self: Stream.Stream<A, E, R>) =>
+  self.pipe(Stream.take(1), Stream.runHead, Effect.map(Option.getOrThrow))
+
+const allStrengths = ['m', 'v', 's'] as const
+type AllStrengthTuple = typeof allStrengths
+type AppPlaybackState =
   | { readonly _tag: 'NotPlaying' }
   | { readonly _tag: 'Playing' }
-export type Strength = AllStrengthTuple[number]
-export interface CurrentSelectedAsset {
-  readonly strength: Strength
-}
-export type AssetCompletionStatus =
-  | { status: 'not finished'; currentBytes: number }
-  | { status: 'almost finished: fetched, but not written' }
-  | { status: 'finished' }
+type Strength = AllStrengthTuple[number]
