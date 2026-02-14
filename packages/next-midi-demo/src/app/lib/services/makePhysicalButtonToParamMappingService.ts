@@ -59,7 +59,7 @@ export const makePhysicalButtonToParamMappingService = <
     // These 2 separate streams have 2 non atomic Ref method calls. And it's
     // fine because the keys of the map are permanent, and the value, the first
     // call depends on (previousButtonModel.assignedTo) is permanent
-    const latestPhysicalButtonModelsStream = yield* buttonPressStream.pipe(
+    const latestPhysicalButtonModelsStream = buttonPressStream.pipe(
       Stream.mapEffect(
         ([id, physicalButtonPressState]) =>
           Effect.map(
@@ -81,7 +81,7 @@ export const makePhysicalButtonToParamMappingService = <
         { concurrency: 1 },
       ),
       Stream.filterMap(e => e),
-      holdLatestValue,
+      // Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
 
     const mapChanges = yield* latestPhysicalButtonModelsStream.pipe(
