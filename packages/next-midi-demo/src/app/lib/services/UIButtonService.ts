@@ -1,3 +1,5 @@
+import { holdLatestValue } from '@nikelborm/effect-helpers'
+
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
@@ -329,7 +331,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.merge(virtualPadButtonModelToAccordMappingService.mapChanges),
           getMapCombinerStream<AllAccordUnion>(),
           Stream.changes,
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+          holdLatestValue,
         )
 
       yield* physicalKeyboardButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
@@ -489,7 +491,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.merge(virtualPadButtonModelToPatternMappingService.mapChanges),
           getMapCombinerStream<AllPatternUnion>(),
           Stream.changes,
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+          holdLatestValue,
         )
 
       const isPatternButtonPressedFlagChangesStream = (
@@ -521,7 +523,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
           getMapCombinerStream<Strength>(),
           Stream.changes,
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+          holdLatestValue,
         )
 
       const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>

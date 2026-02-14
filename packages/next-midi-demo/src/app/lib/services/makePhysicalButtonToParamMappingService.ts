@@ -1,3 +1,5 @@
+import { holdLatestValue } from '@nikelborm/effect-helpers'
+
 import * as EArray from 'effect/Array'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
@@ -79,7 +81,7 @@ export const makePhysicalButtonToParamMappingService = <
         { concurrency: 1 },
       ),
       Stream.filterMap(e => e),
-      Stream.broadcastDynamic({ capacity: 'unbounded' }),
+      holdLatestValue,
     )
 
     const mapChanges = yield* latestPhysicalButtonModelsStream.pipe(
@@ -91,7 +93,7 @@ export const makePhysicalButtonToParamMappingService = <
           ),
         { concurrency: 1 },
       ),
-      Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      holdLatestValue,
     )
 
     return {

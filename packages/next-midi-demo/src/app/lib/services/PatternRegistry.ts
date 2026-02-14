@@ -1,3 +1,5 @@
+import { holdLatestValue } from '@nikelborm/effect-helpers'
+
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
@@ -72,7 +74,7 @@ export class PatternRegistry
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
         Stream.map(mapIndexToPattern),
         Stream.changes,
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        holdLatestValue,
       )
 
       return {

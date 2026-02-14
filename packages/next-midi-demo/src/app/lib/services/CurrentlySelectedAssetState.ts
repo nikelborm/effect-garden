@@ -1,3 +1,5 @@
+import { holdLatestValue } from '@nikelborm/effect-helpers'
+
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
@@ -44,7 +46,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        holdLatestValue,
       )
 
       const mapAssetToTaggedPatternPointer = ({

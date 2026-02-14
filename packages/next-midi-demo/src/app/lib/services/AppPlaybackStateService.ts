@@ -1,3 +1,4 @@
+import { holdLatestValue } from '@nikelborm/effect-helpers'
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
@@ -44,9 +45,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const current = SubscriptionRef.get(stateRef)
 
-      const changesStream = yield* stateRef.changes.pipe(
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
+      const changesStream = yield* stateRef.changes.pipe(holdLatestValue)
       const arrayOfCleanupFibers = []
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
@@ -305,9 +304,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const latestIsPlayingFlagStream = yield* changesStream.pipe(
         Stream.map(isPlaying),
         Stream.changes,
-        // I have zero fucking idea why, but this fucking 2 is holy and cannot
-        // be changed.
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 2 }),
+        holdLatestValue,
       )
 
       const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
@@ -320,11 +317,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           { switch: true, concurrency: 1 },
         ),
         Stream.changes,
-        Stream.broadcastDynamic({
-          capacity: 1,
-          strategy: 'suspend',
-          replay: 1,
-        }),
+        holdLatestValue,
       )
 
       yield* selectedAssetState.changes.pipe(
