@@ -120,7 +120,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
       return {
         current: currentEffect,
-        completionStatus,
         isFinishedCompletely,
         isFinishedCompletelyChangesStream,
         getPatchedAssetFetchingCompletionStatusChangesStream,

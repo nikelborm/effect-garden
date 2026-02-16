@@ -13,25 +13,29 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
         yield* SubscriptionRef.make<EMIDIInput.Id | null>(null)
 
       yield* EMIDIAccess.makeAllPortsStateChangesStreamInContext().pipe(
-        Stream.mapEffect(
-          ({ port, newState }) =>
-            SubscriptionRef.update(selectedInputIdRef, selectedId =>
-              port.id === selectedId && newState.ofDevice === 'disconnected'
-                ? null
-                : selectedId,
-            ),
-          { concurrency: 1 },
+        Stream.tap(({ port, newState }) =>
+          SubscriptionRef.update(selectedInputIdRef, selectedId =>
+            port.id === selectedId && newState.ofDevice === 'disconnected'
+              ? null
+              : selectedId,
+          ),
         ),
         Stream.runDrain,
         Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )
 
+      const changes = yield* selectedInputIdRef.changes.pipe(
+        Stream.changes,
+        Stream.rechunk(1),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
+
       return {
         selectInput: (id: EMIDIInput.Id) =>
           SubscriptionRef.set(selectedInputIdRef, id),
 
-        changes: Stream.changes(selectedInputIdRef.changes),
+        changes,
       }
     }),
   },

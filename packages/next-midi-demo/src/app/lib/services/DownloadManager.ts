@@ -93,10 +93,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
       )
 
       return {
-        isFiberMapFull,
-        isCurrentlyDownloading,
         currentlyDownloading,
-        waitUntilCompletelyFree,
         startOrContinueOrIgnoreCompletedCached,
         interruptOrIgnoreNotStarted,
       }

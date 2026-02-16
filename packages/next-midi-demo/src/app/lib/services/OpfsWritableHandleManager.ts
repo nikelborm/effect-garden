@@ -53,10 +53,9 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
         getWriter: (selector: AssetPointer) =>
           pool.get(selector).pipe(
             Effect.acquireRelease(e => e.close),
-            Effect.acquireRelease(e =>
+            Effect.acquireRelease(() =>
               Effect.log(
-                `OPFS writer finalizer is run a=${selector.accordIndex} p=${selector.patternIndex} s=${selector.strength}`,
-                selector,
+                `OPFS writer finalizer for accordIndex=${selector.accordIndex} patternIndex=${selector.patternIndex} strength=${selector.strength} ran`,
               ),
             ),
           ),

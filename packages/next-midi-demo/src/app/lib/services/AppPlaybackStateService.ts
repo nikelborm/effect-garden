@@ -295,8 +295,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       return {
         playStopButtonPressableFlagChangesStream,
         switchPlayPauseFromCurrentlySelected,
-        stop,
-        isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
         playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
           e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
