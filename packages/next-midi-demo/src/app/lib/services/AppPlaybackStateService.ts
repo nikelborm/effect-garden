@@ -26,9 +26,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
     accessors: true,
     scoped: Effect.gen(function* () {
       const audioContext = yield* EAudioContext.make()
-      const audioContextImplHack = audioContext as EAudioContext.Instance & {
-        _audioContext: AudioContext
-      }
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const selectedAssetState = yield* CurrentlySelectedAssetState
       const stateSemaphore = yield* Effect.makeSemaphore(1)
@@ -36,7 +33,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
       })
-      const fadeTime = 0.1 // seconds
+      const transitionTimeInSeconds = 0.001
+      const maxLoudness = 1
+      const minLoudness = 0.001
+      const asEarlyAsPossibleInSeconds = 0
 
       const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
         function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
@@ -70,18 +70,18 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
         const audioBuffer = yield* getAudioBufferOfAsset(currentAsset)
 
-        const audioBufferImplHack = audioBuffer as EAudioBuffer.EAudioBuffer & {
-          _audioBuffer: AudioBuffer
-        }
+        const secondsSinceAudioContextInit =
+          yield* EAudioContext.currentTime(audioContext)
 
-        const time = yield* EAudioContext.currentTime(audioContext)
-
-        const currentPlayback = yield* createPlayback(
-          audioContextImplHack._audioContext,
-          audioBufferImplHack._audioBuffer,
+        const currentPlayback = yield* createLoopingPlayback(
+          audioContext,
+          audioBuffer,
         )
-        currentPlayback.gainNode.gain.setValueAtTime(1, time)
-        currentPlayback.bufferSource.start()
+        currentPlayback.gainNode.gain.setValueAtTime(
+          maxLoudness,
+          asEarlyAsPossibleInSeconds,
+        )
+        currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
 
         yield* Effect.log('started playing')
 
@@ -89,11 +89,11 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           _tag: 'PlayingAsset' as const,
           currentPlayback,
           currentAsset,
-          playbackStartedAtSecond: time,
+          playbackStartedAtSecond: secondsSinceAudioContextInit,
         }
       })
 
-      const cleanupPlaybacks = Effect.fn(function* (
+      const cleanupAllPlaybacks = Effect.fn(function* (
         state: PlayingAppPlaybackStates,
       ) {
         const playbacksToCleanup =
@@ -101,14 +101,19 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             ? [state.currentPlayback]
             : [state.currentPlayback, state.nextPlayback]
 
-        const time = yield* EAudioContext.currentTime(audioContext)
+        const secondsSinceAudioContextInit =
+          yield* EAudioContext.currentTime(audioContext)
 
         yield* Effect.forEach(
           playbacksToCleanup,
           p => {
-            p.gainNode.gain.exponentialRampToValueAtTime(0.001, time + fadeTime)
+            p.gainNode.gain.exponentialRampToValueAtTime(
+              minLoudness,
+              secondsSinceAudioContextInit + transitionTimeInSeconds,
+            )
+
             return cleanupPlayback(p).pipe(
-              Effect.delay(Duration.seconds(fadeTime + 0.1)),
+              Effect.delay(Duration.seconds(transitionTimeInSeconds + 0.1)),
             )
           },
           { discard: true },
@@ -120,27 +125,32 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Effect.fn(function* (state) {
           yield* Effect.log('Switch play pause from currently selected')
           const isStopped = state._tag === 'NotPlaying'
-
           if (isStopped) return yield* makeNewPlayingAssetState
 
-          yield* cleanupPlaybacks(state)
+          yield* cleanupAllPlaybacks(state)
 
           return { _tag: 'NotPlaying' }
         }),
-      ).pipe(Effect.tapErrorCause(Effect.logError))
+      ).pipe(
+        stateSemaphore.withPermits(1),
+        Effect.tapErrorCause(Effect.logError),
+      )
+
+      yield* Effect.addFinalizer(() =>
+        Effect.map(stateRef.get, state =>
+          state._tag === 'NotPlaying'
+            ? Effect.void
+            : cleanupAllPlaybacks(state),
+        ),
+      )
 
       const changeAsset = (asset: CurrentSelectedAsset) =>
         SubscriptionRef.updateEffect(
           stateRef,
-          Effect.fn(function* (oldState) {
+          Effect.fn('reschedulePlayback')(function* (oldState) {
             if (oldState._tag === 'NotPlaying') return oldState
 
             const audioBuffer = yield* getAudioBufferOfAsset(asset)
-
-            const audioBufferImplHack =
-              audioBuffer as EAudioBuffer.EAudioBuffer & {
-                _audioBuffer: AudioBuffer
-              }
 
             const secondsSinceAudioContextInit =
               yield* EAudioContext.currentTime(audioContext)
@@ -155,48 +165,55 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             const nextTickStartsAtSecondsSincePlaybackStart =
               nextTickIndexSincePlaybackStart * tickSizeInSeconds
 
-            const nextTickStartsAtSecondsSinceContextInit =
+            const nextTickStartsAtSecondsSinceAudioContextInit =
               oldState.playbackStartedAtSecond +
               nextTickStartsAtSecondsSincePlaybackStart
 
-            const previousPlaybackFadingEndsAt =
-              nextTickStartsAtSecondsSinceContextInit
-
             const previousPlaybackFadingStartsAt =
-              previousPlaybackFadingEndsAt - fadeTime
+              nextTickStartsAtSecondsSinceAudioContextInit -
+              transitionTimeInSeconds
+
+            const previousPlaybackFadingEndsAt =
+              nextTickStartsAtSecondsSinceAudioContextInit
 
             const secondsSinceLatestTrackLoopStart =
               secondsPassedSincePlaybackStart % trackSizeInSeconds
 
-            const nextTickIndexSinceLatestTrackLoopStart = Math.ceil(
-              secondsSinceLatestTrackLoopStart / tickSizeInSeconds,
-            )
-
             const secondsSinceNowBeforeFadingEnds =
               previousPlaybackFadingEndsAt - secondsSinceAudioContextInit
 
-            const nextPlayback = yield* createPlayback(
-              audioContextImplHack._audioContext,
-              audioBufferImplHack._audioBuffer,
+            const newlyCreatedNextPlayback = yield* createLoopingPlayback(
+              audioContext,
+              audioBuffer,
             )
-            nextPlayback.gainNode.gain.exponentialRampToValueAtTime(
-              1,
-              nextTickStartsAtSecondsSinceContextInit,
+            newlyCreatedNextPlayback.gainNode.gain.setValueAtTime(
+              minLoudness,
+              asEarlyAsPossibleInSeconds,
             )
-            nextPlayback.bufferSource.start(
-              nextTickStartsAtSecondsSinceContextInit,
-              nextTickIndexSinceLatestTrackLoopStart * tickSizeInSeconds,
+            newlyCreatedNextPlayback.gainNode.gain.setValueAtTime(
+              minLoudness,
+              previousPlaybackFadingStartsAt,
             )
-            oldState.currentPlayback.gainNode.gain.cancelScheduledValues(0)
+            newlyCreatedNextPlayback.gainNode.gain.exponentialRampToValueAtTime(
+              maxLoudness,
+              previousPlaybackFadingEndsAt,
+            )
+            newlyCreatedNextPlayback.bufferSource.start(
+              secondsSinceAudioContextInit,
+              secondsSinceLatestTrackLoopStart,
+            )
+
+            oldState.currentPlayback.gainNode.gain.cancelScheduledValues(
+              secondsSinceAudioContextInit,
+            )
             oldState.currentPlayback.gainNode.gain.setValueAtTime(
-              1,
+              maxLoudness,
               previousPlaybackFadingStartsAt,
             )
             oldState.currentPlayback.gainNode.gain.exponentialRampToValueAtTime(
-              0.001,
+              minLoudness,
               previousPlaybackFadingEndsAt,
             )
-
             if (oldState._tag === 'PlayingAsset') {
               const cleanupFiber = yield* EFunction.pipe(
                 SubscriptionRef.updateEffect(
@@ -229,7 +246,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               return {
                 _tag: 'ScheduledChange' as const,
                 currentPlayback: oldState.currentPlayback,
-                nextPlayback,
+                nextPlayback: newlyCreatedNextPlayback,
                 currentAsset: oldState.currentAsset,
                 playbackStartedAtSecond: oldState.playbackStartedAtSecond,
                 cleanupFiber,
@@ -244,7 +261,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               return {
                 _tag: 'ScheduledChange' as const,
                 currentPlayback: oldState.currentPlayback,
-                nextPlayback,
+                nextPlayback: newlyCreatedNextPlayback,
                 currentAsset: oldState.currentAsset,
                 playbackStartedAtSecond: oldState.playbackStartedAtSecond,
                 cleanupFiber: oldState.cleanupFiber,
@@ -297,12 +314,22 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
   },
 ) {}
 
-const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) =>
+const createLoopingPlayback = (
+  eAudioContext: EAudioContext.Instance,
+  eAudioBuffer: EAudioBuffer.EAudioBuffer,
+) =>
   Effect.sync(() => {
+    const audioBufferImplHack = eAudioBuffer as EAudioBuffer.EAudioBuffer & {
+      _audioBuffer: AudioBuffer
+    }
+    const audioContextImplHack = eAudioContext as EAudioContext.Instance & {
+      _audioContext: AudioContext
+    }
+    const audioContext = audioContextImplHack._audioContext
     const bufferSource = audioContext.createBufferSource()
     const gainNode = audioContext.createGain()
     bufferSource.loop = true
-    bufferSource.buffer = buffer
+    bufferSource.buffer = audioBufferImplHack._audioBuffer
     bufferSource.connect(gainNode)
 
     gainNode.connect(audioContext.destination)
@@ -318,6 +345,7 @@ const cleanupPlayback = ({ bufferSource, gainNode }: AudioPlayback) =>
   Effect.sync(() => {
     bufferSource.stop()
     bufferSource.disconnect()
+    gainNode.gain.cancelScheduledValues(0)
     gainNode.disconnect()
   })
 
