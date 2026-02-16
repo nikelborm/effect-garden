@@ -116,16 +116,6 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           ),
         )
 
-      const bytesToCompletionProgress = (previous: {
-        size: number
-        verifiedOnDisk: boolean
-      }) => previous.size / ASSET_SIZE_BYTES
-
-      const getCompletionProgressFrom0To1 = EFunction.flow(
-        getCurrentDownloadedBytes,
-        Effect.map(bytesToCompletionProgress),
-      )
-
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
         Effect.fn(function* (previous: {
           size: number
@@ -181,12 +171,10 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
 
       return {
         increaseAssetSize,
-        assetSizesActuallyPresentOnDisk,
         verify,
         areAllBytesFetched,
         getCurrentDownloadedBytes,
         getAssetFetchingCompletionStatusChangesStream,
-        getCompletionProgressFrom0To1,
         getAssetFetchingCompletionStatus,
       }
     }),

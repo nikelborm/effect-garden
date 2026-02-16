@@ -269,6 +269,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
             Stream.changes,
             Stream.rechunk(1),
+            Stream.tap(percent =>
+              Effect.log(
+                `Accord index=${accord.index} download percent=${percent}`,
+              ),
+            ),
           )
 
       const getPatternButtonDownloadPercent = (pattern: AllPatternUnion) =>
@@ -284,6 +289,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
             Stream.changes,
             Stream.rechunk(1),
+            Stream.tap(percent =>
+              Effect.log(
+                `Pattern index=${pattern.index} download percent=${percent}`,
+              ),
+            ),
           )
 
       const getStrengthButtonDownloadPercent = (strength: Strength) =>
@@ -299,6 +309,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             ),
             Stream.changes,
             Stream.rechunk(1),
+            Stream.tap(percent =>
+              Effect.log(`Strength=${strength} download percent=${percent}`),
+            ),
           )
 
       const getMapCombinerStream =

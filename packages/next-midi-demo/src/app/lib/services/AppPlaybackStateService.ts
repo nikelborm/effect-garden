@@ -226,7 +226,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                     },
                   ),
                 ),
-                // stateSemaphore.withPermits(1),
+                stateSemaphore.withPermits(1),
                 Effect.delay(Duration.seconds(secondsSinceNowBeforeFadingEnds)),
                 Effect.tapErrorCause(Effect.logError),
                 Effect.forkDaemon,
@@ -258,7 +258,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             }
             return oldState
           }),
-        ) //.pipe(stateSemaphore.withPermits(1))
+        ).pipe(stateSemaphore.withPermits(1))
 
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
