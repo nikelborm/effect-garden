@@ -1,11 +1,10 @@
 import { OptionalProperty } from '@nikelborm/effect-helpers'
 
 import * as EFunction from 'effect/Function'
+import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
-import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
@@ -62,9 +61,7 @@ export const makeVirtualButtonTouchStateStream = <
       }),
     ),
     Stream.mapAccum(
-      SortedMap.empty<number, ElementWithDataset | 'irrelevantElement'>(
-        Order.number,
-      ),
+      HashMap.empty<number, ElementWithDataset | 'irrelevantElement'>(),
       (acc, { clientX, clientY, currentTarget, type, pointerId, target }) => {
         const eventType = type as
           | 'pointerdown'
@@ -93,20 +90,20 @@ export const makeVirtualButtonTouchStateStream = <
           return Option.match(getTargetWithDesiredDataset(target), {
             onNone: () =>
               [
-                SortedMap.set(acc, pointerId, 'irrelevantElement'),
+                HashMap.set(acc, pointerId, 'irrelevantElement'),
                 Stream.empty,
               ] as const,
             onSome: elementWithDesiredDataset =>
               [
-                SortedMap.set(acc, pointerId, elementWithDesiredDataset),
+                HashMap.set(acc, pointerId, elementWithDesiredDataset),
                 Iterable.some(acc, ([, el]) => el === elementWithDesiredDataset)
                   ? Stream.empty
                   : makePressStream(elementWithDesiredDataset),
               ] as const,
           })
 
-        const previousElementOption = SortedMap.get(acc, pointerId)
-        const mapWithoutCurrentPointerId = SortedMap.remove(acc, pointerId)
+        const previousElementOption = HashMap.get(acc, pointerId)
+        const mapWithoutCurrentPointerId = HashMap.remove(acc, pointerId)
 
         if (eventType === 'pointerup' || eventType === 'pointercancel') {
           return [
@@ -148,7 +145,7 @@ export const makeVirtualButtonTouchStateStream = <
               if (latestElement === previousElement) return [acc, Stream.empty]
               if (previousElement === 'irrelevantElement')
                 return [
-                  SortedMap.set(acc, pointerId, latestElement),
+                  HashMap.set(acc, pointerId, latestElement),
                   Iterable.some(
                     mapWithoutCurrentPointerId,
                     ([, el]) => el === latestElement,
@@ -158,7 +155,7 @@ export const makeVirtualButtonTouchStateStream = <
                 ]
 
               return [
-                SortedMap.set(acc, pointerId, latestElement),
+                HashMap.set(acc, pointerId, latestElement),
                 Stream.concat(
                   Iterable.some(acc, ([, el]) => el === latestElement)
                     ? Stream.empty
@@ -173,7 +170,7 @@ export const makeVirtualButtonTouchStateStream = <
               ]
             },
             onNone: () => [
-              SortedMap.set(acc, pointerId, 'irrelevantElement' as const),
+              HashMap.set(acc, pointerId, 'irrelevantElement' as const),
               releaseStreamOfPreviousElement,
             ],
           }),

@@ -3,7 +3,6 @@ import * as NonPrintableKey from 'ts-key-not-enum'
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Iterable from 'effect/Iterable'
-import * as Order from 'effect/Order'
 
 export type NonPrintableKeyboardKeysUnion =
   (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
@@ -24,10 +23,6 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
       `Expected "${key}" to be either a valid non-printable key name, or a single unicode symbol`,
     ),
 )
-export const ValidKeyboardKeyOrder = Order.mapInput(
-  Order.string,
-  (a: ValidKeyboardKey) => a,
-)
 
 export class ValidKeyboardKeyData extends Data.TaggedClass('ValidKeyboardKey')<{
   value: ValidKeyboardKey
@@ -36,8 +31,3 @@ export class ValidKeyboardKeyData extends Data.TaggedClass('ValidKeyboardKey')<{
     super({ value: ValidKeyboardKey(key) })
   }
 }
-
-export const ValidKeyboardKeyDataOrder = Order.mapInput(
-  Order.string,
-  (a: ValidKeyboardKeyData) => a.value,
-)

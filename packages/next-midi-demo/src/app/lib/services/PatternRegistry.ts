@@ -1,7 +1,6 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import * as Order from 'effect/Order'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -33,11 +32,6 @@ export class PatternIndexData<
     })
   }
 }
-
-export const PatternIndexDataOrder = Order.mapInput(
-  Order.number,
-  (a: PatternIndexData) => a.value,
-)
 
 export class Pattern<
   Label extends string = string,
@@ -120,8 +114,3 @@ type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =
 export type AllPatternTuple = _AllPatternTuple
 
 export type AllPatternUnion = AllPatternTuple[number]
-
-export const PatternOrderByIndex = Order.mapInput(
-  Order.number,
-  (pattern: Pattern) => pattern.index,
-)

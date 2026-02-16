@@ -1,13 +1,10 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import * as Order from 'effect/Order'
-import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
-  AccordIndexSchema,
   decodeAccordIndexSync,
   type RecordedAccordIndexes,
 } from '../audioAssetHelpers.ts'
@@ -42,11 +39,6 @@ export class AccordIndexData<
     })
   }
 }
-
-export const AccordIndexDataOrder = Order.mapInput(
-  Order.number,
-  (a: AccordIndexData) => a.value,
-)
 
 export class Accord<
   Id extends number = number,
@@ -136,8 +128,3 @@ export interface AccordMiniInfo<
   readonly id: Id
   readonly label: Label
 }
-
-export const AccordOrderByIndex = Order.mapInput(
-  Order.number,
-  (a: Accord) => a.index,
-)

@@ -4,11 +4,7 @@ import * as Stream from 'effect/Stream'
 import type { RecordedPatternIndexes } from '../audioAssetHelpers.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
-import {
-  PatternIndexData,
-  PatternIndexDataOrder,
-  PatternRegistry,
-} from './PatternRegistry.ts'
+import { PatternIndexData, PatternRegistry } from './PatternRegistry.ts'
 
 export class VirtualPadButtonModelToPatternMappingService extends Effect.Service<VirtualPadButtonModelToPatternMappingService>()(
   'next-midi-demo/VirtualPadButtonModelToPatternMappingService',
@@ -16,7 +12,6 @@ export class VirtualPadButtonModelToPatternMappingService extends Effect.Service
     accessors: true,
     scoped: Effect.flatMap(PatternRegistry.allPatterns, patterns =>
       makePhysicalButtonToParamMappingService(
-        PatternIndexDataOrder,
         patterns.map(
           pattern =>
             new PatternIndexData(

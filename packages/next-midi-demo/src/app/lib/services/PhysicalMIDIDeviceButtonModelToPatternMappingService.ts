@@ -1,7 +1,7 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
+import * as HashMap from 'effect/HashMap'
 import * as Layer from 'effect/Layer'
-import * as SortedMap from 'effect/SortedMap'
 import * as Stream from 'effect/Stream'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
@@ -25,7 +25,6 @@ export class PhysicalMIDIDeviceButtonModelToPatternMappingService extends Effect
     accessors: true,
     scoped: Effect.flatMap(PatternRegistry.allPatterns, patterns =>
       makePhysicalButtonToParamMappingService(
-        MIDIValues.NoteIdDataOrder,
         noteDatasHandlingPatterns,
         patterns,
         makeMIDINoteButtonPressStream(notesHandlingPatternsSet),
@@ -36,7 +35,7 @@ export class PhysicalMIDIDeviceButtonModelToPatternMappingService extends Effect
   static OnMIDIDisabled = Layer.succeed(
     this,
     this.make({
-      currentMap: Effect.succeed(SortedMap.empty(MIDIValues.NoteIdDataOrder)),
+      currentMap: Effect.succeed(HashMap.empty()),
       latestPhysicalButtonModelsStream: Stream.empty,
       mapChanges: Stream.empty,
       getPhysicalButtonModel: () => Effect.succeedNone,

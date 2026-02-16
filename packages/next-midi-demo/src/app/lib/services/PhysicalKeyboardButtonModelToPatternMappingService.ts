@@ -1,9 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import {
-  ValidKeyboardKeyData,
-  ValidKeyboardKeyDataOrder,
-} from '../branded/StoreValues.ts'
+import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { PatternRegistry } from './PatternRegistry.ts'
@@ -23,7 +20,6 @@ export class PhysicalKeyboardButtonModelToPatternMappingService extends Effect.S
     accessors: true,
     scoped: Effect.flatMap(PatternRegistry.allPatterns, patterns =>
       makePhysicalButtonToParamMappingService(
-        ValidKeyboardKeyDataOrder,
         keyDatasHandlingPatterns,
         patterns,
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingPatternsSet),

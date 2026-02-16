@@ -3,11 +3,7 @@ import * as Stream from 'effect/Stream'
 
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
-import {
-  StrengthData,
-  StrengthDataOrder,
-  StrengthRegistry,
-} from './StrengthRegistry.ts'
+import { StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 
 export class VirtualPadButtonModelToStrengthMappingService extends Effect.Service<VirtualPadButtonModelToStrengthMappingService>()(
   'next-midi-demo/VirtualPadButtonModelToStrengthMappingService',
@@ -15,7 +11,6 @@ export class VirtualPadButtonModelToStrengthMappingService extends Effect.Servic
     accessors: true,
     scoped: Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
       makePhysicalButtonToParamMappingService(
-        StrengthDataOrder,
         strengths.map(strength => new StrengthData(strength)),
         strengths,
         Stream.map(

@@ -1,13 +1,11 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import * as Order from 'effect/Order'
 
 export type NoteId = Brand.Branded<number, 'MIDINoteId: integer in range 0-127'>
 export const NoteId = Brand.refined<NoteId>(
   n => Number.isSafeInteger(n) && n >= 0 && n < 128,
   n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
 )
-export const NoteIdOrder = Order.mapInput(Order.number, (a: NoteId) => a)
 
 export class NoteIdData extends Data.TaggedClass('NoteId')<{
   value: NoteId
@@ -16,11 +14,6 @@ export class NoteIdData extends Data.TaggedClass('NoteId')<{
     super({ value: NoteId(note) })
   }
 }
-
-export const NoteIdDataOrder = Order.mapInput(
-  Order.number,
-  (a: NoteIdData) => a.value,
-)
 
 export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>
 export const Pressure = Brand.refined<Pressure>(

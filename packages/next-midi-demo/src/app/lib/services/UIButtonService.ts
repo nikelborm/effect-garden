@@ -2,34 +2,21 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
+import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
-import * as Ref from 'effect/Ref'
-import * as SortedMap from 'effect/SortedMap'
-import * as SortedSet from 'effect/SortedSet'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
 import { ButtonState } from '../branded/index.ts'
-import {
-  type NoteId,
-  type NoteIdData,
-  NoteIdDataOrder,
-  NoteIdOrder,
-} from '../branded/MIDIValues.ts'
-import {
-  type ValidKeyboardKey,
-  type ValidKeyboardKeyData,
-  ValidKeyboardKeyDataOrder,
-  ValidKeyboardKeyOrder,
+import type { NoteId, NoteIdData } from '../branded/MIDIValues.ts'
+import type {
+  ValidKeyboardKey,
+  ValidKeyboardKeyData,
 } from '../branded/StoreValues.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
-  type Accord,
   type AccordIndexData,
-  AccordIndexDataOrder,
-  AccordOrderByIndex,
   AccordRegistry,
   type AllAccordUnion,
 } from './AccordRegistry.ts'
@@ -44,10 +31,7 @@ import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingServ
 import {
   type AllPatternUnion,
   type PatternIndexData,
-  PatternIndexDataOrder,
-  PatternOrderByIndex,
   PatternRegistry,
-  type Pattern as pattern,
 } from './PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
@@ -55,11 +39,7 @@ import { PhysicalKeyboardButtonModelToStrengthMappingService } from './PhysicalK
 import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
-import {
-  type StrengthData,
-  StrengthDataOrder,
-  StrengthRegistry,
-} from './StrengthRegistry.ts'
+import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 import { VirtualPadButtonModelToAccordMappingService } from './VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from './VirtualPadButtonModelToPatternMappingService.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
@@ -74,8 +54,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const strengthRegistry = yield* StrengthRegistry
       const appPlaybackState = yield* AppPlaybackStateService
       const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
-      const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
-      const assetDownloadScheduler = yield* AssetDownloadScheduler
+      yield* LoadedAssetSizeEstimationMap
+      yield* AssetDownloadScheduler
       const physicalKeyboardButtonModelToAccordMappingService =
         yield* PhysicalKeyboardButtonModelToAccordMappingService
       const physicalKeyboardButtonModelToPatternMappingService =
@@ -97,32 +77,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const virtualPadButtonModelToStrengthMappingService =
         yield* VirtualPadButtonModelToStrengthMappingService
 
-      const accordButtonsMapRef = yield* Ref.make<AccordButtonMap>(
-        SortedMap.empty(AccordOrderByIndex),
-      )
-
       // TODO: нужно сделать чтобы визуально прожимались только те, которые
       // могут визуально прожиматься на текущий момент
-
-      // TODO: при одновременном нажатии нескольких клавиш (внутри секции
-      // аккордов или внутри секции паттернов, где секции не зависят друг от
-      // друга), нужно событие активации чтобы срабатывало только после того как
-      // отпущена последняя из нескольких нажатых клавиш
-
-      // стейт нажатия кнопки считается так: если может нажиматься, показывается нажатие
-
-      // TODO: в банальном варианте onDown событие ставит активную клавишу
-
-      // TODO: блокировать нажатия кнопок на ранних стадиях. Нажатие на кнопку
-      // паттерна/аккорда, как и её отпускание должны просто игнорироваться,
-      // если по логике кнопка должна быть заблокирована
-
-      // В момент активного плейбека может стать кандидатом на переключение
-      // только та кнопка паттерна/аккорда, которая загружена полностью
-
-      const patternButtonsMapRef = yield* Ref.make<PatternButtonMap>(
-        SortedMap.empty(PatternOrderByIndex),
-      )
 
       const isPressable = <E, R>(
         self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
@@ -320,7 +276,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           self: Stream.Stream<
             SupportedKeyData extends infer Key
               ? Key extends any
-                ? SortedMap.SortedMap<Key, PhysicalButtonModel<T>>
+                ? HashMap.HashMap<Key, PhysicalButtonModel<T>>
                 : never
               : never,
             E,
@@ -329,7 +285,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         ) =>
           Stream.scan(
             self,
-            HashMap.empty<T, SortedSet.SortedSet<SupportedKeyData>>(),
+            HashMap.empty<T, HashSet.HashSet<SupportedKeyData>>(),
             (previousMap, latestMap) => {
               let newMap = previousMap
               for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -337,12 +293,12 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   newMap,
                   physicalButtonModel.assignedTo,
                   EFunction.flow(
-                    Option.orElseSome(() => SortedSet.empty(OrderByKeyData)),
+                    Option.orElseSome(() => HashSet.empty()),
                     Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
                       (physicalButtonModel.buttonPressState ===
                         ButtonState.Pressed
-                        ? SortedSet.add
-                        : SortedSet.remove)(
+                        ? HashSet.add
+                        : HashSet.remove)(
                         setOfPhysicalIdsTheButtonIsPressedBy,
                         physicalButtonId,
                       ),
@@ -428,9 +384,6 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
         ),
         Stream.tap(
           Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
-            yield* Effect.log(
-              `buttonPressState: ${buttonPressState}, ${assignedTo}`,
-            )
             if (ButtonState.isNotPressed(buttonPressState)) return
 
             const isStrengthButtonPressable = yield* EFunction.pipe(
@@ -454,7 +407,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             EFunction.flow(
               HashMap.get(accord),
-              Option.map(set => SortedSet.size(set) !== 0),
+              Option.map(set => HashSet.size(set) !== 0),
               Option.getOrElse(() => false),
             ),
           ),
@@ -486,7 +439,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             EFunction.flow(
               HashMap.get(pattern),
-              Option.map(set => SortedSet.size(set) !== 0),
+              Option.map(set => HashSet.size(set) !== 0),
               Option.getOrElse(() => false),
             ),
           ),
@@ -518,7 +471,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             EFunction.flow(
               HashMap.get(strength),
-              Option.map(set => SortedSet.size(set) !== 0),
+              Option.map(set => HashSet.size(set) !== 0),
               Option.getOrElse(() => false),
             ),
           ),
@@ -531,15 +484,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
         )
 
-      const getPressureReportOfAccord =
-        getPressureReportOfMapRef(accordButtonsMapRef)
-
-      const getPressureReportOfPattern =
-        getPressureReportOfMapRef(patternButtonsMapRef)
-
       return {
-        getPressureReportOfAccord,
-        getPressureReportOfPattern,
         getIsSelectedAccordStream,
         getIsSelectedPatternStream,
         getIsSelectedStrengthStream,
@@ -560,75 +505,17 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
   },
 ) {}
 
-const defaultReportOnNone = EFunction.flow(
-  Option.orElseSome(
-    (): PressureReport => ({
-      isActive: false,
-      pressedByKeyboardKeys: SortedSet.empty(ValidKeyboardKeyOrder),
-      pressedByMIDIPadButtons: SortedSet.empty(NoteIdOrder),
-    }),
-  )<PressureReport>,
-  Option.getOrThrow,
-)
-
-const getPressureReportOfMapRef =
-  <TAssignee>(assigneeMapRef: PressureReportMapRef<TAssignee>) =>
-  (assignee: TAssignee) =>
-    Effect.map(
-      Ref.get(assigneeMapRef),
-      EFunction.flow(SortedMap.get(assignee), defaultReportOnNone),
-    )
-
 export interface PressureReport {
   isActive: boolean
-  pressedByKeyboardKeys: SortedSet.SortedSet<ValidKeyboardKey>
-  pressedByMIDIPadButtons: SortedSet.SortedSet<NoteId>
+  pressedByKeyboardKeys: HashSet.HashSet<ValidKeyboardKey>
+  pressedByMIDIPadButtons: HashSet.HashSet<NoteId>
 }
-
-interface AccordButtonMap extends PressureReportMap<Accord> {}
-
-interface PatternButtonMap extends PressureReportMap<pattern> {}
-
-interface PressureReportMap<Key>
-  extends SortedMap.SortedMap<Key, PressureReport> {}
-
-interface PressureReportMapRef<Key> extends Ref.Ref<PressureReportMap<Key>> {}
 
 interface ButtonPressabilityDecisionRequirements {
   readonly isPlaying: boolean
   readonly completionStatusOfTheAssetThisButtonWouldSelect: AssetCompletionStatus
   readonly isSelectedParam: boolean
 }
-
-const asd = {
-  NoteId: 0,
-  ValidKeyboardKey: 1,
-  AccordIndex: 2,
-  PatternIndex: 3,
-  Strength: 4,
-} as const
-
-const OrderByKeyData = Order.combine(
-  Order.mapInput(Order.number, (a: SupportedKeyData) => asd[a._tag]),
-  Order.make((self: SupportedKeyData, that: SupportedKeyData) => {
-    if (self._tag === 'NoteId' && that._tag === 'NoteId')
-      return NoteIdDataOrder(self, that)
-
-    if (self._tag === 'ValidKeyboardKey' && that._tag === 'ValidKeyboardKey')
-      return ValidKeyboardKeyDataOrder(self, that)
-
-    if (self._tag === 'AccordIndex' && that._tag === 'AccordIndex')
-      return AccordIndexDataOrder(self, that)
-
-    if (self._tag === 'PatternIndex' && that._tag === 'PatternIndex')
-      return PatternIndexDataOrder(self, that)
-
-    if (self._tag === 'Strength' && that._tag === 'Strength')
-      return StrengthDataOrder(self, that)
-
-    throw new Error('Unsortable')
-  }),
-)
 
 type SupportedKeyData =
   | ValidKeyboardKeyData

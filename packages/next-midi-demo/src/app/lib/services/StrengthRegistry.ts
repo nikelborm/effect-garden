@@ -1,6 +1,5 @@
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -20,10 +19,6 @@ export class StrengthData extends Data.TaggedClass('Strength')<{
     super({ value: strength })
   }
 }
-export const StrengthDataOrder = Order.mapInput(
-  Order.string,
-  (_: StrengthData) => _.value,
-)
 
 export class StrengthRegistry
   extends Effect.Service<StrengthRegistry>()(
