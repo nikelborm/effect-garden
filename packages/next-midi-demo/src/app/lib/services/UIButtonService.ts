@@ -135,13 +135,15 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                 req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
                   'finished'),
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
         )
 
       const getIsSelectedAccordStream = (accord: AllAccordUnion) =>
         accordRegistry.selectedAccordChanges.pipe(
           Stream.map(Equal.equals(accord)),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isSelected =>
             Effect.log(
               `Accord index=${accord.index} is ${isSelected ? '' : 'not '}selected`,
@@ -152,7 +154,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
         patternRegistry.selectedPatternChanges.pipe(
           Stream.map(Equal.equals(pattern)),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isSelected =>
             Effect.log(
               `Pattern index=${pattern.index} is ${isSelected ? '' : 'not '}selected`,
@@ -163,7 +166,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const getIsSelectedStrengthStream = (strength: Strength) =>
         strengthRegistry.selectedStrengthChanges.pipe(
           Stream.map(Equal.equals(strength)),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isSelected =>
             Effect.log(
               `Strength=${strength} is ${isSelected ? '' : 'not '}selected`,
@@ -210,9 +214,15 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             pb =>
               pb._tag !== 'NotPlaying' &&
-              Equal.equals(pb.currentAsset.accord, accord),
+              pb.currentAsset.accord.index === accord.index,
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.tap(a =>
+            Effect.log(
+              `Accord index=${accord.index} button is ${a ? '' : 'not '}pressable`,
+            ),
+          ),
         )
       const isPatternButtonCurrentlyPlaying = (pattern: AllPatternUnion) =>
         appPlaybackState.playbackPublicInfoChangesStream.pipe(
@@ -221,7 +231,13 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               pb._tag !== 'NotPlaying' &&
               Equal.equals(pb.currentAsset.pattern, pattern),
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.tap(a =>
+            Effect.log(
+              `Pattern index=${pattern.index} button is ${a ? '' : 'not '}pressable`,
+            ),
+          ),
         )
       const isStrengthButtonCurrentlyPlaying = (strength: Strength) =>
         appPlaybackState.playbackPublicInfoChangesStream.pipe(
@@ -229,10 +245,11 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             pb =>
               pb._tag !== 'NotPlaying' && pb.currentAsset.strength === strength,
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(a =>
             Effect.log(
-              `Strength ${strength} button is ${a ? '' : 'not '}pressable`,
+              `Strength=${strength} button is ${a ? '' : 'not '}pressable`,
             ),
           ),
         )
@@ -250,8 +267,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   ? 99
                   : 100,
             ),
-            // Stream.changes,
-            // Stream.rechunk(1),
+            Stream.changes,
+            Stream.rechunk(1),
           )
 
       const getPatternButtonDownloadPercent = (pattern: AllPatternUnion) =>
@@ -265,8 +282,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   ? 99
                   : 100,
             ),
-            // Stream.changes,
-            // Stream.rechunk(1),
+            Stream.changes,
+            Stream.rechunk(1),
           )
 
       const getStrengthButtonDownloadPercent = (strength: Strength) =>
@@ -280,8 +297,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
                   ? 99
                   : 100,
             ),
-            // Stream.changes,
-            // Stream.rechunk(1),
+            Stream.changes,
+            Stream.rechunk(1),
           )
 
       const getMapCombinerStream =
@@ -330,10 +347,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
           Stream.merge(virtualPadButtonModelToAccordMappingService.mapChanges),
           getMapCombinerStream<AllAccordUnion>(),
-          Effect.succeed,
-          // Stream.changes,
-          // Stream.rechunk(1),
-          // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       yield* physicalKeyboardButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
@@ -429,7 +445,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               Option.getOrElse(() => false),
             ),
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isPressed =>
             Effect.log(
               `accord index=${accord.index} is ${isPressed ? '' : 'not '}pressed`,
@@ -444,10 +461,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           ),
           Stream.merge(virtualPadButtonModelToPatternMappingService.mapChanges),
           getMapCombinerStream<AllPatternUnion>(),
-          // Stream.changes,
-          // Stream.rechunk(1),
-          // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-          Effect.succeed,
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isPatternButtonPressedFlagChangesStream = (
@@ -461,7 +477,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               Option.getOrElse(() => false),
             ),
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isPressed =>
             Effect.log(
               `pattern index=${pattern.index} is ${isPressed ? '' : 'not '}pressed`,
@@ -478,10 +495,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             virtualPadButtonModelToStrengthMappingService.mapChanges,
           ),
           getMapCombinerStream<Strength>(),
-          Effect.succeed,
-          // Stream.changes,
-          // Stream.rechunk(1),
-          // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
       const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
@@ -493,7 +509,8 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
               Option.getOrElse(() => false),
             ),
           ),
-          // Stream.changes,
+          Stream.changes,
+          Stream.rechunk(1),
           Stream.tap(isPressed =>
             Effect.log(
               `strength=${strength} is ${isPressed ? '' : 'not '}pressed`,

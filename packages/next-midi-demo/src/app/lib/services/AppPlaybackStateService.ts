@@ -38,10 +38,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       })
       const fadeTime = 0.1 // seconds
 
-      const changesStream = yield* stateRef.changes.pipe(
-        Effect.succeed,
-        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
       const arrayOfCleanupFibers = []
       // TODO: fill
       // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
@@ -86,11 +82,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
         const time = yield* EAudioContext.currentTime(audioContext)
 
-        const currentPlayback = yield* createImmediatelyLoudPlayback(
+        const currentPlayback = yield* createPlayback(
           audioContextImplHack._audioContext,
           audioBufferImplHack._audioBuffer,
-          time,
         )
+        currentPlayback.gainNode.gain.setValueAtTime(1, time)
+        currentPlayback.bufferSource.start()
 
         yield* Effect.log('started playing')
 
@@ -229,7 +226,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                     },
                   ),
                 ),
-                stateSemaphore.withPermits(1),
+                // stateSemaphore.withPermits(1),
                 Effect.delay(Duration.seconds(secondsSinceNowBeforeFadingEnds)),
                 Effect.tapErrorCause(Effect.logError),
                 Effect.forkDaemon,
@@ -261,13 +258,13 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             }
             return oldState
           }),
-        ).pipe(stateSemaphore.withPermits(1))
+        ) //.pipe(stateSemaphore.withPermits(1))
 
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
 
       const isCurrentlyPlayingEffect = Effect.map(stateRef.get, isPlaying)
-      const latestIsPlayingFlagStream = yield* changesStream.pipe(
+      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
         Stream.map(isPlaying),
         Stream.changes,
         Stream.rechunk(1),
@@ -301,7 +298,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         stop,
         isCurrentlyPlayingEffect,
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream: Stream.map(changesStream, e =>
+        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, e =>
           e._tag === 'NotPlaying' ? e : Struct.pick(e, '_tag', 'currentAsset'),
         ),
       }
@@ -322,48 +319,9 @@ const createPlayback = (audioContext: AudioContext, buffer: AudioBuffer) =>
     return { bufferSource, gainNode }
   })
 
-const createImmediatelyLoudPlayback = (
-  audioContext: AudioContext,
-  buffer: AudioBuffer,
-  time: number,
-) =>
-  Effect.map(createPlayback(audioContext, buffer), pb => {
-    pb.gainNode.gain.setValueAtTime(1, time)
-    pb.bufferSource.start()
-    return pb
-  })
-
 const ticksPerTrack = 8
 const tickSizeInSeconds = 1
 const trackSizeInSeconds = ticksPerTrack * tickSizeInSeconds
-
-const getSecondsSinceAudioContextInitNextTickWillStartAt = (
-  secondsSinceAudioContextInit: number,
-  secondsBetweenAudioContextInitAndPlaybackStart: number,
-) => {
-  const secondsPassedSincePlaybackStart =
-    secondsSinceAudioContextInit -
-    secondsBetweenAudioContextInitAndPlaybackStart
-
-  const nextTickIndex = Math.ceil(
-    secondsPassedSincePlaybackStart / tickSizeInSeconds,
-  )
-
-  return nextTickIndex * tickSizeInSeconds
-}
-
-const silencePlaybackAtNextTick = () => []
-
-const createInitiallySilentPlaybackWithScheduledLoudnessIncrease = (
-  audioContext: AudioContext,
-  buffer: AudioBuffer,
-  playbackStartedAtSecond: number,
-) =>
-  Effect.map(createPlayback(audioContext, buffer), pb => {
-    pb.gainNode.gain.setValueAtTime(1, playbackStartedAtSecond)
-    pb.bufferSource.start()
-    return pb
-  })
 
 const cleanupPlayback = ({ bufferSource, gainNode }: AudioPlayback) =>
   Effect.sync(() => {
