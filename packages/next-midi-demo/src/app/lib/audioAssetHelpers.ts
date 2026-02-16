@@ -8,6 +8,9 @@ export const PatternIndexSchema = Schema.Literal(0, 1, 2, 3, 4, 5, 6, 7)
 export const StrengthSchema = Schema.Literal('s', 'm', 'v')
 export type Strength = (typeof StrengthSchema)['Type']
 
+export const decodeAccordIndexSync = Schema.decodeSync(AccordIndexSchema)
+export const decodePatternIndexSync = Schema.decodeSync(PatternIndexSchema)
+
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
   'pattern',
   {

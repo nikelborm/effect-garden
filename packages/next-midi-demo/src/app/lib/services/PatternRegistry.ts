@@ -2,12 +2,11 @@ import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as Order from 'effect/Order'
-import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
-  PatternIndexSchema,
+  decodePatternIndexSync,
   type RecordedPatternIndexes,
 } from '../audioAssetHelpers.ts'
 
@@ -70,28 +69,26 @@ export class PatternRegistry
         yield* SubscriptionRef.make<RecordedPatternIndexes>(0)
 
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
-        // Stream.changes,
+        Stream.changes,
+        Stream.rechunk(1),
         Stream.map(mapIndexToPattern),
-        Effect.succeed,
-        // Stream.rechunk(1),
-        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {
         currentlySelectedPattern: Effect.map(
-          SubscriptionRef.get(currentPatternIndexRef),
+          currentPatternIndexRef.get,
           mapIndexToPattern,
         ),
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
         selectPattern: (patternIndex: RecordedPatternIndexes) => {
-          const trustedIndex =
-            Schema.decodeSync(PatternIndexSchema)(patternIndex)
+          const trustedIndex = decodePatternIndexSync(patternIndex)
 
           return SubscriptionRef.set(currentPatternIndexRef, trustedIndex)
         },
         getPatternByIndex: (patternIndex: RecordedPatternIndexes) =>
-          allPatterns[Schema.decodeSync(PatternIndexSchema)(patternIndex)],
+          allPatterns[decodePatternIndexSync(patternIndex)],
       }
     }),
   })

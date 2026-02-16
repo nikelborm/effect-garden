@@ -1,3 +1,4 @@
+import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
@@ -37,11 +38,11 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         accord: accordRegistry.selectedAccordChanges,
         pattern: patternRegistry.selectedPatternChanges,
       }).pipe(
+        Stream.map(Data.struct),
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        Effect.succeed,
-        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const mapAssetToTaggedPatternPointer = ({
@@ -68,19 +69,25 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         ({ status }) => status === 'finished',
       )
 
-      const completionStatusChangesStream = Stream.flatMap(
-        selectedAssetChangesStream,
-        EFunction.flow(
-          mapAssetToTaggedPatternPointer,
-          estimationMap.getAssetFetchingCompletionStatusChangesStream,
-        ),
-        { switch: true, concurrency: 1 },
-      )
+      const completionStatusChangesStream =
+        yield* selectedAssetChangesStream.pipe(
+          Stream.flatMap(
+            EFunction.flow(
+              mapAssetToTaggedPatternPointer,
+              estimationMap.getAssetFetchingCompletionStatusChangesStream,
+            ),
+            { switch: true, concurrency: 1 },
+          ),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        )
 
-      const isFinishedCompletelyChangesStream = Stream.map(
-        completionStatusChangesStream,
-        ({ status }) => status === 'finished',
-      )
+      const isFinishedCompletelyChangesStream =
+        yield* completionStatusChangesStream.pipe(
+          Stream.map(({ status }) => status === 'finished'),
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        )
 
       const makePatchApplier =
         (patch: Patch) =>

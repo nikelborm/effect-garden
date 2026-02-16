@@ -59,7 +59,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
 
       const getCurrentDownloadedBytes = (asset: AssetPointer) =>
         Effect.map(
-          SubscriptionRef.get(assetToSizeHashMapRef),
+          assetToSizeHashMapRef.get,
           EFunction.flow(
             HashMap.get(asset),
             Option.getOrElse(() => ({

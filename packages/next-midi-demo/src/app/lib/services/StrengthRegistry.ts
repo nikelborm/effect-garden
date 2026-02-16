@@ -30,19 +30,24 @@ export class StrengthRegistry
     'next-midi-demo/StrengthRegistry',
     {
       accessors: true,
-      effect: Effect.map(
-        SubscriptionRef.make<Strength>('m'),
-        currentStrengthRef => ({
-          currentlySelectedStrength: SubscriptionRef.get(currentStrengthRef),
+      scoped: Effect.gen(function* () {
+        const selectedStrengthRef = yield* SubscriptionRef.make<Strength>('m')
+        const selectedStrengthChanges = yield* selectedStrengthRef.changes.pipe(
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        )
+        return {
+          currentlySelectedStrength: selectedStrengthRef.get,
           allStrengths: Effect.succeed(allStrengths),
-          selectedStrengthChanges: Stream.changes(currentStrengthRef.changes),
+          selectedStrengthChanges,
           selectStrength: (strength: Strength) => {
             const trustedStrength = Schema.decodeSync(StrengthSchema)(strength)
 
-            return SubscriptionRef.set(currentStrengthRef, trustedStrength)
+            return SubscriptionRef.set(selectedStrengthRef, trustedStrength)
           },
-        }),
-      ),
+        }
+      }),
     },
   )
   implements IStrengthRegistry {}

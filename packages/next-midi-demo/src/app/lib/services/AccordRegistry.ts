@@ -8,6 +8,7 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
   AccordIndexSchema,
+  decodeAccordIndexSync,
   type RecordedAccordIndexes,
 } from '../audioAssetHelpers.ts'
 
@@ -74,27 +75,26 @@ export class AccordRegistry
         yield* SubscriptionRef.make<RecordedAccordIndexes>(0)
 
       const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
-        // Stream.changes,
-        // Stream.rechunk(1),
+        Stream.changes,
+        Stream.rechunk(1),
         Stream.map(mapIndexToAccord),
-        Effect.succeed,
-        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {
         currentlySelectedAccord: Effect.map(
-          SubscriptionRef.get(currentAccordIndexRef),
+          currentAccordIndexRef.get,
           mapIndexToAccord,
         ),
         allAccords: Effect.succeed(allAccords),
         selectedAccordChanges,
         selectAccord: (accordIndex: RecordedAccordIndexes) => {
-          const trustedIndex = Schema.decodeSync(AccordIndexSchema)(accordIndex)
+          const trustedIndex = decodeAccordIndexSync(accordIndex)
 
           return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
         },
         getAccordByIndex: (accordIndex: RecordedAccordIndexes) =>
-          allAccords[Schema.decodeSync(AccordIndexSchema)(accordIndex)],
+          allAccords[decodeAccordIndexSync(accordIndex)],
       }
     }),
   })

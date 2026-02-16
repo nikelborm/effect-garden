@@ -295,7 +295,6 @@ const PlaybackButton = () => {
   return (
     <DebugButton
       onMouseDown={() => {
-        console.log('isPressable', isPressable)
         if (isPressable) playPause()
       }}
     >
