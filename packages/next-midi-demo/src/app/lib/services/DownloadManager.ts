@@ -30,13 +30,6 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
         | HttpClient.HttpClient
       >()
 
-      const isCurrentlyDownloading = (asset: AssetPointer) =>
-        FiberMap.has(fiberMap, asset)
-
-      const waitUntilCompletelyFree = FiberMap.awaitEmpty(fiberMap).pipe(
-        Effect.withSpan('DownloadManager.waitUntilCompletelyFree'),
-      )
-
       const startOrContinueOrIgnoreCompletedCached = Effect.fn(
         'DownloadManager.startOrContinueOrIgnoreCached',
       )(function* (asset: AssetPointer) {

@@ -38,12 +38,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       })
       const fadeTime = 0.1 // seconds
 
-      const arrayOfCleanupFibers = []
-      // TODO: fill
-      // TODO: add internal cleanup stage, so that if a user click during cleanup, it's properly handled?
-
-      const createSilentByDefaultPlayback = () => {}
-
       const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
         function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
           const assetFileHandle = yield* getFileHandle({
@@ -263,7 +257,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
 
-      const isCurrentlyPlayingEffect = Effect.map(stateRef.get, isPlaying)
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
         Stream.map(isPlaying),
         Stream.changes,
