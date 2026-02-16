@@ -70,10 +70,11 @@ export class PatternRegistry
         yield* SubscriptionRef.make<RecordedPatternIndexes>(0)
 
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
-        Stream.changes,
+        // Stream.changes,
         Stream.map(mapIndexToPattern),
+        Effect.succeed,
         // Stream.rechunk(1),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {

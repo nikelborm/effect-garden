@@ -1,3 +1,4 @@
+import * as Data from 'effect/Data'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
@@ -35,14 +36,16 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
           event.target.tagName === 'TEXTAREA' ||
           event.target.isContentEditable)
       )
-        ? Option.some([
-            new ValidKeyboardKeyData(event.key),
-
-            event.type === 'keydown'
-              ? ButtonState.Pressed
-              : ButtonState.NotPressed,
-          ] as const)
+        ? Option.some(
+            Data.tuple(
+              new ValidKeyboardKeyData(event.key),
+              event.type === 'keydown'
+                ? ButtonState.Pressed
+                : ButtonState.NotPressed,
+            ),
+          )
         : Option.none(),
     ),
+    Stream.changes,
   )
 }

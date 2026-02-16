@@ -56,41 +56,10 @@ export const prettyBytes = (bytes: number): string => {
   return `${isNegative ? '-' : ''}${formatted} ${unit}`
 }
 
-type FileStats =
-  | {
-      readonly exists: true
-      readonly size: number
-    }
-  | {
-      readonly exists: false
-    }
-
 export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundError>()(
   'OPFSFileNotFoundError',
   { cause: Schema.Unknown },
 ) {}
-
-export const checkOPFSFileExists = (fileName: string) =>
-  EFunction.pipe(
-    RootDirectoryHandle,
-    Effect.flatMap(root =>
-      Effect.tryPromise({
-        try: async (): Promise<FileStats> => {
-          const handle = await root.getFileHandle(fileName, { create: false })
-
-          const file = await handle.getFile()
-          return { exists: true, size: file.size }
-        },
-        catch: cause =>
-          cause instanceof DOMException && cause.name === 'NotFoundError'
-            ? new OPFSFileNotFoundError({ cause })
-            : new OPFSError({ operation: 'checkOPFSFileExists', cause }),
-      }),
-    ),
-    Effect.catchTag('OPFSFileNotFoundError', () =>
-      Effect.succeed<FileStats>({ exists: false }),
-    ),
-  )
 
 // Augment FileSystemDirectoryHandle with async iterator methods not yet in TS DOM lib
 declare global {

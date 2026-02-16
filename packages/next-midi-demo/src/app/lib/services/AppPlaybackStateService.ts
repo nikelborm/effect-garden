@@ -40,7 +40,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const current = SubscriptionRef.get(stateRef)
 
       const changesStream = yield* stateRef.changes.pipe(
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Effect.succeed,
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
       const arrayOfCleanupFibers = []
       // TODO: fill
@@ -294,10 +295,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         current._tag !== 'NotPlaying'
 
       const isCurrentlyPlayingEffect = Effect.map(current, isPlaying)
-      const latestIsPlayingFlagStream = changesStream.pipe(
+      const latestIsPlayingFlagStream = yield* changesStream.pipe(
         Stream.map(isPlaying),
-        Stream.changes,
-
+        Effect.succeed,
+        // Stream.changes,
         // Stream.rechunk(1),
         // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
@@ -311,9 +312,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               : selectedAssetState.isFinishedCompletelyChangesStream,
           { switch: true, concurrency: 1 },
         ),
-        Stream.changes,
+        Effect.succeed,
+        // Stream.changes,
         // Stream.rechunk(1),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       yield* selectedAssetState.changes.pipe(

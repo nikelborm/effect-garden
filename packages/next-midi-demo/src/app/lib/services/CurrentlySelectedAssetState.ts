@@ -40,7 +40,8 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Effect.succeed,
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       const mapAssetToTaggedPatternPointer = ({

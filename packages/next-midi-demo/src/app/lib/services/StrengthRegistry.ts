@@ -2,7 +2,7 @@ import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as Order from 'effect/Order'
 import * as Schema from 'effect/Schema'
-import type * as Stream from 'effect/Stream'
+import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
@@ -35,7 +35,7 @@ export class StrengthRegistry
         currentStrengthRef => ({
           currentlySelectedStrength: SubscriptionRef.get(currentStrengthRef),
           allStrengths: Effect.succeed(allStrengths),
-          selectedStrengthChanges: currentStrengthRef.changes,
+          selectedStrengthChanges: Stream.changes(currentStrengthRef.changes),
           selectStrength: (strength: Strength) => {
             const trustedStrength = Schema.decodeSync(StrengthSchema)(strength)
 

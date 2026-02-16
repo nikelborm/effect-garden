@@ -91,7 +91,8 @@ export const makePhysicalButtonToParamMappingService = <
           ),
         { concurrency: 1 },
       ),
-      Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      Effect.succeed,
+      // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
     )
 
     return {

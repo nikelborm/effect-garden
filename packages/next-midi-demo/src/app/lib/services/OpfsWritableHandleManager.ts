@@ -40,7 +40,9 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
                   Effect.promise(() => writablePointingAtTheEnd.write(data)),
                   estimationMap.increaseAssetSize(pointer, data.byteLength),
                 ),
-              close: Effect.promise(() => writablePointingAtTheEnd.close()),
+              close: Effect.promise(() =>
+                writablePointingAtTheEnd.close(),
+              ).pipe(Effect.andThen(estimationMap.verify(pointer))),
             }
           },
         ),

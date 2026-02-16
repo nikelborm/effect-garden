@@ -74,10 +74,11 @@ export class AccordRegistry
         yield* SubscriptionRef.make<RecordedAccordIndexes>(0)
 
       const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
-        Stream.changes,
+        // Stream.changes,
         // Stream.rechunk(1),
         Stream.map(mapIndexToAccord),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Effect.succeed,
+        // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {

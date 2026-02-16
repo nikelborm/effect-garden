@@ -121,8 +121,9 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
     const { appendDataToTheEndOfFile } = yield* opfs.getWriter(asset)
     const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
 
-    return Stream.tap(getStreamOfRemoteAsset(asset, currentBytes), byteArray =>
-      appendDataToTheEndOfFile(byteArray.buffer),
+    return Stream.tap(
+      getStreamOfRemoteAsset(asset, currentBytes.size),
+      byteArray => appendDataToTheEndOfFile(byteArray.buffer),
     )
   }).pipe(
     Effect.tapErrorCause(cause =>

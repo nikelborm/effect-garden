@@ -105,7 +105,9 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
                 `Downloading slot acquired. Download started. Awaiting completion`,
               )
               yield* result.awaitCompletion
-              yield* Effect.log(`Asset successfully downloaded`, asset)
+
+              yield* log(`Asset successfully downloaded`)
+
               return
             }),
             { concurrency: MAX_PARALLEL_ASSET_DOWNLOADS, unordered: true },
