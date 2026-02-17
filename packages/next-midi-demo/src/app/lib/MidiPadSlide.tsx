@@ -321,7 +321,7 @@ const ButtonGrid = styled.div`
   --num-rows: 2;
   --num-column: 8;
   --viewport-vertical-size: 250px;
-  --viewport-horizontal-size: 1600px;
+  --viewport-horizontal-size: 90vw;
   --num-row-gaps: calc(var(--num-rows) - 1);
   --num-column-gaps: calc(var(--num-column) - 1);
   --size-taken-by-row-gaps: calc(var(--one-gap-size) * var(--num-row-gaps));

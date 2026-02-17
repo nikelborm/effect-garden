@@ -1,6 +1,6 @@
 {
   "name": "effect-web-midi",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Effect WEB MIDI API wrapper",
   "license": "MIT",

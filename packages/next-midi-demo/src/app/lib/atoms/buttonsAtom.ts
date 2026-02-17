@@ -1,22 +1,32 @@
+'use client'
+
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
+import * as Result from '@effect-atom/atom/Result'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
-import * as LogLevel from 'effect/LogLevel'
+// import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
 
-import { AccordRegistry } from '../services/AccordRegistry.ts'
+import type { Strength } from '../audioAssetHelpers.ts'
+import {
+  AccordRegistry,
+  type AllAccordUnion,
+} from '../services/AccordRegistry.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
 import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager.ts'
-import { PatternRegistry } from '../services/PatternRegistry.ts'
+import {
+  type AllPatternUnion,
+  PatternRegistry,
+} from '../services/PatternRegistry.ts'
 import { PhysicalKeyboardButtonModelToAccordMappingService } from '../services/PhysicalKeyboardButtonModelToAccordMappingService.ts'
 import { PhysicalKeyboardButtonModelToPatternMappingService } from '../services/PhysicalKeyboardButtonModelToPatternMappingService.ts'
 import { PhysicalKeyboardButtonModelToStrengthMappingService } from '../services/PhysicalKeyboardButtonModelToStrengthMappingService.ts'
@@ -91,145 +101,206 @@ const runtime = Atom.runtime(AppLayer)
 // UIButtonService.getPressureReportOfAccord
 
 export const isAccordButtonPressableAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getAccordButtonPressabilityChangesStream,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (accord: AllAccordUnion) =>
+    EFunction.pipe(
+      accord,
+      UIButtonService.getAccordButtonPressabilityChangesStream,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: accord.index !== 0 }),
+      Atom.withServerValue(
+        EFunction.constant(
+          Result.success(accord.index !== 0, { waiting: true }),
+        ),
+      ),
+    ),
 )
 
 export const isPatternButtonPressableAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getPatternButtonPressabilityChangesStream,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (pattern: AllPatternUnion) =>
+    EFunction.pipe(
+      pattern,
+      UIButtonService.getPatternButtonPressabilityChangesStream,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: pattern.index !== 0 }),
+      Atom.withServerValue(
+        EFunction.constant(
+          Result.success(pattern.index !== 0, { waiting: true }),
+        ),
+      ),
+    ),
 )
 
-export const isStrengthButtonPressableAtom = Atom.family(
-  EFunction.flow(
+export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
+  EFunction.pipe(
+    strength,
     UIButtonService.getStrengthButtonPressabilityChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: strength !== 'm' }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
+    ),
   ),
 )
 
-export const isAccordSelectedAtom = Atom.family(
-  EFunction.flow(
+export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
+  EFunction.pipe(
+    accord,
     UIButtonService.getIsSelectedAccordStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: accord.index === 0 }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(accord.index === 0, { waiting: true })),
+    ),
   ),
 )
 
-export const isPatternSelectedAtom = Atom.family(
-  EFunction.flow(
+export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
+  EFunction.pipe(
+    pattern,
     UIButtonService.getIsSelectedPatternStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: pattern.index === 0 }),
+    Atom.withServerValue(
+      EFunction.constant(
+        Result.success(pattern.index === 0, { waiting: true }),
+      ),
+    ),
   ),
 )
 
-export const isStrengthSelectedAtom = Atom.family(
-  EFunction.flow(
+export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
+  EFunction.pipe(
+    strength,
     UIButtonService.getIsSelectedStrengthStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: strength === 'm' }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(strength === 'm', { waiting: true })),
+    ),
   ),
 )
 
-export const isAccordPressedAtom = Atom.family(
-  EFunction.flow(
+export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
+  EFunction.pipe(
+    accord,
     UIButtonService.isAccordButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: false }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(false, { waiting: true })),
+    ),
   ),
 )
 
-export const isPatternPressedAtom = Atom.family(
-  EFunction.flow(
+export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
+  EFunction.pipe(
+    pattern,
     UIButtonService.isPatternButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: false }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(false, { waiting: true })),
+    ),
   ),
 )
 
-export const isStrengthPressedAtom = Atom.family(
-  EFunction.flow(
+export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
+  EFunction.pipe(
+    strength,
     UIButtonService.isStrengthButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
+    s => runtime.atom(s, { initialValue: false }),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(false, { waiting: true })),
+    ),
   ),
 )
 
 export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.isAccordButtonCurrentlyPlaying,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (accord: AllAccordUnion) =>
+    EFunction.pipe(
+      accord,
+      UIButtonService.isAccordButtonCurrentlyPlaying,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: false }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
 )
 
 export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.isPatternButtonCurrentlyPlaying,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (pattern: AllPatternUnion) =>
+    EFunction.pipe(
+      pattern,
+      UIButtonService.isPatternButtonCurrentlyPlaying,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: false }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
 )
 
 export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.isStrengthButtonCurrentlyPlaying,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (strength: Strength) =>
+    EFunction.pipe(
+      strength,
+      UIButtonService.isStrengthButtonCurrentlyPlaying,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: false }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
 )
 
 export const accordButtonDownloadPercentAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getAccordButtonDownloadPercent,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (accord: AllAccordUnion) =>
+    EFunction.pipe(
+      accord,
+      UIButtonService.getAccordButtonDownloadPercent,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: 0 }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(0, { waiting: true })),
+      ),
+    ),
 )
 
 export const patternButtonDownloadPercentAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getPatternButtonDownloadPercent,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (pattern: AllPatternUnion) =>
+    EFunction.pipe(
+      pattern,
+      UIButtonService.getPatternButtonDownloadPercent,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: 0 }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(0, { waiting: true })),
+      ),
+    ),
 )
 
 export const strengthButtonDownloadPercentAtom = Atom.family(
-  EFunction.flow(
-    UIButtonService.getStrengthButtonDownloadPercent,
-    Stream.unwrap,
-    s => runtime.atom(s),
-    Atom.withServerValueInitial,
-  ),
+  (strength: Strength) =>
+    EFunction.pipe(
+      strength,
+      UIButtonService.getStrengthButtonDownloadPercent,
+      Stream.unwrap,
+      s => runtime.atom(s, { initialValue: 0 }),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(0, { waiting: true })),
+      ),
+    ),
 )
 
 export const isPlayStopButtonPressableAtom = EFunction.pipe(
   AppPlaybackStateService.playStopButtonPressableFlagChangesStream,
   Stream.unwrap,
-  s => runtime.atom(s),
-  Atom.withServerValueInitial,
+  s => runtime.atom(s, { initialValue: false }),
+  Atom.withServerValue(
+    EFunction.constant(Result.success(false, { waiting: true })),
+  ),
 )
 
 // TODO: add to all atoms
