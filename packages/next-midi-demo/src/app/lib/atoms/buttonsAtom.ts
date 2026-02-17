@@ -6,6 +6,7 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
+import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
 
 import { AccordRegistry } from '../services/AccordRegistry.ts'
@@ -81,6 +82,7 @@ const AppLayer = UIButtonService.Default.pipe(
   Layer.provideMerge(PatternRegistry.Default),
   Layer.provideMerge(StrengthRegistry.Default),
   Layer.provideMerge(Logger.pretty),
+  // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 
 const runtime = Atom.runtime(AppLayer)

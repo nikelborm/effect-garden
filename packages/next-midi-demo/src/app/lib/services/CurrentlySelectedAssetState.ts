@@ -64,7 +64,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         ),
       )
 
-      const isFinishedCompletely = Effect.map(
+      const isFinishedDownloadCompletely = Effect.map(
         completionStatus,
         ({ status }) => status === 'finished',
       )
@@ -81,7 +81,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
 
-      const isFinishedCompletelyChangesStream =
+      const isFinishedDownloadCompletelyFlagChangesStream =
         yield* completionStatusChangesStream.pipe(
           Stream.map(({ status }) => status === 'finished'),
           Stream.changes,
@@ -120,8 +120,8 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
       return {
         current: currentEffect,
-        isFinishedCompletely,
-        isFinishedCompletelyChangesStream,
+        isFinishedDownloadCompletely,
+        isFinishedDownloadCompletelyFlagChangesStream,
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }

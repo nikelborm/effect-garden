@@ -61,7 +61,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       )
 
       const makeNewPlayingAssetState = Effect.gen(function* () {
-        if (!(yield* selectedAssetState.isFinishedCompletely))
+        if (!(yield* selectedAssetState.isFinishedDownloadCompletely))
           return yield* Effect.die(
             'Play command should only be called when the current asset finished loading',
           )
@@ -186,6 +186,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               audioContext,
               audioBuffer,
             )
+
             newlyCreatedNextPlayback.gainNode.gain.setValueAtTime(
               minLoudness,
               asEarlyAsPossibleInSeconds,
@@ -208,19 +209,24 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             )
             oldState.currentPlayback.gainNode.gain.setValueAtTime(
               maxLoudness,
+              secondsSinceAudioContextInit,
+            )
+            oldState.currentPlayback.gainNode.gain.setValueAtTime(
+              maxLoudness,
               previousPlaybackFadingStartsAt,
             )
             oldState.currentPlayback.gainNode.gain.exponentialRampToValueAtTime(
               minLoudness,
               previousPlaybackFadingEndsAt,
             )
-            if (oldState._tag === 'PlayingAsset') {
-              const cleanupFiber = yield* EFunction.pipe(
+
+            const makeCleanupFiber = (delayForSeconds: number) =>
+              EFunction.pipe(
                 SubscriptionRef.updateEffect(
                   stateRef,
                   Effect.fn('executeScheduledCleanupOfState')(
                     function* (stateRightBeforeCleanup) {
-                      yield* Effect.log('Playback cleanup')
+                      yield* Effect.logTrace('Playback cleanup')
                       if (stateRightBeforeCleanup._tag !== 'ScheduledChange')
                         return stateRightBeforeCleanup
 
@@ -238,36 +244,27 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                   ),
                 ),
                 stateSemaphore.withPermits(1),
-                Effect.delay(Duration.seconds(secondsSinceNowBeforeFadingEnds)),
+                Effect.delay(Duration.seconds(delayForSeconds)),
                 Effect.tapErrorCause(Effect.logError),
                 Effect.forkDaemon,
               )
 
-              return {
-                _tag: 'ScheduledChange' as const,
-                currentPlayback: oldState.currentPlayback,
-                nextPlayback: newlyCreatedNextPlayback,
-                currentAsset: oldState.currentAsset,
-                playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-                cleanupFiber,
-              } satisfies PlayingAppPlaybackStates
-            }
-            if (oldState._tag === 'ScheduledChange') {
-              oldState.nextPlayback.bufferSource.stop()
-              oldState.nextPlayback.gainNode.gain.cancelScheduledValues(0)
+            const cleanupFiber =
+              oldState._tag === 'ScheduledChange'
+                ? oldState.cleanupFiber
+                : yield* makeCleanupFiber(secondsSinceNowBeforeFadingEnds)
 
+            if (oldState._tag === 'ScheduledChange')
               yield* cleanupPlayback(oldState.nextPlayback)
 
-              return {
-                _tag: 'ScheduledChange' as const,
-                currentPlayback: oldState.currentPlayback,
-                nextPlayback: newlyCreatedNextPlayback,
-                currentAsset: oldState.currentAsset,
-                playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-                cleanupFiber: oldState.cleanupFiber,
-              } satisfies PlayingAppPlaybackStates
-            }
-            return oldState
+            return {
+              _tag: 'ScheduledChange' as const,
+              currentPlayback: oldState.currentPlayback,
+              nextPlayback: newlyCreatedNextPlayback,
+              currentAsset: oldState.currentAsset,
+              playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+              cleanupFiber,
+            } satisfies PlayingAppPlaybackStates
           }),
         ).pipe(stateSemaphore.withPermits(1))
 
@@ -287,7 +284,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           isPlaying =>
             isPlaying
               ? Stream.succeed(true)
-              : selectedAssetState.isFinishedCompletelyChangesStream,
+              : selectedAssetState.isFinishedDownloadCompletelyFlagChangesStream,
           { switch: true, concurrency: 1 },
         ),
         Stream.changes,
