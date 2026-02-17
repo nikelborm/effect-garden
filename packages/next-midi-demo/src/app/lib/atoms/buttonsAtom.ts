@@ -1,4 +1,4 @@
-import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+// import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
@@ -32,37 +32,36 @@ import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from '../services
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from '../services/PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from '../services/PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
-import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
+// import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { UIButtonService } from '../services/UIButtonService.ts'
 import { VirtualPadButtonModelToAccordMappingService } from '../services/VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from '../services/VirtualPadButtonModelToPatternMappingService.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
 
-const MIDIButtonMappingsLayer = EFunction.pipe(
-  PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
-  Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
-  Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
-  Layer.provideMerge(SelectedMIDIInputService.Default),
-  Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
-  Layer.catchAll(midiAccessErr =>
-    Layer.mergeAll(
-      Layer.effectDiscard(
-        Effect.log('Error while acquiring MIDI access', midiAccessErr),
-      ),
-      PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
-      PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
-      PhysicalMIDIDeviceButtonModelToStrengthMappingService.OnMIDIDisabled,
-    ),
-  ),
+const OnMIDIDisabled = Layer.mergeAll(
+  PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
+  PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
+  PhysicalMIDIDeviceButtonModelToStrengthMappingService.OnMIDIDisabled,
 )
 
 // const MIDIButtonMappingsLayer = EFunction.pipe(
-//   PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
-//   Layer.merge(
-//     PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
+//   PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
+//   Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
+//   Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
+//   Layer.provideMerge(SelectedMIDIInputService.Default),
+//   Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
+//   Layer.catchAll(midiAccessErr =>
+//     Layer.merge(
+//       OnMIDIDisabled,
+//       Layer.effectDiscard(
+//         Effect.logError('Error while acquiring MIDI access', midiAccessErr),
+//       ),
+//     ),
 //   ),
 // )
+
+const MIDIButtonMappingsLayer = OnMIDIDisabled
 
 const AppLayer = UIButtonService.Default.pipe(
   Layer.provideMerge(PhysicalKeyboardButtonModelToAccordMappingService.Default),
@@ -421,5 +420,8 @@ export const switchPlayPauseFnAtom = runtime
   .pipe(
     Atom.withFallback(
       Atom.readable(() => Result.success(undefined, { waiting: false })),
+    ),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(undefined, { waiting: true })),
     ),
   )
