@@ -101,7 +101,7 @@
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
     "lint": "biome check --write",
-    "max": "zellij list-sessions | grep -E 'max .* \\(EXITED - attach to resurrect\\)' > /dev/null && zellij delete-session --force max; zellij --layout midi-demo.kdl attach --create max",
+    "max": "zellij list-sessions --no-formatting | grep -E 'max .* \\(EXITED - attach to resurrect\\)' > /dev/null && zellij delete-session --force max; zellij --layout midi-demo.kdl attach --create max",
     "lint:css": "PATTERN='packages/*/src/**/*.{ts,tsx}'; chokidar $PATTERN --initial --command \"stylelint '$PATTERN'\"",
     "todo-lint:css": "bunx onchange \"**/*\" -- bunx prettier --write --ignore-unknown {{changed}}"
   },
