@@ -1,5 +1,3 @@
-'use client'
-
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
@@ -106,7 +104,16 @@ export const isAccordButtonPressableAtom = Atom.family(
       accord,
       UIButtonService.getAccordButtonPressabilityChangesStream,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: accord.index !== 0 }),
+      s =>
+        runtime.atom(s, {
+          initialValue: accord.index !== 0,
+        }),
+      Atom.withFallback(
+        Atom.readable(() =>
+          Result.success(accord.index !== 0, { waiting: true }),
+        ),
+      ),
+
       Atom.withServerValue(
         EFunction.constant(
           Result.success(accord.index !== 0, { waiting: true }),
@@ -121,7 +128,15 @@ export const isPatternButtonPressableAtom = Atom.family(
       pattern,
       UIButtonService.getPatternButtonPressabilityChangesStream,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: pattern.index !== 0 }),
+      s =>
+        runtime.atom(s, {
+          initialValue: pattern.index !== 0,
+        }),
+      Atom.withFallback(
+        Atom.readable(() =>
+          Result.success(pattern.index !== 0, { waiting: true }),
+        ),
+      ),
       Atom.withServerValue(
         EFunction.constant(
           Result.success(pattern.index !== 0, { waiting: true }),
@@ -135,7 +150,13 @@ export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
     strength,
     UIButtonService.getStrengthButtonPressabilityChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: strength !== 'm' }),
+    s =>
+      runtime.atom(s, {
+        initialValue: strength !== 'm',
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(strength !== 'm', { waiting: true })),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
     ),
@@ -147,7 +168,15 @@ export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
     accord,
     UIButtonService.getIsSelectedAccordStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: accord.index === 0 }),
+    s =>
+      runtime.atom(s, {
+        initialValue: accord.index === 0,
+      }),
+    Atom.withFallback(
+      Atom.readable(() =>
+        Result.success(accord.index === 0, { waiting: true }),
+      ),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(accord.index === 0, { waiting: true })),
     ),
@@ -159,7 +188,15 @@ export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
     pattern,
     UIButtonService.getIsSelectedPatternStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: pattern.index === 0 }),
+    s =>
+      runtime.atom(s, {
+        initialValue: pattern.index === 0,
+      }),
+    Atom.withFallback(
+      Atom.readable(() =>
+        Result.success(pattern.index === 0, { waiting: true }),
+      ),
+    ),
     Atom.withServerValue(
       EFunction.constant(
         Result.success(pattern.index === 0, { waiting: true }),
@@ -173,7 +210,13 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
     strength,
     UIButtonService.getIsSelectedStrengthStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: strength === 'm' }),
+    s =>
+      runtime.atom(s, {
+        initialValue: strength === 'm',
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(strength === 'm', { waiting: true })),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(strength === 'm', { waiting: true })),
     ),
@@ -185,7 +228,13 @@ export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
     accord,
     UIButtonService.isAccordButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: false }),
+    s =>
+      runtime.atom(s, {
+        initialValue: false,
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(false, { waiting: true })),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(false, { waiting: true })),
     ),
@@ -197,7 +246,13 @@ export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
     pattern,
     UIButtonService.isPatternButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: false }),
+    s =>
+      runtime.atom(s, {
+        initialValue: false,
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(false, { waiting: true })),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(false, { waiting: true })),
     ),
@@ -209,7 +264,13 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
     strength,
     UIButtonService.isStrengthButtonPressedFlagChangesStream,
     Stream.unwrap,
-    s => runtime.atom(s, { initialValue: false }),
+    s =>
+      runtime.atom(s, {
+        initialValue: false,
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(false, { waiting: true })),
+    ),
     Atom.withServerValue(
       EFunction.constant(Result.success(false, { waiting: true })),
     ),
@@ -222,7 +283,13 @@ export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
       accord,
       UIButtonService.isAccordButtonCurrentlyPlaying,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: false }),
+      s =>
+        runtime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(false, { waiting: true })),
       ),
@@ -235,7 +302,13 @@ export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
       pattern,
       UIButtonService.isPatternButtonCurrentlyPlaying,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: false }),
+      s =>
+        runtime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(false, { waiting: true })),
       ),
@@ -248,7 +321,13 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
       strength,
       UIButtonService.isStrengthButtonCurrentlyPlaying,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: false }),
+      s =>
+        runtime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(false, { waiting: true })),
       ),
@@ -261,7 +340,13 @@ export const accordButtonDownloadPercentAtom = Atom.family(
       accord,
       UIButtonService.getAccordButtonDownloadPercent,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: 0 }),
+      s =>
+        runtime.atom(s, {
+          initialValue: 0,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(0, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(0, { waiting: true })),
       ),
@@ -274,7 +359,13 @@ export const patternButtonDownloadPercentAtom = Atom.family(
       pattern,
       UIButtonService.getPatternButtonDownloadPercent,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: 0 }),
+      s =>
+        runtime.atom(s, {
+          initialValue: 0,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(0, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(0, { waiting: true })),
       ),
@@ -287,7 +378,13 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
       strength,
       UIButtonService.getStrengthButtonDownloadPercent,
       Stream.unwrap,
-      s => runtime.atom(s, { initialValue: 0 }),
+      s =>
+        runtime.atom(s, {
+          initialValue: 0,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(0, { waiting: true })),
+      ),
       Atom.withServerValue(
         EFunction.constant(Result.success(0, { waiting: true })),
       ),
@@ -297,7 +394,13 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
 export const isPlayStopButtonPressableAtom = EFunction.pipe(
   AppPlaybackStateService.playStopButtonPressableFlagChangesStream,
   Stream.unwrap,
-  s => runtime.atom(s, { initialValue: false }),
+  s =>
+    runtime.atom(s, {
+      initialValue: false,
+    }),
+  Atom.withFallback(
+    Atom.readable(() => Result.success(false, { waiting: true })),
+  ),
   Atom.withServerValue(
     EFunction.constant(Result.success(false, { waiting: true })),
   ),
@@ -315,4 +418,8 @@ export const switchPlayPauseFnAtom = runtime
       Effect.tapErrorCause(Effect.logError),
     ),
   )
-  .pipe(Atom.withServerValueInitial)
+  .pipe(
+    Atom.withFallback(
+      Atom.readable(() => Result.success(undefined, { waiting: false })),
+    ),
+  )

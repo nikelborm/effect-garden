@@ -285,8 +285,7 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
 
 const PlaybackButton = () => {
   const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
-  const [playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
-  console.log('playresult', playresult)
+  const [_playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
   if (!Result.isSuccess(isPressableRes)) {
     console.log(`wtf playback button. isPressableRes`, isPressableRes)
     return 'wtf'
