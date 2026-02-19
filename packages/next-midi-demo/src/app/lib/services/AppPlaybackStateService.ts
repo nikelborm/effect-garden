@@ -1,6 +1,7 @@
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
+import * as EArray from 'effect/Array'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
@@ -8,6 +9,7 @@ import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
+import * as ETuple from 'effect/Tuple'
 
 import {
   getLocalAssetFileName,
@@ -372,3 +374,25 @@ export type PlayingAppPlaybackStates =
 export type AppPlaybackState =
   | { readonly _tag: 'NotPlaying' }
   | PlayingAppPlaybackStates
+
+const excludePartition = <
+  const sets extends Set<any>,
+  T extends sets extends Set<infer V> ? V : never,
+>(
+  element: T,
+  set: sets,
+) => {
+  return set.difference(new Set([element])) as T extends any
+    ? Set<Exclude<values, T>>
+    : never
+  // {
+  //   beginning: ETuple.at(arr, 0),
+  //   rest: arr.slice(1) as arr extends [infer _, ...infer Rest] ? Rest : never,
+  // }
+}
+
+function asd() {
+  for (const i1 of [1, 2, 3] as const) {
+    const rest = excludePartition(i1, new Set([1, 2, 3] as const))
+  }
+}
