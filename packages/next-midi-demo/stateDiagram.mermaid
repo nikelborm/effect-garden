@@ -1,0 +1,191 @@
+stateDiagram-v2
+%% p1,p2 -- compact representation of different pattern state options. There are
+%% actually 8 patterns, but to not explode the diagram with combinatorial
+%% complexity I decided to get it down to just 2 to show that pattern can only
+%% change to the other pattern and not to itself.
+
+%% o1,o2 -- compact representation of different state options (consists of a
+%% cross join of potential 8 accord options and 3 strength options). So actually
+%% there are 24 potential options
+
+%% ⏸: Everything is silent
+%% ▶: Currently playing
+%% ↣: Scheduled transition. either on the next tick, or somewhere in the future
+
+⏸: everything is silent
+
+%% Playing loop declarations
+
+▶_loop_p1_o1: Loop - pattern 1, option 1
+▶_loop_p1_o2: Loop - pattern 1, option 2
+▶_loop_p2_o1: Loop - pattern 2, option 1
+▶_loop_p2_o2: Loop - pattern 2, option 2
+
+%% Playing single shot slow strum declarations
+
+▶_once_o1: Strum once - option 1
+▶_once_o2: Strum once - option 2
+
+%% In progress transition declarations
+
+↣_loop_p1_o1_loop_p1_o2: LP1O1 > LP1O2
+↣_loop_p1_o1_loop_p2_o1: LP1O1 > LP2O1
+↣_loop_p1_o1_loop_p2_o2: LP1O1 > LP2O2
+
+↣_loop_p1_o2_loop_p1_o1: LP1O2 > LP1O1
+↣_loop_p1_o2_loop_p2_o1: LP1O2 > LP2O1
+↣_loop_p1_o2_loop_p2_o2: LP1O2 > LP2O2
+
+↣_loop_p2_o1_loop_p1_o1: LP2O1 > LP1O1
+↣_loop_p2_o1_loop_p1_o2: LP2O1 > LP1O2
+↣_loop_p2_o1_loop_p2_o2: LP2O1 > LP2O2
+
+↣_loop_p2_o2_loop_p1_o1: LP2O2 > LP1O1
+↣_loop_p2_o2_loop_p1_o2: LP2O2 > LP1O2
+↣_loop_p2_o2_loop_p2_o1: LP2O2 > LP2O1
+
+%% For cases when clicked right before border (during fadeout), or on the border
+
+↣_loop_p1_o1_loop_p1_o2_loop_p1_o1: LP1O1 > LP1O2 > LP1O1
+↣_loop_p1_o1_loop_p1_o2_loop_p2_o1: LP1O1 > LP1O2 > LP2O1
+↣_loop_p1_o1_loop_p1_o2_loop_p2_o2: LP1O1 > LP1O2 > LP2O2
+↣_loop_p1_o1_loop_p2_o1_loop_p1_o1: LP1O1 > LP2O1 > LP1O1
+↣_loop_p1_o1_loop_p2_o1_loop_p1_o2: LP1O1 > LP2O1 > LP1O2
+↣_loop_p1_o1_loop_p2_o1_loop_p2_o2: LP1O1 > LP2O1 > LP2O2
+↣_loop_p1_o1_loop_p2_o2_loop_p1_o1: LP1O1 > LP2O2 > LP1O1
+↣_loop_p1_o1_loop_p2_o2_loop_p1_o2: LP1O1 > LP2O2 > LP1O2
+↣_loop_p1_o1_loop_p2_o2_loop_p2_o1: LP1O1 > LP2O2 > LP2O1
+
+↣_loop_p1_o2_loop_p1_o1_loop_p1_o2: LP1O2 > LP1O1 > LP1O2
+↣_loop_p1_o2_loop_p1_o1_loop_p2_o1: LP1O2 > LP1O1 > LP2O1
+↣_loop_p1_o2_loop_p1_o1_loop_p2_o2: LP1O2 > LP1O1 > LP2O2
+↣_loop_p1_o2_loop_p2_o1_loop_p1_o1: LP1O2 > LP2O1 > LP1O1
+↣_loop_p1_o2_loop_p2_o1_loop_p1_o2: LP1O2 > LP2O1 > LP1O2
+↣_loop_p1_o2_loop_p2_o1_loop_p2_o2: LP1O2 > LP2O1 > LP2O2
+↣_loop_p1_o2_loop_p2_o2_loop_p1_o1: LP1O2 > LP2O2 > LP1O1
+↣_loop_p1_o2_loop_p2_o2_loop_p1_o2: LP1O2 > LP2O2 > LP1O2
+↣_loop_p1_o2_loop_p2_o2_loop_p2_o1: LP1O2 > LP2O2 > LP2O1
+
+↣_loop_p2_o1_loop_p1_o1_loop_p1_o2: LP2O1 > LP1O1 > LP1O2
+↣_loop_p2_o1_loop_p1_o1_loop_p2_o1: LP2O1 > LP1O1 > LP2O1
+↣_loop_p2_o1_loop_p1_o1_loop_p2_o2: LP2O1 > LP1O1 > LP2O2
+↣_loop_p2_o1_loop_p1_o2_loop_p1_o1: LP2O1 > LP1O2 > LP1O1
+↣_loop_p2_o1_loop_p1_o2_loop_p2_o1: LP2O1 > LP1O2 > LP2O1
+↣_loop_p2_o1_loop_p1_o2_loop_p2_o2: LP2O1 > LP1O2 > LP2O2
+↣_loop_p2_o1_loop_p2_o2_loop_p1_o1: LP2O1 > LP2O2 > LP1O1
+↣_loop_p2_o1_loop_p2_o2_loop_p1_o2: LP2O1 > LP2O2 > LP1O2
+↣_loop_p2_o1_loop_p2_o2_loop_p2_o1: LP2O1 > LP2O2 > LP2O1
+
+↣_loop_p2_o2_loop_p1_o1_loop_p1_o2: LP2O2 > LP1O1 > LP1O2
+↣_loop_p2_o2_loop_p1_o1_loop_p2_o1: LP2O2 > LP1O1 > LP2O1
+↣_loop_p2_o2_loop_p1_o1_loop_p2_o2: LP2O2 > LP1O1 > LP2O2
+↣_loop_p2_o2_loop_p1_o2_loop_p1_o1: LP2O2 > LP1O2 > LP1O1
+↣_loop_p2_o2_loop_p1_o2_loop_p2_o1: LP2O2 > LP1O2 > LP2O1
+↣_loop_p2_o2_loop_p1_o2_loop_p2_o2: LP2O2 > LP1O2 > LP2O2
+↣_loop_p2_o2_loop_p2_o1_loop_p1_o1: LP2O2 > LP2O1 > LP1O1
+↣_loop_p2_o2_loop_p2_o1_loop_p1_o2: LP2O2 > LP2O1 > LP1O2
+↣_loop_p2_o2_loop_p2_o1_loop_p2_o2: LP2O2 > LP2O1 > LP2O2
+
+
+▶_loop_p1_o1 --> ↣_loop_p1_o1_loop_p1_o2
+▶_loop_p1_o1 --> ↣_loop_p1_o1_loop_p2_o1
+▶_loop_p1_o1 --> ↣_loop_p1_o1_loop_p2_o2
+▶_loop_p1_o2 --> ↣_loop_p1_o2_loop_p1_o1
+▶_loop_p1_o2 --> ↣_loop_p1_o2_loop_p2_o1
+▶_loop_p1_o2 --> ↣_loop_p1_o2_loop_p2_o2
+▶_loop_p2_o1 --> ↣_loop_p2_o1_loop_p1_o1
+▶_loop_p2_o1 --> ↣_loop_p2_o1_loop_p1_o2
+▶_loop_p2_o1 --> ↣_loop_p2_o1_loop_p2_o2
+▶_loop_p2_o2 --> ↣_loop_p2_o2_loop_p1_o1
+▶_loop_p2_o2 --> ↣_loop_p2_o2_loop_p1_o2
+▶_loop_p2_o2 --> ↣_loop_p2_o2_loop_p2_o1
+
+
+↣_loop_p1_o1_loop_p1_o2 --> ▶_loop_p1_o2
+↣_loop_p1_o1_loop_p2_o1 --> ▶_loop_p2_o1
+↣_loop_p1_o1_loop_p2_o2 --> ▶_loop_p2_o2
+↣_loop_p1_o2_loop_p1_o1 --> ▶_loop_p1_o1
+↣_loop_p1_o2_loop_p2_o1 --> ▶_loop_p2_o1
+↣_loop_p1_o2_loop_p2_o2 --> ▶_loop_p2_o2
+↣_loop_p2_o1_loop_p1_o1 --> ▶_loop_p1_o1
+↣_loop_p2_o1_loop_p1_o2 --> ▶_loop_p1_o2
+↣_loop_p2_o1_loop_p2_o2 --> ▶_loop_p2_o2
+↣_loop_p2_o2_loop_p1_o1 --> ▶_loop_p1_o1
+↣_loop_p2_o2_loop_p1_o2 --> ▶_loop_p1_o2
+↣_loop_p2_o2_loop_p2_o1 --> ▶_loop_p2_o1
+
+
+↣_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2_loop_p1_o1
+↣_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2_loop_p2_o1
+↣_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2_loop_p2_o2
+↣_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1_loop_p1_o1
+↣_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1_loop_p1_o2
+↣_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1_loop_p2_o2
+↣_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2_loop_p1_o1
+↣_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2_loop_p1_o2
+↣_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2_loop_p2_o1
+↣_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1_loop_p1_o2
+↣_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1_loop_p2_o1
+↣_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1_loop_p2_o2
+↣_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1_loop_p1_o1
+↣_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1_loop_p1_o2
+↣_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1_loop_p2_o2
+↣_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2_loop_p1_o1
+↣_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2_loop_p1_o2
+↣_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1_loop_p1_o2
+↣_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1_loop_p2_o2
+↣_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2_loop_p1_o1
+↣_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2_loop_p2_o2
+↣_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2_loop_p1_o1
+↣_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2_loop_p1_o2
+↣_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1_loop_p1_o2
+↣_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1_loop_p2_o2
+↣_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2_loop_p1_o1
+↣_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2_loop_p2_o2
+↣_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1_loop_p1_o1
+↣_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1_loop_p1_o2
+↣_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1_loop_p2_o2
+
+
+↣_loop_p1_o1_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1
+↣_loop_p1_o1_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1
+↣_loop_p1_o1_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2
+↣_loop_p1_o1_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1
+↣_loop_p1_o1_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2
+↣_loop_p1_o1_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2
+↣_loop_p1_o1_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1
+↣_loop_p1_o1_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2
+↣_loop_p1_o1_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1
+↣_loop_p1_o2_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2
+↣_loop_p1_o2_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1
+↣_loop_p1_o2_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2
+↣_loop_p1_o2_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1
+↣_loop_p1_o2_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2
+↣_loop_p1_o2_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2
+↣_loop_p1_o2_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1
+↣_loop_p1_o2_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2
+↣_loop_p1_o2_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2
+↣_loop_p2_o1_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2
+↣_loop_p2_o1_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1
+↣_loop_p2_o1_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1
+↣_loop_p2_o1_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2
+↣_loop_p2_o1_loop_p2_o2_loop_p1_o1 --> ↣_loop_p2_o2_loop_p1_o1
+↣_loop_p2_o1_loop_p2_o2_loop_p1_o2 --> ↣_loop_p2_o2_loop_p1_o2
+↣_loop_p2_o1_loop_p2_o2_loop_p2_o1 --> ↣_loop_p2_o2_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o1_loop_p1_o2 --> ↣_loop_p1_o1_loop_p1_o2
+↣_loop_p2_o2_loop_p1_o1_loop_p2_o1 --> ↣_loop_p1_o1_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o1_loop_p2_o2 --> ↣_loop_p1_o1_loop_p2_o2
+↣_loop_p2_o2_loop_p1_o2_loop_p1_o1 --> ↣_loop_p1_o2_loop_p1_o1
+↣_loop_p2_o2_loop_p1_o2_loop_p2_o1 --> ↣_loop_p1_o2_loop_p2_o1
+↣_loop_p2_o2_loop_p1_o2_loop_p2_o2 --> ↣_loop_p1_o2_loop_p2_o2
+↣_loop_p2_o2_loop_p2_o1_loop_p1_o1 --> ↣_loop_p2_o1_loop_p1_o1
+↣_loop_p2_o2_loop_p2_o1_loop_p1_o2 --> ↣_loop_p2_o1_loop_p1_o2
+↣_loop_p2_o2_loop_p2_o1_loop_p2_o2 --> ↣_loop_p2_o1_loop_p2_o2
