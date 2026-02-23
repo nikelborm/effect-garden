@@ -23,8 +23,15 @@ const nextConfig: NextConfig = {
   headers() {
     return [
       {
+        source: '/:path*',
+        headers: [
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' },
+        ],
+      },
+      {
         // Match all files under /samples/
-        source: '/samples/:path*',
+        source: '/samples/:sample_path*',
         headers: [
           {
             key: 'Cache-Control',
