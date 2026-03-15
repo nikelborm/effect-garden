@@ -11,7 +11,8 @@
       // TODO: remove later?
       "!**/joiners",
       "!**/dist-types",
-      "!**/build"
+      "!**/build",
+      "!packages/next-midi-demo/public/sw.js"
     ]
   },
   "plugins": ["./node_modules/biome-plugin-drizzle/dist/drizzle.grit"],
