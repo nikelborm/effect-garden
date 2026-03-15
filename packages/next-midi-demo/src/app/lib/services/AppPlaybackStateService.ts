@@ -7,6 +7,7 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Fiber from 'effect/Fiber'
 import * as EFunction from 'effect/Function'
+import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -17,6 +18,7 @@ import {
   getLocalAssetFileName,
   type Strength,
   TaggedPatternPointer,
+  TaggedSlowStrumPointer,
 } from '../audioAssetHelpers.ts'
 import { getFileHandle, readFileBuffer } from '../opfs.ts'
 import type { AllAccordUnion } from './AccordRegistry.ts'
@@ -43,15 +45,22 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
         function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
-          const assetFileHandle = yield* getFileHandle({
-            dirHandle: rootDirectoryHandle,
-            fileName: getLocalAssetFileName(
-              new TaggedPatternPointer({
+          const pointer = Option.match(pattern, {
+            onNone: () =>
+              new TaggedSlowStrumPointer({
                 accordIndex: accord.index,
-                patternIndex: pattern.index,
                 strength,
               }),
-            ),
+            onSome: p =>
+              new TaggedPatternPointer({
+                accordIndex: accord.index,
+                patternIndex: p.index,
+                strength,
+              }),
+          })
+          const assetFileHandle = yield* getFileHandle({
+            dirHandle: rootDirectoryHandle,
+            fileName: getLocalAssetFileName(pointer),
           })
 
           const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
