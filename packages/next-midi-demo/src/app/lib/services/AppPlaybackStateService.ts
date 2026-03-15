@@ -356,6 +356,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             ? state
             : ({
                 _tag: state._tag,
+                currentAsset: state.transitionQueue[0].asset,
                 assetTransitionsQueue: Tuple.map(
                   state.transitionQueue,
                   a => a.asset,

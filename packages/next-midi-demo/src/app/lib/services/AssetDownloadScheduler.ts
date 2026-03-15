@@ -1,5 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
@@ -119,13 +120,14 @@ export class AssetDownloadScheduler extends Effect.Service<AssetDownloadSchedule
 
       yield* reactivelySchedule(
         Stream.tap(
-          Stream.map(
+          Stream.filterMap(
             currentlySelectedAsset.changes,
-            ({
-              accord: { index: accordIndex },
-              pattern: { index: patternIndex },
-              strength,
-            }) => ({ accordIndex, patternIndex, strength }),
+            ({ accord: { index: accordIndex }, pattern, strength }) =>
+              Option.map(pattern, ({ index: patternIndex }) => ({
+                accordIndex,
+                patternIndex,
+                strength,
+              })),
           ),
           e => Effect.log('reactively scheduled download', e),
         ),
