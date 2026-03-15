@@ -109,7 +109,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
 
       const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
         patternRegistry.selectedPatternChanges.pipe(
-          Stream.map(Equal.equals(pattern)),
+          Stream.map(Equal.equals(Option.some(pattern))),
           Stream.changes,
           Stream.rechunk(1),
           Stream.tap(isSelected =>
@@ -185,7 +185,7 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.map(
             pb =>
               pb._tag !== 'NotPlaying' &&
-              Equal.equals(pb.currentAsset.pattern, pattern),
+              Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
           ),
           Stream.changes,
           Stream.rechunk(1),

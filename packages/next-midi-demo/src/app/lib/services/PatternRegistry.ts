@@ -1,6 +1,7 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -60,27 +61,36 @@ export class PatternRegistry
     accessors: true,
     scoped: Effect.gen(function* () {
       const currentPatternIndexRef =
-        yield* SubscriptionRef.make<RecordedPatternIndexes>(0)
+        yield* SubscriptionRef.make<Option.Option<RecordedPatternIndexes>>(
+          Option.none(),
+        )
 
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
         Stream.changes,
         Stream.rechunk(1),
-        Stream.map(mapIndexToPattern),
+        Stream.map(Option.map(mapIndexToPattern)),
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {
         currentlySelectedPattern: Effect.map(
           currentPatternIndexRef.get,
-          mapIndexToPattern,
+          Option.map(mapIndexToPattern),
         ),
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
         selectPattern: (patternIndex: RecordedPatternIndexes) => {
           const trustedIndex = decodePatternIndexSync(patternIndex)
 
-          return SubscriptionRef.set(currentPatternIndexRef, trustedIndex)
+          return SubscriptionRef.set(
+            currentPatternIndexRef,
+            Option.some(trustedIndex),
+          )
         },
+        deselectPattern: SubscriptionRef.set(
+          currentPatternIndexRef,
+          Option.none(),
+        ),
         getPatternByIndex: (patternIndex: RecordedPatternIndexes) =>
           allPatterns[decodePatternIndexSync(patternIndex)],
       }
@@ -89,12 +99,15 @@ export class PatternRegistry
   implements IPatternRegistry {}
 
 interface IPatternRegistry {
-  readonly currentlySelectedPattern: Effect.Effect<AllPatternUnion>
+  readonly currentlySelectedPattern: Effect.Effect<
+    Option.Option<AllPatternUnion>
+  >
   readonly allPatterns: Effect.Effect<AllPatternTuple>
-  readonly selectedPatternChanges: Stream.Stream<AllPatternUnion>
+  readonly selectedPatternChanges: Stream.Stream<Option.Option<AllPatternUnion>>
   readonly selectPattern: (
     patternIndex: RecordedPatternIndexes,
   ) => Effect.Effect<void>
+  readonly deselectPattern: Effect.Effect<void>
 }
 
 type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =

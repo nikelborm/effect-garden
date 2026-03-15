@@ -1,9 +1,15 @@
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import { type Strength, TaggedPatternPointer } from '../audioAssetHelpers.ts'
+import {
+  type AssetPointer,
+  type Strength,
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+} from '../audioAssetHelpers.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import {
   Accord,
@@ -45,21 +51,29 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const mapAssetToTaggedPatternPointer = ({
+      const mapAssetToPointer = ({
         accord,
         pattern,
         strength,
-      }: CurrentSelectedAsset) =>
-        TaggedPatternPointer.make({
-          accordIndex: accord.index,
-          patternIndex: pattern.index,
-          strength,
+      }: CurrentSelectedAsset): AssetPointer =>
+        Option.match(pattern, {
+          onNone: () =>
+            TaggedSlowStrumPointer.make({
+              accordIndex: accord.index,
+              strength,
+            }),
+          onSome: p =>
+            TaggedPatternPointer.make({
+              accordIndex: accord.index,
+              patternIndex: p.index,
+              strength,
+            }),
         })
 
       const completionStatus = Effect.flatMap(
         currentEffect,
         EFunction.flow(
-          mapAssetToTaggedPatternPointer,
+          mapAssetToPointer,
           estimationMap.getAssetFetchingCompletionStatus,
         ),
       )
@@ -73,7 +87,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         yield* selectedAssetChangesStream.pipe(
           Stream.flatMap(
             EFunction.flow(
-              mapAssetToTaggedPatternPointer,
+              mapAssetToPointer,
               estimationMap.getAssetFetchingCompletionStatusChangesStream,
             ),
             { switch: true, concurrency: 1 },
@@ -91,18 +105,34 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
       const makePatchApplier =
         (patch: Patch) =>
-        ({ accord, pattern, strength }: CurrentSelectedAsset) =>
-          TaggedPatternPointer.make({
-            accordIndex: accord.index,
-            // @ts-expect-error ts is wrong. patternIndex might, OR MIGHT NOT be overwritten, so it's not a senseless assignment
-            patternIndex: pattern.index,
-            strength,
-            ...(Pattern.models(patch)
-              ? { patternIndex: patch.index }
-              : Accord.models(patch)
-                ? { accordIndex: patch.index }
-                : { strength: patch }),
+        ({ accord, pattern, strength }: CurrentSelectedAsset): AssetPointer => {
+          if (Pattern.models(patch)) {
+            return TaggedPatternPointer.make({
+              accordIndex: accord.index,
+              patternIndex: patch.index,
+              strength,
+            })
+          }
+
+          const resolvedAccordIndex = Accord.models(patch)
+            ? patch.index
+            : accord.index
+          const resolvedStrength = Accord.models(patch) ? strength : patch
+
+          return Option.match(pattern, {
+            onNone: () =>
+              TaggedSlowStrumPointer.make({
+                accordIndex: resolvedAccordIndex,
+                strength: resolvedStrength,
+              }),
+            onSome: p =>
+              TaggedPatternPointer.make({
+                accordIndex: resolvedAccordIndex,
+                patternIndex: p.index,
+                strength: resolvedStrength,
+              }),
           })
+        }
 
       const getPatchedAssetFetchingCompletionStatusChangesStream = (
         patch: Patch,
@@ -131,7 +161,7 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
 export interface CurrentSelectedAsset {
   readonly strength: Strength
-  readonly pattern: AllPatternUnion
+  readonly pattern: Option.Option<AllPatternUnion>
   readonly accord: AllAccordUnion
 }
 
