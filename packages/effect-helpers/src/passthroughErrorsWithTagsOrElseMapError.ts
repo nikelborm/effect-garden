@@ -260,12 +260,13 @@ type GetFinal<
   ErrorTagsToPassThrough extends TagMinimum,
   Base,
   OptionalSuffix,
-> = GetErrorsToPassThroughFromAllE<
-  AllSelfE,
-  ErrorTagsToPassThrough
-> extends infer ErrorsToPassThrough
-  ? Base | ([AllSelfE] extends [ErrorsToPassThrough] ? never : OptionalSuffix)
-  : never
+> =
+  GetErrorsToPassThroughFromAllE<
+    AllSelfE,
+    ErrorTagsToPassThrough
+  > extends infer ErrorsToPassThrough
+    ? Base | ([AllSelfE] extends [ErrorsToPassThrough] ? never : OptionalSuffix)
+    : never
 
 type GetErrorsToPassThroughFromPassableE<
   PassableSelfE extends TaggedMinimum,

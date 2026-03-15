@@ -5,7 +5,6 @@ import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
-import type * as Types from 'effect/Types'
 
 import {
   type AssetPointer,
@@ -33,11 +32,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
                 asset =>
                   [
                     asset,
-                    {
-                      size: fileEntry.size,
-                      verifiedOnDisk: true,
-                    },
-                  ] satisfies Types.TupleOf<2, any>,
+                    { size: fileEntry.size, verifiedOnDisk: true },
+                  ] as const,
               ),
             ),
             HashMap.fromIterable,
@@ -57,19 +53,20 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         SubscriptionRef.make,
       )
 
-      const getCurrentDownloadedBytes = (asset: AssetPointer) =>
+      const getCurrentDownloadedBytes = (
+        asset: AssetPointer,
+      ): Effect.Effect<AssetSizeEstimation> =>
         Effect.map(
           assetToSizeHashMapRef.get,
           EFunction.flow(
             HashMap.get(asset),
-            Option.getOrElse(() => ({
-              size: 0,
-              verifiedOnDisk: false as boolean,
-            })),
+            Option.getOrElse(() => ({ size: 0, verifiedOnDisk: false })),
           ),
         )
 
-      const getCurrentDownloadedBytesStream = (asset: AssetPointer) =>
+      const getCurrentDownloadedBytesStream = (
+        asset: AssetPointer,
+      ): Stream.Stream<AssetSizeEstimation> =>
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(
             EFunction.flow(
@@ -117,10 +114,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         )
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
-        Effect.fn(function* (previous: {
-          size: number
-          verifiedOnDisk: boolean
-        }): Effect.fn.Return<AssetCompletionStatus> {
+        Effect.fn(function* (
+          previous: AssetSizeEstimation,
+        ): Effect.fn.Return<AssetCompletionStatus> {
           if (previous.size !== ASSET_SIZE_BYTES)
             return {
               status: 'not finished' as const,
@@ -187,7 +183,9 @@ export type AssetCompletionStatus =
   | { status: 'finished' }
 
 interface AssetToSizeHashMap
-  extends HashMap.HashMap<
-    AssetPointer,
-    { size: number; verifiedOnDisk: boolean }
-  > {}
+  extends HashMap.HashMap<AssetPointer, AssetSizeEstimation> {}
+
+interface AssetSizeEstimation {
+  size: number
+  verifiedOnDisk: boolean
+}
