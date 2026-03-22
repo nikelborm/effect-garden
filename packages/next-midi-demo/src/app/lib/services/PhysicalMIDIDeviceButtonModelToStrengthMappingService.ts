@@ -1,11 +1,9 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
-import * as HashMap from 'effect/HashMap'
-import * as Layer from 'effect/Layer'
-import * as Stream from 'effect/Stream'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
+import { StrengthInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
@@ -28,17 +26,8 @@ export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effec
         noteDatasHandlingStrengths,
         strengths,
         makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
+        StrengthInputBus,
       ),
     ),
   },
-) {
-  static OnMIDIDisabled = Layer.succeed(
-    this,
-    this.make({
-      currentMap: Effect.succeed(HashMap.empty()),
-      mapChanges: Stream.empty,
-      latestPhysicalButtonModelsStream: Stream.empty,
-      getPhysicalButtonModel: () => Effect.succeedNone,
-    }),
-  )
-}
+) {}

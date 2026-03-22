@@ -2,6 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
+import { PatternInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { PatternRegistry } from './PatternRegistry.ts'
 
@@ -23,6 +24,7 @@ export class PhysicalKeyboardButtonModelToPatternMappingService extends Effect.S
         keyDatasHandlingPatterns,
         patterns,
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingPatternsSet),
+        PatternInputBus,
       ),
     ),
   },

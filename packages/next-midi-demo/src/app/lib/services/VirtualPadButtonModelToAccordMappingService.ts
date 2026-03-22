@@ -4,6 +4,7 @@ import * as Stream from 'effect/Stream'
 import type { RecordedAccordIndexes } from '../audioAssetHelpers.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
 import { AccordIndexData, AccordRegistry } from './AccordRegistry.ts'
+import { AccordInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
 export class VirtualPadButtonModelToAccordMappingService extends Effect.Service<VirtualPadButtonModelToAccordMappingService>()(
@@ -27,6 +28,7 @@ export class VirtualPadButtonModelToAccordMappingService extends Effect.Service<
               state,
             ] as const,
         ),
+        AccordInputBus,
       ),
     ),
   },

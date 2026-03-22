@@ -8,11 +8,13 @@ import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../branded/index.ts'
+import type { SupportedKeyData } from './SupportedKeyData.ts'
 
 export const makePhysicalButtonToParamMappingService = <
-  PhysicalButtonId,
+  PhysicalButtonId extends SupportedKeyData,
   AssignedTo,
   R,
+  BusR,
 >(
   allPhysicalButtonIds: readonly PhysicalButtonId[],
   allEntities: readonly AssignedTo[],
@@ -23,6 +25,20 @@ export const makePhysicalButtonToParamMappingService = <
     ],
     never,
     R
+  >,
+  inputBus: Effect.Effect<
+    {
+      readonly publish: <K extends SupportedKeyData>(c: {
+        readonly mapChanges: Stream.Stream<
+          HashMap.HashMap<K, PhysicalButtonModel<AssignedTo>>
+        >
+        readonly latestPresses: Stream.Stream<
+          readonly [K, PhysicalButtonModel<AssignedTo>]
+        >
+      }) => Effect.Effect<void>
+    },
+    never,
+    BusR
   >,
 ) =>
   Effect.gen(function* () {
@@ -92,6 +108,12 @@ export const makePhysicalButtonToParamMappingService = <
       Effect.succeed,
       // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
     )
+
+    const bus = yield* inputBus
+    yield* bus.publish({
+      mapChanges,
+      latestPresses: latestPhysicalButtonModelsStream,
+    })
 
     return {
       currentMap,
