@@ -111,8 +111,6 @@ export const makePhysicalButtonToParamMappingService = <
       mapChanges,
       latestPresses: latestPhysicalButtonModelsStream,
     })
-
-    return {}
   })
 
 export class PhysicalButtonModel<AssignedTo> extends Data.Class<{

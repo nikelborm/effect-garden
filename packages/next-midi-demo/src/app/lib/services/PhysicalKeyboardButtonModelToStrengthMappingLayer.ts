@@ -1,4 +1,5 @@
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
@@ -15,11 +16,9 @@ const keysHandlingStrengthsSet = new Set(
   keyDatasHandlingStrengths.map(_ => _.value),
 )
 
-export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.Service<PhysicalKeyboardButtonModelToStrengthMappingService>()(
-  'next-midi-demo/PhysicalKeyboardButtonModelToStrengthMappingService',
-  {
-    accessors: true,
-    scoped: Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
+export const PhysicalKeyboardButtonModelToStrengthMappingLayer =
+  Layer.scopedDiscard(
+    Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
       makePhysicalButtonToParamMappingService(
         keyDatasHandlingStrengths,
         [...strengths, ...strengths],
@@ -27,5 +26,4 @@ export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.
         StrengthInputBus,
       ),
     ),
-  },
-) {}
+  )

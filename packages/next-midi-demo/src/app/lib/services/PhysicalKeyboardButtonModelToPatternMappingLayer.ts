@@ -1,4 +1,5 @@
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
@@ -15,11 +16,9 @@ const keysHandlingPatternsSet = new Set(
   keyDatasHandlingPatterns.map(_ => _.value),
 )
 
-export class PhysicalKeyboardButtonModelToPatternMappingService extends Effect.Service<PhysicalKeyboardButtonModelToPatternMappingService>()(
-  'next-midi-demo/PhysicalKeyboardButtonModelToPatternMappingService',
-  {
-    accessors: true,
-    scoped: Effect.flatMap(PatternRegistry.allPatterns, patterns =>
+export const PhysicalKeyboardButtonModelToPatternMappingLayer =
+  Layer.scopedDiscard(
+    Effect.flatMap(PatternRegistry.allPatterns, patterns =>
       makePhysicalButtonToParamMappingService(
         keyDatasHandlingPatterns,
         patterns,
@@ -27,5 +26,4 @@ export class PhysicalKeyboardButtonModelToPatternMappingService extends Effect.S
         PatternInputBus,
       ),
     ),
-  },
-) {}
+  )

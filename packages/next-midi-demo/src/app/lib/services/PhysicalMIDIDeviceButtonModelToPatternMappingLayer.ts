@@ -1,5 +1,6 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
@@ -17,11 +18,9 @@ const notesHandlingPatternsSet = new Set(
 )
 
 // TODO: midi device selector
-export class PhysicalMIDIDeviceButtonModelToPatternMappingService extends Effect.Service<PhysicalMIDIDeviceButtonModelToPatternMappingService>()(
-  'next-midi-demo/PhysicalMIDIDeviceButtonModelToPatternMappingService',
-  {
-    accessors: true,
-    scoped: Effect.flatMap(PatternRegistry.allPatterns, patterns =>
+export const PhysicalMIDIDeviceButtonModelToPatternMappingLayer =
+  Layer.scopedDiscard(
+    Effect.flatMap(PatternRegistry.allPatterns, patterns =>
       makePhysicalButtonToParamMappingService(
         noteDatasHandlingPatterns,
         patterns,
@@ -29,5 +28,4 @@ export class PhysicalMIDIDeviceButtonModelToPatternMappingService extends Effect
         PatternInputBus,
       ),
     ),
-  },
-) {}
+  )
