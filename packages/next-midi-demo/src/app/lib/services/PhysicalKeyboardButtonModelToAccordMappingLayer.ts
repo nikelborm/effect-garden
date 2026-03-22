@@ -1,4 +1,5 @@
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
@@ -16,11 +17,9 @@ const keysHandlingAccordsSet = new Set(
   keyDatasHandlingAccords.map(_ => _.value),
 )
 
-export class PhysicalKeyboardButtonModelToAccordMappingService extends Effect.Service<PhysicalKeyboardButtonModelToAccordMappingService>()(
-  'next-midi-demo/PhysicalKeyboardButtonModelToAccordMappingService',
-  {
-    accessors: true,
-    scoped: Effect.flatMap(AccordRegistry.allAccords, accords =>
+export const PhysicalKeyboardButtonModelToAccordMappingLayer =
+  Layer.scopedDiscard(
+    Effect.flatMap(AccordRegistry.allAccords, accords =>
       makePhysicalButtonToParamMappingService(
         keyDatasHandlingAccords,
         [...accords, ...accords],
@@ -28,5 +27,4 @@ export class PhysicalKeyboardButtonModelToAccordMappingService extends Effect.Se
         AccordInputBus,
       ),
     ),
-  },
-) {}
+  )

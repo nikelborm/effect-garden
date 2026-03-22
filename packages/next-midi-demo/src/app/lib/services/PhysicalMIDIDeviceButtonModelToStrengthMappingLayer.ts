@@ -1,5 +1,6 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
@@ -17,11 +18,9 @@ const notesHandlingStrengthsSet = new Set(
 )
 
 // TODO: midi device selector
-export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effect.Service<PhysicalMIDIDeviceButtonModelToStrengthMappingService>()(
-  'next-midi-demo/PhysicalMIDIDeviceButtonModelToStrengthMappingService',
-  {
-    accessors: true,
-    scoped: Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
+export const PhysicalMIDIDeviceButtonModelToStrengthMappingLayer =
+  Layer.scopedDiscard(
+    Effect.flatMap(StrengthRegistry.allStrengths, strengths =>
       makePhysicalButtonToParamMappingService(
         noteDatasHandlingStrengths,
         strengths,
@@ -29,5 +28,4 @@ export class PhysicalMIDIDeviceButtonModelToStrengthMappingService extends Effec
         StrengthInputBus,
       ),
     ),
-  },
-) {}
+  )

@@ -30,12 +30,12 @@ import {
   type AllPatternUnion,
   PatternRegistry,
 } from '../services/PatternRegistry.ts'
-import { PhysicalKeyboardButtonModelToAccordMappingService } from '../services/PhysicalKeyboardButtonModelToAccordMappingService.ts'
-import { PhysicalKeyboardButtonModelToPatternMappingService } from '../services/PhysicalKeyboardButtonModelToPatternMappingService.ts'
-import { PhysicalKeyboardButtonModelToStrengthMappingService } from '../services/PhysicalKeyboardButtonModelToStrengthMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from '../services/PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from '../services/PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from '../services/PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
+import { PhysicalKeyboardButtonModelToAccordMappingLayer } from '../services/PhysicalKeyboardButtonModelToAccordMappingLayer.ts'
+import { PhysicalKeyboardButtonModelToPatternMappingLayer } from '../services/PhysicalKeyboardButtonModelToPatternMappingLayer.ts'
+import { PhysicalKeyboardButtonModelToStrengthMappingLayer } from '../services/PhysicalKeyboardButtonModelToStrengthMappingLayer.ts'
+import { PhysicalMIDIDeviceButtonModelToAccordMappingLayer } from '../services/PhysicalMIDIDeviceButtonModelToAccordMappingLayer.ts'
+import { PhysicalMIDIDeviceButtonModelToPatternMappingLayer } from '../services/PhysicalMIDIDeviceButtonModelToPatternMappingLayer.ts'
+import { PhysicalMIDIDeviceButtonModelToStrengthMappingLayer } from '../services/PhysicalMIDIDeviceButtonModelToStrengthMappingLayer.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
@@ -44,9 +44,9 @@ import {
   PatternUIButtonService,
   StrengthUIButtonService,
 } from '../services/UIButtonService.ts'
-import { VirtualPadButtonModelToAccordMappingService } from '../services/VirtualPadButtonModelToAccordMappingService.ts'
-import { VirtualPadButtonModelToPatternMappingService } from '../services/VirtualPadButtonModelToPatternMappingService.ts'
-import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
+import { VirtualPadButtonModelToAccordMappingLayer } from '../services/VirtualPadButtonModelToAccordMappingLayer.ts'
+import { VirtualPadButtonModelToPatternMappingLayer } from '../services/VirtualPadButtonModelToPatternMappingLayer.ts'
+import { VirtualPadButtonModelToStrengthMappingLayer } from '../services/VirtualPadButtonModelToStrengthMappingLayer.ts'
 
 const BusLayer = Layer.mergeAll(
   AccordInputBus.Default,
@@ -55,21 +55,21 @@ const BusLayer = Layer.mergeAll(
 )
 
 const KeyboardMappingServicesLayer = Layer.mergeAll(
-  PhysicalKeyboardButtonModelToAccordMappingService.Default,
-  PhysicalKeyboardButtonModelToPatternMappingService.Default,
-  PhysicalKeyboardButtonModelToStrengthMappingService.Default,
+  PhysicalKeyboardButtonModelToAccordMappingLayer,
+  PhysicalKeyboardButtonModelToPatternMappingLayer,
+  PhysicalKeyboardButtonModelToStrengthMappingLayer,
 )
 
 const VirtualPadMappingServicesLayer = Layer.mergeAll(
-  VirtualPadButtonModelToAccordMappingService.Default,
-  VirtualPadButtonModelToPatternMappingService.Default,
-  VirtualPadButtonModelToStrengthMappingService.Default,
+  VirtualPadButtonModelToAccordMappingLayer,
+  VirtualPadButtonModelToPatternMappingLayer,
+  VirtualPadButtonModelToStrengthMappingLayer,
 )
 
 const MIDIButtonMappingsLayer = EFunction.pipe(
-  PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
-  Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
-  Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
+  PhysicalMIDIDeviceButtonModelToAccordMappingLayer,
+  Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingLayer),
+  Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingLayer),
   Layer.provideMerge(SelectedMIDIInputService.Default),
   Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
   Layer.catchAll(err =>
