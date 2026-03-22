@@ -1,8 +1,8 @@
-import * as Context from 'effect/Context'
+import type * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
-import * as HashSet from 'effect/HashSet'
+import type * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
@@ -23,7 +23,6 @@ import {
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
-import type { AssetCompletionStatus } from './LoadedAssetSizeEstimationMap.ts'
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
@@ -74,10 +73,15 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         ),
       )
 
-    const isPressable = <E, R>(
-      self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
-    ) =>
-      self.pipe(
+    const getPressabilityChangesStream = (value: T) =>
+      streamAll({
+        isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+        completionStatusOfTheAssetThisButtonWouldSelect:
+          currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+            value,
+          ),
+        isSelectedParam: getIsSelectedStream(value),
+      }).pipe(
         Stream.map(
           req =>
             !req.isSelectedParam &&
@@ -88,16 +92,6 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         Stream.changes,
         Stream.rechunk(1),
       )
-
-    const getPressabilityChangesStream = (value: T) =>
-      streamAll({
-        isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-        completionStatusOfTheAssetThisButtonWouldSelect:
-          currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-            value,
-          ),
-        isSelectedParam: getIsSelectedStream(value),
-      }).pipe(isPressable)
 
     const isCurrentlyPlaying = (value: T) =>
       appPlaybackState.playbackPublicInfoChangesStream.pipe(
@@ -206,10 +200,4 @@ export interface PressureReport {
   isActive: boolean
   pressedByKeyboardKeys: HashSet.HashSet<ValidKeyboardKey>
   pressedByMIDIPadButtons: HashSet.HashSet<NoteId>
-}
-
-interface ButtonPressabilityDecisionRequirements {
-  readonly isPlaying: boolean
-  readonly completionStatusOfTheAssetThisButtonWouldSelect: AssetCompletionStatus
-  readonly isSelectedParam: boolean
 }
