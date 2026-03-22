@@ -1,4 +1,4 @@
-// import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
@@ -19,6 +19,11 @@ import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
+import {
+  AccordInputBus,
+  PatternInputBus,
+  StrengthInputBus,
+} from '../services/InputStreamBus.ts'
 import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager.ts'
 import {
@@ -32,49 +37,55 @@ import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from '../services
 import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from '../services/PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
 import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from '../services/PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
-// import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
+import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { UIButtonService } from '../services/UIButtonService.ts'
 import { VirtualPadButtonModelToAccordMappingService } from '../services/VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from '../services/VirtualPadButtonModelToPatternMappingService.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
 
-const OnMIDIDisabled = Layer.mergeAll(
-  PhysicalMIDIDeviceButtonModelToAccordMappingService.OnMIDIDisabled,
-  PhysicalMIDIDeviceButtonModelToPatternMappingService.OnMIDIDisabled,
-  PhysicalMIDIDeviceButtonModelToStrengthMappingService.OnMIDIDisabled,
+const BusLayer = Layer.mergeAll(
+  AccordInputBus.Default,
+  PatternInputBus.Default,
+  StrengthInputBus.Default,
 )
 
-// const MIDIButtonMappingsLayer = EFunction.pipe(
-//   PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
-//   Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
-//   Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
-//   Layer.provideMerge(SelectedMIDIInputService.Default),
-//   Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
-//   Layer.catchAll(midiAccessErr =>
-//     Layer.merge(
-//       OnMIDIDisabled,
-//       Layer.effectDiscard(
-//         Effect.logError('Error while acquiring MIDI access', midiAccessErr),
-//       ),
-//     ),
-//   ),
-// )
+const KeyboardMappingServicesLayer = Layer.mergeAll(
+  PhysicalKeyboardButtonModelToAccordMappingService.Default,
+  PhysicalKeyboardButtonModelToPatternMappingService.Default,
+  PhysicalKeyboardButtonModelToStrengthMappingService.Default,
+)
 
-const MIDIButtonMappingsLayer = OnMIDIDisabled
+const VirtualPadMappingServicesLayer = Layer.mergeAll(
+  VirtualPadButtonModelToAccordMappingService.Default,
+  VirtualPadButtonModelToPatternMappingService.Default,
+  VirtualPadButtonModelToStrengthMappingService.Default,
+)
+
+const MIDIButtonMappingsLayer = EFunction.pipe(
+  PhysicalMIDIDeviceButtonModelToAccordMappingService.Default,
+  Layer.merge(PhysicalMIDIDeviceButtonModelToPatternMappingService.Default),
+  Layer.merge(PhysicalMIDIDeviceButtonModelToStrengthMappingService.Default),
+  Layer.provideMerge(SelectedMIDIInputService.Default),
+  Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
+  Layer.catchAll(err =>
+    Layer.effectDiscard(Effect.logError('MIDI access failed', err)),
+  ),
+  // Buses and registries are provided here so MIDIButtonMappingsLayer is
+  // self-contained. Effect's layer memoization ensures the same instances
+  // are shared with UIButtonService and the keyboard/virtualpad services.
+  Layer.provideMerge(AccordInputBus.Default),
+  Layer.provideMerge(PatternInputBus.Default),
+  Layer.provideMerge(StrengthInputBus.Default),
+  Layer.provideMerge(AccordRegistry.Default),
+  Layer.provideMerge(PatternRegistry.Default),
+  Layer.provideMerge(StrengthRegistry.Default),
+)
 
 const AppLayer = UIButtonService.Default.pipe(
-  Layer.provideMerge(PhysicalKeyboardButtonModelToAccordMappingService.Default),
-  Layer.provideMerge(
-    PhysicalKeyboardButtonModelToPatternMappingService.Default,
-  ),
-  Layer.provideMerge(
-    PhysicalKeyboardButtonModelToStrengthMappingService.Default,
-  ),
-  Layer.provideMerge(VirtualPadButtonModelToAccordMappingService.Default),
-  Layer.provideMerge(VirtualPadButtonModelToPatternMappingService.Default),
-  Layer.provideMerge(VirtualPadButtonModelToStrengthMappingService.Default),
-
+  Layer.provideMerge(BusLayer),
+  Layer.provideMerge(KeyboardMappingServicesLayer),
+  Layer.provideMerge(VirtualPadMappingServicesLayer),
   Layer.provideMerge(MIDIButtonMappingsLayer),
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
   Layer.provideMerge(AssetDownloadScheduler.Default),

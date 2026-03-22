@@ -3,6 +3,7 @@ import * as Stream from 'effect/Stream'
 
 import type { RecordedPatternIndexes } from '../audioAssetHelpers.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
+import { PatternInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { PatternIndexData, PatternRegistry } from './PatternRegistry.ts'
 
@@ -20,13 +21,16 @@ export class VirtualPadButtonModelToPatternMappingService extends Effect.Service
         ),
         patterns,
         Stream.map(
-          makeVirtualButtonTouchStateStream(new Set(['patternIndex'] as const)),
+          makeVirtualButtonTouchStateStream(
+            new Set(['patternIndex'] as const),
+          ),
           ([element, state]) =>
             [
               new PatternIndexData(parseInt(element.patternIndex, 10)),
               state,
             ] as const,
         ),
+        PatternInputBus,
       ),
     ),
   },

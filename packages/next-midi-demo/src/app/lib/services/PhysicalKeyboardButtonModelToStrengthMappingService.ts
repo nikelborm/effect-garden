@@ -2,6 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import { ValidKeyboardKeyData } from '../branded/StoreValues.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
+import { StrengthInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
@@ -23,6 +24,7 @@ export class PhysicalKeyboardButtonModelToStrengthMappingService extends Effect.
         keyDatasHandlingStrengths,
         [...strengths, ...strengths],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
+        StrengthInputBus,
       ),
     ),
   },

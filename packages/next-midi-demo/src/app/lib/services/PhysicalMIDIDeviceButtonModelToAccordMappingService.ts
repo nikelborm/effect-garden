@@ -1,12 +1,10 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
-import * as HashMap from 'effect/HashMap'
-import * as Layer from 'effect/Layer'
-import * as Stream from 'effect/Stream'
 
 import * as MIDIValues from '../branded/MIDIValues.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
+import { AccordInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 
 const notes = EArray.range(84, 91)
@@ -28,17 +26,8 @@ export class PhysicalMIDIDeviceButtonModelToAccordMappingService extends Effect.
         noteDatasHandlingAccords,
         accords,
         makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
+        AccordInputBus,
       ),
     ),
   },
-) {
-  static OnMIDIDisabled = Layer.succeed(
-    this,
-    this.make({
-      currentMap: Effect.succeed(HashMap.empty()),
-      mapChanges: Stream.empty,
-      latestPhysicalButtonModelsStream: Stream.empty,
-      getPhysicalButtonModel: () => Effect.succeedNone,
-    }),
-  )
-}
+) {}

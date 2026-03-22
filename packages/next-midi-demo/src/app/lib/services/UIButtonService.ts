@@ -1,48 +1,32 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
-import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
-import { ButtonState } from '../branded/index.ts'
-import type { NoteId, NoteIdData } from '../branded/MIDIValues.ts'
-import type {
-  ValidKeyboardKey,
-  ValidKeyboardKeyData,
-} from '../branded/StoreValues.ts'
+import type { NoteId } from '../branded/MIDIValues.ts'
+import type { ValidKeyboardKey } from '../branded/StoreValues.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
-import {
-  type AccordIndexData,
-  AccordRegistry,
-  type AllAccordUnion,
-} from './AccordRegistry.ts'
+import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from './AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
+import {
+  AccordInputBus,
+  PatternInputBus,
+  StrengthInputBus,
+} from './InputStreamBus.ts'
 import {
   type AssetCompletionStatus,
   LoadedAssetSizeEstimationMap,
 } from './LoadedAssetSizeEstimationMap.ts'
 import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
-import {
-  type AllPatternUnion,
-  type PatternIndexData,
-  PatternRegistry,
-} from './PatternRegistry.ts'
-import { PhysicalKeyboardButtonModelToAccordMappingService } from './PhysicalKeyboardButtonModelToAccordMappingService.ts'
-import { PhysicalKeyboardButtonModelToPatternMappingService } from './PhysicalKeyboardButtonModelToPatternMappingService.ts'
-import { PhysicalKeyboardButtonModelToStrengthMappingService } from './PhysicalKeyboardButtonModelToStrengthMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToAccordMappingService } from './PhysicalMIDIDeviceButtonModelToAccordMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToPatternMappingService } from './PhysicalMIDIDeviceButtonModelToPatternMappingService.ts'
-import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from './PhysicalMIDIDeviceButtonModelToStrengthMappingService.ts'
-import { type StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
-import { VirtualPadButtonModelToAccordMappingService } from './VirtualPadButtonModelToAccordMappingService.ts'
-import { VirtualPadButtonModelToPatternMappingService } from './VirtualPadButtonModelToPatternMappingService.ts'
-import { VirtualPadButtonModelToStrengthMappingService } from './VirtualPadButtonModelToStrengthMappingService.ts'
+import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
+import type { Patch } from './CurrentlySelectedAssetState.ts'
+import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class UIButtonService extends Effect.Service<UIButtonService>()(
   'next-midi-demo/UIButtonService',
@@ -56,26 +40,9 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
       const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
       yield* LoadedAssetSizeEstimationMap
       yield* AssetDownloadScheduler
-      const physicalKeyboardButtonModelToAccordMappingService =
-        yield* PhysicalKeyboardButtonModelToAccordMappingService
-      const physicalKeyboardButtonModelToPatternMappingService =
-        yield* PhysicalKeyboardButtonModelToPatternMappingService
-      const physicalKeyboardButtonModelToStrengthMappingService =
-        yield* PhysicalKeyboardButtonModelToStrengthMappingService
-
-      const physicalMIDIDeviceButtonModelToAccordMappingService =
-        yield* PhysicalMIDIDeviceButtonModelToAccordMappingService
-      const physicalMIDIDeviceButtonModelToPatternMappingService =
-        yield* PhysicalMIDIDeviceButtonModelToPatternMappingService
-      const physicalMIDIDeviceButtonModelToStrengthMappingService =
-        yield* PhysicalMIDIDeviceButtonModelToStrengthMappingService
-
-      const virtualPadButtonModelToAccordMappingService =
-        yield* VirtualPadButtonModelToAccordMappingService
-      const virtualPadButtonModelToPatternMappingService =
-        yield* VirtualPadButtonModelToPatternMappingService
-      const virtualPadButtonModelToStrengthMappingService =
-        yield* VirtualPadButtonModelToStrengthMappingService
+      const accordBus = yield* AccordInputBus
+      const patternBus = yield* PatternInputBus
+      const strengthBus = yield* StrengthInputBus
 
       // TODO: нужно сделать чтобы визуально прожимались только те, которые
       // могут визуально прожиматься на текущий момент
@@ -95,126 +62,108 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
           Stream.rechunk(1),
         )
 
-      const getIsSelectedAccordStream = (accord: AllAccordUnion) =>
-        accordRegistry.selectedAccordChanges.pipe(
-          Stream.map(Equal.equals(accord)),
+      const makeIsSelectedStream = <A, E, R>(
+        source: Stream.Stream<A, E, R>,
+        value: A,
+        label: string,
+      ) =>
+        source.pipe(
+          Stream.map(Equal.equals(value)),
           Stream.changes,
           Stream.rechunk(1),
           Stream.tap(isSelected =>
-            Effect.log(
-              `Accord index=${accord.index} is ${isSelected ? '' : 'not '}selected`,
-            ),
+            Effect.log(`${label} is ${isSelected ? '' : 'not '}selected`),
           ),
+        )
+
+      const getIsSelectedAccordStream = (accord: AllAccordUnion) =>
+        makeIsSelectedStream(
+          accordRegistry.selectedAccordChanges,
+          accord,
+          `Accord index=${accord.index}`,
         )
 
       const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
-        patternRegistry.selectedPatternChanges.pipe(
-          Stream.map(Equal.equals(Option.some(pattern))),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isSelected =>
-            Effect.log(
-              `Pattern index=${pattern.index} is ${isSelected ? '' : 'not '}selected`,
-            ),
-          ),
+        makeIsSelectedStream(
+          patternRegistry.selectedPatternChanges,
+          Option.some(pattern),
+          `Pattern index=${pattern.index}`,
         )
 
       const getIsSelectedStrengthStream = (strength: Strength) =>
-        strengthRegistry.selectedStrengthChanges.pipe(
-          Stream.map(Equal.equals(strength)),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isSelected =>
-            Effect.log(
-              `Strength=${strength} is ${isSelected ? '' : 'not '}selected`,
-            ),
-          ),
+        makeIsSelectedStream(
+          strengthRegistry.selectedStrengthChanges,
+          strength,
+          `Strength=${strength}`,
         )
 
-      const getAccordButtonPressabilityChangesStream = (
-        accord: AllAccordUnion,
+      const makePressabilityChangesStream = <E, R>(
+        patch: Patch,
+        isSelectedStream: Stream.Stream<boolean, E, R>,
       ) =>
         streamAll({
           isPlaying: appPlaybackState.latestIsPlayingFlagStream,
           completionStatusOfTheAssetThisButtonWouldSelect:
             currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-              accord,
+              patch,
             ),
-          isSelectedParam: getIsSelectedAccordStream(accord),
+          isSelectedParam: isSelectedStream,
         }).pipe(isPressable)
+
+      const getAccordButtonPressabilityChangesStream = (accord: AllAccordUnion) =>
+        makePressabilityChangesStream(accord, getIsSelectedAccordStream(accord))
 
       const getPatternButtonPressabilityChangesStream = (
         pattern: AllPatternUnion,
       ) =>
-        streamAll({
-          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          completionStatusOfTheAssetThisButtonWouldSelect:
-            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-              pattern,
-            ),
-          isSelectedParam: getIsSelectedPatternStream(pattern),
-        }).pipe(isPressable)
+        makePressabilityChangesStream(pattern, getIsSelectedPatternStream(pattern))
 
       const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
-        streamAll({
-          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          completionStatusOfTheAssetThisButtonWouldSelect:
-            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-              strength,
-            ),
-          isSelectedParam: getIsSelectedStrengthStream(strength),
-        }).pipe(isPressable)
+        makePressabilityChangesStream(strength, getIsSelectedStrengthStream(strength))
+
+      const makeIsCurrentlyPlayingStream = (
+        predicate: (
+          pb: Exclude<
+            Stream.Stream.Success<
+              typeof appPlaybackState.playbackPublicInfoChangesStream
+            >,
+            { _tag: 'NotPlaying' }
+          >,
+        ) => boolean,
+        label: string,
+      ) =>
+        appPlaybackState.playbackPublicInfoChangesStream.pipe(
+          Stream.map(pb => pb._tag !== 'NotPlaying' && predicate(pb)),
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.tap(a =>
+            Effect.log(`${label} button is ${a ? '' : 'not '}pressable`),
+          ),
+        )
 
       const isAccordButtonCurrentlyPlaying = (accord: AllAccordUnion) =>
-        appPlaybackState.playbackPublicInfoChangesStream.pipe(
-          Stream.map(
-            pb =>
-              pb._tag !== 'NotPlaying' &&
-              pb.currentAsset.accord.index === accord.index,
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(a =>
-            Effect.log(
-              `Accord index=${accord.index} button is ${a ? '' : 'not '}pressable`,
-            ),
-          ),
+        makeIsCurrentlyPlayingStream(
+          pb => pb.currentAsset.accord.index === accord.index,
+          `Accord index=${accord.index}`,
         )
+
       const isPatternButtonCurrentlyPlaying = (pattern: AllPatternUnion) =>
-        appPlaybackState.playbackPublicInfoChangesStream.pipe(
-          Stream.map(
-            pb =>
-              pb._tag !== 'NotPlaying' &&
-              Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(a =>
-            Effect.log(
-              `Pattern index=${pattern.index} button is ${a ? '' : 'not '}pressable`,
-            ),
-          ),
+        makeIsCurrentlyPlayingStream(
+          pb => Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
+          `Pattern index=${pattern.index}`,
         )
+
       const isStrengthButtonCurrentlyPlaying = (strength: Strength) =>
-        appPlaybackState.playbackPublicInfoChangesStream.pipe(
-          Stream.map(
-            pb =>
-              pb._tag !== 'NotPlaying' && pb.currentAsset.strength === strength,
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(a =>
-            Effect.log(
-              `Strength=${strength} button is ${a ? '' : 'not '}pressable`,
-            ),
-          ),
+        makeIsCurrentlyPlayingStream(
+          pb => pb.currentAsset.strength === strength,
+          `Strength=${strength}`,
         )
 
       // Currently selected asset is always the asset that will be played next
 
-      const getAccordButtonDownloadPercent = (accord: AllAccordUnion) =>
+      const makeDownloadPercentStream = (patch: Patch, label: string) =>
         currentlySelectedAssetState
-          .getPatchedAssetFetchingCompletionStatusChangesStream(accord)
+          .getPatchedAssetFetchingCompletionStatusChangesStream(patch)
           .pipe(
             Stream.map(s =>
               s.status === 'not finished'
@@ -226,263 +175,67 @@ export class UIButtonService extends Effect.Service<UIButtonService>()(
             Stream.changes,
             Stream.rechunk(1),
             Stream.tap(percent =>
-              Effect.log(
-                `Accord index=${accord.index} download percent=${percent}`,
-              ),
+              Effect.log(`${label} download percent=${percent}`),
             ),
           )
+
+      const getAccordButtonDownloadPercent = (accord: AllAccordUnion) =>
+        makeDownloadPercentStream(accord, `Accord index=${accord.index}`)
 
       const getPatternButtonDownloadPercent = (pattern: AllPatternUnion) =>
-        currentlySelectedAssetState
-          .getPatchedAssetFetchingCompletionStatusChangesStream(pattern)
-          .pipe(
-            Stream.map(s =>
-              s.status === 'not finished'
-                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'almost finished: fetched, but not written'
-                  ? 99
-                  : 100,
-            ),
-            Stream.changes,
-            Stream.rechunk(1),
-            Stream.tap(percent =>
-              Effect.log(
-                `Pattern index=${pattern.index} download percent=${percent}`,
-              ),
-            ),
-          )
+        makeDownloadPercentStream(pattern, `Pattern index=${pattern.index}`)
 
       const getStrengthButtonDownloadPercent = (strength: Strength) =>
-        currentlySelectedAssetState
-          .getPatchedAssetFetchingCompletionStatusChangesStream(strength)
-          .pipe(
-            Stream.map(s =>
-              s.status === 'not finished'
-                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'almost finished: fetched, but not written'
-                  ? 99
-                  : 100,
-            ),
-            Stream.changes,
-            Stream.rechunk(1),
-            Stream.tap(percent =>
-              Effect.log(`Strength=${strength} download percent=${percent}`),
-            ),
+        makeDownloadPercentStream(strength, `Strength=${strength}`)
+
+      yield* accordBus.forEachPress(
+        Effect.fn(function* (assignedTo) {
+          const isAccordButtonPressable = yield* EFunction.pipe(
+            getAccordButtonPressabilityChangesStream(assignedTo),
+            Stream.take(1),
+            Stream.runHead,
+            Effect.map(Option.getOrThrow),
           )
-
-      const getMapCombinerStream =
-        <T>() =>
-        <E, R>(
-          self: Stream.Stream<
-            SupportedKeyData extends infer Key
-              ? Key extends any
-                ? HashMap.HashMap<Key, PhysicalButtonModel<T>>
-                : never
-              : never,
-            E,
-            R
-          >,
-        ) =>
-          Stream.scan(
-            self,
-            HashMap.empty<T, HashSet.HashSet<SupportedKeyData>>(),
-            (previousMap, latestMap) => {
-              let newMap = previousMap
-              for (const [physicalButtonId, physicalButtonModel] of latestMap)
-                newMap = HashMap.modifyAt(
-                  newMap,
-                  physicalButtonModel.assignedTo,
-                  EFunction.flow(
-                    Option.orElseSome(() => HashSet.empty()),
-                    Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
-                      (physicalButtonModel.buttonPressState ===
-                        ButtonState.Pressed
-                        ? HashSet.add
-                        : HashSet.remove)(
-                        setOfPhysicalIdsTheButtonIsPressedBy,
-                        physicalButtonId,
-                      ),
-                    ),
-                  ),
-                )
-              return newMap
-            },
-          )
-
-      const AccordPressAggregateStream =
-        yield* physicalKeyboardButtonModelToAccordMappingService.mapChanges.pipe(
-          Stream.merge(
-            physicalMIDIDeviceButtonModelToAccordMappingService.mapChanges,
-          ),
-          Stream.merge(virtualPadButtonModelToAccordMappingService.mapChanges),
-          getMapCombinerStream<AllAccordUnion>(),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-        )
-
-      yield* physicalKeyboardButtonModelToAccordMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.merge(
-          virtualPadButtonModelToAccordMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.tap(
-          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
-            if (ButtonState.isNotPressed(buttonPressState)) return
-
-            const isAccordButtonPressable = yield* EFunction.pipe(
-              getAccordButtonPressabilityChangesStream(assignedTo),
-              Stream.take(1),
-              Stream.runHead,
-              Effect.map(Option.getOrThrow),
-            )
-
-            if (isAccordButtonPressable)
-              yield* accordRegistry.selectAccord(assignedTo.index)
-          }),
-        ),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
+          if (isAccordButtonPressable)
+            yield* accordRegistry.selectAccord(assignedTo.index)
+        }),
       )
 
-      yield* physicalKeyboardButtonModelToPatternMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.merge(
-          virtualPadButtonModelToPatternMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.tap(
-          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
-            if (ButtonState.isNotPressed(buttonPressState)) return
-
-            const isPatternButtonPressable = yield* EFunction.pipe(
-              getPatternButtonPressabilityChangesStream(assignedTo),
-              Stream.take(1),
-              Stream.runHead,
-              Effect.map(Option.getOrThrow),
-            )
-
-            if (isPatternButtonPressable)
-              yield* patternRegistry.selectPattern(assignedTo.index)
-          }),
-        ),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
+      yield* patternBus.forEachPress(
+        Effect.fn(function* (assignedTo) {
+          const isPatternButtonPressable = yield* EFunction.pipe(
+            getPatternButtonPressabilityChangesStream(assignedTo),
+            Stream.take(1),
+            Stream.runHead,
+            Effect.map(Option.getOrThrow),
+          )
+          if (isPatternButtonPressable)
+            yield* patternRegistry.selectPattern(assignedTo.index)
+        }),
       )
 
-      yield* physicalKeyboardButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream.pipe(
-        Stream.merge(
-          physicalMIDIDeviceButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.merge(
-          virtualPadButtonModelToStrengthMappingService.latestPhysicalButtonModelsStream,
-        ),
-        Stream.tap(
-          Effect.fn(function* ([, { buttonPressState, assignedTo }]) {
-            if (ButtonState.isNotPressed(buttonPressState)) return
-
-            const isStrengthButtonPressable = yield* EFunction.pipe(
-              getStrengthButtonPressabilityChangesStream(assignedTo),
-              Stream.take(1),
-              Stream.runHead,
-              Effect.map(Option.getOrThrow),
-            )
-
-            if (isStrengthButtonPressable)
-              yield* strengthRegistry.selectStrength(assignedTo)
-          }),
-        ),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
+      yield* strengthBus.forEachPress(
+        Effect.fn(function* (assignedTo) {
+          const isStrengthButtonPressable = yield* EFunction.pipe(
+            getStrengthButtonPressabilityChangesStream(assignedTo),
+            Stream.take(1),
+            Stream.runHead,
+            Effect.map(Option.getOrThrow),
+          )
+          if (isStrengthButtonPressable)
+            yield* strengthRegistry.selectStrength(assignedTo)
+        }),
       )
 
       const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
-        AccordPressAggregateStream.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(accord),
-              Option.map(set => HashSet.size(set) !== 0),
-              Option.getOrElse(() => false),
-            ),
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isPressed =>
-            Effect.log(
-              `accord index=${accord.index} is ${isPressed ? '' : 'not '}pressed`,
-            ),
-          ),
-        )
-
-      const PatternPressAggregateStream =
-        yield* physicalKeyboardButtonModelToPatternMappingService.mapChanges.pipe(
-          Stream.merge(
-            physicalMIDIDeviceButtonModelToPatternMappingService.mapChanges,
-          ),
-          Stream.merge(virtualPadButtonModelToPatternMappingService.mapChanges),
-          getMapCombinerStream<AllPatternUnion>(),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-        )
+        accordBus.isPressedStream(accord)
 
       const isPatternButtonPressedFlagChangesStream = (
         pattern: AllPatternUnion,
-      ) =>
-        PatternPressAggregateStream.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(pattern),
-              Option.map(set => HashSet.size(set) !== 0),
-              Option.getOrElse(() => false),
-            ),
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isPressed =>
-            Effect.log(
-              `pattern index=${pattern.index} is ${isPressed ? '' : 'not '}pressed`,
-            ),
-          ),
-        )
-
-      const StrengthPressAggregateStream =
-        yield* physicalKeyboardButtonModelToStrengthMappingService.mapChanges.pipe(
-          Stream.merge(
-            physicalMIDIDeviceButtonModelToStrengthMappingService.mapChanges,
-          ),
-          Stream.merge(
-            virtualPadButtonModelToStrengthMappingService.mapChanges,
-          ),
-          getMapCombinerStream<Strength>(),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-        )
+      ) => patternBus.isPressedStream(pattern)
 
       const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
-        StrengthPressAggregateStream.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(strength),
-              Option.map(set => HashSet.size(set) !== 0),
-              Option.getOrElse(() => false),
-            ),
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isPressed =>
-            Effect.log(
-              `strength=${strength} is ${isPressed ? '' : 'not '}pressed`,
-            ),
-          ),
-        )
+        strengthBus.isPressedStream(strength)
 
       return {
         getIsSelectedAccordStream,
@@ -516,10 +269,3 @@ interface ButtonPressabilityDecisionRequirements {
   readonly completionStatusOfTheAssetThisButtonWouldSelect: AssetCompletionStatus
   readonly isSelectedParam: boolean
 }
-
-type SupportedKeyData =
-  | ValidKeyboardKeyData
-  | NoteIdData
-  | AccordIndexData
-  | StrengthData
-  | PatternIndexData

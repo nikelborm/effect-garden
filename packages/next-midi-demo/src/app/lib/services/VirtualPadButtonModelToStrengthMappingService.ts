@@ -2,6 +2,7 @@ import * as Effect from 'effect/Effect'
 import * as Stream from 'effect/Stream'
 
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
+import { StrengthInputBus } from './InputStreamBus.ts'
 import { makePhysicalButtonToParamMappingService } from './makePhysicalButtonToParamMappingService.ts'
 import { StrengthData, StrengthRegistry } from './StrengthRegistry.ts'
 
@@ -18,6 +19,7 @@ export class VirtualPadButtonModelToStrengthMappingService extends Effect.Servic
           ([element, state]) =>
             [new StrengthData(element.strength), state] as const,
         ),
+        StrengthInputBus,
       ),
     ),
   },
