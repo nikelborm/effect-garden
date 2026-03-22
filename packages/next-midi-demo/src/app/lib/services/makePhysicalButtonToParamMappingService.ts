@@ -63,9 +63,6 @@ export const makePhysicalButtonToParamMappingService = <
 
     const currentMap = Ref.get(physicalButtonIdToModelMapRef)
 
-    const getPhysicalButtonModel = (id: PhysicalButtonId) =>
-      Effect.map(currentMap, HashMap.get(id))
-
     // TODO: maybe move {id -> ButtonModel.assignedTo} into a separate map?
 
     // These 2 separate streams have 2 non atomic Ref method calls. And it's
@@ -115,12 +112,7 @@ export const makePhysicalButtonToParamMappingService = <
       latestPresses: latestPhysicalButtonModelsStream,
     })
 
-    return {
-      currentMap,
-      latestPhysicalButtonModelsStream,
-      mapChanges,
-      getPhysicalButtonModel,
-    }
+    return {}
   })
 
 export class PhysicalButtonModel<AssignedTo> extends Data.Class<{

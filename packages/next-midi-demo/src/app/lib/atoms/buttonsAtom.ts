@@ -39,7 +39,11 @@ import { PhysicalMIDIDeviceButtonModelToStrengthMappingService } from '../servic
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
-import { UIButtonService } from '../services/UIButtonService.ts'
+import {
+  AccordUIButtonService,
+  PatternUIButtonService,
+  StrengthUIButtonService,
+} from '../services/UIButtonService.ts'
 import { VirtualPadButtonModelToAccordMappingService } from '../services/VirtualPadButtonModelToAccordMappingService.ts'
 import { VirtualPadButtonModelToPatternMappingService } from '../services/VirtualPadButtonModelToPatternMappingService.ts'
 import { VirtualPadButtonModelToStrengthMappingService } from '../services/VirtualPadButtonModelToStrengthMappingService.ts'
@@ -82,7 +86,13 @@ const MIDIButtonMappingsLayer = EFunction.pipe(
   Layer.provideMerge(StrengthRegistry.Default),
 )
 
-const AppLayer = UIButtonService.Default.pipe(
+const UIButtonServicesLayer = Layer.mergeAll(
+  AccordUIButtonService.Default,
+  PatternUIButtonService.Default,
+  StrengthUIButtonService.Default,
+)
+
+const AppLayer = UIButtonServicesLayer.pipe(
   Layer.provideMerge(BusLayer),
   Layer.provideMerge(KeyboardMappingServicesLayer),
   Layer.provideMerge(VirtualPadMappingServicesLayer),
@@ -105,14 +115,14 @@ const AppLayer = UIButtonService.Default.pipe(
 
 const runtime = Atom.runtime(AppLayer)
 
-// UIButtonService.getPressureReportOfPattern
-// UIButtonService.getPressureReportOfAccord
+// AccordUIButtonService.getPressureReport
+// PatternUIButtonService.getPressureReport
 
 export const isAccordButtonPressableAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      UIButtonService.getAccordButtonPressabilityChangesStream,
+      AccordUIButtonService.getPressabilityChangesStream,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -136,7 +146,7 @@ export const isPatternButtonPressableAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      UIButtonService.getPatternButtonPressabilityChangesStream,
+      PatternUIButtonService.getPressabilityChangesStream,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -158,7 +168,7 @@ export const isPatternButtonPressableAtom = Atom.family(
 export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    UIButtonService.getStrengthButtonPressabilityChangesStream,
+    StrengthUIButtonService.getPressabilityChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -176,7 +186,7 @@ export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
 export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
   EFunction.pipe(
     accord,
-    UIButtonService.getIsSelectedAccordStream,
+    AccordUIButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -196,7 +206,7 @@ export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
 export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
   EFunction.pipe(
     pattern,
-    UIButtonService.getIsSelectedPatternStream,
+    PatternUIButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -218,7 +228,7 @@ export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
 export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    UIButtonService.getIsSelectedStrengthStream,
+    StrengthUIButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -236,7 +246,7 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
 export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
   EFunction.pipe(
     accord,
-    UIButtonService.isAccordButtonPressedFlagChangesStream,
+    AccordUIButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -254,7 +264,7 @@ export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
 export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
   EFunction.pipe(
     pattern,
-    UIButtonService.isPatternButtonPressedFlagChangesStream,
+    PatternUIButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -272,7 +282,7 @@ export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
 export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    UIButtonService.isStrengthButtonPressedFlagChangesStream,
+    StrengthUIButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -291,7 +301,7 @@ export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      UIButtonService.isAccordButtonCurrentlyPlaying,
+      AccordUIButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -310,7 +320,7 @@ export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      UIButtonService.isPatternButtonCurrentlyPlaying,
+      PatternUIButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -329,7 +339,7 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
   (strength: Strength) =>
     EFunction.pipe(
       strength,
-      UIButtonService.isStrengthButtonCurrentlyPlaying,
+      StrengthUIButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -348,7 +358,7 @@ export const accordButtonDownloadPercentAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      UIButtonService.getAccordButtonDownloadPercent,
+      AccordUIButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -367,7 +377,7 @@ export const patternButtonDownloadPercentAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      UIButtonService.getPatternButtonDownloadPercent,
+      PatternUIButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -386,7 +396,7 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
   (strength: Strength) =>
     EFunction.pipe(
       strength,
-      UIButtonService.getStrengthButtonDownloadPercent,
+      StrengthUIButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
