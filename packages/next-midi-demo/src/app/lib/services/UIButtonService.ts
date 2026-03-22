@@ -1,3 +1,4 @@
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
@@ -12,248 +13,191 @@ import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
-import { AssetDownloadScheduler } from './AssetDownloadScheduler.ts'
-import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
+import {
+  CurrentlySelectedAssetState,
+  type CurrentSelectedAsset,
+  type Patch,
+} from './CurrentlySelectedAssetState.ts'
 import {
   AccordInputBus,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
-import {
-  type AssetCompletionStatus,
-  LoadedAssetSizeEstimationMap,
-} from './LoadedAssetSizeEstimationMap.ts'
-import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
+import type { AssetCompletionStatus } from './LoadedAssetSizeEstimationMap.ts'
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
-import type { Patch } from './CurrentlySelectedAssetState.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-export class UIButtonService extends Effect.Service<UIButtonService>()(
-  'next-midi-demo/UIButtonService',
+interface InputBusHandle<T> {
+  readonly isPressedStream: (key: T) => Stream.Stream<boolean>
+  readonly forEachPress: (
+    handler: (assignedTo: T) => Effect.Effect<void>,
+  ) => Effect.Effect<any, any, any>
+}
+
+const makeUIButtonEntityService = <T extends Patch, S, Reg>({
+  registryTag,
+  busTag,
+  getSelectedChangesStream,
+  toCompareValue,
+  toLabel,
+  isCurrentlyPlayingPredicate,
+  selectAction,
+}: {
+  readonly registryTag: Context.Tag<any, Reg>
+  readonly busTag: Context.ReadonlyTag<any, InputBusHandle<T>>
+  readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
+  readonly toCompareValue: (value: T) => S
+  readonly toLabel: (value: T) => string
+  readonly isCurrentlyPlayingPredicate: (
+    pb: { currentAsset: CurrentSelectedAsset },
+    value: T,
+  ) => boolean
+  readonly selectAction: (registry: Reg, value: T) => Effect.Effect<void>
+}) =>
+  Effect.gen(function* () {
+    const appPlaybackState = yield* AppPlaybackStateService
+    const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
+    const registry = yield* registryTag
+    const bus = yield* busTag
+
+    const selectedChangesStream = getSelectedChangesStream(registry)
+
+    const getIsSelectedStream = (value: T) =>
+      selectedChangesStream.pipe(
+        Stream.map(Equal.equals(toCompareValue(value))),
+        Stream.changes,
+        Stream.rechunk(1),
+        Stream.tap(isSelected =>
+          Effect.log(
+            `${toLabel(value)} is ${isSelected ? '' : 'not '}selected`,
+          ),
+        ),
+      )
+
+    const isPressable = <E, R>(
+      self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
+    ) =>
+      self.pipe(
+        Stream.map(
+          req =>
+            !req.isSelectedParam &&
+            (!req.isPlaying ||
+              req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
+                'finished'),
+        ),
+        Stream.changes,
+        Stream.rechunk(1),
+      )
+
+    const getPressabilityChangesStream = (value: T) =>
+      streamAll({
+        isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+        completionStatusOfTheAssetThisButtonWouldSelect:
+          currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+            value,
+          ),
+        isSelectedParam: getIsSelectedStream(value),
+      }).pipe(isPressable)
+
+    const isCurrentlyPlaying = (value: T) =>
+      appPlaybackState.playbackPublicInfoChangesStream.pipe(
+        Stream.map(
+          pb =>
+            pb._tag !== 'NotPlaying' && isCurrentlyPlayingPredicate(pb, value),
+        ),
+        Stream.changes,
+        Stream.rechunk(1),
+        Stream.tap(a =>
+          Effect.log(`${toLabel(value)} button is ${a ? '' : 'not '}playing`),
+        ),
+      )
+
+    const getDownloadPercent = (value: T) =>
+      currentlySelectedAssetState
+        .getPatchedAssetFetchingCompletionStatusChangesStream(value)
+        .pipe(
+          Stream.map(s =>
+            s.status === 'not finished'
+              ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
+              : s.status === 'almost finished: fetched, but not written'
+                ? 99
+                : 100,
+          ),
+          Stream.changes,
+          Stream.rechunk(1),
+          Stream.tap(percent =>
+            Effect.log(`${toLabel(value)} download percent=${percent}`),
+          ),
+        )
+
+    yield* bus.forEachPress(
+      Effect.fn(function* (value) {
+        const isPressableNow = yield* EFunction.pipe(
+          getPressabilityChangesStream(value),
+          Stream.take(1),
+          Stream.runHead,
+          Effect.map(Option.getOrThrow),
+        )
+        if (isPressableNow) yield* selectAction(registry, value)
+      }),
+    )
+
+    return {
+      getIsSelectedStream,
+      getPressabilityChangesStream,
+      isCurrentlyPlaying,
+      getDownloadPercent,
+      isPressedFlagChangesStream: (value: T) => bus.isPressedStream(value),
+    }
+  })
+
+export class AccordUIButtonService extends Effect.Service<AccordUIButtonService>()(
+  'next-midi-demo/AccordUIButtonService',
   {
     accessors: true,
-    scoped: Effect.gen(function* () {
-      const accordRegistry = yield* AccordRegistry
-      const patternRegistry = yield* PatternRegistry
-      const strengthRegistry = yield* StrengthRegistry
-      const appPlaybackState = yield* AppPlaybackStateService
-      const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
-      yield* LoadedAssetSizeEstimationMap
-      yield* AssetDownloadScheduler
-      const accordBus = yield* AccordInputBus
-      const patternBus = yield* PatternInputBus
-      const strengthBus = yield* StrengthInputBus
+    scoped: makeUIButtonEntityService({
+      registryTag: AccordRegistry,
+      busTag: AccordInputBus,
+      getSelectedChangesStream: reg => reg.selectedAccordChanges,
+      toCompareValue: EFunction.identity<AllAccordUnion>,
+      toLabel: accord => `Accord index=${accord.index}`,
+      isCurrentlyPlayingPredicate: (pb, accord) =>
+        pb.currentAsset.accord.index === accord.index,
+      selectAction: (reg, accord) => reg.selectAccord(accord.index),
+    }),
+  },
+) {}
 
-      // TODO: нужно сделать чтобы визуально прожимались только те, которые
-      // могут визуально прожиматься на текущий момент
+export class PatternUIButtonService extends Effect.Service<PatternUIButtonService>()(
+  'next-midi-demo/PatternUIButtonService',
+  {
+    accessors: true,
+    scoped: makeUIButtonEntityService({
+      registryTag: PatternRegistry,
+      busTag: PatternInputBus,
+      getSelectedChangesStream: reg => reg.selectedPatternChanges,
+      toCompareValue: Option.some<AllPatternUnion>,
+      toLabel: pattern => `Pattern index=${pattern.index}`,
+      isCurrentlyPlayingPredicate: (pb, pattern) =>
+        Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
+      selectAction: (reg, pattern) => reg.selectPattern(pattern.index),
+    }),
+  },
+) {}
 
-      const isPressable = <E, R>(
-        self: Stream.Stream<ButtonPressabilityDecisionRequirements, E, R>,
-      ) =>
-        self.pipe(
-          Stream.map(
-            req =>
-              !req.isSelectedParam &&
-              (!req.isPlaying ||
-                req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
-                  'finished'),
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-        )
-
-      const makeIsSelectedStream = <A, E, R>(
-        source: Stream.Stream<A, E, R>,
-        value: A,
-        label: string,
-      ) =>
-        source.pipe(
-          Stream.map(Equal.equals(value)),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(isSelected =>
-            Effect.log(`${label} is ${isSelected ? '' : 'not '}selected`),
-          ),
-        )
-
-      const getIsSelectedAccordStream = (accord: AllAccordUnion) =>
-        makeIsSelectedStream(
-          accordRegistry.selectedAccordChanges,
-          accord,
-          `Accord index=${accord.index}`,
-        )
-
-      const getIsSelectedPatternStream = (pattern: AllPatternUnion) =>
-        makeIsSelectedStream(
-          patternRegistry.selectedPatternChanges,
-          Option.some(pattern),
-          `Pattern index=${pattern.index}`,
-        )
-
-      const getIsSelectedStrengthStream = (strength: Strength) =>
-        makeIsSelectedStream(
-          strengthRegistry.selectedStrengthChanges,
-          strength,
-          `Strength=${strength}`,
-        )
-
-      const makePressabilityChangesStream = <E, R>(
-        patch: Patch,
-        isSelectedStream: Stream.Stream<boolean, E, R>,
-      ) =>
-        streamAll({
-          isPlaying: appPlaybackState.latestIsPlayingFlagStream,
-          completionStatusOfTheAssetThisButtonWouldSelect:
-            currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-              patch,
-            ),
-          isSelectedParam: isSelectedStream,
-        }).pipe(isPressable)
-
-      const getAccordButtonPressabilityChangesStream = (accord: AllAccordUnion) =>
-        makePressabilityChangesStream(accord, getIsSelectedAccordStream(accord))
-
-      const getPatternButtonPressabilityChangesStream = (
-        pattern: AllPatternUnion,
-      ) =>
-        makePressabilityChangesStream(pattern, getIsSelectedPatternStream(pattern))
-
-      const getStrengthButtonPressabilityChangesStream = (strength: Strength) =>
-        makePressabilityChangesStream(strength, getIsSelectedStrengthStream(strength))
-
-      const makeIsCurrentlyPlayingStream = (
-        predicate: (
-          pb: Exclude<
-            Stream.Stream.Success<
-              typeof appPlaybackState.playbackPublicInfoChangesStream
-            >,
-            { _tag: 'NotPlaying' }
-          >,
-        ) => boolean,
-        label: string,
-      ) =>
-        appPlaybackState.playbackPublicInfoChangesStream.pipe(
-          Stream.map(pb => pb._tag !== 'NotPlaying' && predicate(pb)),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(a =>
-            Effect.log(`${label} button is ${a ? '' : 'not '}pressable`),
-          ),
-        )
-
-      const isAccordButtonCurrentlyPlaying = (accord: AllAccordUnion) =>
-        makeIsCurrentlyPlayingStream(
-          pb => pb.currentAsset.accord.index === accord.index,
-          `Accord index=${accord.index}`,
-        )
-
-      const isPatternButtonCurrentlyPlaying = (pattern: AllPatternUnion) =>
-        makeIsCurrentlyPlayingStream(
-          pb => Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-          `Pattern index=${pattern.index}`,
-        )
-
-      const isStrengthButtonCurrentlyPlaying = (strength: Strength) =>
-        makeIsCurrentlyPlayingStream(
-          pb => pb.currentAsset.strength === strength,
-          `Strength=${strength}`,
-        )
-
-      // Currently selected asset is always the asset that will be played next
-
-      const makeDownloadPercentStream = (patch: Patch, label: string) =>
-        currentlySelectedAssetState
-          .getPatchedAssetFetchingCompletionStatusChangesStream(patch)
-          .pipe(
-            Stream.map(s =>
-              s.status === 'not finished'
-                ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-                : s.status === 'almost finished: fetched, but not written'
-                  ? 99
-                  : 100,
-            ),
-            Stream.changes,
-            Stream.rechunk(1),
-            Stream.tap(percent =>
-              Effect.log(`${label} download percent=${percent}`),
-            ),
-          )
-
-      const getAccordButtonDownloadPercent = (accord: AllAccordUnion) =>
-        makeDownloadPercentStream(accord, `Accord index=${accord.index}`)
-
-      const getPatternButtonDownloadPercent = (pattern: AllPatternUnion) =>
-        makeDownloadPercentStream(pattern, `Pattern index=${pattern.index}`)
-
-      const getStrengthButtonDownloadPercent = (strength: Strength) =>
-        makeDownloadPercentStream(strength, `Strength=${strength}`)
-
-      yield* accordBus.forEachPress(
-        Effect.fn(function* (assignedTo) {
-          const isAccordButtonPressable = yield* EFunction.pipe(
-            getAccordButtonPressabilityChangesStream(assignedTo),
-            Stream.take(1),
-            Stream.runHead,
-            Effect.map(Option.getOrThrow),
-          )
-          if (isAccordButtonPressable)
-            yield* accordRegistry.selectAccord(assignedTo.index)
-        }),
-      )
-
-      yield* patternBus.forEachPress(
-        Effect.fn(function* (assignedTo) {
-          const isPatternButtonPressable = yield* EFunction.pipe(
-            getPatternButtonPressabilityChangesStream(assignedTo),
-            Stream.take(1),
-            Stream.runHead,
-            Effect.map(Option.getOrThrow),
-          )
-          if (isPatternButtonPressable)
-            yield* patternRegistry.selectPattern(assignedTo.index)
-        }),
-      )
-
-      yield* strengthBus.forEachPress(
-        Effect.fn(function* (assignedTo) {
-          const isStrengthButtonPressable = yield* EFunction.pipe(
-            getStrengthButtonPressabilityChangesStream(assignedTo),
-            Stream.take(1),
-            Stream.runHead,
-            Effect.map(Option.getOrThrow),
-          )
-          if (isStrengthButtonPressable)
-            yield* strengthRegistry.selectStrength(assignedTo)
-        }),
-      )
-
-      const isAccordButtonPressedFlagChangesStream = (accord: AllAccordUnion) =>
-        accordBus.isPressedStream(accord)
-
-      const isPatternButtonPressedFlagChangesStream = (
-        pattern: AllPatternUnion,
-      ) => patternBus.isPressedStream(pattern)
-
-      const isStrengthButtonPressedFlagChangesStream = (strength: Strength) =>
-        strengthBus.isPressedStream(strength)
-
-      return {
-        getIsSelectedAccordStream,
-        getIsSelectedPatternStream,
-        getIsSelectedStrengthStream,
-        getAccordButtonPressabilityChangesStream,
-        getPatternButtonPressabilityChangesStream,
-        getStrengthButtonPressabilityChangesStream,
-        isAccordButtonCurrentlyPlaying,
-        isPatternButtonCurrentlyPlaying,
-        isStrengthButtonCurrentlyPlaying,
-        getAccordButtonDownloadPercent,
-        getPatternButtonDownloadPercent,
-        getStrengthButtonDownloadPercent,
-        isAccordButtonPressedFlagChangesStream,
-        isPatternButtonPressedFlagChangesStream,
-        isStrengthButtonPressedFlagChangesStream,
-      }
+export class StrengthUIButtonService extends Effect.Service<StrengthUIButtonService>()(
+  'next-midi-demo/StrengthUIButtonService',
+  {
+    accessors: true,
+    scoped: makeUIButtonEntityService({
+      registryTag: StrengthRegistry,
+      busTag: StrengthInputBus,
+      getSelectedChangesStream: reg => reg.selectedStrengthChanges,
+      toCompareValue: EFunction.identity<Strength>,
+      toLabel: strength => `Strength=${strength}`,
+      isCurrentlyPlayingPredicate: (pb, strength) =>
+        pb.currentAsset.strength === strength,
+      selectAction: (reg, strength) => reg.selectStrength(strength),
     }),
   },
 ) {}
