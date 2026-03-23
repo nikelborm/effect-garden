@@ -15,6 +15,7 @@ import {
   AccordRegistry,
   type AllAccordUnion,
 } from '../services/AccordRegistry.ts'
+import { AllButtonMappingLayer } from '../services/AllButtonMappingLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
@@ -30,7 +31,6 @@ import {
   type AllPatternUnion,
   PatternRegistry,
 } from '../services/PatternRegistry.ts'
-import { AllButtonMappingLayer } from '../services/AllButtonMappingLayer.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
