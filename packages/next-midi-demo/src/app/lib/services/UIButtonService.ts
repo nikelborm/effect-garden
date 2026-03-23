@@ -9,7 +9,7 @@ import type { Strength } from '../audioAssetHelpers.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
-import { AppPlaybackStateService } from './AppPlaybackStateService.ts'
+import { AppPlaybackStateService } from './AppPlaybackStateService/AppPlaybackStateService.ts'
 import {
   CurrentlySelectedAssetState,
   type CurrentSelectedAsset,
