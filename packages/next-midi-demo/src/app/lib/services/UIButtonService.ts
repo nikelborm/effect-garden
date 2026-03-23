@@ -42,7 +42,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   isCurrentlyPlayingPredicate,
   selectAction,
 }: {
-  readonly registryTag: Context.Tag<any, Reg>
+  readonly registryTag: Context.ReadonlyTag<any, Reg>
   readonly busTag: Context.ReadonlyTag<any, InputBusHandle<T>>
   readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
   readonly toCompareValue: (value: T) => S
@@ -54,10 +54,16 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   readonly selectAction: (registry: Reg, value: T) => Effect.Effect<void>
 }) =>
   Effect.gen(function* () {
-    const appPlaybackState = yield* AppPlaybackStateService
-    const currentlySelectedAssetState = yield* CurrentlySelectedAssetState
-    const registry = yield* registryTag
-    const bus = yield* busTag
+    const [appPlaybackState, currentlySelectedAssetState, registry, bus] =
+      yield* Effect.all(
+        [
+          AppPlaybackStateService,
+          CurrentlySelectedAssetState,
+          registryTag,
+          busTag,
+        ],
+        { concurrency: 'unbounded' },
+      )
 
     const selectedChangesStream = getSelectedChangesStream(registry)
 
@@ -195,9 +201,3 @@ export class StrengthUIButtonService extends Effect.Service<StrengthUIButtonServ
     }),
   },
 ) {}
-
-export interface PressureReport {
-  isActive: boolean
-  pressedByKeyboardKeys: HashSet.HashSet<ValidKeyboardKey>
-  pressedByMIDIPadButtons: HashSet.HashSet<NoteId>
-}
