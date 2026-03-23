@@ -115,9 +115,6 @@ const AppLayer = UIButtonServicesLayer.pipe(
 
 const runtime = Atom.runtime(AppLayer)
 
-// AccordUIButtonService.getPressureReport
-// PatternUIButtonService.getPressureReport
-
 export const isAccordButtonPressableAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
