@@ -16,7 +16,7 @@ import {
   type AllAccordUnion,
 } from '../services/AccordRegistry.ts'
 import { AllButtonMappingLayer } from '../services/AllButtonMappingLayer.ts'
-import { AppPlaybackStateService } from '../services/AppPlaybackStateService.ts'
+import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'

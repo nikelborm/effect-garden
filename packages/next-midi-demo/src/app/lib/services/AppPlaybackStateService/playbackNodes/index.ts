@@ -1,0 +1,8 @@
+export { createLoopingPlayback } from './createLoopingPlayback.ts'
+export { createLoopScheduledAfterSlowStrum } from './createLoopScheduledAfterSlowStrum.ts'
+export { createOneshotPlayback } from './createOneshotPlayback.ts'
+export { createPlayback } from './createPlayback.ts'
+export { createScheduledNextPlayback } from './createScheduledNextPlayback.ts'
+export { getAudioBufferDurationSeconds } from './getAudioBufferDurationSeconds.ts'
+export { helpGarbageCollectionOfPlayback } from './helpGarbageCollectionOfPlayback.ts'
+export { scheduleFadeOutOf } from './scheduleFadeOutOf.ts'
