@@ -307,6 +307,35 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             secondsSinceAudioContextInit,
           )
 
+          if (Option.isNone(asset.pattern)) {
+            if (math.fitsIntoBufferOfClosestTransition) {
+              // Pattern deselected before transition — cancel latest, keep current fading to silence
+              yield* helpGarbageCollectionOfPlayback(latest.playback)
+              return {
+                _tag: 'ScheduledLoopToSilenceTransition' as const,
+                playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+                transitionQueue: [current],
+              } satisfies ScheduledLoopToSilenceTransition
+            }
+            // Transition already in progress — latest is fading in; schedule its fade-out too
+            yield* scheduleFadeOutOf(latest.playback, math)
+            return {
+              _tag: 'InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence' as const,
+              playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+              transitionQueue: [
+                current,
+                {
+                  ...latest,
+                  cleanupFiberToolkit: yield* makeCleanupFibers(
+                    math.secondsSinceNowUpUntilFadeoutEnds,
+                  ),
+                  fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
+                  fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
+                },
+              ],
+            } satisfies InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence
+          }
+
           if (
             math.fitsIntoBufferOfClosestTransition &&
             Equal.equals(current.asset, asset)
@@ -372,7 +401,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               yield* EAudioContext.currentTime(audioContext)
             yield* helpGarbageCollectionOfPlayback(current.playback)
             const audioBuffer = yield* getAudioBufferOfAsset(asset)
-            const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
+            const newPlayback = yield* createOneshotPlayback(
+              audioContext,
+              audioBuffer,
+            )
             yield* Effect.sync(() => {
               newPlayback.gainNode.gain.setValueAtTime(
                 maxLoudness,
@@ -380,13 +412,17 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               )
               newPlayback.bufferSource.start(secondsSinceAudioContextInit)
             })
-            const durationSeconds =
-              (audioBuffer as EAudioBuffer.EAudioBuffer & { _audioBuffer: AudioBuffer })
-                ._audioBuffer.duration
+            const durationSeconds = (
+              audioBuffer as EAudioBuffer.EAudioBuffer & {
+                _audioBuffer: AudioBuffer
+              }
+            )._audioBuffer.duration
             return {
               _tag: 'PlayingSlowStrum' as const,
               playbackStartedAtSecond: secondsSinceAudioContextInit,
-              transitionQueue: [{ asset, playback: newPlayback, durationSeconds }],
+              transitionQueue: [
+                { asset, playback: newPlayback, durationSeconds },
+              ],
             } satisfies PlayingSlowStrum
           }
 
@@ -419,7 +455,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           if (Option.isNone(asset.pattern)) {
             // Pattern deselected again — start a new slow strum immediately
             const audioBuffer = yield* getAudioBufferOfAsset(asset)
-            const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
+            const newPlayback = yield* createOneshotPlayback(
+              audioContext,
+              audioBuffer,
+            )
             yield* Effect.sync(() => {
               newPlayback.gainNode.gain.setValueAtTime(
                 maxLoudness,
@@ -427,19 +466,26 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
               )
               newPlayback.bufferSource.start(secondsSinceAudioContextInit)
             })
-            const durationSeconds =
-              (audioBuffer as EAudioBuffer.EAudioBuffer & { _audioBuffer: AudioBuffer })
-                ._audioBuffer.duration
+            const durationSeconds = (
+              audioBuffer as EAudioBuffer.EAudioBuffer & {
+                _audioBuffer: AudioBuffer
+              }
+            )._audioBuffer.duration
             return {
               _tag: 'PlayingSlowStrum' as const,
               playbackStartedAtSecond: secondsSinceAudioContextInit,
-              transitionQueue: [{ asset, playback: newPlayback, durationSeconds }],
+              transitionQueue: [
+                { asset, playback: newPlayback, durationSeconds },
+              ],
             } satisfies PlayingSlowStrum
           }
 
           // New pattern/accord: start loop immediately
           const audioBuffer = yield* getAudioBufferOfAsset(asset)
-          const newLoopPlayback = yield* createLoopingPlayback(audioContext, audioBuffer)
+          const newLoopPlayback = yield* createLoopingPlayback(
+            audioContext,
+            audioBuffer,
+          )
           yield* Effect.sync(() => {
             newLoopPlayback.gainNode.gain.setValueAtTime(
               maxLoudness,
@@ -452,6 +498,72 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             playbackStartedAtSecond: secondsSinceAudioContextInit,
             transitionQueue: [{ asset, playback: newLoopPlayback }],
           } satisfies PlayingLoop
+        }
+        if (oldState._tag === 'ScheduledLoopToSilenceTransition') {
+          const [current] = oldState.transitionQueue
+          if (Option.isNone(asset.pattern)) return oldState
+
+          const secondsSinceAudioContextInit =
+            yield* EAudioContext.currentTime(audioContext)
+          const math = calcTimingsMath(
+            oldState.playbackStartedAtSecond,
+            secondsSinceAudioContextInit,
+          )
+          const audioBuffer = yield* getAudioBufferOfAsset(asset)
+
+          if (math.fitsIntoBufferOfClosestTransition) {
+            // Cancel the scheduled silence and redirect current loop into a transition to new loop
+            yield* Effect.sync(() => {
+              current.playback.gainNode.gain.cancelScheduledValues(
+                secondsSinceAudioContextInit,
+              )
+              current.playback.gainNode.gain.setValueAtTime(
+                maxLoudness,
+                secondsSinceAudioContextInit,
+              )
+            })
+            yield* current.cleanupFiberToolkit.cancelCleanup
+            yield* scheduleFadeOutOf(current.playback, math)
+            return {
+              _tag: 'ScheduledLoopToAnotherLoopTransition' as const,
+              playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+              transitionQueue: [
+                {
+                  ...current,
+                  cleanupFiberToolkit: yield* makeCleanupFibers(
+                    math.secondsSinceNowUpUntilFadeoutEnds,
+                  ),
+                  fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
+                  fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
+                },
+                {
+                  asset,
+                  playback: yield* createScheduledNextPlayback(
+                    audioContext,
+                    audioBuffer,
+                    math,
+                  ),
+                },
+              ],
+            } satisfies ScheduledLoopToAnotherLoopTransition
+          }
+
+          // Fade already in progress — schedule new loop to start right after current ends
+          return {
+            _tag: 'ScheduledLoopToAnotherLoopTransition' as const,
+            playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+            transitionQueue: [
+              current,
+              {
+                asset,
+                playback: yield* createLoopScheduledAfterSlowStrum(
+                  audioContext,
+                  audioBuffer,
+                  current.fadeoutEndsAtSecond,
+                ),
+              },
+            ],
+          } satisfies ScheduledLoopToAnotherLoopTransition
         }
         return oldState
       })
@@ -503,7 +615,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
             const secondsSinceAudioContextInit =
               yield* EAudioContext.currentTime(audioContext)
             const remainingSeconds =
-              state.playbackStartedAtSecond + durationSeconds - secondsSinceAudioContextInit
+              state.playbackStartedAtSecond +
+              durationSeconds -
+              secondsSinceAudioContextInit
             yield* SubscriptionRef.updateEffect(
               stateRef,
               Effect.fn(function* (currentState) {
@@ -751,6 +865,25 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     }
   }
 
+  if (stateRightBeforeCleanup._tag === 'ScheduledLoopToSilenceTransition') {
+    const [fading] = stateRightBeforeCleanup.transitionQueue
+    yield* helpGarbageCollectionOfPlayback(fading.playback)
+    return { _tag: 'NotPlaying' as const }
+  }
+
+  if (
+    stateRightBeforeCleanup._tag ===
+    'InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence'
+  ) {
+    const [oldest, fading] = stateRightBeforeCleanup.transitionQueue
+    yield* helpGarbageCollectionOfPlayback(oldest.playback)
+    return {
+      _tag: 'ScheduledLoopToSilenceTransition' as const,
+      playbackStartedAtSecond: stateRightBeforeCleanup.playbackStartedAtSecond,
+      transitionQueue: [fading],
+    } satisfies ScheduledLoopToSilenceTransition
+  }
+
   return stateRightBeforeCleanup
 })
 
@@ -854,120 +987,3 @@ interface CleanupFiberToolkit {
   readonly cancelDelayedCleanupSignal: Effect.Effect<void>
   readonly cleanupImmediately: Effect.Effect<void>
 }
-
-// interface SA<S extends Strength, A extends AllAccordUnion> {
-//   readonly strength: S
-//   readonly accord: A
-// }
-
-// interface SAP<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > extends SA<S, A> {
-//   readonly pattern: P
-// }
-
-// // Distributed 2 parameters
-// type PossibleStrengthWithAccordCombinations = Strength extends infer S
-//   ? AllAccordUnion extends infer A
-//     ? S extends Strength
-//       ? A extends AllAccordUnion
-//         ? SA<S, A>
-//         : never
-//       : never
-//     : never
-//   : never
-
-// type PossibleLoops =
-//   PossibleStrengthWithAccordCombinations extends SA<infer S, infer A>
-//     ? AllPatternUnion extends infer P
-//       ? S extends any
-//         ? A extends any
-//           ? P extends AllPatternUnion
-//             ? SAP<S, A, P>
-//             : never
-//           : never
-//         : never
-//       : never
-//     : never
-
-// type PossibleSingleShotSlowStrums = PossibleStrengthWithAccordCombinations
-
-// type AllSAPExcept<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > = Exclude<PossibleLoops, SAP<S, A, P>>
-
-// type WideSAP = SAP<Strength, AllAccordUnion, AllPatternUnion>
-
-// type GetStrengthNeighbors<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > =
-//   Exclude<Strength, S> extends infer _S
-//     ? _S extends Strength
-//       ? SAP<_S, A, P>
-//       : never
-//     : never
-
-// type GetAccordNeighbors<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > =
-//   Exclude<AllAccordUnion, A> extends infer _A
-//     ? _A extends AllAccordUnion
-//       ? SAP<S, _A, P>
-//       : never
-//     : never
-
-// type GetPatternNeighbors<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > =
-//   Exclude<AllPatternUnion, P> extends infer _P
-//     ? _P extends AllPatternUnion
-//       ? SAP<S, A, _P>
-//       : never
-//     : never
-
-// type GetSAPNeighbors<
-//   S extends Strength,
-//   A extends AllAccordUnion,
-//   P extends AllPatternUnion,
-// > =
-//   | GetStrengthNeighbors<S, A, P>
-//   | GetAccordNeighbors<S, A, P>
-//   | GetPatternNeighbors<S, A, P>
-
-// type LoopTransitions = PossibleLoops extends infer FromLoop
-//   ? FromLoop extends SAP<infer S, infer A, infer P>
-//     ? GetSAPNeighbors<S, A, P> extends infer SAPNeighbor
-//       ? SAPNeighbor extends any
-//         ? {
-//             readonly loopQueue: [FromLoop, SAPNeighbor]
-//           }
-//         : never
-//       : never
-//     : never
-//   : never
-
-// type TripleLoopTransitions = LoopTransitions extends {
-//   readonly loopQueue: [infer FromLoop, infer MiddleLoop]
-// }
-//   ? MiddleLoop extends SAP<infer S, infer A, infer P>
-//     ? GetSAPNeighbors<S, A, P> extends infer SAPNeighbor
-//       ? SAPNeighbor extends any
-//         ? FromLoop extends any
-//           ? {
-//               readonly loopQueue: [FromLoop, MiddleLoop, SAPNeighbor]
-//             }
-//           : never
-//         : never
-//       : never
-//     : never
-//   : never
