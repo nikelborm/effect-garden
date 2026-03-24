@@ -6,6 +6,7 @@ import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
 import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import { maxLoudness } from '../constants.ts'
 import {
   createScheduledNextPlayback,
   helpGarbageCollectionOfPlayback,
@@ -18,8 +19,7 @@ import type {
   PlayingLoop,
   ScheduledLoopToAnotherLoopTransition,
   ScheduledLoopToSilenceTransition,
-} from '../types.ts'
-import { maxLoudness } from '../constants.ts'
+} from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(

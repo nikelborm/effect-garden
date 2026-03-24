@@ -4,7 +4,7 @@ import type * as EAudioContext from 'effect-web-audio/EAudioContext'
 import type * as Effect from 'effect/Effect'
 
 import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
-import type { CleanupFiberToolkit } from '../types.ts'
+import type { CleanupFiberToolkit } from '../types/index.ts'
 
 export interface ReschedulePlaybackDeps {
   readonly audioContext: EAudioContext.Instance
