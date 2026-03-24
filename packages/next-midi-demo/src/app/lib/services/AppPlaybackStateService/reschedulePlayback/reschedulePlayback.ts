@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import type { AppPlaybackState } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 import { fromPlayingLoop } from './fromPlayingLoop.ts'
@@ -13,7 +13,7 @@ export type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const reschedulePlayback = Effect.fn('reschedulePlayback')(function* (
   oldState: AppPlaybackState,
-  asset: CurrentSelectedAsset,
+  asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
   switch (oldState._tag) {

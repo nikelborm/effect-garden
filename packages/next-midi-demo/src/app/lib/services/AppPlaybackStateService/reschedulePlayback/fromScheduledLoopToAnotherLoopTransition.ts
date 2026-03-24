@@ -5,7 +5,7 @@ import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import { maxLoudness } from '../constants.ts'
 import {
   createScheduledNextPlayback,
@@ -26,7 +26,7 @@ export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
   'fromScheduledLoopToAnotherLoopTransition',
 )(function* (
   oldState: ScheduledLoopToAnotherLoopTransition,
-  asset: CurrentSelectedAsset,
+  asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
   const current = oldState.transitionQueue[0]

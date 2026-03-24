@@ -4,7 +4,7 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import {
   createLoopingPlayback,
@@ -23,7 +23,7 @@ export const fromScheduledSlowStrumToLoopTransition = Effect.fn(
   'fromScheduledSlowStrumToLoopTransition',
 )(function* (
   oldState: ScheduledSlowStrumToLoopTransition,
-  asset: CurrentSelectedAsset,
+  asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
   const [slowStrum, queuedLoop] = oldState.transitionQueue

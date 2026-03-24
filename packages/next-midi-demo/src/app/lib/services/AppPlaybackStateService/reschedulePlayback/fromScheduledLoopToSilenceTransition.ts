@@ -3,7 +3,7 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import { maxLoudness } from '../constants.ts'
 import {
   createLoopScheduledAfterSlowStrum,
@@ -21,7 +21,7 @@ export const fromScheduledLoopToSilenceTransition = Effect.fn(
   'fromScheduledLoopToSilenceTransition',
 )(function* (
   oldState: ScheduledLoopToSilenceTransition,
-  asset: CurrentSelectedAsset,
+  asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
   const [current] = oldState.transitionQueue

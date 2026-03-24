@@ -17,7 +17,7 @@ import {
 } from '../services/AccordRegistry.ts'
 import { AllButtonMappingLayer } from '../services/AllButtonMappingLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
-import { AssetDownloadScheduler } from '../services/AssetDownloadScheduler.ts'
+import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
 import {
@@ -74,7 +74,7 @@ const AppLayer = UIButtonServicesLayer.pipe(
   Layer.provideMerge(BusLayer),
   Layer.provideMerge(AllButtonMappingServicesLayer),
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
-  Layer.provideMerge(AssetDownloadScheduler.Default),
+  Layer.provideMerge(AssetDownloadSchedulerLive),
   Layer.provideMerge(DownloadManager.Default),
   Layer.provideMerge(OpfsWritableHandleManager.Default),
   // Layer.provideMerge(BrowserHttpClient.layerXMLHttpRequest),

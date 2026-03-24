@@ -4,7 +4,7 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import {
   createScheduledNextPlayback,
   scheduleFadeOutOf,
@@ -19,7 +19,7 @@ import type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
   oldState: PlayingLoop,
-  asset: CurrentSelectedAsset,
+  asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
   const [current] = oldState.transitionQueue

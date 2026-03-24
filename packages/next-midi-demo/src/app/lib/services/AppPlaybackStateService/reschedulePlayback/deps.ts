@@ -3,7 +3,7 @@ import type * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import type * as Effect from 'effect/Effect'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import type { CleanupFiberToolkit } from '../types/index.ts'
 
 export interface ReschedulePlaybackDeps {
@@ -12,6 +12,6 @@ export interface ReschedulePlaybackDeps {
     delayForSeconds: number,
   ) => Effect.Effect<CleanupFiberToolkit>
   readonly getAudioBufferOfAsset: (
-    asset: CurrentSelectedAsset,
+    asset: AssetPointer,
   ) => Effect.Effect<EAudioBuffer.EAudioBuffer, any>
 }
