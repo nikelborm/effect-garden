@@ -32,14 +32,14 @@ import {
   getAudioBufferDurationSeconds,
   helpGarbageCollectionOfPlayback,
 } from './playbackNodes/index.ts'
-import { reschedulePlayback } from './reschedulePlayback/index.ts'
+import { reschedulePlayback } from './reschedulePlayback/reschedulePlayback.ts'
 import type {
   AppPlaybackState,
   CleanupFiberToolkit,
   PlayingAppPlaybackStates,
   PlayingLoop,
   PlayingSlowStrum,
-} from './types.ts'
+} from './types/index.ts'
 
 export type {
   AppPlaybackState,
@@ -56,7 +56,7 @@ export type {
   ScheduledLoopToSilenceTransition,
   ScheduledSlowStrumToLoopTransition,
   SlowStrumTransitionQueueElement,
-} from './types.ts'
+} from './types/index.ts'
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',

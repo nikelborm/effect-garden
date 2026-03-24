@@ -5,7 +5,7 @@ import * as Effect from 'effect/Effect'
 
 import { minLoudness, transitionTimeInSeconds } from './constants.ts'
 import { helpGarbageCollectionOfPlayback } from './playbackNodes/index.ts'
-import type { PlayingAppPlaybackStates } from './types.ts'
+import type { PlayingAppPlaybackStates } from './types/index.ts'
 
 export const makeCleanupAllPlaybacks = (audioContext: EAudioContext.Instance) =>
   Effect.fn(function* (state: PlayingAppPlaybackStates) {
