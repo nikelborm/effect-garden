@@ -2,12 +2,12 @@ import * as Effect from 'effect/Effect'
 
 import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import type { AppPlaybackState } from '../types/index.ts'
+import { advanceLoopToLoopTransition } from './advanceLoopToLoopTransition.ts'
+import { advanceLoopToSilenceTransition } from './advanceLoopToSilenceTransition.ts'
+import { advancePlayingLoop } from './advancePlayingLoop.ts'
+import { advancePlayingSlowStrum } from './advancePlayingSlowStrum.ts'
+import { advanceSlowStrumToLoopTransition } from './advanceSlowStrumToLoopTransition.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
-import { fromPlayingLoop } from './fromPlayingLoop.ts'
-import { fromPlayingSlowStrum } from './fromPlayingSlowStrum.ts'
-import { fromScheduledLoopToAnotherLoopTransition } from './fromScheduledLoopToAnotherLoopTransition.ts'
-import { fromScheduledLoopToSilenceTransition } from './fromScheduledLoopToSilenceTransition.ts'
-import { fromScheduledSlowStrumToLoopTransition } from './fromScheduledSlowStrumToLoopTransition.ts'
 
 export type { ReschedulePlaybackDeps } from './deps.ts'
 
@@ -20,23 +20,15 @@ export const reschedulePlayback = Effect.fn('reschedulePlayback')(function* (
     case 'NotPlaying':
       return oldState
     case 'PlayingLoop':
-      return yield* fromPlayingLoop(oldState, asset, deps)
-    case 'ScheduledLoopToAnotherLoopTransition':
-      return yield* fromScheduledLoopToAnotherLoopTransition(
-        oldState,
-        asset,
-        deps,
-      )
+      return yield* advancePlayingLoop(oldState, asset, deps)
+    case 'LoopToLoopTransition':
+      return yield* advanceLoopToLoopTransition(oldState, asset, deps)
     case 'PlayingSlowStrum':
-      return yield* fromPlayingSlowStrum(oldState, asset, deps)
-    case 'ScheduledSlowStrumToLoopTransition':
-      return yield* fromScheduledSlowStrumToLoopTransition(
-        oldState,
-        asset,
-        deps,
-      )
-    case 'ScheduledLoopToSilenceTransition':
-      return yield* fromScheduledLoopToSilenceTransition(oldState, asset, deps)
+      return yield* advancePlayingSlowStrum(oldState, asset, deps)
+    case 'SlowStrumToLoopTransition':
+      return yield* advanceSlowStrumToLoopTransition(oldState, asset, deps)
+    case 'LoopToSilenceTransition':
+      return yield* advanceLoopToSilenceTransition(oldState, asset, deps)
     default:
       return oldState
   }

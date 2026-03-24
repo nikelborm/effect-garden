@@ -5,14 +5,13 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { Strength } from '../audioAssetHelpers.ts'
+import type { AssetPointer, Strength } from '../audioAssetHelpers.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService/AppPlaybackStateService.ts'
 import {
   CurrentlySelectedAssetState,
-  type CurrentSelectedAsset,
   type Patch,
 } from './CurrentlySelectedAssetState.ts'
 import {
@@ -45,7 +44,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   readonly toCompareValue: (value: T) => S
   readonly toLabel: (value: T) => string
   readonly isCurrentlyPlayingPredicate: (
-    pb: { currentAsset: CurrentSelectedAsset },
+    pb: { currentAsset: AssetPointer },
     value: T,
   ) => boolean
   readonly selectAction: (registry: Reg, value: T) => Effect.Effect<void>

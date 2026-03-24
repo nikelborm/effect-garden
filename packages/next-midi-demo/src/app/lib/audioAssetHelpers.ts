@@ -151,7 +151,7 @@ export type RemoteAssetPath<Asset extends AssetPointer> = [Asset] extends [
 export const getRemoteAssetPath = <Asset extends AssetPointer>(
   asset: Asset,
 ): RemoteAssetPath<Asset> =>
-  asset._tag === 'TaggedPatternPointer'
+  TaggedPatternPointer.models(asset)
     ? (getRemotePatternAssetPath(asset) as any)
     : (getRemoteSlowStrumAssetPath(asset.accordIndex, asset.strength) as any)
 
@@ -209,7 +209,7 @@ export type LocalAssetFileName<Asset extends AssetPointer> = [Asset] extends [
 export const getLocalAssetFileName = <Asset extends AssetPointer>(
   asset: Asset,
 ): LocalAssetFileName<Asset> =>
-  asset._tag === 'TaggedPatternPointer'
+  TaggedPatternPointer.models(asset)
     ? (getLocalPatternAssetFileName(asset) as any)
     : (getLocalSlowStrumAssetFileName(asset.accordIndex, asset.strength) as any)
 

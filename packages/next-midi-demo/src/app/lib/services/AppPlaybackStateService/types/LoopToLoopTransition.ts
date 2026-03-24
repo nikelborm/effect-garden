@@ -1,13 +1,13 @@
 import type {
+  LoopTransitionElementWithScheduledCleanup,
   LoopTransitionQueueElement,
-  SlowStrumTransitionQueueElement,
 } from './common.ts'
 
-export interface ScheduledSlowStrumToLoopTransition {
-  readonly _tag: 'ScheduledSlowStrumToLoopTransition'
+export interface LoopToLoopTransition {
+  readonly _tag: 'LoopToLoopTransition'
   readonly playbackStartedAtSecond: number
   readonly transitionQueue: readonly [
-    SlowStrumTransitionQueueElement,
+    LoopTransitionElementWithScheduledCleanup,
     LoopTransitionQueueElement,
   ]
 }

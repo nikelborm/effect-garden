@@ -14,18 +14,18 @@ import {
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
 import type {
-  InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence,
-  InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop,
+  LoopToLoopToLoopTransition,
+  LoopToLoopToSilenceTransition,
+  LoopToLoopTransition,
+  LoopToSilenceTransition,
   PlayingLoop,
-  ScheduledLoopToAnotherLoopTransition,
-  ScheduledLoopToSilenceTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
-  'fromScheduledLoopToAnotherLoopTransition',
+export const advanceLoopToLoopTransition = Effect.fn(
+  'advanceLoopToLoopTransition',
 )(function* (
-  oldState: ScheduledLoopToAnotherLoopTransition,
+  oldState: LoopToLoopTransition,
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
@@ -48,15 +48,15 @@ export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
       // Pattern deselected before transition — cancel latest, keep current fading to silence
       yield* helpGarbageCollectionOfPlayback(latest.playback)
       return {
-        _tag: 'ScheduledLoopToSilenceTransition' as const,
+        _tag: 'LoopToSilenceTransition' as const,
         playbackStartedAtSecond: oldState.playbackStartedAtSecond,
         transitionQueue: [current],
-      } satisfies ScheduledLoopToSilenceTransition
+      } satisfies LoopToSilenceTransition
     }
     // Transition already in progress — latest is fading in; schedule its fade-out too
     yield* scheduleFadeOutOf(latest.playback, math)
     return {
-      _tag: 'InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence' as const,
+      _tag: 'LoopToLoopToSilenceTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
@@ -69,7 +69,7 @@ export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
         },
       ],
-    } satisfies InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence
+    } satisfies LoopToLoopToSilenceTransition
   }
 
   if (
@@ -104,7 +104,7 @@ export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
   if (!math.fitsIntoBufferOfClosestTransition) {
     yield* scheduleFadeOutOf(latest.playback, math)
     return {
-      _tag: 'InProgressLoopToAnotherLoopTransitionWithScheduledChangeToYetAnotherLoop' as const,
+      _tag: 'LoopToLoopToLoopTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
@@ -118,12 +118,12 @@ export const fromScheduledLoopToAnotherLoopTransition = Effect.fn(
         },
         { asset, playback },
       ],
-    } satisfies InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop
+    } satisfies LoopToLoopToLoopTransition
   }
 
   return {
-    _tag: 'ScheduledLoopToAnotherLoopTransition' as const,
+    _tag: 'LoopToLoopTransition' as const,
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [current, { asset, playback }],
-  } satisfies ScheduledLoopToAnotherLoopTransition
+  } satisfies LoopToLoopTransition
 })

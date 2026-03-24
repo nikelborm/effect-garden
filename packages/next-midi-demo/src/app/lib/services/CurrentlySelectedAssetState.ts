@@ -103,17 +103,18 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
   },
 ) {}
 
-export const complexifyAssetPointer = ({
+const complexifyAssetPointer = ({
   accord,
   pattern,
   strength,
-}: CurrentSelectedAsset): AssetPointer =>
+}: {
+  readonly strength: Strength
+  readonly pattern: Option.Option<AllPatternUnion>
+  readonly accord: AllAccordUnion
+}): AssetPointer =>
   Option.match(pattern, {
     onNone: () =>
-      TaggedSlowStrumPointer.make({
-        accordIndex: accord.index,
-        strength,
-      }),
+      TaggedSlowStrumPointer.make({ accordIndex: accord.index, strength }),
     onSome: pattern =>
       TaggedPatternPointer.make({
         accordIndex: accord.index,
@@ -166,11 +167,5 @@ const makePatchApplier =
 
     return TaggedSlowStrumPointer.make({ ...old, strength: patch })
   }
-
-export interface CurrentSelectedAsset {
-  readonly strength: Strength
-  readonly pattern: Option.Option<AllPatternUnion>
-  readonly accord: AllAccordUnion
-}
 
 export type Patch = AllPatternUnion | AllAccordUnion | Strength
