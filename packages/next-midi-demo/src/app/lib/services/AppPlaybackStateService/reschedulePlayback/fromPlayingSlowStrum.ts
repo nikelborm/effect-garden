@@ -5,6 +5,7 @@ import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
 import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import {
   createLoopScheduledAfterSlowStrum,
   createOneshotPlayback,
@@ -14,8 +15,7 @@ import {
 import type {
   PlayingSlowStrum,
   ScheduledSlowStrumToLoopTransition,
-} from '../types.ts'
-import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
+} from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const fromPlayingSlowStrum = Effect.fn('fromPlayingSlowStrum')(

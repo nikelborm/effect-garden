@@ -4,6 +4,7 @@ import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 
 import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import { maxLoudness } from '../constants.ts'
 import {
   createLoopScheduledAfterSlowStrum,
   createScheduledNextPlayback,
@@ -13,8 +14,7 @@ import { calcTimingsMath } from '../timingMath.ts'
 import type {
   ScheduledLoopToAnotherLoopTransition,
   ScheduledLoopToSilenceTransition,
-} from '../types.ts'
-import { maxLoudness } from '../constants.ts'
+} from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const fromScheduledLoopToSilenceTransition = Effect.fn(

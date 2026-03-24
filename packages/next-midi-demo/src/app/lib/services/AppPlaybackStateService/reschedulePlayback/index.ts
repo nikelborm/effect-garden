@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 
 import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
-import type { AppPlaybackState } from '../types.ts'
+import type { AppPlaybackState } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 import { fromPlayingLoop } from './fromPlayingLoop.ts'
 import { fromPlayingSlowStrum } from './fromPlayingSlowStrum.ts'

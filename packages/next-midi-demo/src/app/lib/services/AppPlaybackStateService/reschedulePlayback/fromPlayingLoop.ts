@@ -14,7 +14,7 @@ import type {
   PlayingLoop,
   ScheduledLoopToAnotherLoopTransition,
   ScheduledLoopToSilenceTransition,
-} from '../types.ts'
+} from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
 export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
