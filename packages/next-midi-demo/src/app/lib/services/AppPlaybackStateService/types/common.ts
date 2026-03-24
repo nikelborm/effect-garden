@@ -1,7 +1,7 @@
 import type * as Effect from 'effect/Effect'
 import type * as Fiber from 'effect/Fiber'
 
-import type { CurrentSelectedAsset } from '../../CurrentlySelectedAssetState.ts'
+import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 
 export type AudioPlayback = {
   readonly bufferSource: AudioBufferSourceNode
@@ -17,7 +17,7 @@ export interface CleanupFiberToolkit {
 }
 
 export interface LoopTransitionQueueElement {
-  readonly asset: CurrentSelectedAsset
+  readonly asset: AssetPointer
   readonly playback: AudioPlayback
 }
 
@@ -29,7 +29,7 @@ export interface LoopTransitionElementWithScheduledCleanup
 }
 
 export interface SlowStrumTransitionQueueElement {
-  readonly asset: CurrentSelectedAsset
+  readonly asset: AssetPointer
   readonly playback: AudioPlayback
   readonly durationSeconds: number
 }

@@ -12,24 +12,36 @@ export const decodeAccordIndexSync = Schema.decodeSync(AccordIndexSchema)
 export const decodePatternIndexSync = Schema.decodeSync(PatternIndexSchema)
 
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
-  'pattern',
+  'TaggedPatternPointer',
   {
     patternIndex: PatternIndexSchema,
     accordIndex: AccordIndexSchema,
     strength: StrengthSchema,
   },
-) {}
+) {
+  static models = (p: unknown): p is TaggedPatternPointer =>
+    typeof p === 'object' &&
+    p !== null &&
+    '_tag' in p &&
+    p._tag === 'TaggedPatternPointer'
+}
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 
 export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPointer>()(
-  'slow_strum',
+  'TaggedSlowStrumPointer',
   {
     patternIndex: Schema.Never.pipe(Schema.optionalWith({ exact: true })),
     accordIndex: PatternIndexSchema,
     strength: StrengthSchema,
   },
-) {}
+) {
+  static models = (p: unknown): p is TaggedSlowStrumPointer =>
+    typeof p === 'object' &&
+    p !== null &&
+    '_tag' in p &&
+    p._tag === 'TaggedSlowStrumPointer'
+}
 
 export const RECORDED_ACCORDS = [
   'C',
@@ -139,7 +151,7 @@ export type RemoteAssetPath<Asset extends AssetPointer> = [Asset] extends [
 export const getRemoteAssetPath = <Asset extends AssetPointer>(
   asset: Asset,
 ): RemoteAssetPath<Asset> =>
-  asset._tag === 'pattern'
+  asset._tag === 'TaggedPatternPointer'
     ? (getRemotePatternAssetPath(asset) as any)
     : (getRemoteSlowStrumAssetPath(asset.accordIndex, asset.strength) as any)
 
@@ -197,7 +209,7 @@ export type LocalAssetFileName<Asset extends AssetPointer> = [Asset] extends [
 export const getLocalAssetFileName = <Asset extends AssetPointer>(
   asset: Asset,
 ): LocalAssetFileName<Asset> =>
-  asset._tag === 'pattern'
+  asset._tag === 'TaggedPatternPointer'
     ? (getLocalPatternAssetFileName(asset) as any)
     : (getLocalSlowStrumAssetFileName(asset.accordIndex, asset.strength) as any)
 

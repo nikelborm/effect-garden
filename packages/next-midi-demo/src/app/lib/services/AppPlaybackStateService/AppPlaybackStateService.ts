@@ -8,16 +8,13 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
+import type { AssetPointer } from '../../audioAssetHelpers.ts'
 import {
   getLocalAssetFileName,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../../audioAssetHelpers.ts'
 import { getFileHandle, readFileBuffer } from '../../opfs.ts'
-import {
-  CurrentlySelectedAssetState,
-  type CurrentSelectedAsset,
-} from '../CurrentlySelectedAssetState.ts'
 import { RootDirectoryHandle } from '../RootDirectoryHandle.ts'
 import { getNewCleanedUpState } from './cleanupState.ts'
 import {
@@ -26,6 +23,8 @@ import {
   minLoudness,
   transitionTimeInSeconds,
 } from './constants.ts'
+import { makeGetAudioBufferOfAsset } from './getAudioBufferOfAsset.ts'
+import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
@@ -72,100 +71,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         _tag: 'NotPlaying',
       })
 
-      const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(
-        function* ({ accord, pattern, strength }: CurrentSelectedAsset) {
-          const pointer = Option.match(pattern, {
-            onNone: () =>
-              new TaggedSlowStrumPointer({
-                accordIndex: accord.index,
-                strength,
-              }),
-            onSome: p =>
-              new TaggedPatternPointer({
-                accordIndex: accord.index,
-                patternIndex: p.index,
-                strength,
-              }),
-          })
-          const assetFileHandle = yield* getFileHandle({
-            dirHandle: rootDirectoryHandle,
-            fileName: getLocalAssetFileName(pointer),
-          })
-
-          const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
-
-          return yield* EAudioContext.decodeAudioData(
-            audioContext,
-            fileArrayBuffer,
-          )
-        },
+      const getAudioBufferOfAsset = makeGetAudioBufferOfAsset(
+        audioContext,
+        rootDirectoryHandle,
       )
-
-      const makeNewPlayingAssetState = Effect.gen(function* () {
-        if (!(yield* selectedAssetState.isFinishedDownloadCompletely))
-          return yield* Effect.die(
-            'Play command should only be called when the current asset finished loading',
-          )
-
-        const currentAsset = yield* selectedAssetState.current
-
-        const audioBuffer = yield* getAudioBufferOfAsset(currentAsset)
-
-        const secondsSinceAudioContextInit =
-          yield* EAudioContext.currentTime(audioContext)
-
-        if (Option.isNone(currentAsset.pattern)) {
-          const currentPlayback = yield* createOneshotPlayback(
-            audioContext,
-            audioBuffer,
-          )
-
-          yield* Effect.sync(() => {
-            currentPlayback.gainNode.gain.setValueAtTime(
-              maxLoudness,
-              asEarlyAsPossibleInSeconds,
-            )
-            currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
-          })
-
-          yield* Effect.log('started playing slow strum')
-
-          const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
-
-          return {
-            _tag: 'PlayingSlowStrum' as const,
-            transitionQueue: [
-              {
-                playback: currentPlayback,
-                asset: currentAsset,
-                durationSeconds,
-              },
-            ],
-            playbackStartedAtSecond: secondsSinceAudioContextInit,
-          } satisfies PlayingSlowStrum
-        }
-
-        const currentPlayback = yield* createLoopingPlayback(
-          audioContext,
-          audioBuffer,
-        )
-
-        yield* Effect.sync(() => {
-          currentPlayback.gainNode.gain.setValueAtTime(
-            maxLoudness,
-            asEarlyAsPossibleInSeconds,
-          )
-          currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
-        })
-
-        yield* Effect.log('started playing')
-
-        return {
-          _tag: 'PlayingLoop' as const,
-          transitionQueue: [{ playback: currentPlayback, asset: currentAsset }],
-          playbackStartedAtSecond: secondsSinceAudioContextInit,
-        } satisfies PlayingLoop
-      })
 
       const cleanupAllPlaybacks = Effect.fn(function* (
         state: PlayingAppPlaybackStates,
@@ -213,47 +122,10 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         ),
       )
 
-      const makeCleanupFibers = Effect.fn('makeCleanupFibers')(function* (
-        delayForSeconds: number,
-      ): Effect.fn.Return<CleanupFiberToolkit> {
-        const latch = yield* Effect.makeLatch()
-
-        const fiberWaitingSignalToStartGarbageCollection = yield* stateRef.pipe(
-          SubscriptionRef.updateEffect(getNewCleanedUpState),
-          stateSemaphore.withPermits(1),
-          latch.whenOpen,
-          Effect.forkDaemon,
-        )
-
-        const fiberWaitingDelayToGiveGarbageCollectionSignal =
-          yield* latch.open.pipe(
-            Effect.delay(Duration.seconds(delayForSeconds)),
-            Effect.forkDaemon,
-          )
-
-        const cancelDelayedCleanupSignal = Effect.asVoid(
-          Fiber.interrupt(fiberWaitingDelayToGiveGarbageCollectionSignal),
-        )
-
-        const cancelCleanup = Effect.zipLeft(
-          cancelDelayedCleanupSignal,
-          Fiber.interrupt(fiberWaitingSignalToStartGarbageCollection),
-        )
-
-        const cleanupImmediately = cancelDelayedCleanupSignal.pipe(
-          Effect.andThen(latch.open),
-          Effect.andThen(fiberWaitingSignalToStartGarbageCollection.await),
-          Effect.asVoid,
-        )
-
-        return {
-          cancelCleanup,
-          fiberWaitingSignalToStartGarbageCollection,
-          fiberWaitingDelayToGiveGarbageCollectionSignal,
-          cancelDelayedCleanupSignal,
-          cleanupImmediately,
-        } as const
-      })
+      const makeCleanupFibers = makeCleanupFibersFactory(
+        stateRef,
+        stateSemaphore,
+      )
 
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'
@@ -347,7 +219,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
                 currentAsset: state.transitionQueue[0].asset,
                 assetTransitionsQueue: state.transitionQueue.map(
                   a => a.asset,
-                ) as ReadonlyArray<CurrentSelectedAsset>,
+                ) as ReadonlyArray<AssetPointer>,
               } as const),
         ),
       }

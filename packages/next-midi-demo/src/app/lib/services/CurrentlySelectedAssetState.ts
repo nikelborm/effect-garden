@@ -1,4 +1,3 @@
-import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
@@ -33,67 +32,43 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
       const patternRegistry = yield* PatternRegistry
       const strengthRegistry = yield* StrengthRegistry
       const estimationMap = yield* LoadedAssetSizeEstimationMap
-      const currentEffect: Effect.Effect<CurrentSelectedAsset> = Effect.all({
+
+      const currentEffect = Effect.all({
         accord: accordRegistry.currentlySelectedAccord,
         pattern: patternRegistry.currentlySelectedPattern,
         strength: strengthRegistry.currentlySelectedStrength,
-      })
+      }).pipe(Effect.map(complexifyAssetPointer))
 
       const selectedAssetChangesStream = yield* streamAll({
         strength: strengthRegistry.selectedStrengthChanges,
         accord: accordRegistry.selectedAccordChanges,
         pattern: patternRegistry.selectedPatternChanges,
       }).pipe(
-        Stream.map(Data.struct),
+        Stream.map(complexifyAssetPointer),
         Stream.tap(selectedAsset =>
           Effect.log('Selected asset stream value: ', selectedAsset),
         ),
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const mapAssetToPointer = ({
-        accord,
-        pattern,
-        strength,
-      }: CurrentSelectedAsset): AssetPointer =>
-        Option.match(pattern, {
-          onNone: () =>
-            TaggedSlowStrumPointer.make({
-              accordIndex: accord.index,
-              strength,
-            }),
-          onSome: p =>
-            TaggedPatternPointer.make({
-              accordIndex: accord.index,
-              patternIndex: p.index,
-              strength,
-            }),
-        })
-
       const completionStatus = Effect.flatMap(
         currentEffect,
-        EFunction.flow(
-          mapAssetToPointer,
-          estimationMap.getAssetFetchingCompletionStatus,
-        ),
-      )
-
-      const isFinishedDownloadCompletely = Effect.map(
-        completionStatus,
-        ({ status }) => status === 'finished',
+        estimationMap.getAssetFetchingCompletionStatus,
       )
 
       const completionStatusChangesStream =
         yield* selectedAssetChangesStream.pipe(
           Stream.flatMap(
-            EFunction.flow(
-              mapAssetToPointer,
-              estimationMap.getAssetFetchingCompletionStatusChangesStream,
-            ),
+            estimationMap.getAssetFetchingCompletionStatusChangesStream,
             { switch: true, concurrency: 1 },
           ),
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
+
+      const isFinishedDownloadCompletely = Effect.map(
+        completionStatus,
+        ({ status }) => status === 'finished',
+      )
 
       const isFinishedDownloadCompletelyFlagChangesStream =
         yield* completionStatusChangesStream.pipe(
@@ -102,37 +77,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
           Stream.rechunk(1),
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
-
-      const makePatchApplier =
-        (patch: Patch) =>
-        ({ accord, pattern, strength }: CurrentSelectedAsset): AssetPointer => {
-          if (Pattern.models(patch)) {
-            return TaggedPatternPointer.make({
-              accordIndex: accord.index,
-              patternIndex: patch.index,
-              strength,
-            })
-          }
-
-          const resolvedAccordIndex = Accord.models(patch)
-            ? patch.index
-            : accord.index
-          const resolvedStrength = Accord.models(patch) ? strength : patch
-
-          return Option.match(pattern, {
-            onNone: () =>
-              TaggedSlowStrumPointer.make({
-                accordIndex: resolvedAccordIndex,
-                strength: resolvedStrength,
-              }),
-            onSome: p =>
-              TaggedPatternPointer.make({
-                accordIndex: resolvedAccordIndex,
-                patternIndex: p.index,
-                strength: resolvedStrength,
-              }),
-          })
-        }
 
       const getPatchedAssetFetchingCompletionStatusChangesStream = (
         patch: Patch,
@@ -158,6 +102,70 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
     }),
   },
 ) {}
+
+export const complexifyAssetPointer = ({
+  accord,
+  pattern,
+  strength,
+}: CurrentSelectedAsset): AssetPointer =>
+  Option.match(pattern, {
+    onNone: () =>
+      TaggedSlowStrumPointer.make({
+        accordIndex: accord.index,
+        strength,
+      }),
+    onSome: pattern =>
+      TaggedPatternPointer.make({
+        accordIndex: accord.index,
+        patternIndex: pattern.index,
+        strength,
+      }),
+  })
+
+export const simplifyAssetPointer = (
+  asset: AssetPointer,
+): SimpleAssetPointer => ({
+  accordIndex: asset.accordIndex,
+  patternIndex: TaggedPatternPointer.models(asset)
+    ? Option.some(asset.patternIndex)
+    : Option.none(),
+  strength: asset.strength,
+})
+
+export const desimplifyAssetPointer = ({
+  patternIndex: patternIndexOption,
+  ...other
+}: SimpleAssetPointer) =>
+  Option.match(patternIndexOption, {
+    onNone: () => TaggedSlowStrumPointer.make(other),
+    onSome: patternIndex =>
+      TaggedPatternPointer.make({ ...other, patternIndex }),
+  })
+
+export interface SimpleAssetPointer {
+  accordIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+  patternIndex: Option.Option<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>
+  strength: 'm' | 's' | 'v'
+}
+
+const makePatchApplier =
+  (patch: Patch) =>
+  (old: AssetPointer): AssetPointer => {
+    if (Pattern.models(patch))
+      return TaggedPatternPointer.make({ ...old, patternIndex: patch.index })
+
+    if (Accord.models(patch)) {
+      if (TaggedPatternPointer.models(old))
+        return TaggedPatternPointer.make({ ...old, accordIndex: patch.index })
+
+      return TaggedSlowStrumPointer.make({ ...old, accordIndex: patch.index })
+    }
+
+    if (TaggedPatternPointer.models(old))
+      return TaggedPatternPointer.make({ ...old, strength: patch })
+
+    return TaggedSlowStrumPointer.make({ ...old, strength: patch })
+  }
 
 export interface CurrentSelectedAsset {
   readonly strength: Strength
