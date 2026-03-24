@@ -2,7 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import { maxLoudness, minLoudness } from '../constants.ts'
 import type { calcTimingsMath } from '../timingMath.ts'
-import type { AudioPlayback } from '../types.ts'
+import type { AudioPlayback } from '../types/index.ts'
 
 export const scheduleFadeOutOf = (
   playback: AudioPlayback,

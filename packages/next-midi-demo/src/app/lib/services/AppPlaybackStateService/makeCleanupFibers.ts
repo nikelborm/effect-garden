@@ -4,7 +4,7 @@ import * as Fiber from 'effect/Fiber'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { getNewCleanedUpState } from './cleanupState.ts'
-import type { AppPlaybackState, CleanupFiberToolkit } from './types.ts'
+import type { AppPlaybackState, CleanupFiberToolkit } from './types/index.ts'
 
 export const makeCleanupFibersFactory = (
   stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,
