@@ -11,13 +11,13 @@ import {
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
 import type {
+  LoopToLoopTransition,
+  LoopToSilenceTransition,
   PlayingLoop,
-  ScheduledLoopToAnotherLoopTransition,
-  ScheduledLoopToSilenceTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
+export const advancePlayingLoop = Effect.fn('advancePlayingLoop')(function* (
   oldState: PlayingLoop,
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
@@ -34,7 +34,7 @@ export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
     )
     yield* scheduleFadeOutOf(current.playback, math)
     return {
-      _tag: 'ScheduledLoopToSilenceTransition' as const,
+      _tag: 'LoopToSilenceTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         {
@@ -46,7 +46,7 @@ export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
         },
       ],
-    } satisfies ScheduledLoopToSilenceTransition
+    } satisfies LoopToSilenceTransition
   }
 
   const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
@@ -59,7 +59,7 @@ export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
   yield* scheduleFadeOutOf(current.playback, math)
 
   return {
-    _tag: 'ScheduledLoopToAnotherLoopTransition' as const,
+    _tag: 'LoopToLoopTransition' as const,
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [
       {
@@ -79,5 +79,5 @@ export const fromPlayingLoop = Effect.fn('fromPlayingLoop')(function* (
         ),
       },
     ],
-  } satisfies ScheduledLoopToAnotherLoopTransition
+  } satisfies LoopToLoopTransition
 })

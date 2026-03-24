@@ -14,11 +14,11 @@ import {
 } from '../playbackNodes/index.ts'
 import type {
   PlayingSlowStrum,
-  ScheduledSlowStrumToLoopTransition,
+  SlowStrumToLoopTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const fromPlayingSlowStrum = Effect.fn('fromPlayingSlowStrum')(
+export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
   function* (
     oldState: PlayingSlowStrum,
     asset: AssetPointer,
@@ -64,9 +64,9 @@ export const fromPlayingSlowStrum = Effect.fn('fromPlayingSlowStrum')(
       slowStrumEndsAtSecond,
     )
     return {
-      _tag: 'ScheduledSlowStrumToLoopTransition' as const,
+      _tag: 'SlowStrumToLoopTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [current, { asset, playback: newLoopPlayback }],
-    } satisfies ScheduledSlowStrumToLoopTransition
+    } satisfies SlowStrumToLoopTransition
   },
 )

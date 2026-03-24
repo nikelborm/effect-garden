@@ -1,32 +1,32 @@
-import type { InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence } from './InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence.ts'
-import type { InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop } from './InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop.ts'
+import type { LoopToLoopToLoopTransition } from './LoopToLoopToLoopTransition.ts'
+import type { LoopToLoopToSilenceTransition } from './LoopToLoopToSilenceTransition.ts'
+import type { LoopToLoopTransition } from './LoopToLoopTransition.ts'
+import type { LoopToSilenceTransition } from './LoopToSilenceTransition.ts'
 import type { NotPlaying } from './NotPlaying.ts'
 import type { PlayingLoop } from './PlayingLoop.ts'
 import type { PlayingSlowStrum } from './PlayingSlowStrum.ts'
-import type { ScheduledLoopToAnotherLoopTransition } from './ScheduledLoopToAnotherLoopTransition.ts'
-import type { ScheduledLoopToSilenceTransition } from './ScheduledLoopToSilenceTransition.ts'
-import type { ScheduledSlowStrumToLoopTransition } from './ScheduledSlowStrumToLoopTransition.ts'
+import type { SlowStrumToLoopTransition } from './SlowStrumToLoopTransition.ts'
 
 export type PlayingAppPlaybackStates =
   | PlayingLoop
   | PlayingSlowStrum
-  | ScheduledLoopToAnotherLoopTransition
-  | ScheduledLoopToSilenceTransition
-  | ScheduledSlowStrumToLoopTransition
-  | InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop
-  | InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence
+  | LoopToLoopTransition
+  | LoopToSilenceTransition
+  | SlowStrumToLoopTransition
+  | LoopToLoopToSilenceTransition
+  | LoopToLoopToLoopTransition
 
 export type AppPlaybackState = NotPlaying | PlayingAppPlaybackStates
 
 export type {
-  InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence,
-  InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToYetAnotherLoop,
+  LoopToLoopToSilenceTransition,
+  LoopToLoopToLoopTransition,
   NotPlaying,
   PlayingLoop,
   PlayingSlowStrum,
-  ScheduledLoopToAnotherLoopTransition,
-  ScheduledLoopToSilenceTransition,
-  ScheduledSlowStrumToLoopTransition,
+  LoopToLoopTransition,
+  LoopToSilenceTransition,
+  SlowStrumToLoopTransition,
 }
 
 export * from './common.ts'

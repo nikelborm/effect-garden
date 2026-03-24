@@ -1,7 +1,7 @@
 import type { LoopTransitionElementWithScheduledCleanup } from './common.ts'
 
-export interface InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence {
-  readonly _tag: 'InProgressLoopToAnotherLoopTransitionWithScheduledTransitionToSilence'
+export interface LoopToLoopToSilenceTransition {
+  readonly _tag: 'LoopToLoopToSilenceTransition'
   readonly playbackStartedAtSecond: number
   readonly transitionQueue: readonly [
     LoopTransitionElementWithScheduledCleanup,
