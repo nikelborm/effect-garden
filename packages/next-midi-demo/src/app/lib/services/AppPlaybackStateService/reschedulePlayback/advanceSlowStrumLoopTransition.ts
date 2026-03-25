@@ -15,14 +15,14 @@ import {
 import type {
   PlayingLoop,
   PlayingSlowStrum,
-  SlowStrumToLoopTransition,
+  SlowStrumLoopTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const advanceSlowStrumToLoopTransition = Effect.fn(
-  'advanceSlowStrumToLoopTransition',
+export const advanceSlowStrumLoopTransition = Effect.fn(
+  'advanceSlowStrumLoopTransition',
 )(function* (
-  oldState: SlowStrumToLoopTransition,
+  oldState: SlowStrumLoopTransition,
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {

@@ -3,11 +3,10 @@ import type {
   LoopTransitionQueueElement,
 } from './common.ts'
 
-export interface LoopToLoopToLoopTransition {
-  readonly _tag: 'LoopToLoopToLoopTransition'
+export interface LoopLoopTransition {
+  readonly _tag: 'LoopLoopTransition'
   readonly playbackStartedAtSecond: number
   readonly transitionQueue: readonly [
-    LoopTransitionElementWithScheduledCleanup,
     LoopTransitionElementWithScheduledCleanup,
     LoopTransitionQueueElement,
   ]

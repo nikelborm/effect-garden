@@ -34,3 +34,26 @@ loop_loop_transition --> loop
 
 loop_loop_loop_transition --> loop_loop_transition
 loop_loop_transition --> loop_loop_loop_transition
+
+
+
+1. from silence
+
+-> playing_slow_strum
+-> playing_loop
+
+2. 
+
+3. from loop_loop_transition
+
+|         loop         |         loop         |   unassigned future  |
+|          [0]         |          [1]         |                      |
+| good zone | bad zone | good zone | bad zone | good zone | bad zone |
+
+// realistically we can in this position end up in 4 potential points
+
+-> if wants switch to loop
+-> -> if the same loop: playing_loop
+-> -> if the loop is different
+-> -> -> if good zone: loop_loop_transition
+-> -> -> if bad zone: loop_loop_transition

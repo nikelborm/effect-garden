@@ -43,17 +43,17 @@ import type {
 export type {
   AppPlaybackState,
   AudioPlayback,
-  InProgressLoopToLoopTransitionWithScheduledTransitionToSilence,
-  InProgressLoopToLoopTransitionWithScheduledTransitionToYetLoop,
+  InProgressLoopLoopTransitionWithScheduledTransitionSilence,
+  InProgressLoopLoopTransitionWithScheduledTransitionToYetLoop,
   LoopTransitionElementWithScheduledCleanup,
   LoopTransitionQueueElement,
   NotPlaying,
   PlayingAppPlaybackStates,
   PlayingLoop,
   PlayingSlowStrum,
-  ScheduledLoopToLoopTransition,
-  ScheduledLoopToSilenceTransition,
-  ScheduledSlowStrumToLoopTransition,
+  ScheduledLoopLoopTransition,
+  ScheduledLoopSilenceTransition,
+  ScheduledSlowStrumLoopTransition,
   SlowStrumTransitionQueueElement,
 } from './types/index.ts'
 
