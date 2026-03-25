@@ -1,0 +1,57 @@
+from playing_loop { queue: [loop] }
+
+previous queue:
+| loop A |
+
+-> if wants switch to loop
+```
+if (cur_state.queue[0] == new_loop) {
+  // new queue
+  // | loop A |
+  return cur_state
+}
+if (current_time in cur_state.queue[0].good_zone) {
+  // |                      |     future 1    |
+  // |          loop A      |       loop B    |
+  // | good zone | bad zone |                 |
+  // |   ^ here  |          |                 |
+  // |                   | ->1 |              |
+  return loop_loop_transition {
+    withAdditionalPostpone: false,
+    queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_1)]
+  }
+}
+// |                      | future 1 | future 2 |
+// |          loop A      |  loop A  |  loop B  |
+// | good zone | bad zone |          |          |
+// |           |  ^ here  |          |          |
+// |                              | ->1 |       |
+return loop_loop_transition {
+  withAdditionalPostpone: true,
+  queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_2)]
+}
+```
+
+-> if wants switch to silence
+```
+if (current_time in cur_state.queue[0].good_zone) {
+  // |                      |     future 1    |
+  // |          loop A      | implied silence |
+  // | good zone | bad zone |                 |
+  // |   ^ here  |          |                 |
+  // |                | ->1 |                 |
+  return loop_silence_transition {
+    withAdditionalPostpone: false,
+    queue: [cur_state.queue[0]]
+  }
+}
+// |                      | future 1 |    future 2     |
+// |          loop A      |  loop A  | implied silence |
+// | good zone | bad zone |          |                 |
+// |           |  ^ here  |          |                 |
+// |                           | ->1 |                 |
+return loop_silence_transition {
+  withAdditionalPostpone: true,
+  queue: [cur_state.queue[0]]
+}
+```

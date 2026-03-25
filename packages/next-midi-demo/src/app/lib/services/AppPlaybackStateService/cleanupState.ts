@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import { helpGarbageCollectionOfPlayback } from './playbackNodes/index.ts'
 import type {
   AppPlaybackState,
-  ScheduledLoopToSilenceTransition,
+  ScheduledLoopSilenceTransition,
 } from './types/index.ts'
 
 export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
@@ -12,7 +12,7 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
   ): Effect.fn.Return<AppPlaybackState> {
     yield* Effect.logTrace('Playback cleanup')
 
-    if (stateRightBeforeCleanup._tag === 'ScheduledLoopToLoopTransition') {
+    if (stateRightBeforeCleanup._tag === 'ScheduledLoopLoopTransition') {
       const [old, target] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(old.playback)
       return {
@@ -25,19 +25,19 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
 
     if (
       stateRightBeforeCleanup._tag ===
-      'InProgressLoopToLoopTransitionWithScheduledChangeToYetLoop'
+      'InProgressLoopLoopTransitionWithScheduledChangeToYetLoop'
     ) {
       const [oldest, middle, target] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(oldest.playback)
       return {
-        _tag: 'ScheduledLoopToLoopTransition' as const,
+        _tag: 'ScheduledLoopLoopTransition' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond,
         transitionQueue: [middle, target],
       }
     }
 
-    if (stateRightBeforeCleanup._tag === 'ScheduledSlowStrumToLoopTransition') {
+    if (stateRightBeforeCleanup._tag === 'ScheduledSlowStrumLoopTransition') {
       const [slowStrum, loop] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
       return {
@@ -49,7 +49,7 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
       }
     }
 
-    if (stateRightBeforeCleanup._tag === 'ScheduledLoopToSilenceTransition') {
+    if (stateRightBeforeCleanup._tag === 'ScheduledLoopSilenceTransition') {
       const [fading] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(fading.playback)
       return { _tag: 'NotPlaying' as const }
@@ -57,16 +57,16 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
 
     if (
       stateRightBeforeCleanup._tag ===
-      'InProgressLoopToLoopTransitionWithScheduledTransitionToSilence'
+      'InProgressLoopLoopTransitionWithScheduledTransitionSilence'
     ) {
       const [oldest, fading] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(oldest.playback)
       return {
-        _tag: 'ScheduledLoopToSilenceTransition' as const,
+        _tag: 'ScheduledLoopSilenceTransition' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond,
         transitionQueue: [fading],
-      } satisfies ScheduledLoopToSilenceTransition
+      } satisfies ScheduledLoopSilenceTransition
     }
 
     return stateRightBeforeCleanup

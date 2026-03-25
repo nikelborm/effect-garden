@@ -12,15 +12,15 @@ import {
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
 import type {
-  LoopToLoopTransition,
-  LoopToSilenceTransition,
+  LoopLoopTransition,
+  LoopSilenceTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const advanceLoopToSilenceTransition = Effect.fn(
-  'advanceLoopToSilenceTransition',
+export const advanceLoopSilenceTransition = Effect.fn(
+  'advanceLoopSilenceTransition',
 )(function* (
-  oldState: LoopToSilenceTransition,
+  oldState: LoopSilenceTransition,
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
@@ -51,7 +51,7 @@ export const advanceLoopToSilenceTransition = Effect.fn(
     yield* current.cleanupFiberToolkit.cancelCleanup
     yield* scheduleFadeOutOf(current.playback, math)
     return {
-      _tag: 'LoopToLoopTransition' as const,
+      _tag: 'LoopLoopTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         {
@@ -71,12 +71,12 @@ export const advanceLoopToSilenceTransition = Effect.fn(
           ),
         },
       ],
-    } satisfies LoopToLoopTransition
+    } satisfies LoopLoopTransition
   }
 
   // Fade already in progress — schedule new loop to start right after current ends
   return {
-    _tag: 'LoopToLoopTransition' as const,
+    _tag: 'LoopLoopTransition' as const,
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [
       current,
@@ -89,5 +89,5 @@ export const advanceLoopToSilenceTransition = Effect.fn(
         ),
       },
     ],
-  } satisfies LoopToLoopTransition
+  } satisfies LoopLoopTransition
 })
