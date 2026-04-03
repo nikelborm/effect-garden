@@ -91,6 +91,8 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
   ])
 
   yield* Effect.all([
+    // Keyboard
+
     makePhysicalButtonToParamMappingService(
       keyDatasHandlingAccords,
       [...accords, ...accords],
@@ -109,6 +111,9 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
       StrengthInputBus,
     ),
+
+    // MIDI Pad
+
     // TODO: midi device selector
     makePhysicalButtonToParamMappingService(
       noteDatasHandlingAccords,
@@ -128,6 +133,9 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
       StrengthInputBus,
     ),
+
+    // On screen buttons
+
     makePhysicalButtonToParamMappingService(
       accords.map(
         accord =>
