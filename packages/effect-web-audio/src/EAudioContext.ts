@@ -13,6 +13,7 @@ export {
   EAudioContext,
   type EAudioContextInstance as Instance,
   is,
+  layer,
   type MakeAudioContextOptions,
   make,
   type TypeId,

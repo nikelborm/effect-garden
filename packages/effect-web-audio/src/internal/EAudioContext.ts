@@ -12,6 +12,7 @@ import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
+import * as Layer from 'effect/Layer'
 import * as Pipeable from 'effect/Pipeable'
 
 import type * as AudioBrand from './AudioBrand.ts'
@@ -449,3 +450,6 @@ export type DecodeAudioDataResult = Effect.Effect<
 
 export const currentTime = (context: EAudioContextInstance) =>
   Effect.sync(() => assumeImpl(context)._audioContext.currentTime)
+
+export const layer = (config?: Readonly<MakeAudioContextOptions>) =>
+  Layer.effect(EAudioContext, make(config))
