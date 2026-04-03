@@ -33,9 +33,10 @@ export const advanceLoopLoopTransition = Effect.fn('advanceLoopLoopTransition')(
 
     if (Equal.equals(latest.asset, asset)) return oldState
 
-    const secondsSinceAudioContextInit = yield* EAudioContext.currentTime(
-      deps.audioContext,
-    )
+    const audioContext = yield* EAudioContext.EAudioContext
+
+    const secondsSinceAudioContextInit =
+      yield* EAudioContext.currentTime(audioContext)
 
     const math = calcTimingsMath(
       oldState.playbackStartedAtSecond,
@@ -93,9 +94,9 @@ export const advanceLoopLoopTransition = Effect.fn('advanceLoopLoopTransition')(
       } satisfies PlayingLoop
     }
 
-    const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
+    const audioBuffer = yield* getAudioBufferOfAsset(asset)
     const playback = yield* createScheduledNextPlayback(
-      deps.audioContext,
+      audioContext,
       audioBuffer,
       math,
     )

@@ -2,42 +2,20 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
-import * as Fiber from 'effect/Fiber'
 import * as EFunction from 'effect/Function'
-import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AssetPointer } from '../../audioAssetHelpers.ts'
-import {
-  getLocalAssetFileName,
-  TaggedPatternPointer,
-  TaggedSlowStrumPointer,
-} from '../../audioAssetHelpers.ts'
-import { getFileHandle, readFileBuffer } from '../../opfs.ts'
-import { RootDirectoryHandle } from '../RootDirectoryHandle.ts'
-import { getNewCleanedUpState } from './cleanupState.ts'
-import {
-  asEarlyAsPossibleInSeconds,
-  maxLoudness,
-  minLoudness,
-  transitionTimeInSeconds,
-} from './constants.ts'
-import { makeGetAudioBufferOfAsset } from './getAudioBufferOfAsset.ts'
+import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
+import { minLoudness, transitionTimeInSeconds } from './constants.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
-import {
-  createLoopingPlayback,
-  createOneshotPlayback,
-  getAudioBufferDurationSeconds,
-  helpGarbageCollectionOfPlayback,
-} from './playbackNodes/index.ts'
+import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
+import { helpGarbageCollectionOfPlayback } from './playbackNodes/index.ts'
 import { reschedulePlayback } from './reschedulePlayback/reschedulePlayback.ts'
 import type {
   AppPlaybackState,
-  CleanupFiberToolkit,
   PlayingAppPlaybackStates,
-  PlayingLoop,
-  PlayingSlowStrum,
 } from './types/index.ts'
 
 export type {
@@ -63,18 +41,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
     accessors: true,
     scoped: Effect.gen(function* () {
       const audioContext = yield* EAudioContext.make()
-      const rootDirectoryHandle = yield* RootDirectoryHandle
       const selectedAssetState = yield* CurrentlySelectedAssetState
       const stateSemaphore = yield* Effect.makeSemaphore(1)
 
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
         _tag: 'NotPlaying',
       })
-
-      const getAudioBufferOfAsset = makeGetAudioBufferOfAsset(
-        audioContext,
-        rootDirectoryHandle,
-      )
 
       const cleanupAllPlaybacks = Effect.fn(function* (
         state: PlayingAppPlaybackStates,
@@ -151,17 +123,11 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const reschedulePlaybackDeps = {
-        audioContext,
-        makeCleanupFibers,
-        getAudioBufferOfAsset,
-      }
-
       yield* selectedAssetState.changes.pipe(
         Stream.tap(asset =>
           stateRef.pipe(
             SubscriptionRef.updateEffect(state =>
-              reschedulePlayback(state, asset, reschedulePlaybackDeps),
+              reschedulePlayback(state, asset, { makeCleanupFibers }),
             ),
             stateSemaphore.withPermits(1),
           ),

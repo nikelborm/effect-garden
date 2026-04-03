@@ -6,6 +6,7 @@ import * as Option from 'effect/Option'
 
 import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
+import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
@@ -26,25 +27,21 @@ export const advanceSlowStrumLoopTransition = Effect.fn(
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
+  const audioContext = yield* EAudioContext.EAudioContext
   const [slowStrum, queuedLoop] = oldState.transitionQueue
 
   if (Equal.equals(queuedLoop.asset, asset)) return oldState
 
-  // Asset changed while waiting for slow strum to finish → interrupt slow strum, start loop now
-  const secondsSinceAudioContextInit = yield* EAudioContext.currentTime(
-    deps.audioContext,
-  )
+  const secondsSinceAudioContextInit =
+    yield* EAudioContext.currentTime(audioContext)
+
   yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
-  // Cancel the already-scheduled loop playback
   yield* helpGarbageCollectionOfPlayback(queuedLoop.playback)
 
   if (Option.isNone(asset.pattern)) {
     // Pattern deselected again — start a new slow strum immediately
-    const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
-    const newPlayback = yield* createOneshotPlayback(
-      deps.audioContext,
-      audioBuffer,
-    )
+    const audioBuffer = yield* getAudioBufferOfAsset(asset)
+    const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
     yield* Effect.sync(() => {
       newPlayback.gainNode.gain.setValueAtTime(
         maxLoudness,
@@ -61,9 +58,9 @@ export const advanceSlowStrumLoopTransition = Effect.fn(
   }
 
   // New pattern/accord: start loop immediately
-  const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
+  const audioBuffer = yield* getAudioBufferOfAsset(asset)
   const newLoopPlayback = yield* createLoopingPlayback(
-    deps.audioContext,
+    audioContext,
     audioBuffer,
   )
   yield* Effect.sync(() => {
