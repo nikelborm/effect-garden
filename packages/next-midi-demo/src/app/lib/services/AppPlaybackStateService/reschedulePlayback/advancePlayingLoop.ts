@@ -5,6 +5,7 @@ import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
 import type { AssetPointer } from '../../../audioAssetHelpers.ts'
+import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createScheduledNextPlayback,
   scheduleFadeOutOf,
@@ -23,6 +24,7 @@ export const advancePlayingLoop = Effect.fn('advancePlayingLoop')(function* (
   deps: ReschedulePlaybackDeps,
 ) {
   const [current] = oldState.transitionQueue
+  const audioContext = yield* EAudioContext.EAudioContext
 
   if (Equal.equals(current.asset, asset)) return oldState
 
@@ -30,7 +32,7 @@ export const advancePlayingLoop = Effect.fn('advancePlayingLoop')(function* (
     // Pattern was deselected while loop was playing — fade out to silence
     const math = calcTimingsMath(
       oldState.playbackStartedAtSecond,
-      yield* EAudioContext.currentTime(deps.audioContext),
+      yield* EAudioContext.currentTime(audioContext),
     )
     yield* scheduleFadeOutOf(current.playback, math)
     return {
@@ -49,11 +51,11 @@ export const advancePlayingLoop = Effect.fn('advancePlayingLoop')(function* (
     } satisfies LoopSilenceTransition
   }
 
-  const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
+  const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
   const math = calcTimingsMath(
     oldState.playbackStartedAtSecond,
-    yield* EAudioContext.currentTime(deps.audioContext),
+    yield* EAudioContext.currentTime(audioContext),
   )
 
   yield* scheduleFadeOutOf(current.playback, math)
@@ -73,7 +75,7 @@ export const advancePlayingLoop = Effect.fn('advancePlayingLoop')(function* (
       {
         asset,
         playback: yield* createScheduledNextPlayback(
-          deps.audioContext,
+          audioContext,
           audioBuffer,
           math,
         ),

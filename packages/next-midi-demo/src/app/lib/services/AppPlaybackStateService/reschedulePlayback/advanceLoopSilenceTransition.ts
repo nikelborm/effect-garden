@@ -5,6 +5,7 @@ import * as Option from 'effect/Option'
 
 import type { AssetPointer } from '../../../audioAssetHelpers.ts'
 import { maxLoudness } from '../constants.ts'
+import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopScheduledAfterSlowStrum,
   createScheduledNextPlayback,
@@ -24,18 +25,19 @@ export const advanceLoopSilenceTransition = Effect.fn(
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
+  const audioContext = yield* EAudioContext.EAudioContext
+
   const [current] = oldState.transitionQueue
 
   if (Option.isNone(asset.pattern)) return oldState
 
-  const secondsSinceAudioContextInit = yield* EAudioContext.currentTime(
-    deps.audioContext,
-  )
+  const secondsSinceAudioContextInit =
+    yield* EAudioContext.currentTime(audioContext)
   const math = calcTimingsMath(
     oldState.playbackStartedAtSecond,
     secondsSinceAudioContextInit,
   )
-  const audioBuffer = yield* deps.getAudioBufferOfAsset(asset)
+  const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
   if (math.fitsIntoBufferOfClosestTransition) {
     // Cancel the scheduled silence and redirect current loop into a transition to new loop
@@ -65,7 +67,7 @@ export const advanceLoopSilenceTransition = Effect.fn(
         {
           asset,
           playback: yield* createScheduledNextPlayback(
-            deps.audioContext,
+            audioContext,
             audioBuffer,
             math,
           ),
@@ -83,7 +85,7 @@ export const advanceLoopSilenceTransition = Effect.fn(
       {
         asset,
         playback: yield* createLoopScheduledAfterSlowStrum(
-          deps.audioContext,
+          audioContext,
           audioBuffer,
           current.fadeoutEndsAtSecond,
         ),

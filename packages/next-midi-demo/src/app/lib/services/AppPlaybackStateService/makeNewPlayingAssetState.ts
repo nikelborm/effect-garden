@@ -23,10 +23,7 @@ import {
   minLoudness,
   transitionTimeInSeconds,
 } from './constants.ts'
-import {
-  getAudioBufferOfAsset,
-  makeGetAudioBufferOfAsset,
-} from './getAudioBufferOfAsset.ts'
+import { getAudioBufferOfAsset } from './getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
