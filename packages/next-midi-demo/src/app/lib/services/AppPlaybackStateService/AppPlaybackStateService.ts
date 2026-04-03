@@ -94,10 +94,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         ),
       )
 
-      const makeCleanupFibers = makeCleanupFibersFactory(
-        stateRef,
-        stateSemaphore,
-      )
+      const makeCleanupFibers = makeCleanupFibersFactory(stateRef)
 
       const isPlaying = (current: AppPlaybackState) =>
         current._tag !== 'NotPlaying'

@@ -1,43 +1,17 @@
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
-import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
-import * as Fiber from 'effect/Fiber'
-import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
-import * as Stream from 'effect/Stream'
-import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import {
-  getLocalAssetFileName,
-  TaggedPatternPointer,
-  TaggedSlowStrumPointer,
-} from '../../audioAssetHelpers.ts'
-import { getFileHandle, readFileBuffer } from '../../opfs.ts'
 import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
-import { RootDirectoryHandle } from '../RootDirectoryHandle.ts'
-import { getNewCleanedUpState } from './cleanupState.ts'
-import {
-  asEarlyAsPossibleInSeconds,
-  maxLoudness,
-  minLoudness,
-  transitionTimeInSeconds,
-} from './constants.ts'
+import { asEarlyAsPossibleInSeconds, maxLoudness } from './constants.ts'
 import { getAudioBufferOfAsset } from './getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
   getAudioBufferDurationSeconds,
-  helpGarbageCollectionOfPlayback,
 } from './playbackNodes/index.ts'
-import { reschedulePlayback } from './reschedulePlayback/reschedulePlayback.ts'
-import type {
-  AppPlaybackState,
-  CleanupFiberToolkit,
-  PlayingAppPlaybackStates,
-  PlayingLoop,
-  PlayingSlowStrum,
-} from './types/index.ts'
+import type { PlayingLoop, PlayingSlowStrum } from './types/index.ts'
 
 export const makeNewPlayingAssetState = Effect.gen(function* () {
   const selectedAssetState = yield* CurrentlySelectedAssetState

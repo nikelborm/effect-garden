@@ -8,7 +8,6 @@ import type { AppPlaybackState, CleanupFiberToolkit } from './types/index.ts'
 
 export const makeCleanupFibersFactory = (
   stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,
-  stateSemaphore: Effect.Semaphore,
 ) =>
   Effect.fn('makeCleanupFibers')(function* (
     delayForSeconds: number,
@@ -17,7 +16,9 @@ export const makeCleanupFibersFactory = (
 
     const fiberWaitingSignalToStartGarbageCollection = yield* stateRef.pipe(
       SubscriptionRef.updateEffect(getNewCleanedUpState),
-      stateSemaphore.withPermits(1),
+      (
+        stateRef as object as { semaphore: Effect.Semaphore }
+      ).semaphore.withPermits(1),
       latch.whenOpen,
       Effect.forkDaemon,
     )
