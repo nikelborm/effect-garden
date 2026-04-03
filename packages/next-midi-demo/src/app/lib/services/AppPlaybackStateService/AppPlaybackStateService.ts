@@ -31,7 +31,7 @@ export type {
   SlowStrumTransitionQueueElement,
 } from './types/index.ts'
 
-const AudioContextLive = EAudioContext.layer().pipe(Layer.orDie)
+const AudioContextLive = Layer.orDie(EAudioContext.layer())
 
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',

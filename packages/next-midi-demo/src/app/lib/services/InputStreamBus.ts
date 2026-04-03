@@ -107,14 +107,16 @@ const makeInputBus = <T>() =>
           Stream.changes,
           Stream.rechunk(1),
         ),
-      forEachPress: (handler: (assignedTo: T) => Effect.Effect<void>) =>
+      forEachPress: (
+        buttonActivationHandler: (assignedTo: T) => Effect.Effect<void>,
+      ) =>
         mergedLatestPresses.pipe(
           Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
             ButtonState.isNotPressed(buttonPressState)
               ? Option.none()
               : Option.some(assignedTo),
           ),
-          Stream.tap(handler),
+          Stream.tap(buttonActivationHandler),
           Stream.runDrain,
           Effect.tapErrorCause(Effect.logError),
           Effect.forkScoped,
