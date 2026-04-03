@@ -2,6 +2,7 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
+import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -30,12 +31,14 @@ export type {
   SlowStrumTransitionQueueElement,
 } from './types/index.ts'
 
+const AudioContextLive = EAudioContext.layer().pipe(Layer.orDie)
+
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     accessors: true,
+    dependencies: [AudioContextLive],
     scoped: Effect.gen(function* () {
-      const audioContext = yield* EAudioContext.make()
       const selectedAssetState = yield* CurrentlySelectedAssetState
 
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
@@ -84,6 +87,20 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.changes,
         Stream.rechunk(1),
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      )
+
+      const playbackPublicInfoChangesStream = Stream.map(
+        stateRef.changes,
+        state =>
+          state._tag === 'NotPlaying'
+            ? state
+            : ({
+                _tag: state._tag,
+                currentAsset: state.transitionQueue[0].asset,
+                assetTransitionsQueue: state.transitionQueue.map(
+                  a => a.asset,
+                ) as ReadonlyArray<AssetPointer>,
+              } as const),
       )
 
       yield* selectedAssetState.changes.pipe(
@@ -137,17 +154,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         playStopButtonPressableFlagChangesStream,
         switchPlayPauseFromCurrentlySelected,
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream: Stream.map(stateRef.changes, state =>
-          state._tag === 'NotPlaying'
-            ? state
-            : ({
-                _tag: state._tag,
-                currentAsset: state.transitionQueue[0].asset,
-                assetTransitionsQueue: state.transitionQueue.map(
-                  a => a.asset,
-                ) as ReadonlyArray<AssetPointer>,
-              } as const),
-        ),
+        playbackPublicInfoChangesStream,
       }
     }),
   },
