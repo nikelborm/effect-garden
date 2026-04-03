@@ -1,27 +1,57 @@
 from loop_loop_transition { queue: [loop, loop] }
 
-previous queue:
-| loop A | loop A/B |
+
+// TODO: убедиться что калькуляция плохой зоны так же растягивается чуть дальше
+минимального начала ассета. то есть bad zone одна должна быть в начале а вторая
+в конце previous queue: | loop A | loop A/B |
 
 -> if wants switch to loop
 ```
 if (current_time in cur_state.queue[0].good_zone) {
+  // current queue environment
   // |                      | future 1 |
   // |          loop A      | loop A/B |
   // | good zone | bad zone |          |
   // |   ^ here  |          |          |
+
   if (cur_state.queue[0] == new_loop) {
-    cancel(future_1)
+    cancel(cur_state.queue[1])
     // new queue
     // | loop A |
     return playing_loop {
       queue: [cur_state.queue[0]]
     }
   }
+
+  if (cur_state.queue[1] == new_loop) {
+    // same queue
+    // | loop A | loop B |
+    return cur_state
+  }
+
+  // new queue
+  // | loop A | loop C |
+  cancel(cur_state.queue[1])
   return loop_loop_transition {
     queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_1)]
   }
 }
+if (current_time in cur_state.queue[0].bad_zone) {
+  // current queue environment
+  // |                      | future 1 |
+  // |          loop A      | loop A/B |
+  // | good zone | bad zone |          |
+  // |           | ^ here   |          |
+
+  if (cur_state.queue[1] == new_loop) {
+    // same queue
+    // | loop A | loop A/B |
+    return cur_state
+  }
+
+  // TODO
+}
+
 // |                      | future 1 | future 2 |
 // |          loop A      |  loop A  |  loop B  |
 // | good zone | bad zone |          |          |
