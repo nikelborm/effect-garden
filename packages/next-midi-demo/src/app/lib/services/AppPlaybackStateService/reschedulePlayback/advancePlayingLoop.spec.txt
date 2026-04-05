@@ -18,7 +18,7 @@ if (current_time in cur_state.queue[0].good_zone) {
   // |                   | ->1 |              |
   return loop_loop_transition {
     withAdditionalPostpone: false,
-    queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_1)]
+    queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_slot_1)]
   }
 }
 // |                      | future 1 | future 2 |
@@ -28,7 +28,7 @@ if (current_time in cur_state.queue[0].good_zone) {
 // |                              | ->1 |       |
 return loop_loop_transition {
   withAdditionalPostpone: true,
-  queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_2)]
+  queue: [cur_state.queue[0], makeScheduledLoop(new_loop, future_slot_2)]
 }
 ```
 
@@ -39,7 +39,7 @@ if (current_time in cur_state.queue[0].good_zone) {
   // |          loop A      | implied silence |
   // | good zone | bad zone |                 |
   // |   ^ here  |          |                 |
-  // |                | ->1 |                 |
+  // |                   | ->1 |              |
   return loop_silence_transition {
     withAdditionalPostpone: false,
     queue: [cur_state.queue[0]]
@@ -49,7 +49,7 @@ if (current_time in cur_state.queue[0].good_zone) {
 // |          loop A      |  loop A  | implied silence |
 // | good zone | bad zone |          |                 |
 // |           |  ^ here  |          |                 |
-// |                           | ->1 |                 |
+// |                              | ->1 |              |
 return loop_silence_transition {
   withAdditionalPostpone: true,
   queue: [cur_state.queue[0]]
