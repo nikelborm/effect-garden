@@ -80,6 +80,10 @@ export class CannotMakeEAudioContextDocumentIsNotFullyActive extends Schema.Tagg
   { cause: ErrorSchema(Schema.Literal('InvalidStateError')), config },
 ) {}
 
+// TODO: rename this shit because NotSupportedError MUST be thrown if the
+// specified sampleRate/length/numberOfChannels isn't supported by the context
+// (if any of the arguments is negative, zero, or outside its nominal range)
+// It should not be only about SampleRate
 /**
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext#exceptions|MDN AudioContext Exceptions}
  */
