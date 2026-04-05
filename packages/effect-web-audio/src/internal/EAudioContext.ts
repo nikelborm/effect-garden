@@ -194,10 +194,19 @@ export const make = (
         // TODO: somehow differentiate between NotSupportedError caused by it being absent from runtime and caused by wrong sample rate (words coming from MDN)
         // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext#notsupportederror
         // (Are there really browsers that don't support it?...)
-        // quote:
-        // Thrown if the specified sampleRate isn't supported by the context.
-        // I don't know where these motherfuckers took this info from, because spec says this shit should be resampled
-        // TODO: need to check
+
+        // NotSupportedError MUST be thrown if the specified
+        // sampleRate/length/numberOfChannels isn't supported by the context (if
+        // any of the arguments is negative, zero, or outside its nominal range)
+
+        // MDN is a bit misleading, because it says about the error in the case
+        // of sampleRate on the page of plain AudioContext, when the actual
+        // mention of this error in the spec comes from OfflineAudioContext. And
+        // AudioContext should resample shit on the fly instead of throwing an
+        // error
+
+        // https://www.w3.org/TR/webaudio-1.1/#dom-offlineaudiocontext-offlineaudiocontext-numberofchannels-length-samplerate
+
         NotSupportedError:
           AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate,
         TypeError: AudioErrors.CannotMakeEAudioContextInvalidLatencyHint,
