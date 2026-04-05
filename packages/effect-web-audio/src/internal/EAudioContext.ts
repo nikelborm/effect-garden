@@ -199,11 +199,11 @@ export const make = (
         // sampleRate/length/numberOfChannels isn't supported by the context (if
         // any of the arguments is negative, zero, or outside its nominal range)
 
-        // MDN is a bit misleading, because it says about the error in the case
-        // of sampleRate on the page of plain AudioContext, when the actual
-        // mention of this error in the spec comes from OfflineAudioContext. And
-        // AudioContext should resample shit on the fly instead of throwing an
-        // error
+        // https://webaudio.github.io/web-audio-api/#sample-rates It's also
+        // specified that sample rate would be validated explicitly, hence MDN
+        // talks about it. Implementations MUST support sample rates between
+        // 3000 Hz and 768000 Hz, inclusive. A NotSupportedError MUST be thrown
+        // if a sample rate outside this range is specified.
 
         // https://www.w3.org/TR/webaudio-1.1/#dom-offlineaudiocontext-offlineaudiocontext-numberofchannels-length-samplerate
 
