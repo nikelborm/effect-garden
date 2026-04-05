@@ -182,6 +182,7 @@ export const make = (
   | AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive
   | AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate
   | AudioErrors.CannotMakeEAudioContextInvalidLatencyHint
+  | AudioErrors.CannotMakeEAudioContextWrongRuntime
 > =>
   Either.try({
     try: () => makeImpl(new AudioContext(config), config),
@@ -190,9 +191,17 @@ export const make = (
         InvalidStateError:
           AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive,
         // TODO: also somehow parse NotSupportedError thrown due to reaching maximum allowed number of contexts
+        // TODO: somehow differentiate between NotSupportedError caused by it being absent from runtime and caused by wrong sample rate (words coming from MDN)
+        // https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext#notsupportederror
+        // (Are there really browsers that don't support it?...)
+        // quote:
+        // Thrown if the specified sampleRate isn't supported by the context.
+        // I don't know where these motherfuckers took this info from, because spec says this shit should be resampled
+        // TODO: need to check
         NotSupportedError:
           AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate,
         TypeError: AudioErrors.CannotMakeEAudioContextInvalidLatencyHint,
+        ReferenceError: AudioErrors.CannotMakeEAudioContextWrongRuntime,
       },
       'new AudioContext(config) error remapping absurd',
       { config },

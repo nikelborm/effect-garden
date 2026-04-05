@@ -36,8 +36,11 @@ export const remapErrorByName =
     >,
   ) =>
   (cause: unknown) => {
-    if (!(cause instanceof Error && cause.name in map))
-      throw new Error(absurdMessage)
+    if (!(cause instanceof Error && cause.name in map)) {
+      const metaErr = new Error(absurdMessage, { cause })
+      console.error(cause)
+      throw metaErr
+    }
     // biome-ignore lint/style/noNonNullAssertion: Because we checked it above with `cause.name in map`
     const Class = map[cause.name]!
     return new Class({
@@ -91,6 +94,14 @@ export class CannotMakeEAudioContextUnsupportedSampleRate extends Schema.TaggedE
 export class CannotMakeEAudioContextInvalidLatencyHint extends Schema.TaggedError<CannotMakeEAudioContextInvalidLatencyHint>()(
   'CannotMakeEAudioContextInvalidLatencyHint',
   { cause: ErrorSchema(Schema.Literal('TypeError')), config },
+) {}
+
+/**
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext#exceptions|MDN AudioContext Exceptions}
+ */
+export class CannotMakeEAudioContextWrongRuntime extends Schema.TaggedError<CannotMakeEAudioContextWrongRuntime>()(
+  'CannotMakeEAudioContextWrongRuntime',
+  { cause: ErrorSchema(Schema.Literal('ReferenceError')), config },
 ) {}
 
 //? CannotMakeEAudioBuffer
