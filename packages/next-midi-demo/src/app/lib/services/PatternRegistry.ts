@@ -60,10 +60,9 @@ export class PatternRegistry
   extends Effect.Service<PatternRegistry>()('next-midi-demo/PatternRegistry', {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const currentPatternIndexRef =
-        yield* SubscriptionRef.make<Option.Option<RecordedPatternIndexes>>(
-          Option.none(),
-        )
+      const currentPatternIndexRef = yield* SubscriptionRef.make<
+        Option.Option<RecordedPatternIndexes>
+      >(Option.none())
 
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
         Stream.changes,
@@ -79,18 +78,20 @@ export class PatternRegistry
         ),
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
-        selectPattern: (patternIndex: RecordedPatternIndexes) => {
+        switchPattern: (patternIndex: RecordedPatternIndexes) => {
           const trustedIndex = decodePatternIndexSync(patternIndex)
 
-          return SubscriptionRef.set(
+          return SubscriptionRef.update(
             currentPatternIndexRef,
-            Option.some(trustedIndex),
+            Option.match({
+              onNone: () => Option.some(trustedIndex),
+              onSome: prevPatternIndex =>
+                prevPatternIndex === trustedIndex
+                  ? Option.none()
+                  : Option.some(trustedIndex),
+            }),
           )
         },
-        deselectPattern: SubscriptionRef.set(
-          currentPatternIndexRef,
-          Option.none(),
-        ),
         getPatternByIndex: (patternIndex: RecordedPatternIndexes) =>
           allPatterns[decodePatternIndexSync(patternIndex)],
       }
@@ -104,10 +105,9 @@ interface IPatternRegistry {
   >
   readonly allPatterns: Effect.Effect<AllPatternTuple>
   readonly selectedPatternChanges: Stream.Stream<Option.Option<AllPatternUnion>>
-  readonly selectPattern: (
+  readonly switchPattern: (
     patternIndex: RecordedPatternIndexes,
   ) => Effect.Effect<void>
-  readonly deselectPattern: Effect.Effect<void>
 }
 
 type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =
