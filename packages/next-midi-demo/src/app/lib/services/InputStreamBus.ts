@@ -4,6 +4,7 @@ import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
 import * as PubSub from 'effect/PubSub'
+import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
@@ -47,24 +48,40 @@ const getMapCombinerStream =
       },
     )
 
-const makeInputBus = <T>() =>
+export interface InputBusHandle<T> {
+  readonly publish: <K extends SupportedKeyData>(inputs: {
+    readonly mapChanges: MapChangesStream<K, T>
+    readonly latestPresses: LatestPressesStream<K, T>
+  }) => Effect.Effect<void>
+  readonly isPressedStream: (key: T) => Stream.Stream<boolean>
+  readonly pressesOnlyStream: Stream.Stream<T>
+  readonly pressAggregateStream: Stream.Stream<
+    HashMap.HashMap<T, HashSet.HashSet<SupportedKeyData>>
+  >
+  readonly mergedLatestPresses: LatestPressesStream<SupportedKeyData, T>
+}
+
+type MapChangesStream<K extends SupportedKeyData, T> = Stream.Stream<
+  HashMap.HashMap<K, PhysicalButtonModel<T>>
+>
+type LatestPressesStream<K extends SupportedKeyData, T> = Stream.Stream<
+  readonly [K, PhysicalButtonModel<T>]
+>
+
+const makeInputBus = <T>(): Effect.Effect<
+  InputBusHandle<T>,
+  never,
+  Scope.Scope
+> =>
   Effect.gen(function* () {
     const mapChangesPubSub =
-      yield* PubSub.unbounded<
-        Stream.Stream<HashMap.HashMap<SupportedKeyData, PhysicalButtonModel<T>>>
-      >()
+      yield* PubSub.unbounded<MapChangesStream<SupportedKeyData, T>>()
+
     const latestPressesPubSub =
-      yield* PubSub.unbounded<
-        Stream.Stream<readonly [SupportedKeyData, PhysicalButtonModel<T>]>
-      >()
+      yield* PubSub.unbounded<LatestPressesStream<SupportedKeyData, T>>()
 
-    const mapChangesSubscription = yield* PubSub.subscribe(mapChangesPubSub)
-    const latestPressesSubscription =
-      yield* PubSub.subscribe(latestPressesPubSub)
-
-    const pressAggregateStream = yield* Stream.fromQueue(
-      mapChangesSubscription,
-    ).pipe(
+    const pressAggregateStream = yield* EFunction.pipe(
+      Stream.fromPubSub(mapChangesPubSub),
       Stream.flatten({ concurrency: 'unbounded' }),
       getMapCombinerStream<T>(),
       Stream.changes,
@@ -72,30 +89,32 @@ const makeInputBus = <T>() =>
       Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
     )
 
-    const mergedLatestPresses = yield* Stream.fromQueue(
-      latestPressesSubscription,
-    ).pipe(
+    const mergedLatestPresses = yield* EFunction.pipe(
+      Stream.fromPubSub(latestPressesPubSub),
       Stream.flatten({ concurrency: 'unbounded' }),
       Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
 
+    const pressesOnlyStream = yield* mergedLatestPresses.pipe(
+      Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
+        ButtonState.isPressed(buttonPressState)
+          ? Option.some(assignedTo)
+          : Option.none(),
+      ),
+      Stream.rechunk(1),
+      Stream.broadcastDynamic({ capacity: 'unbounded' }),
+    )
+
     return {
-      publish: <K extends SupportedKeyData>(c: {
-        readonly mapChanges: Stream.Stream<
-          HashMap.HashMap<K, PhysicalButtonModel<T>>
-        >
-        readonly latestPresses: Stream.Stream<
-          readonly [K, PhysicalButtonModel<T>]
-        >
-      }) =>
+      publish: inputs =>
         Effect.all(
           [
-            PubSub.publish(mapChangesPubSub, c.mapChanges),
-            PubSub.publish(latestPressesPubSub, c.latestPresses),
+            PubSub.publish(mapChangesPubSub, inputs.mapChanges),
+            PubSub.publish(latestPressesPubSub, inputs.latestPresses),
           ],
           { discard: true },
         ),
-      isPressedStream: (key: T) =>
+      isPressedStream: key =>
         pressAggregateStream.pipe(
           Stream.map(
             EFunction.flow(
@@ -107,20 +126,7 @@ const makeInputBus = <T>() =>
           Stream.changes,
           Stream.rechunk(1),
         ),
-      forEachPress: (
-        buttonActivationHandler: (assignedTo: T) => Effect.Effect<void>,
-      ) =>
-        mergedLatestPresses.pipe(
-          Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
-            ButtonState.isNotPressed(buttonPressState)
-              ? Option.none()
-              : Option.some(assignedTo),
-          ),
-          Stream.tap(buttonActivationHandler),
-          Stream.runDrain,
-          Effect.tapErrorCause(Effect.logError),
-          Effect.forkScoped,
-        ),
+      pressesOnlyStream,
       pressAggregateStream,
       mergedLatestPresses,
     }

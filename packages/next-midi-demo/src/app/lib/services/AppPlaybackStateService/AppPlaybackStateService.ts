@@ -154,7 +154,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         playStopButtonPressableFlagChangesStream,
         switchPlayPauseFromCurrentlySelected,
         latestIsPlayingFlagStream,
-        playbackPublicInfoChangesStream,
+        // тупо потому что не хочу усложнять себе работу
+        playbackPublicInfoChangesStream: stateRef.changes,
       }
     }),
   },
