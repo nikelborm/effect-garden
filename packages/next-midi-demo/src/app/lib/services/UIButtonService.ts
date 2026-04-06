@@ -123,18 +123,25 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
           ),
         )
 
-    yield* bus.pressesOnlyStream.pipe(
-      Stream.tap(
-        Effect.fn(function* (value) {
-          const isPressableNow = yield* EFunction.pipe(
-            getPressabilityChangesStream(value),
-            Stream.take(1),
-            Stream.runHead,
-            Effect.map(Option.getOrThrow),
-          )
-          if (isPressableNow) yield* selectAction(registry, value)
-        }),
+    const validPressesOnlyStream = yield* bus.pressesOnlyStream.pipe(
+      // Do we need { switch: true, concurrency: 1 } in flatMap? Seems not,
+      // because inner stream is short-lived and emits only 1 value
+      Stream.flatMap(buttonAssignedAt =>
+        EFunction.pipe(
+          getPressabilityChangesStream(buttonAssignedAt),
+          Stream.take(1),
+          Stream.filterMap(isPressable =>
+            isPressable ? Option.some(buttonAssignedAt) : Option.none(),
+          ),
+        ),
       ),
+      // rechunk because of the damn bug in effect
+      Stream.rechunk(1),
+      Stream.broadcastDynamic({ capacity: 'unbounded' }),
+    )
+
+    yield* validPressesOnlyStream.pipe(
+      Stream.tap(value => selectAction(registry, value)),
       Stream.runDrain,
       Effect.tapErrorCause(Effect.logError),
       Effect.forkScoped,
@@ -178,7 +185,7 @@ export class PatternUIButtonService extends Effect.Service<PatternUIButtonServic
       toLabel: pattern => `Pattern index=${pattern.index}`,
       isCurrentlyPlayingPredicate: (pb, pattern) =>
         Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-      selectAction: (reg, pattern) => reg.selectPattern(pattern.index),
+      selectAction: (reg, pattern) => reg.switchPattern(pattern.index),
     }),
   },
 ) {}

@@ -73,7 +73,7 @@ if (current_time in cur_state.queue[1].good_zone) {
   // |        |   ^ here  |          |
 
   if (cur_state.queue[1] == new_loop) {
-    // new queue
+    // same queue
     // |        | present  |
     // | loop A | loop A/B |
     return cur_state
@@ -90,9 +90,9 @@ if (current_time in cur_state.queue[1].good_zone) {
     ]
   }
 }
-// realistically else:
+// the only possible other case:
 // current_time in cur_state.queue[1].bad_zone
-throw new Error('the fuck cleanup has not been called???')
+throw new Error('Invariant violation: reached queue[1].bad_zone. Should have been impossible by regular cleanups')
 ```
 
 -> if wants switch to silence
