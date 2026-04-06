@@ -5,29 +5,26 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { AssetPointer, Strength } from '../audioAssetHelpers.ts'
+import type { Strength } from '../audioAssetHelpers.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
-import { AppPlaybackStateService } from './AppPlaybackStateService/AppPlaybackStateService.ts'
+import {
+  AppPlaybackStateService,
+  type PlayingAppPlaybackStates,
+} from './AppPlaybackStateService/AppPlaybackStateService.ts'
 import {
   CurrentlySelectedAssetState,
   type Patch,
 } from './CurrentlySelectedAssetState.ts'
 import {
   AccordInputBus,
+  type InputBusHandle,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
-
-interface InputBusHandle<T> {
-  readonly isPressedStream: (key: T) => Stream.Stream<boolean>
-  readonly forEachPress: (
-    handler: (assignedTo: T) => Effect.Effect<void>,
-  ) => Effect.Effect<any, any, any>
-}
 
 const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   registryTag,
@@ -44,7 +41,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   readonly toCompareValue: (value: T) => S
   readonly toLabel: (value: T) => string
   readonly isCurrentlyPlayingPredicate: (
-    pb: { currentAsset: AssetPointer },
+    pb: PlayingAppPlaybackStates,
     value: T,
   ) => boolean
   readonly selectAction: (registry: Reg, value: T) => Effect.Effect<void>
@@ -126,16 +123,21 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
           ),
         )
 
-    yield* bus.forEachPress(
-      Effect.fn(function* (value) {
-        const isPressableNow = yield* EFunction.pipe(
-          getPressabilityChangesStream(value),
-          Stream.take(1),
-          Stream.runHead,
-          Effect.map(Option.getOrThrow),
-        )
-        if (isPressableNow) yield* selectAction(registry, value)
-      }),
+    yield* bus.pressesOnlyStream.pipe(
+      Stream.tap(
+        Effect.fn(function* (value) {
+          const isPressableNow = yield* EFunction.pipe(
+            getPressabilityChangesStream(value),
+            Stream.take(1),
+            Stream.runHead,
+            Effect.map(Option.getOrThrow),
+          )
+          if (isPressableNow) yield* selectAction(registry, value)
+        }),
+      ),
+      Stream.runDrain,
+      Effect.tapErrorCause(Effect.logError),
+      Effect.forkScoped,
     )
 
     return {
