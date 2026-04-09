@@ -1,10 +1,12 @@
-import type { LoopTransitionElementWithScheduledCleanup } from './common.ts'
+import * as Schema from 'effect/Schema'
+import { LoopTransitionElementWithScheduledCleanupSchema } from './common.ts'
 
-export interface LoopLoopSilenceTransition {
-  readonly _tag: 'LoopLoopSilenceTransition'
-  readonly playbackStartedAtSecond: number
-  readonly transitionQueue: readonly [
-    LoopTransitionElementWithScheduledCleanup,
-    LoopTransitionElementWithScheduledCleanup,
-  ]
-}
+export const LoopLoopSilenceTransitionSchema = Schema.Struct({
+  _tag: Schema.Literal('LoopLoopSilenceTransition'),
+  playbackStartedAtSecond: Schema.Number,
+  transitionQueue: Schema.Tuple(
+    LoopTransitionElementWithScheduledCleanupSchema,
+    LoopTransitionElementWithScheduledCleanupSchema,
+  ),
+})
+export type LoopLoopSilenceTransition = Schema.Schema.Type<typeof LoopLoopSilenceTransitionSchema>

@@ -1,13 +1,15 @@
-import type {
-  LoopTransitionQueueElement,
-  SlowStrumTransitionQueueElement,
+import * as Schema from 'effect/Schema'
+import {
+  LoopTransitionQueueElementSchema,
+  SlowStrumTransitionQueueElementSchema,
 } from './common.ts'
 
-export interface SlowStrumLoopTransition {
-  readonly _tag: 'SlowStrumLoopTransition'
-  readonly playbackStartedAtSecond: number
-  readonly transitionQueue: readonly [
-    SlowStrumTransitionQueueElement,
-    LoopTransitionQueueElement,
-  ]
-}
+export const SlowStrumLoopTransitionSchema = Schema.Struct({
+  _tag: Schema.Literal('SlowStrumLoopTransition'),
+  playbackStartedAtSecond: Schema.Number,
+  transitionQueue: Schema.Tuple(
+    SlowStrumTransitionQueueElementSchema,
+    LoopTransitionQueueElementSchema,
+  ),
+})
+export type SlowStrumLoopTransition = Schema.Schema.Type<typeof SlowStrumLoopTransitionSchema>

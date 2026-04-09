@@ -1,32 +1,48 @@
-import type { LoopLoopLoopTransition } from './LoopLoopLoopTransition.ts'
-import type { LoopLoopSilenceTransition } from './LoopLoopSilenceTransition.ts'
-import type { LoopLoopTransition } from './LoopLoopTransition.ts'
-import type { LoopSilenceTransition } from './LoopSilenceTransition.ts'
-import type { NotPlaying } from './NotPlaying.ts'
-import type { PlayingLoop } from './PlayingLoop.ts'
-import type { PlayingSlowStrum } from './PlayingSlowStrum.ts'
-import type { SlowStrumLoopTransition } from './SlowStrumLoopTransition.ts'
+import * as Schema from 'effect/Schema'
+import { LoopLoopLoopTransitionSchema } from './LoopLoopLoopTransition.ts'
+import { LoopLoopSilenceTransitionSchema } from './LoopLoopSilenceTransition.ts'
+import { LoopLoopTransitionSchema } from './LoopLoopTransition.ts'
+import { LoopSilenceTransitionSchema } from './LoopSilenceTransition.ts'
+import { NotPlayingSchema } from './NotPlaying.ts'
+import { PlayingLoopSchema } from './PlayingLoop.ts'
+import { PlayingSlowStrumSchema } from './PlayingSlowStrum.ts'
+import { SlowStrumLoopTransitionSchema } from './SlowStrumLoopTransition.ts'
 
-export type PlayingAppPlaybackStates =
-  | PlayingLoop
-  | PlayingSlowStrum
-  | LoopLoopTransition
-  | LoopSilenceTransition
-  | SlowStrumLoopTransition
-  | LoopLoopSilenceTransition
-  | LoopLoopLoopTransition
+export const PlayingAppPlaybackStatesSchema = Schema.Union(
+  PlayingLoopSchema,
+  PlayingSlowStrumSchema,
+  LoopLoopTransitionSchema,
+  LoopSilenceTransitionSchema,
+  SlowStrumLoopTransitionSchema,
+  LoopLoopSilenceTransitionSchema,
+  LoopLoopLoopTransitionSchema,
+)
+export type PlayingAppPlaybackStates = Schema.Schema.Type<typeof PlayingAppPlaybackStatesSchema>
 
-export type AppPlaybackState = NotPlaying | PlayingAppPlaybackStates
+export const AppPlaybackStateSchema = Schema.Union(
+  NotPlayingSchema,
+  PlayingAppPlaybackStatesSchema,
+)
+export type AppPlaybackState = Schema.Schema.Type<typeof AppPlaybackStateSchema>
 
-export type {
-  LoopLoopSilenceTransition,
-  LoopLoopLoopTransition,
-  NotPlaying,
-  PlayingLoop,
-  PlayingSlowStrum,
-  LoopLoopTransition,
-  LoopSilenceTransition,
-  SlowStrumLoopTransition,
+export {
+  NotPlayingSchema,
+  PlayingLoopSchema,
+  PlayingSlowStrumSchema,
+  LoopLoopTransitionSchema,
+  LoopSilenceTransitionSchema,
+  SlowStrumLoopTransitionSchema,
+  LoopLoopSilenceTransitionSchema,
+  LoopLoopLoopTransitionSchema,
 }
+
+export type { NotPlaying } from './NotPlaying.ts'
+export type { PlayingLoop } from './PlayingLoop.ts'
+export type { PlayingSlowStrum } from './PlayingSlowStrum.ts'
+export type { LoopLoopTransition } from './LoopLoopTransition.ts'
+export type { LoopSilenceTransition } from './LoopSilenceTransition.ts'
+export type { SlowStrumLoopTransition } from './SlowStrumLoopTransition.ts'
+export type { LoopLoopSilenceTransition } from './LoopLoopSilenceTransition.ts'
+export type { LoopLoopLoopTransition } from './LoopLoopLoopTransition.ts'
 
 export * from './common.ts'
