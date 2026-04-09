@@ -1,0 +1,205 @@
+TODO
+
+currrently selected asset should not be represented as tagged pattern VS slow strum. because semantically for slow strums we need to remember only strength, even though the accord also participates in what sound to play. rememberence of accord only plays a role for selection of pattern. There's a point in remembering everything. Though it should not be represented as semantically 2 categories.
+
+I need mock webaudio scheduler to ensure that it doesn't create overlapping sounds with property based spam of intentions.
+
+# Prerequisite
+```ts
+declare const ctx: {
+  button:
+    | { type: 'pattern',  id: PatternId  }
+    | { type: 'accord',   id: AccordId   }
+    | { type: 'strength', id: StrengthId }
+
+  currentlySelected: {
+    accordId: AccordId,
+    strengthId: StrengthId,
+    patternId: None | Some<PatternId>
+  }
+
+  playbackState: Silence | PlayingAsset<{
+    _tag: 'SlowStrumAsset',
+    accordId: AccordId,
+    strengthId: StrengthId,
+  } | {
+    _tag: 'PatternAsset',
+    accordId: AccordId,
+    strengthId: StrengthId,
+    patternId: PatternId
+  }>
+
+  selectionMode: boolean
+}
+
+declare const isDownloaded: () => boolean
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Logic
+
+```ts
+// TODO: блять мне сука нужна проперти бейзд тут делать. я ёбнусь нахуй
+// все ебучие пермутации хендлить
+if (ctx.selectionMode) {
+  // if (ctx.button.type === 'pattern') {
+
+  // }
+  // if (ctx.button.type === 'accord') {
+
+  // }
+  // ctx.button.type === 'strength'...
+} else {
+  if (ctx.button.type === 'pattern') {
+    if (ctx.playbackState === Silence) {
+      if (ctx.currentlySelected.patternId === None) {
+        // so if the user presses this button, it should run the track (but only
+        // if it has been downloaded)
+        return isDownloaded({
+          _tag: 'PatternAsset',
+          patternId: ctx.button.id,
+          accordId: currentlySelected.accordId,
+          strengthId: currentlySelected.strengthId,
+        })
+      } else {
+        // ctx.currentlySelected.patternId is Something
+        throw new Error(`
+          Invariant failed. It should not be possible for a pattern to be
+          selected and nothing to be played
+        `)
+      }
+    } else if (ctx.playbackState._tag === 'PatternAsset') {
+      // ctx.playbackState === PlayingAsset...
+
+      // make pressable pattern button of an already playing pattern, because
+      // second press of the same button would schedule silence
+      if (ctx.button.id === ctx.playbackState.patternId)
+        return true // !!!!
+
+      // other cases:
+      // 1. when ctx.currentlySelected.patternId === None, likely because we are
+      // playing the leftovers of previous pattern, and we can actually
+      // reliably determine that. TODO: maybe need to check it here
+      // 2. we are playing something and the button is different from what's
+      // currently selected. just a different option. normal flow of checking
+      // if it's downloaded
+      return isDownloaded({
+        _tag: 'PatternAsset',
+        patternId: ctx.button.id,
+        accordId: currentlySelected.accordId,
+        strengthId: currentlySelected.strengthId,
+      })
+    } else {
+      // ctx.playbackState === PlayingAsset
+      //   && ctx.playbackState._tag === 'SlowStrumAsset'...
+      return isDownloaded({
+        _tag: 'PatternAsset',
+        patternId: ctx.button.id,
+        accordId: currentlySelected.accordId,
+        strengthId: currentlySelected.strengthId,
+      })
+    }
+
+  }
+  if (ctx.button.type === 'accord') {
+    if (ctx.playbackState === Silence) {
+      return isDownloaded({
+        _tag: 'SlowStrumAsset',
+        accordId: ctx.button.id,
+        strengthId: currentlySelected.strengthId,
+      })
+    } else if (ctx.playbackState._tag === 'PatternAsset') {
+      // ctx.playbackState === PlayingAsset...
+
+      // no point (?) in clicking the same accord (but only while it plays?)
+      // TODO: уточнить у Максима
+      if (ctx.button.id === ctx.playbackState.accordId)
+        return false
+
+      if (currentlySelected.patternId === None) {
+        // this case is quite realistic. still playing leftovers of the current
+        // pattern into silence. latest selected patternId is None. and now the
+        // user clicks on accord. Should schedule and play the slow strum of the
+        // accord
+        return isDownloaded({
+          _tag: 'SlowStrumAsset',
+          accordId: ctx.button.id,
+          strengthId: currentlySelected.strengthId,
+        })
+      }
+      return isDownloaded({
+        _tag: 'PatternAsset',
+        patternId: currentlySelected.patternId,
+        accordId: ctx.button.id,
+        strengthId: currentlySelected.strengthId,
+      })
+    } else {
+      // ctx.playbackState === PlayingAsset
+      //   && ctx.playbackState._tag === 'SlowStrumAsset'...
+      return isDownloaded({
+        _tag: 'SlowStrumAsset',
+        accordId: ctx.button.id,
+        strengthId: currentlySelected.strengthId,
+      })
+    }
+
+  }
+  // ctx.button.type === 'strength'...
+
+  // logically setting strength while silence should be allowed always,
+  // regardless if the asset is downloaded, because setting strength doesn't run
+  // playback
+}
+
+// const getPressabilityChangesStream = (value: T) =>
+//   streamAll({
+//     isPlaying: appPlaybackState.latestIsPlayingFlagStream,
+//     completionStatusOfTheAssetThisButtonWouldSelect:
+//       currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
+//         value,
+//       ),
+//     isSelectedParam: getIsSelectedStream(value),
+//   }).pipe(
+//     Stream.map(
+//       req =>
+//         !req.isSelectedParam &&
+//         (!req.isPlaying ||
+//           req.completionStatusOfTheAssetThisButtonWouldSelect.status ===
+//             'finished'),
+//     ),
+//     Stream.changes,
+//   )
+```
