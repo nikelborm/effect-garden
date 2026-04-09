@@ -1,7 +1,9 @@
-import type { SlowStrumTransitionQueueElement } from './common.ts'
+import * as Schema from 'effect/Schema'
+import { SlowStrumTransitionQueueElementSchema } from './common.ts'
 
-export interface PlayingSlowStrum {
-  readonly _tag: 'PlayingSlowStrum'
-  readonly playbackStartedAtSecond: number
-  readonly transitionQueue: readonly [SlowStrumTransitionQueueElement]
-}
+export const PlayingSlowStrumSchema = Schema.Struct({
+  _tag: Schema.Literal('PlayingSlowStrum'),
+  playbackStartedAtSecond: Schema.Number,
+  transitionQueue: Schema.Tuple(SlowStrumTransitionQueueElementSchema),
+})
+export type PlayingSlowStrum = Schema.Schema.Type<typeof PlayingSlowStrumSchema>
