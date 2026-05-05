@@ -1,35 +1,83 @@
-import type * as Effect from 'effect/Effect'
-import type * as Fiber from 'effect/Fiber'
+import * as Effect from 'effect/Effect'
+import * as Fiber from 'effect/Fiber'
+import * as Schema from 'effect/Schema'
 
-import type { AssetPointer } from '../../../audioAssetHelpers.ts'
+import {
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+} from '../../../audioAssetHelpers.ts'
 
-export type AudioPlayback = {
-  readonly bufferSource: AudioBufferSourceNode
-  readonly gainNode: GainNode
-}
+const AssetPointerSchema = Schema.Union(
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+)
 
-export interface CleanupFiberToolkit {
-  readonly cancelCleanup: Effect.Effect<void>
-  readonly fiberWaitingSignalToStartGarbageCollection: Fiber.RuntimeFiber<void>
-  readonly fiberWaitingDelayToGiveGarbageCollectionSignal: Fiber.RuntimeFiber<void>
-  readonly cancelDelayedCleanupSignal: Effect.Effect<void>
-  readonly cleanupImmediately: Effect.Effect<void>
-}
+// GOD DAMNN
 
-export interface LoopTransitionQueueElement {
-  readonly asset: AssetPointer
-  readonly playback: AudioPlayback
-}
+export const AudioPlaybackSchema = Schema.Struct({
+  bufferSource: Schema.declare(
+    (u): u is AudioBufferSourceNode =>
+      typeof AudioBufferSourceNode !== 'undefined' &&
+      u instanceof AudioBufferSourceNode,
+    { identifier: 'AudioBufferSourceNode' },
+  ),
+  gainNode: Schema.declare(
+    (u): u is GainNode =>
+      typeof GainNode !== 'undefined' && u instanceof GainNode,
+    { identifier: 'GainNode' },
+  ),
+})
+export type AudioPlayback = Schema.Schema.Type<typeof AudioPlaybackSchema>
 
-export interface LoopTransitionElementWithScheduledCleanup
-  extends LoopTransitionQueueElement {
-  readonly cleanupFiberToolkit: CleanupFiberToolkit
-  readonly fadeoutStartsAtSecond: number
-  readonly fadeoutEndsAtSecond: number
-}
+export const CleanupFiberToolkitSchema = Schema.Struct({
+  cancelCleanup: Schema.declare(
+    (u): u is Effect.Effect<void> => Effect.isEffect(u),
+    { identifier: 'Effect<void>' },
+  ),
+  fiberWaitingSignalToStartGarbageCollection: Schema.declare(
+    (u): u is Fiber.RuntimeFiber<void> => Fiber.isRuntimeFiber(u),
+    { identifier: 'Fiber.RuntimeFiber<void>' },
+  ),
+  fiberWaitingDelayToGiveGarbageCollectionSignal: Schema.declare(
+    (u): u is Fiber.RuntimeFiber<void> => Fiber.isRuntimeFiber(u),
+    { identifier: 'Fiber.RuntimeFiber<void>' },
+  ),
+  cancelDelayedCleanupSignal: Schema.declare(
+    (u): u is Effect.Effect<void> => Effect.isEffect(u),
+    { identifier: 'Effect<void>' },
+  ),
+  cleanupImmediately: Schema.declare(
+    (u): u is Effect.Effect<void> => Effect.isEffect(u),
+    { identifier: 'Effect<void>' },
+  ),
+})
+export type CleanupFiberToolkit = Schema.Schema.Type<
+  typeof CleanupFiberToolkitSchema
+>
 
-export interface SlowStrumTransitionQueueElement {
-  readonly asset: AssetPointer
-  readonly playback: AudioPlayback
-  readonly durationSeconds: number
-}
+export const LoopTransitionQueueElementSchema = Schema.Struct({
+  asset: AssetPointerSchema,
+  playback: AudioPlaybackSchema,
+})
+export type LoopTransitionQueueElement = Schema.Schema.Type<
+  typeof LoopTransitionQueueElementSchema
+>
+
+export const LoopTransitionElementWithScheduledCleanupSchema = Schema.Struct({
+  ...LoopTransitionQueueElementSchema.fields,
+  cleanupFiberToolkit: CleanupFiberToolkitSchema,
+  fadeoutStartsAtSecond: Schema.Number,
+  fadeoutEndsAtSecond: Schema.Number,
+})
+export type LoopTransitionElementWithScheduledCleanup = Schema.Schema.Type<
+  typeof LoopTransitionElementWithScheduledCleanupSchema
+>
+
+export const SlowStrumTransitionQueueElementSchema = Schema.Struct({
+  asset: AssetPointerSchema,
+  playback: AudioPlaybackSchema,
+  durationSeconds: Schema.Number,
+})
+export type SlowStrumTransitionQueueElement = Schema.Schema.Type<
+  typeof SlowStrumTransitionQueueElementSchema
+>
