@@ -7,7 +7,13 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../brandsAndDatas/index.ts'
+import {
+  type AllSimple,
+  NotPressed,
+  Pressed,
+} from '../brandsAndDatas/ButtonState.ts'
+
+const other: unique symbol = Symbol('Other')
 
 export const makeVirtualButtonTouchStateStream = <
   const DatasetKeys extends string,
@@ -20,7 +26,7 @@ export const makeVirtualButtonTouchStateStream = <
   if (!refWithFallback) return Stream.empty
 
   type IsNonDistributableUnion<A> = [A] extends [infer U]
-    ? U extends any // distribute
+    ? U extends any // distribute type
       ? A extends U // if only one key in a union (full union can be assigned to any union element)
         ? true
         : false
@@ -41,142 +47,98 @@ export const makeVirtualButtonTouchStateStream = <
     ),
   )
 
-  return EFunction.pipe(
-    Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerdown', {
-      bufferSize: 'unbounded',
-    }),
-    Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointermove', {
-        bufferSize: 'unbounded',
-      }),
-    ),
-    Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointerup', {
-        bufferSize: 'unbounded',
-      }),
-    ),
-    Stream.merge(
-      Stream.fromEventListener<PointerEvent>(refWithFallback, 'pointercancel', {
-        bufferSize: 'unbounded',
-      }),
-    ),
-    Stream.mapAccum(
-      HashMap.empty<number, ElementWithDataset | 'irrelevantElement'>(),
-      (acc, { clientX, clientY, currentTarget, type, pointerId, target }) => {
-        const eventType = type as
-          | 'pointerdown'
-          | 'pointermove'
-          | 'pointerup'
-          | 'pointercancel'
-        const makePressStream = <T>(t: T) =>
-          Stream.succeed([t, ButtonState.Pressed] as const)
+  type ElementOrOther = ElementWithDataset | typeof other
+  type EventType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel'
 
-        const makeReleaseStream = <T>(t: T) =>
-          Stream.succeed([t, ButtonState.NotPressed] as const)
+  const makePointerEventStream = (type: EventType) =>
+    Stream.fromEventListener<PointerEvent & { readonly type: EventType }>(
+      refWithFallback,
+      type,
+      { bufferSize: 'unbounded' },
+    )
 
-        const getTargetWithDesiredDataset = (t: unknown) =>
-          EFunction.pipe(
-            Option.fromNullable(t),
-            Option.filter(isElementWithDataset),
-            Option.flatMapNullable(
-              emergeUpToDesiredTarget(
-                parentElement => parentElement !== currentTarget,
-                keysOfDatasetToLookFor,
+  const makeStreamWithElementIfMapDidntHaveIt = (
+    map: HashMap.HashMap<number, ElementOrOther>,
+    elementToLookFor: ElementOrOther,
+    state: AllSimple,
+  ) =>
+    elementToLookFor === other ||
+    Iterable.some(map, ([, el]) => el === elementToLookFor)
+      ? Stream.empty
+      : Stream.succeed([elementToLookFor, state] as const)
+
+  const getValueOrOther = Option.getOrElse(EFunction.constant(other))
+
+  return makePointerEventStream('pointerdown').pipe(
+    Stream.merge(makePointerEventStream('pointermove')),
+    Stream.merge(makePointerEventStream('pointerup')),
+    Stream.merge(makePointerEventStream('pointercancel')),
+    Stream.mapAccum(HashMap.empty<number, ElementOrOther>(), (oldMap, ev) => {
+      //                          ^ pointerId
+      const { clientX, clientY, type, currentTarget, pointerId, target } = ev
+
+      const getTargetWithGoodDataset = EFunction.flow(
+        Option.fromNullable<unknown>,
+        Option.filter(isElementWithDataset),
+        Option.flatMapNullable(
+          emergeUpToDesiredTarget(
+            parentElement => parentElement !== currentTarget,
+            keysOfDatasetToLookFor,
+          ),
+        ),
+      )
+
+      if (type === 'pointerdown') {
+        const latestElement = getValueOrOther(getTargetWithGoodDataset(target))
+        return [
+          HashMap.set(oldMap, pointerId, latestElement),
+          makeStreamWithElementIfMapDidntHaveIt(oldMap, latestElement, Pressed),
+        ]
+      }
+
+      const oldElementOption = HashMap.get(oldMap, pointerId)
+      const mapWithoutCurrentPointerId = HashMap.remove(oldMap, pointerId)
+
+      if (type === 'pointerup' || type === 'pointercancel')
+        return [
+          mapWithoutCurrentPointerId,
+          // Realistically oldElementOption === None should never happen. We
+          // can't expect finger to release something it haven't been touching
+          // in the first place. We don't crash, just ignore
+          Option.match(oldElementOption, {
+            onNone: () => Stream.empty,
+            onSome: oldElement =>
+              makeStreamWithElementIfMapDidntHaveIt(
+                mapWithoutCurrentPointerId,
+                oldElement,
+                NotPressed,
               ),
-            ),
-          )
-
-        if (eventType === 'pointerdown')
-          return Option.match(getTargetWithDesiredDataset(target), {
-            onNone: () =>
-              [
-                HashMap.set(acc, pointerId, 'irrelevantElement'),
-                Stream.empty,
-              ] as const,
-            onSome: elementWithDesiredDataset =>
-              [
-                HashMap.set(acc, pointerId, elementWithDesiredDataset),
-                Iterable.some(acc, ([, el]) => el === elementWithDesiredDataset)
-                  ? Stream.empty
-                  : makePressStream(elementWithDesiredDataset),
-              ] as const,
-          })
-
-        const previousElementOption = HashMap.get(acc, pointerId)
-        const mapWithoutCurrentPointerId = HashMap.remove(acc, pointerId)
-
-        if (eventType === 'pointerup' || eventType === 'pointercancel') {
-          return [
-            mapWithoutCurrentPointerId,
-            previousElementOption.pipe(
-              Option.filter(e => e !== 'irrelevantElement'),
-              Option.match({
-                onNone: () => Stream.empty,
-                onSome: elementWithDesiredDataset =>
-                  Iterable.some(
-                    mapWithoutCurrentPointerId,
-                    ([, el]) => el === elementWithDesiredDataset,
-                  )
-                    ? Stream.empty
-                    : makeReleaseStream(elementWithDesiredDataset),
-              }),
-            ),
-          ] as const
-        }
-
-        if (Option.isNone(previousElementOption)) return [acc, Stream.empty]
-        const previousElement = previousElementOption.value
-
-        const releaseStreamOfPreviousElement =
-          previousElement === 'irrelevantElement'
-            ? Stream.empty
-            : Iterable.some(
-                  mapWithoutCurrentPointerId,
-                  ([, el]) => el === previousElement,
-                )
-              ? Stream.empty
-              : makeReleaseStream(previousElement)
-
-        return EFunction.pipe(
-          document.elementFromPoint(clientX, clientY),
-          getTargetWithDesiredDataset,
-          Option.match({
-            onSome: latestElement => {
-              if (latestElement === previousElement) return [acc, Stream.empty]
-              if (previousElement === 'irrelevantElement')
-                return [
-                  HashMap.set(acc, pointerId, latestElement),
-                  Iterable.some(
-                    mapWithoutCurrentPointerId,
-                    ([, el]) => el === latestElement,
-                  )
-                    ? Stream.empty
-                    : makePressStream(latestElement),
-                ]
-
-              return [
-                HashMap.set(acc, pointerId, latestElement),
-                Stream.concat(
-                  Iterable.some(acc, ([, el]) => el === latestElement)
-                    ? Stream.empty
-                    : makePressStream(latestElement),
-                  Iterable.some(
-                    mapWithoutCurrentPointerId,
-                    ([, el]) => el === previousElement,
-                  )
-                    ? Stream.empty
-                    : makeReleaseStream(previousElement),
-                ),
-              ]
-            },
-            onNone: () => [
-              HashMap.set(acc, pointerId, 'irrelevantElement' as const),
-              releaseStreamOfPreviousElement,
-            ],
           }),
-        )
-      },
-    ),
+        ]
+
+      // type === 'pointermove'...
+
+      // Realistically oldElementOption === None should never happen. We can't
+      // expect finger to move out of nowhere without ever touching screen
+      // first. If that happens, we consider it came from irrelevant zone
+      const oldElement = getValueOrOther(oldElementOption)
+
+      const latestElement = EFunction.pipe(
+        document.elementFromPoint(clientX, clientY),
+        getTargetWithGoodDataset,
+        getValueOrOther,
+      )
+
+      const newMap = HashMap.set(oldMap, pointerId, latestElement)
+
+      return [
+        newMap,
+        Stream.concat(
+          makeStreamWithElementIfMapDidntHaveIt(newMap, oldElement, NotPressed),
+          makeStreamWithElementIfMapDidntHaveIt(oldMap, latestElement, Pressed),
+        ),
+      ]
+    }),
     Stream.flatten(),
     Stream.map(
       ([e, state]) =>
@@ -215,3 +177,105 @@ interface ElementWithDataset extends Element {
 
 const isElementWithDataset = (k: unknown): k is ElementWithDataset =>
   k instanceof Element && 'dataset' in k && k['dataset'] instanceof DOMStringMap
+
+// pointermove verified by:
+// import * as Data from 'effect/Data'
+// import * as Record from 'effect/Record'
+// import * as Equal from 'effect/Equal'
+// import * as HashSet from 'effect/HashSet';
+
+// const pressE1 =   Data.tuple('e1' as const, 'press'     as const)
+// const pressE2 =   Data.tuple('e2' as const, 'press'     as const)
+// const releaseE1 = Data.tuple('e1' as const, 'not press' as const)
+// const releaseE2 = Data.tuple('e2' as const, 'not press' as const)
+
+// // null means irrelevant.
+// const tests = [
+//   // pointerId   prevContext             latestElement expectedResult
+//   [ 1,           {                  },   null,        []                  ],
+//   [ 1,           {                  },   'e1',        [pressE1]           ],
+//   [ 1,           {                  },   'e2',        [pressE2]           ],
+//   [ 1,           {          2: null },   null,        []                  ],
+//   [ 1,           {          2: null },   'e1',        [pressE1]           ],
+//   [ 1,           {          2: null },   'e2',        [pressE2]           ],
+//   [ 1,           {          2: 'e1' },   null,        []                  ],
+//   [ 1,           {          2: 'e1' },   'e1',        []                  ],
+//   [ 1,           {          2: 'e1' },   'e2',        [pressE2]           ],
+//   [ 1,           {          2: 'e2' },   null,        []                  ],
+//   [ 1,           {          2: 'e2' },   'e1',        [pressE1]           ],
+//   [ 1,           {          2: 'e2' },   'e2',        []                  ],
+
+//   [ 1,           { 1: null,         },   null,        []                  ],
+//   [ 1,           { 1: null,         },   'e1',        [pressE1]           ],
+//   [ 1,           { 1: null,         },   'e2',        [pressE2]           ],
+//   [ 1,           { 1: null, 2: null },   null,        []                  ],
+//   [ 1,           { 1: null, 2: null },   'e1',        [pressE1]           ],
+//   [ 1,           { 1: null, 2: null },   'e2',        [pressE2]           ],
+//   [ 1,           { 1: null, 2: 'e1' },   null,        []                  ],
+//   [ 1,           { 1: null, 2: 'e1' },   'e1',        []                  ],
+//   [ 1,           { 1: null, 2: 'e1' },   'e2',        [pressE2]           ],
+//   [ 1,           { 1: null, 2: 'e2' },   null,        []                  ],
+//   [ 1,           { 1: null, 2: 'e2' },   'e1',        [pressE1]           ],
+//   [ 1,           { 1: null, 2: 'e2' },   'e2',        []                  ],
+
+//   [ 1,           { 1: 'e1',         },   null,        [releaseE1]         ],
+//   [ 1,           { 1: 'e1',         },   'e1',        []                  ],
+//   [ 1,           { 1: 'e1',         },   'e2',        [releaseE1,pressE2] ],
+//   [ 1,           { 1: 'e1', 2: null },   null,        [releaseE1]         ],
+//   [ 1,           { 1: 'e1', 2: null },   'e1',        []                  ],
+//   [ 1,           { 1: 'e1', 2: null },   'e2',        [releaseE1,pressE2] ],
+//   [ 1,           { 1: 'e1', 2: 'e1' },   null,        []                  ],
+//   [ 1,           { 1: 'e1', 2: 'e1' },   'e1',        []                  ],
+//   [ 1,           { 1: 'e1', 2: 'e1' },   'e2',        [pressE2]           ],
+//   [ 1,           { 1: 'e1', 2: 'e2' },   null,        [releaseE1]         ],
+//   [ 1,           { 1: 'e1', 2: 'e2' },   'e1',        []                  ],
+//   [ 1,           { 1: 'e1', 2: 'e2' },   'e2',        [releaseE1]         ],
+
+//   [ 1,           { 1: 'e2',         },   null,        [releaseE2]         ],
+//   [ 1,           { 1: 'e2',         },   'e1',        [releaseE2,pressE1] ],
+//   [ 1,           { 1: 'e2',         },   'e2',        []                  ],
+//   [ 1,           { 1: 'e2', 2: null },   null,        [releaseE2]         ],
+//   [ 1,           { 1: 'e2', 2: null },   'e1',        [releaseE2,pressE1] ],
+//   [ 1,           { 1: 'e2', 2: null },   'e2',        []                  ],
+//   [ 1,           { 1: 'e2', 2: 'e1' },   null,        [releaseE2]         ],
+//   [ 1,           { 1: 'e2', 2: 'e1' },   'e1',        [releaseE2]         ],
+//   [ 1,           { 1: 'e2', 2: 'e1' },   'e2',        []                  ],
+//   [ 1,           { 1: 'e2', 2: 'e2' },   null,        []                  ],
+//   [ 1,           { 1: 'e2', 2: 'e2' },   'e1',        [pressE1]           ],
+//   [ 1,           { 1: 'e2', 2: 'e2' },   'e2',        []                  ]
+// ] as const
+
+// const algo = ([pointerId, prevContext, latestElement]: (typeof tests)[number]) => {
+//   const makeStreamWithElementIfMapDidntHaveIt = ( map: any, elementToLookFor: any, state: any,) =>
+//     Object.entries(map).some(([, el]) => el === elementToLookFor)
+//       ? HashSet.empty()
+//       : HashSet.make(Data.tuple(elementToLookFor, state))
+
+//   const previousElement = prevContext[pointerId] ?? null
+
+//   const updatedMap = Record.set(prevContext, pointerId.toString(), latestElement)
+
+//   return HashSet.union(
+//     previousElement === null
+//       ? HashSet.empty()
+//       : makeStreamWithElementIfMapDidntHaveIt(
+//           updatedMap,
+//           previousElement,
+//           'not press',
+//         ),
+//     latestElement === null
+//       ? HashSet.empty()
+//       : // нужно чтобы переданная карта содержала latestElement
+//         makeStreamWithElementIfMapDidntHaveIt(
+//           prevContext,
+//           latestElement,
+//           'press',
+//         ),
+//   )
+// }
+
+// for (const test of tests)
+//   if (!Equal.equals(algo(test), HashSet.fromIterable(test[3])))
+//     throw new Error('failed', test)
+
+// console.log('success')

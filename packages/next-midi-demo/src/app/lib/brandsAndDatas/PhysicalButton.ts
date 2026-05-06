@@ -22,12 +22,12 @@ export type SupportedPhysicalButtonId =
 
 export class PhysicalButtonModel<TAssignedToParamButton> extends Data.Class<{
   buttonPressState: ButtonState.AllSimple
-  assignedTo: TAssignedToParamButton
+  assignedToParamButton: TAssignedToParamButton
 }> {
   constructor(
     buttonPressState: ButtonState.AllSimple,
-    assignedTo: TAssignedToParamButton,
+    assignedToParamButton: TAssignedToParamButton,
   ) {
-    super({ buttonPressState, assignedTo })
+    super({ buttonPressState, assignedToParamButton })
   }
 }

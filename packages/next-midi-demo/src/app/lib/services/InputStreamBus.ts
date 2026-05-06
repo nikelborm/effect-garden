@@ -16,39 +16,43 @@ import type {
 import type { AllAccordUnion } from './AccordRegistry.ts'
 import type { AllPatternUnion } from './PatternRegistry.ts'
 
-const getMapCombinerStream =
-  <TPhysicalButtonId extends SupportedPhysicalButtonId, TParamButton>() =>
-  <E, R>(
-    self: Stream.Stream<
-      HashMap.HashMap<TPhysicalButtonId, PhysicalButtonModel<TParamButton>>,
-      E,
-      R
-    >,
-  ) =>
-    Stream.scan(
-      self,
-      HashMap.empty<TParamButton, HashSet.HashSet<TPhysicalButtonId>>(),
-      (previousMap, latestMap) => {
-        let newMap = previousMap
-        for (const [physicalButtonId, physicalButtonModel] of latestMap)
-          newMap = HashMap.modifyAt(
-            newMap,
-            physicalButtonModel.assignedTo,
+const getMapCombinerStream = <
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+>() =>
+  Stream.scan<
+    // out
+    HashMap.HashMap<TParamButton, HashSet.HashSet<TPhysicalButtonId>>,
+    // in
+    HashMap.HashMap<TPhysicalButtonId, PhysicalButtonModel<TParamButton>>
+  >(
+    HashMap.empty(),
+    (
+      previousMapOfParamButtonToSetOfPhysicalButtonIds,
+      latestMapOfPhysicalButtonIdToModel,
+    ) =>
+      HashMap.reduce(
+        latestMapOfPhysicalButtonIdToModel,
+        previousMapOfParamButtonToSetOfPhysicalButtonIds,
+        (
+          newMapOfParamButtonToSetOfPhysicalButtonIds,
+          physicalButtonModel,
+          physicalButtonId,
+        ) =>
+          HashMap.modifyAt(
+            newMapOfParamButtonToSetOfPhysicalButtonIds,
+            physicalButtonModel.assignedToParamButton,
             EFunction.flow(
               Option.orElseSome(HashSet.empty),
-              Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
+              Option.map(
                 (physicalButtonModel.buttonPressState === ButtonState.Pressed
                   ? HashSet.add
-                  : HashSet.remove)(
-                  setOfPhysicalIdsTheButtonIsPressedBy,
-                  physicalButtonId,
-                ),
+                  : HashSet.remove)(physicalButtonId),
               ),
             ),
-          )
-        return newMap
-      },
-    )
+          ),
+      ),
+  )
 
 export interface InputBusWriterHandle<
   TPhysicalButtonId extends SupportedPhysicalButtonId,
@@ -146,6 +150,7 @@ const makeInputBus = <
     > = yield* EFunction.pipe(
       Stream.fromPubSub(mapChangesPubSub),
       Stream.flatten({ concurrency: 'unbounded' }),
+      e => e,
       getMapCombinerStream<TPhysicalButtonId, TParamButton>(),
       Stream.changes,
       Stream.rechunk(1),
@@ -160,9 +165,9 @@ const makeInputBus = <
 
     const pressesOnlyStream: PressesOnlyStream<TParamButton> =
       yield* mergedLatestPresses.pipe(
-        Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
+        Stream.filterMap(([, { buttonPressState, assignedToParamButton }]) =>
           ButtonState.isPressed(buttonPressState)
-            ? Option.some(assignedTo)
+            ? Option.some(assignedToParamButton)
             : Option.none(),
         ),
         Stream.rechunk(1),
