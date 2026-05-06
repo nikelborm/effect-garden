@@ -3,14 +3,10 @@ import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
+  type AccordIndexUnion,
   decodeAccordIndexSync,
-  type RecordedAccordIndexes,
 } from '../audioAssetHelpers.ts'
-import {
-  Accord,
-  AccordIndex,
-  type AccordMiniInfo,
-} from '../brandsAndDatas/Accord.ts'
+import { Accord, type AccordMiniInfo } from '../brandsAndDatas/Accord.ts'
 
 const accords = [
   { id: 24, label: 'C' },
@@ -23,20 +19,19 @@ const accords = [
   { id: 28, label: 'E' },
 ] as const
 
-const allAccords = accords.map(
-  (info, index) =>
-    new Accord({ ...info, index: AccordIndex(index as RecordedAccordIndexes) }),
+const allAccords = accords.map((info, index) =>
+  Accord.makeUnsafe({ ...info, index }),
 ) as unknown as AllAccordTuple
 
-const mapIndexToAccord = (index: RecordedAccordIndexes) =>
-  new Accord({ index: AccordIndex(index), ...accords[index] }) as AllAccordUnion
+const mapIndexToAccord = (index: AccordIndexUnion) =>
+  new Accord({ index, ...accords[index] }) as AllAccordUnion
 
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
     accessors: true,
     scoped: Effect.gen(function* () {
       const currentAccordIndexRef =
-        yield* SubscriptionRef.make<RecordedAccordIndexes>(0)
+        yield* SubscriptionRef.make<AccordIndexUnion>(0)
 
       const selectedAccordChanges = yield* currentAccordIndexRef.changes.pipe(
         Stream.changes,
@@ -52,12 +47,12 @@ export class AccordRegistry
         ),
         allAccords: Effect.succeed(allAccords),
         selectedAccordChanges,
-        selectAccord: (accordIndex: RecordedAccordIndexes) => {
+        selectAccord: (accordIndex: AccordIndexUnion) => {
           const trustedIndex = decodeAccordIndexSync(accordIndex)
 
           return SubscriptionRef.set(currentAccordIndexRef, trustedIndex)
         },
-        getAccordByIndex: (accordIndex: RecordedAccordIndexes) =>
+        getAccordByIndex: (accordIndex: AccordIndexUnion) =>
           allAccords[decodeAccordIndexSync(accordIndex)],
       }
     }),
@@ -68,9 +63,7 @@ interface IAccordRegistry {
   readonly currentlySelectedAccord: Effect.Effect<AllAccordUnion>
   readonly allAccords: Effect.Effect<AllAccordTuple>
   readonly selectedAccordChanges: Stream.Stream<AllAccordUnion>
-  readonly selectAccord: (
-    accordIndex: RecordedAccordIndexes,
-  ) => Effect.Effect<void>
+  readonly selectAccord: (accordIndex: AccordIndexUnion) => Effect.Effect<void>
 }
 
 type _AllAccordTuple<
@@ -84,7 +77,7 @@ type _AllAccordTuple<
       Accord<
         Current['id'],
         Current['label'],
-        Extract<RestLabels['length'], RecordedAccordIndexes>
+        Extract<RestLabels['length'], AccordIndexUnion>
       >,
     ]
   : readonly []

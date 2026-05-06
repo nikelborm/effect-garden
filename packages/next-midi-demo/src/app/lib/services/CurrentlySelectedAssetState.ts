@@ -4,9 +4,9 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
 import {
+  type AccordIndexUnion,
   type AssetPointer,
-  type RecordedAccordIndexes,
-  type RecordedPatternIndexes,
+  type PatternIndexUnion,
   type Strength,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
@@ -140,8 +140,8 @@ export const desimplifyAssetPointer = ({
   })
 
 export interface SimpleAssetPointer {
-  accordIndex: RecordedAccordIndexes
-  patternIndex: Option.Option<RecordedPatternIndexes>
+  accordIndex: AccordIndexUnion
+  patternIndex: Option.Option<PatternIndexUnion>
   strength: Strength
 }
 

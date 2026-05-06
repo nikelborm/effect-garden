@@ -1,39 +1,65 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
+import type * as Either from 'effect/Either'
+import type * as Option from 'effect/Option'
 
-import type { RecordedPatternIndexes } from '../audioAssetHelpers.ts'
+import type { PatternIndexUnion } from '../audioAssetHelpers.ts'
 
-export type PatternIndex<
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
-> = Brand.Branded<Index, 'PatternIndex: integer in range 0-7'>
+export type PatternIndex<Index extends PatternIndexUnion = PatternIndexUnion> =
+  Brand.Branded<Index, 'PatternIndex: integer in range 0...7'>
 export const PatternIndex = Brand.refined<PatternIndex>(
   n => Number.isSafeInteger(n) && n >= 0 && n < 8,
-  n => Brand.error(`Expected ${n} to be an integer in range 0-7`),
-)
+  n => Brand.error(`Expected ${n} to be an integer in range 0...7`),
+) as {
+  <TIndex extends PatternIndexUnion = PatternIndexUnion>(
+    i: TIndex,
+  ): PatternIndex<TIndex>
+
+  option<TIndex extends PatternIndexUnion = PatternIndexUnion>(
+    i: TIndex,
+  ): Option.Option<PatternIndex<TIndex>>
+
+  either<TIndex extends PatternIndexUnion = PatternIndexUnion>(
+    i: TIndex,
+  ): Either.Either<PatternIndex<TIndex>, Brand.Brand.BrandErrors>
+
+  is<TIndex extends PatternIndexUnion = PatternIndexUnion>(
+    i: TIndex,
+  ): i is TIndex & PatternIndex<TIndex>
+}
 
 export class PatternIndexData<
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
+  TIndex extends PatternIndexUnion = PatternIndexUnion,
 > extends Data.TaggedClass('next-midi-demo/PatternIndex')<{
-  value: PatternIndex<Index>
+  value: PatternIndex<TIndex>
 }> {
-  constructor(index: Index) {
-    super({ value: PatternIndex(index) as PatternIndex<Index> })
+  constructor(index: TIndex) {
+    super({ value: PatternIndex(index) })
   }
+
   static makeUnsafe = (index: number) =>
-    new PatternIndexData(index as RecordedPatternIndexes)
+    new PatternIndexData(index as PatternIndexUnion)
 }
 
 export class Pattern<
-  Label extends string = string,
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
+  const TLabel extends string = string,
+  TIndex extends PatternIndexUnion = PatternIndexUnion,
 > extends Data.TaggedClass('next-midi-demo/Pattern')<{
-  readonly label: Label
-  readonly index: PatternIndex<Index>
+  readonly label: TLabel
+  readonly index: PatternIndex<TIndex>
 }> {
-  constructor(label: Label, index: Index) {
-    super({ label, index: PatternIndex(index) as PatternIndex<Index> })
+  constructor(label: TLabel, index: TIndex) {
+    super({ label, index: PatternIndex(index) })
   }
 
+  static makeUnsafe = <const TLabel extends string = string>(
+    label: TLabel,
+    index: number,
+  ) => new Pattern(label, index as PatternIndexUnion)
+
   static models = (p: unknown): p is Pattern =>
-    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Pattern'
+    typeof p === 'object' &&
+    p !== null &&
+    '_tag' in p &&
+    p._tag === this.prototype._tag
 }

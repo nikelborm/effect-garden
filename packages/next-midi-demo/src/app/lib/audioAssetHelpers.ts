@@ -59,31 +59,30 @@ export type RecordedAccordsTuple = typeof RECORDED_ACCORDS
 export type TupleIndices<T extends readonly any[]> =
   Extract<keyof T, `${number}`> extends `${infer N extends number}` ? N : never
 
-export type RecordedAccordIndexes = TupleIndices<RecordedAccordsTuple>
+export type AccordIndexUnion = TupleIndices<RecordedAccordsTuple>
 
-export type RecordAccordNames = RecordedAccordsTuple[RecordedAccordIndexes]
+export type RecordAccordNames = RecordedAccordsTuple[AccordIndexUnion]
 
-export type RecordedPatternIndexes = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
+export type PatternIndexUnion = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
 
 export type StringToArray<T extends string> =
   T extends `${infer Character}${infer Rest}`
     ? [Character, ...StringToArray<Rest>]
     : []
 
-export type GetPaddedAccordName<
-  SelectedAccordIndex extends RecordedAccordIndexes,
-> = RecordedAccordsTuple[SelectedAccordIndex] extends infer A extends string
-  ? StringToArray<A>['length'] extends infer L extends number
-    ? L extends 2
-      ? A
-      : L extends 1
-        ? `${A}_`
-        : never
+export type GetPaddedAccordName<SelectedAccordIndex extends AccordIndexUnion> =
+  RecordedAccordsTuple[SelectedAccordIndex] extends infer A extends string
+    ? StringToArray<A>['length'] extends infer L extends number
+      ? L extends 2
+        ? A
+        : L extends 1
+          ? `${A}_`
+          : never
+      : never
     : never
-  : never
 
 const getRemotePatternAssetFileName = <
-  const SelectedAccordIndex extends RecordedAccordIndexes,
+  const SelectedAccordIndex extends AccordIndexUnion,
   const SelectedStrength extends Strength,
 >(
   accordIndex: SelectedAccordIndex,
@@ -92,14 +91,14 @@ const getRemotePatternAssetFileName = <
   `accord_${accordIndex}_${RECORDED_ACCORDS[accordIndex].padEnd(2, '_') as GetPaddedAccordName<SelectedAccordIndex>}_strength_${strength}.wav` as const
 
 const getRemotePatternAssetFolderName = <
-  const SelectedPatternIndex extends RecordedPatternIndexes,
+  const SelectedPatternIndex extends PatternIndexUnion,
 >(
   patternIndex: SelectedPatternIndex,
 ) => `pattern_${patternIndex}` as const
 
 const getRemotePatternAssetPath = <
-  const SelectedAccordIndex extends RecordedAccordIndexes,
-  const SelectedPatternIndex extends RecordedPatternIndexes,
+  const SelectedAccordIndex extends AccordIndexUnion,
+  const SelectedPatternIndex extends PatternIndexUnion,
   const SelectedStrength extends Strength,
 >({
   accordIndex,
@@ -117,7 +116,7 @@ const getRemotePatternAssetPath = <
   `/samples/${getRemotePatternAssetFolderName(patternIndex)}/${getRemotePatternAssetFileName(accordIndex, strength)}` as const
 
 const getRemoteSlowStrumAssetPath = <
-  const SelectedAccordIndex extends RecordedAccordIndexes,
+  const SelectedAccordIndex extends AccordIndexUnion,
   const SelectedStrength extends Strength,
 >(
   accordIndex: SelectedAccordIndex,
@@ -126,13 +125,13 @@ const getRemoteSlowStrumAssetPath = <
   `/samples/slow_strum/${getRemotePatternAssetFileName(accordIndex, strength)}` as const
 
 export type RemotePatternAssetFileName<
-  SelectedAccordIndex extends RecordedAccordIndexes,
-  SelectedPatternIndex extends RecordedPatternIndexes,
+  SelectedAccordIndex extends AccordIndexUnion,
+  SelectedPatternIndex extends PatternIndexUnion,
   SelectedStrength extends Strength,
 > = `/samples/pattern_${SelectedPatternIndex}/accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 export type RemoteSlowStrumAssetFileName<
-  SelectedAccordIndex extends RecordedAccordIndexes,
+  SelectedAccordIndex extends AccordIndexUnion,
   SelectedStrength extends Strength,
 > = `/samples/slow_strum/accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
@@ -156,19 +155,19 @@ export const getRemoteAssetPath = <Asset extends AssetPointer>(
     : (getRemoteSlowStrumAssetPath(asset.accordIndex, asset.strength) as any)
 
 export type LocalPatternAssetFileName<
-  SelectedAccordIndex extends RecordedAccordIndexes,
-  SelectedPatternIndex extends RecordedPatternIndexes,
+  SelectedAccordIndex extends AccordIndexUnion,
+  SelectedPatternIndex extends PatternIndexUnion,
   SelectedStrength extends Strength,
 > = `pattern_${SelectedPatternIndex}_accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 export type LocalSlowStrumAssetFileName<
-  SelectedAccordIndex extends RecordedAccordIndexes,
+  SelectedAccordIndex extends AccordIndexUnion,
   SelectedStrength extends Strength,
 > = `slow_strum_accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 const getLocalPatternAssetFileName = <
-  const SelectedAccordIndex extends RecordedAccordIndexes,
-  const SelectedPatternIndex extends RecordedPatternIndexes,
+  const SelectedAccordIndex extends AccordIndexUnion,
+  const SelectedPatternIndex extends PatternIndexUnion,
   const SelectedStrength extends Strength,
 >({
   accordIndex,
@@ -186,7 +185,7 @@ const getLocalPatternAssetFileName = <
   `${getRemotePatternAssetFolderName(patternIndex)}_${getRemotePatternAssetFileName(accordIndex, strength)}` as const
 
 const getLocalSlowStrumAssetFileName = <
-  const SelectedAccordIndex extends RecordedAccordIndexes,
+  const SelectedAccordIndex extends AccordIndexUnion,
   const SelectedStrength extends Strength,
 >(
   accordIndex: SelectedAccordIndex,
@@ -232,8 +231,8 @@ export const getAssetFromLocalFileName = (
   if (patternIndex && accordIndex && strength)
     return Option.some(
       new TaggedPatternPointer({
-        patternIndex: parseInt(patternIndex, 10) as RecordedPatternIndexes,
-        accordIndex: parseInt(accordIndex, 10) as RecordedAccordIndexes,
+        patternIndex: parseInt(patternIndex, 10) as PatternIndexUnion,
+        accordIndex: parseInt(accordIndex, 10) as AccordIndexUnion,
         strength: strength as Strength,
       }),
     )
@@ -244,7 +243,7 @@ export const getAssetFromLocalFileName = (
   if (accordIndex && strength)
     return Option.some(
       new TaggedSlowStrumPointer({
-        accordIndex: parseInt(accordIndex, 10) as RecordedAccordIndexes,
+        accordIndex: parseInt(accordIndex, 10) as AccordIndexUnion,
         strength: strength as Strength,
       }),
     )

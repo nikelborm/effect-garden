@@ -5,17 +5,17 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
   decodePatternIndexSync,
-  type RecordedPatternIndexes,
+  type PatternIndexUnion,
 } from '../audioAssetHelpers.ts'
 import { Pattern } from '../brandsAndDatas/Pattern.ts'
 
 const patternLabels = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'] as const
 
-const mapIndexToPattern = (index: RecordedPatternIndexes) =>
+const mapIndexToPattern = (index: PatternIndexUnion) =>
   new Pattern(patternLabels[index], index) as AllPatternUnion
 
 const allPatterns = patternLabels.map(
-  (label, index) => new Pattern(label, index as RecordedPatternIndexes),
+  Pattern.makeUnsafe,
 ) as unknown as AllPatternTuple
 
 export class PatternRegistry
@@ -23,7 +23,7 @@ export class PatternRegistry
     accessors: true,
     scoped: Effect.gen(function* () {
       const currentPatternIndexRef = yield* SubscriptionRef.make<
-        Option.Option<RecordedPatternIndexes>
+        Option.Option<PatternIndexUnion>
       >(Option.none())
 
       const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
@@ -40,7 +40,7 @@ export class PatternRegistry
         ),
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
-        switchPattern: (patternIndex: RecordedPatternIndexes) => {
+        switchPattern: (patternIndex: PatternIndexUnion) => {
           const trustedIndex = decodePatternIndexSync(patternIndex)
 
           return SubscriptionRef.update(
@@ -54,7 +54,7 @@ export class PatternRegistry
             }),
           )
         },
-        getPatternByIndex: (patternIndex: RecordedPatternIndexes) =>
+        getPatternByIndex: (patternIndex: PatternIndexUnion) =>
           allPatterns[decodePatternIndexSync(patternIndex)],
       }
     }),
@@ -68,7 +68,7 @@ interface IPatternRegistry {
   readonly allPatterns: Effect.Effect<AllPatternTuple>
   readonly selectedPatternChanges: Stream.Stream<Option.Option<AllPatternUnion>>
   readonly switchPattern: (
-    patternIndex: RecordedPatternIndexes,
+    patternIndex: PatternIndexUnion,
   ) => Effect.Effect<void>
 }
 
@@ -79,10 +79,7 @@ type _AllPatternTuple<Labels extends readonly string[] = typeof patternLabels> =
   ]
     ? readonly [
         ..._AllPatternTuple<RestLabels>,
-        Pattern<
-          CurrLabel,
-          Extract<RestLabels['length'], RecordedPatternIndexes>
-        >,
+        Pattern<CurrLabel, Extract<RestLabels['length'], PatternIndexUnion>>,
       ]
     : readonly []
 
