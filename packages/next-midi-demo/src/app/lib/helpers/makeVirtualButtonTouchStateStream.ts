@@ -13,8 +13,6 @@ import {
   Pressed,
 } from '../brandsAndDatas/ButtonState.ts'
 
-const other: unique symbol = Symbol('Other')
-
 export const makeVirtualButtonTouchStateStream = <
   const DatasetKeys extends string,
 >(
@@ -24,14 +22,6 @@ export const makeVirtualButtonTouchStateStream = <
   const refWithFallback = ref ?? globalThis.window
 
   if (!refWithFallback) return Stream.empty
-
-  type IsNonDistributableUnion<A> = [A] extends [infer U]
-    ? U extends any // distribute type
-      ? A extends U // if only one key in a union (full union can be assigned to any union element)
-        ? true
-        : false
-      : never
-    : never
 
   type Dataset =
     IsNonDistributableUnion<DatasetKeys> extends true
@@ -47,27 +37,10 @@ export const makeVirtualButtonTouchStateStream = <
     ),
   )
 
-  type ElementOrOther = ElementWithDataset | typeof other
-  type EventType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel'
-
   const makePointerEventStream = (type: EventType) =>
-    Stream.fromEventListener<PointerEvent & { readonly type: EventType }>(
-      refWithFallback,
-      type,
-      { bufferSize: 'unbounded' },
-    )
-
-  const makeStreamWithElementIfMapDidntHaveIt = (
-    map: HashMap.HashMap<number, ElementOrOther>,
-    elementToLookFor: ElementOrOther,
-    state: AllSimple,
-  ) =>
-    elementToLookFor === other ||
-    Iterable.some(map, ([, el]) => el === elementToLookFor)
-      ? Stream.empty
-      : Stream.succeed([elementToLookFor, state] as const)
-
-  const getValueOrOther = Option.getOrElse(EFunction.constant(other))
+    Stream.fromEventListener<TypedPointerEvent>(refWithFallback, type, {
+      bufferSize: 'unbounded',
+    })
 
   return makePointerEventStream('pointerdown').pipe(
     Stream.merge(makePointerEventStream('pointermove')),
@@ -150,6 +123,16 @@ export const makeVirtualButtonTouchStateStream = <
   )
 }
 
+const makeStreamWithElementIfMapDidntHaveIt = (
+  map: HashMap.HashMap<number, ElementOrOther>,
+  elementToLookFor: ElementOrOther,
+  state: AllSimple,
+) =>
+  elementToLookFor === other ||
+  Iterable.some(map, ([, el]) => el === elementToLookFor)
+    ? Stream.empty
+    : Stream.succeed([elementToLookFor, state] as const)
+
 const emergeUpToDesiredTarget =
   (
     continueSearchWhile: (target: ElementWithDataset) => boolean,
@@ -174,6 +157,19 @@ const emergeUpToDesiredTarget =
 interface ElementWithDataset extends Element {
   readonly dataset: DOMStringMap
 }
+const other: unique symbol = Symbol('Other')
+const getValueOrOther = Option.getOrElse(EFunction.constant(other))
+type ElementOrOther = ElementWithDataset | typeof other
+type TypedPointerEvent = PointerEvent & { readonly type: EventType }
+type EventType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel'
+
+type IsNonDistributableUnion<A> = [A] extends [infer U]
+  ? U extends any // distribute type
+    ? A extends U // if only one key in a union (full union can be assigned to any union element)
+      ? true
+      : false
+    : never
+  : never
 
 const isElementWithDataset = (k: unknown): k is ElementWithDataset =>
   k instanceof Element && 'dataset' in k && k['dataset'] instanceof DOMStringMap
