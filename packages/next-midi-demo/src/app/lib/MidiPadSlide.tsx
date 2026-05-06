@@ -67,7 +67,7 @@ export const MidiPadSlide = ({
         {Array.from(strengths, strength => (
           <StrengthButton strength={strength} key={strength} />
         ))}
-        <PlaybackButton />
+        {/* <PlaybackButton /> */}
       </DisplayContentsWrapper>
     </ButtonGrid>
   )
@@ -283,28 +283,28 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
   // )
 }
 
-const PlaybackButton = () => {
-  const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
-  const [_playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
-  if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf playback button. isPressableRes`, isPressableRes)
-    return 'wtf'
-  }
-  const { value: isPressable } = isPressableRes
-  return (
-    <DebugButton
-      onMouseDown={() => {
-        if (isPressable) playPause()
-      }}
-    >
-      Playback control
-      <br />
-      Shape: triangle
-      <br />
-      Pressable: {isPressable ? Yes : No}
-    </DebugButton>
-  )
-}
+// const PlaybackButton = () => {
+//   const isPressableRes = Hooks.useAtomValue(isPlayStopButtonPressableAtom)
+//   const [_playresult, playPause] = Hooks.useAtom(switchPlayPauseFnAtom)
+//   if (!Result.isSuccess(isPressableRes)) {
+//     console.log(`wtf playback button. isPressableRes`, isPressableRes)
+//     return 'wtf'
+//   }
+//   const { value: isPressable } = isPressableRes
+//   return (
+//     <DebugButton
+//       onMouseDown={() => {
+//         if (isPressable) playPause()
+//       }}
+//     >
+//       Playback control
+//       <br />
+//       Shape: triangle
+//       <br />
+//       Pressable: {isPressable ? Yes : No}
+//     </DebugButton>
+//   )
+// }
 
 const Yes = <span style={{ color: 'yellow' }}>Yes</span>
 const No = <span style={{ color: 'darkred' }}>No</span>

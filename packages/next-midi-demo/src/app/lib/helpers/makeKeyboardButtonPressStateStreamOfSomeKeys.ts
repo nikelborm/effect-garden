@@ -2,11 +2,11 @@ import * as Data from 'effect/Data'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../branded/index.ts'
+import { ButtonState } from '../brandsAndDatas/index.ts'
 import {
+  KeyboardPhysicalButtonIdData,
   type ValidKeyboardKey,
-  ValidKeyboardKeyData,
-} from '../branded/StoreValues.ts'
+} from '../brandsAndDatas/StoreValues.ts'
 
 export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
   keysToFocusOn: Set<ValidKeyboardKey>,
@@ -38,7 +38,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
       )
         ? Option.some(
             Data.tuple(
-              new ValidKeyboardKeyData(event.key),
+              new KeyboardPhysicalButtonIdData(event.key),
               event.type === 'keydown'
                 ? ButtonState.Pressed
                 : ButtonState.NotPressed,

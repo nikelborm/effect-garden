@@ -15,7 +15,7 @@ import {
   AccordRegistry,
   type AllAccordUnion,
 } from '../services/AccordRegistry.ts'
-import { AllButtonMappingLayer } from '../services/AllButtonMappingLayer.ts'
+import { AllButtonMappingLayer } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
@@ -28,17 +28,17 @@ import {
 import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager.ts'
 import {
+  AccordParamButtonService,
+  PatternParamButtonService,
+  StrengthParamButtonService,
+} from '../services/ParamButtonService.ts'
+import {
   type AllPatternUnion,
   PatternRegistry,
 } from '../services/PatternRegistry.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
-import {
-  AccordUIButtonService,
-  PatternUIButtonService,
-  StrengthUIButtonService,
-} from '../services/UIButtonService.ts'
 
 const BusLayer = Layer.mergeAll(
   AccordInputBus.Default,
@@ -55,7 +55,7 @@ const AllButtonMappingServicesLayer = EFunction.pipe(
   ),
   // Buses and registries are provided here so AllButtonMappingServicesLayer is
   // self-contained. Effect's layer memoization ensures the same instances
-  // are shared with UIButtonService.
+  // are shared with ParamButtonService.
   Layer.provideMerge(AccordInputBus.Default),
   Layer.provideMerge(PatternInputBus.Default),
   Layer.provideMerge(StrengthInputBus.Default),
@@ -64,13 +64,13 @@ const AllButtonMappingServicesLayer = EFunction.pipe(
   Layer.provideMerge(StrengthRegistry.Default),
 )
 
-const UIButtonServicesLayer = Layer.mergeAll(
-  AccordUIButtonService.Default,
-  PatternUIButtonService.Default,
-  StrengthUIButtonService.Default,
+const ParamButtonServicesLayer = Layer.mergeAll(
+  AccordParamButtonService.Default,
+  PatternParamButtonService.Default,
+  StrengthParamButtonService.Default,
 )
 
-const AppLayer = UIButtonServicesLayer.pipe(
+const AppLayer = ParamButtonServicesLayer.pipe(
   Layer.provideMerge(BusLayer),
   Layer.provideMerge(AllButtonMappingServicesLayer),
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
@@ -95,7 +95,7 @@ export const isAccordButtonPressableAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      AccordUIButtonService.getPressabilityChangesStream,
+      AccordParamButtonService.getPressabilityChangesStream,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -119,7 +119,7 @@ export const isPatternButtonPressableAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      PatternUIButtonService.getPressabilityChangesStream,
+      PatternParamButtonService.getPressabilityChangesStream,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -141,7 +141,7 @@ export const isPatternButtonPressableAtom = Atom.family(
 export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    StrengthUIButtonService.getPressabilityChangesStream,
+    StrengthParamButtonService.getPressabilityChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -159,7 +159,7 @@ export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
 export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
   EFunction.pipe(
     accord,
-    AccordUIButtonService.getIsSelectedStream,
+    AccordParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -179,7 +179,7 @@ export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
 export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
   EFunction.pipe(
     pattern,
-    PatternUIButtonService.getIsSelectedStream,
+    PatternParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -201,7 +201,7 @@ export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
 export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    StrengthUIButtonService.getIsSelectedStream,
+    StrengthParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -219,7 +219,7 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
 export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
   EFunction.pipe(
     accord,
-    AccordUIButtonService.isPressedFlagChangesStream,
+    AccordParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -237,7 +237,7 @@ export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
 export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
   EFunction.pipe(
     pattern,
-    PatternUIButtonService.isPressedFlagChangesStream,
+    PatternParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -255,7 +255,7 @@ export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
 export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
   EFunction.pipe(
     strength,
-    StrengthUIButtonService.isPressedFlagChangesStream,
+    StrengthParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
@@ -274,7 +274,7 @@ export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      AccordUIButtonService.isCurrentlyPlaying,
+      AccordParamButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -293,7 +293,7 @@ export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      PatternUIButtonService.isCurrentlyPlaying,
+      PatternParamButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -312,7 +312,7 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
   (strength: Strength) =>
     EFunction.pipe(
       strength,
-      StrengthUIButtonService.isCurrentlyPlaying,
+      StrengthParamButtonService.isCurrentlyPlaying,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -331,7 +331,7 @@ export const accordButtonDownloadPercentAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(
       accord,
-      AccordUIButtonService.getDownloadPercent,
+      AccordParamButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -350,7 +350,7 @@ export const patternButtonDownloadPercentAtom = Atom.family(
   (pattern: AllPatternUnion) =>
     EFunction.pipe(
       pattern,
-      PatternUIButtonService.getDownloadPercent,
+      PatternParamButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {
@@ -369,7 +369,7 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
   (strength: Strength) =>
     EFunction.pipe(
       strength,
-      StrengthUIButtonService.getDownloadPercent,
+      StrengthParamButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
         runtime.atom(s, {

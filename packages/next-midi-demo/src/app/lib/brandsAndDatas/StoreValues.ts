@@ -24,7 +24,9 @@ export const ValidKeyboardKey = Brand.refined<ValidKeyboardKey>(
     ),
 )
 
-export class ValidKeyboardKeyData extends Data.TaggedClass('ValidKeyboardKey')<{
+export class KeyboardPhysicalButtonIdData extends Data.TaggedClass(
+  'next-midi-demo/ValidKeyboardKey',
+)<{
   value: ValidKeyboardKey
 }> {
   constructor(key: string) {

@@ -1,6 +1,7 @@
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 
+import type { RecordedPatternIndexes } from '../audioAssetHelpers.ts'
 import { neighborFactory } from './neighborFactory.ts'
 
 const strengthSet = new Set(['s', 'm', 'v'] as const)
@@ -8,7 +9,7 @@ const accordIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
 const patternIndexSet = new Set(
   Iterable.append(
     Iterable.map([0, 1, 2, 3, 4, 5, 6, 7] as const, Option.some),
-    Option.none<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>(),
+    Option.none<RecordedPatternIndexes>(),
   ),
 )
 

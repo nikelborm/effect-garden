@@ -8,24 +8,26 @@ import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
-import { ButtonState } from '../branded/index.ts'
+import { ButtonState } from '../brandsAndDatas/index.ts'
+import type {
+  PhysicalButtonModel,
+  SupportedPhysicalButtonId,
+} from '../brandsAndDatas/PhysicalButton.ts'
 import type { AllAccordUnion } from './AccordRegistry.ts'
-import type { PhysicalButtonModel } from './makePhysicalButtonToParamMappingService.ts'
 import type { AllPatternUnion } from './PatternRegistry.ts'
-import type { SupportedKeyData } from './SupportedKeyData.ts'
 
 const getMapCombinerStream =
-  <T>() =>
+  <TPhysicalButtonId extends SupportedPhysicalButtonId, TParamButton>() =>
   <E, R>(
     self: Stream.Stream<
-      HashMap.HashMap<SupportedKeyData, PhysicalButtonModel<T>>,
+      HashMap.HashMap<TPhysicalButtonId, PhysicalButtonModel<TParamButton>>,
       E,
       R
     >,
   ) =>
     Stream.scan(
       self,
-      HashMap.empty<T, HashSet.HashSet<SupportedKeyData>>(),
+      HashMap.empty<TParamButton, HashSet.HashSet<TPhysicalButtonId>>(),
       (previousMap, latestMap) => {
         let newMap = previousMap
         for (const [physicalButtonId, physicalButtonModel] of latestMap)
@@ -33,7 +35,7 @@ const getMapCombinerStream =
             newMap,
             physicalButtonModel.assignedTo,
             EFunction.flow(
-              Option.orElseSome(() => HashSet.empty()),
+              Option.orElseSome(HashSet.empty),
               Option.map(setOfPhysicalIdsTheButtonIsPressedBy =>
                 (physicalButtonModel.buttonPressState === ButtonState.Pressed
                   ? HashSet.add
@@ -48,42 +50,103 @@ const getMapCombinerStream =
       },
     )
 
-export interface InputBusHandle<T> {
-  readonly publish: <K extends SupportedKeyData>(inputs: {
-    readonly mapChanges: MapChangesStream<K, T>
-    readonly latestPresses: LatestPressesStream<K, T>
-  }) => Effect.Effect<void>
-  readonly isPressedStream: (key: T) => Stream.Stream<boolean>
-  readonly pressesOnlyStream: Stream.Stream<T>
-  readonly pressAggregateStream: Stream.Stream<
-    HashMap.HashMap<T, HashSet.HashSet<SupportedKeyData>>
-  >
-  readonly mergedLatestPresses: LatestPressesStream<SupportedKeyData, T>
+export interface InputBusWriterHandle<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+> {
+  readonly publish: (
+    config: InputBusInitConfig<TPhysicalButtonId, TParamButton>,
+  ) => Effect.Effect<void>
 }
 
-type MapChangesStream<K extends SupportedKeyData, T> = Stream.Stream<
-  HashMap.HashMap<K, PhysicalButtonModel<T>>
->
-type LatestPressesStream<K extends SupportedKeyData, T> = Stream.Stream<
-  readonly [K, PhysicalButtonModel<T>]
->
+export interface InputBusReaderHandle<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+> {
+  readonly isPressedStream: (
+    selectionButton: TParamButton,
+  ) => Stream.Stream<boolean>
 
-const makeInputBus = <T>(): Effect.Effect<
-  InputBusHandle<T>,
+  readonly pressesOnlyStream: PressesOnlyStream<TParamButton>
+
+  readonly pressAggregateStream: PressAggregateStream<
+    TPhysicalButtonId,
+    TParamButton
+  >
+
+  readonly mergedLatestPresses: LatestPressesStream<
+    TPhysicalButtonId,
+    TParamButton
+  >
+}
+
+export interface InputBusHandle<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+> extends InputBusWriterHandle<TPhysicalButtonId, TParamButton>,
+    InputBusReaderHandle<TPhysicalButtonId, TParamButton> {}
+
+export interface PressesOnlyStream<TParamButton>
+  extends Stream.Stream<TParamButton> {}
+
+export interface PressAggregateStream<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+> extends Stream.Stream<
+    HashMap.HashMap<TParamButton, HashSet.HashSet<TPhysicalButtonId>>
+  > {}
+
+export interface InputBusInitConfig<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+> {
+  readonly mapChanges: MapChangesStream<TPhysicalButtonId, TParamButton>
+  readonly latestPresses: LatestPressesStream<TPhysicalButtonId, TParamButton>
+}
+
+export interface MapChangesStream<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TAssignedToParamButton,
+> extends Stream.Stream<
+    HashMap.HashMap<
+      TPhysicalButtonId,
+      PhysicalButtonModel<TAssignedToParamButton>
+    >
+  > {}
+
+export interface LatestPressesStream<
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TAssignedToParamButton,
+> extends Stream.Stream<
+    readonly [TPhysicalButtonId, PhysicalButtonModel<TAssignedToParamButton>]
+  > {}
+
+const makeInputBus = <
+  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TParamButton,
+>(): Effect.Effect<
+  InputBusHandle<TPhysicalButtonId, TParamButton>,
   never,
   Scope.Scope
 > =>
   Effect.gen(function* () {
     const mapChangesPubSub =
-      yield* PubSub.unbounded<MapChangesStream<SupportedKeyData, T>>()
+      yield* PubSub.unbounded<
+        MapChangesStream<TPhysicalButtonId, TParamButton>
+      >()
 
     const latestPressesPubSub =
-      yield* PubSub.unbounded<LatestPressesStream<SupportedKeyData, T>>()
+      yield* PubSub.unbounded<
+        LatestPressesStream<TPhysicalButtonId, TParamButton>
+      >()
 
-    const pressAggregateStream = yield* EFunction.pipe(
+    const pressAggregateStream: PressAggregateStream<
+      TPhysicalButtonId,
+      TParamButton
+    > = yield* EFunction.pipe(
       Stream.fromPubSub(mapChangesPubSub),
       Stream.flatten({ concurrency: 'unbounded' }),
-      getMapCombinerStream<T>(),
+      getMapCombinerStream<TPhysicalButtonId, TParamButton>(),
       Stream.changes,
       Stream.rechunk(1),
       Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
@@ -95,15 +158,16 @@ const makeInputBus = <T>(): Effect.Effect<
       Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
 
-    const pressesOnlyStream = yield* mergedLatestPresses.pipe(
-      Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
-        ButtonState.isPressed(buttonPressState)
-          ? Option.some(assignedTo)
-          : Option.none(),
-      ),
-      Stream.rechunk(1),
-      Stream.broadcastDynamic({ capacity: 'unbounded' }),
-    )
+    const pressesOnlyStream: PressesOnlyStream<TParamButton> =
+      yield* mergedLatestPresses.pipe(
+        Stream.filterMap(([, { buttonPressState, assignedTo }]) =>
+          ButtonState.isPressed(buttonPressState)
+            ? Option.some(assignedTo)
+            : Option.none(),
+        ),
+        Stream.rechunk(1),
+        Stream.broadcastDynamic({ capacity: 'unbounded' }),
+      )
 
     return {
       publish: inputs =>
@@ -134,15 +198,15 @@ const makeInputBus = <T>(): Effect.Effect<
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
-  { scoped: makeInputBus<AllAccordUnion>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonId, AllAccordUnion>() },
 ) {}
 
 export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
-  { scoped: makeInputBus<AllPatternUnion>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonId, AllPatternUnion>() },
 ) {}
 
 export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
-  { scoped: makeInputBus<Strength>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonId, Strength>() },
 ) {}

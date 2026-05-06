@@ -7,7 +7,7 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../branded/index.ts'
+import { ButtonState } from '../brandsAndDatas/index.ts'
 
 export const makeVirtualButtonTouchStateStream = <
   const DatasetKeys extends string,

@@ -4,8 +4,8 @@ import * as Parsing from 'effect-web-midi/Parsing'
 import * as Predicate from 'effect/Predicate'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../branded/index.ts'
-import * as MIDIValues from '../branded/MIDIValues.ts'
+import { ButtonState } from '../brandsAndDatas/index.ts'
+import * as MIDIValues from '../brandsAndDatas/MIDIValues.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 
 export const makeMIDINoteButtonPressStream = (

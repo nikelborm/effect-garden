@@ -7,7 +7,7 @@ export const NoteId = Brand.refined<NoteId>(
   n => Brand.error(`Expected ${n} to be an integer in range 0-127`),
 )
 
-export class NoteIdData extends Data.TaggedClass('NoteId')<{
+export class NoteIdData extends Data.TaggedClass('next-midi-demo/NoteId')<{
   value: NoteId
 }> {
   constructor(note: number) {

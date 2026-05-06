@@ -5,22 +5,18 @@ import * as Stream from 'effect/Stream'
 
 import {
   type AssetPointer,
+  type RecordedAccordIndexes,
+  type RecordedPatternIndexes,
   type Strength,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../audioAssetHelpers.ts'
+import { Accord } from '../brandsAndDatas/Accord.ts'
+import { Pattern } from '../brandsAndDatas/Pattern.ts'
 import { streamAll } from '../helpers/streamAll.ts'
-import {
-  Accord,
-  AccordRegistry,
-  type AllAccordUnion,
-} from './AccordRegistry.ts'
+import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
-import {
-  type AllPatternUnion,
-  Pattern,
-  PatternRegistry,
-} from './PatternRegistry.ts'
+import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelectedAssetState>()(
@@ -144,9 +140,9 @@ export const desimplifyAssetPointer = ({
   })
 
 export interface SimpleAssetPointer {
-  accordIndex: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7
-  patternIndex: Option.Option<0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>
-  strength: 'm' | 's' | 'v'
+  accordIndex: RecordedAccordIndexes
+  patternIndex: Option.Option<RecordedPatternIndexes>
+  strength: Strength
 }
 
 const makePatchApplier =
@@ -155,17 +151,14 @@ const makePatchApplier =
     if (Pattern.models(patch))
       return TaggedPatternPointer.make({ ...old, patternIndex: patch.index })
 
-    if (Accord.models(patch)) {
-      if (TaggedPatternPointer.models(old))
-        return TaggedPatternPointer.make({ ...old, accordIndex: patch.index })
+    if (Accord.models(patch))
+      return TaggedPatternPointer.models(old)
+        ? TaggedPatternPointer.make({ ...old, accordIndex: patch.index })
+        : TaggedSlowStrumPointer.make({ ...old, accordIndex: patch.index })
 
-      return TaggedSlowStrumPointer.make({ ...old, accordIndex: patch.index })
-    }
-
-    if (TaggedPatternPointer.models(old))
-      return TaggedPatternPointer.make({ ...old, strength: patch })
-
-    return TaggedSlowStrumPointer.make({ ...old, strength: patch })
+    return TaggedPatternPointer.models(old)
+      ? TaggedPatternPointer.make({ ...old, strength: patch })
+      : TaggedSlowStrumPointer.make({ ...old, strength: patch })
   }
 
 export type Patch = AllPatternUnion | AllAccordUnion | Strength

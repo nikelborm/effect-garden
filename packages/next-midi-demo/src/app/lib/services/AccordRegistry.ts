@@ -1,5 +1,3 @@
-import * as Brand from 'effect/Brand'
-import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -8,6 +6,11 @@ import {
   decodeAccordIndexSync,
   type RecordedAccordIndexes,
 } from '../audioAssetHelpers.ts'
+import {
+  Accord,
+  AccordIndex,
+  type AccordMiniInfo,
+} from '../brandsAndDatas/Accord.ts'
 
 const accords = [
   { id: 24, label: 'C' },
@@ -19,37 +22,6 @@ const accords = [
   { id: 26, label: 'D' },
   { id: 28, label: 'E' },
 ] as const
-
-export type AccordIndex<
-  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
-> = Brand.Branded<Index, 'AccordIndex: integer in range 0-7'>
-export const AccordIndex = Brand.refined<AccordIndex>(
-  n => Number.isSafeInteger(n) && n >= 0 && n < 8,
-  n => Brand.error(`Expected ${n} to be an integer in range 0-7`),
-)
-
-export class AccordIndexData<
-  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
-> extends Data.TaggedClass('AccordIndex')<{
-  value: AccordIndex<Index>
-}> {
-  constructor(index: number) {
-    super({
-      value: AccordIndex(index as RecordedAccordIndexes) as AccordIndex<Index>,
-    })
-  }
-}
-
-export class Accord<
-  Id extends number = number,
-  Label extends string = string,
-  Index extends RecordedAccordIndexes = RecordedAccordIndexes,
-> extends Data.TaggedClass('Accord')<
-  AccordMiniInfo<Id, Label> & { readonly index: AccordIndex<Index> }
-> {
-  static models = (p: unknown): p is Accord =>
-    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Accord'
-}
 
 const allAccords = accords.map(
   (info, index) =>
@@ -120,11 +92,3 @@ type _AllAccordTuple<
 export type AllAccordTuple = _AllAccordTuple
 
 export type AllAccordUnion = AllAccordTuple[number]
-
-export interface AccordMiniInfo<
-  Id extends number = number,
-  Label extends string = string,
-> {
-  readonly id: Id
-  readonly label: Label
-}

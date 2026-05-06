@@ -1,5 +1,3 @@
-import * as Brand from 'effect/Brand'
-import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
@@ -9,45 +7,9 @@ import {
   decodePatternIndexSync,
   type RecordedPatternIndexes,
 } from '../audioAssetHelpers.ts'
+import { Pattern } from '../brandsAndDatas/Pattern.ts'
 
 const patternLabels = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8'] as const
-
-export type PatternIndex<
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
-> = Brand.Branded<Index, 'PatternIndex: integer in range 0-7'>
-export const PatternIndex = Brand.refined<PatternIndex>(
-  n => Number.isSafeInteger(n) && n >= 0 && n < 8,
-  n => Brand.error(`Expected ${n} to be an integer in range 0-7`),
-)
-
-export class PatternIndexData<
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
-> extends Data.TaggedClass('PatternIndex')<{
-  value: PatternIndex<Index>
-}> {
-  constructor(index: number) {
-    super({
-      value: PatternIndex(
-        index as RecordedPatternIndexes,
-      ) as PatternIndex<Index>,
-    })
-  }
-}
-
-export class Pattern<
-  Label extends string = string,
-  Index extends RecordedPatternIndexes = RecordedPatternIndexes,
-> extends Data.TaggedClass('Pattern')<{
-  readonly label: Label
-  readonly index: PatternIndex<Index>
-}> {
-  constructor(label: Label, index: Index) {
-    super({ label, index: PatternIndex(index) as PatternIndex<Index> })
-  }
-
-  static models = (p: unknown): p is Pattern =>
-    typeof p === 'object' && p !== null && '_tag' in p && p._tag === 'Pattern'
-}
 
 const mapIndexToPattern = (index: RecordedPatternIndexes) =>
   new Pattern(patternLabels[index], index) as AllPatternUnion

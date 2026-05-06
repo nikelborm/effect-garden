@@ -6,6 +6,7 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
 import type { Strength } from '../audioAssetHelpers.ts'
+import type { SupportedPhysicalButtonId } from '../brandsAndDatas/PhysicalButton.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
@@ -26,7 +27,7 @@ import {
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-const makeUIButtonEntityService = <T extends Patch, S, Reg>({
+const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
   registryTag,
   busTag,
   getSelectedChangesStream,
@@ -36,15 +37,21 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
   selectAction,
 }: {
   readonly registryTag: Context.ReadonlyTag<any, Reg>
-  readonly busTag: Context.ReadonlyTag<any, InputBusHandle<T>>
+  readonly busTag: Context.ReadonlyTag<
+    any,
+    InputBusHandle<SupportedPhysicalButtonId, TParamButton>
+  >
   readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
-  readonly toCompareValue: (value: T) => S
-  readonly toLabel: (value: T) => string
+  readonly toCompareValue: (value: TParamButton) => S
+  readonly toLabel: (value: TParamButton) => string
   readonly isCurrentlyPlayingPredicate: (
     pb: PlayingAppPlaybackStates,
-    value: T,
+    value: TParamButton,
   ) => boolean
-  readonly selectAction: (registry: Reg, value: T) => Effect.Effect<void>
+  readonly selectAction: (
+    registry: Reg,
+    value: TParamButton,
+  ) => Effect.Effect<void>
 }) =>
   Effect.gen(function* () {
     const [appPlaybackState, currentlySelectedAssetState, registry, bus] =
@@ -60,7 +67,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
 
     const selectedChangesStream = getSelectedChangesStream(registry)
 
-    const getIsSelectedStream = (value: T) =>
+    const getIsSelectedStream = (value: TParamButton) =>
       selectedChangesStream.pipe(
         Stream.map(Equal.equals(toCompareValue(value))),
         Stream.changes,
@@ -72,7 +79,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         ),
       )
 
-    const getPressabilityChangesStream = (value: T) =>
+    const getPressabilityChangesStream = (value: TParamButton) =>
       streamAll({
         isPlaying: appPlaybackState.latestIsPlayingFlagStream,
         completionStatusOfTheAssetThisButtonWouldSelect:
@@ -92,7 +99,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         Stream.rechunk(1),
       )
 
-    const isCurrentlyPlaying = (value: T) =>
+    const isCurrentlyPlaying = (value: TParamButton) =>
       appPlaybackState.playbackPublicInfoChangesStream.pipe(
         Stream.map(
           pb =>
@@ -105,7 +112,7 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         ),
       )
 
-    const getDownloadPercent = (value: T) =>
+    const getDownloadPercent = (value: TParamButton) =>
       currentlySelectedAssetState
         .getPatchedAssetFetchingCompletionStatusChangesStream(value)
         .pipe(
@@ -124,8 +131,8 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
         )
 
     const validPressesOnlyStream = yield* bus.pressesOnlyStream.pipe(
-      // Do we need { switch: true, concurrency: 1 } in flatMap? Seems not,
-      // because inner stream is short-lived and emits only 1 value
+      // Do we need { switch: true, concurrency: 1 } in flatMap? Seems like we
+      // don't, because inner stream is short-lived and emits only 1 value
       Stream.flatMap(buttonAssignedAt =>
         EFunction.pipe(
           getPressabilityChangesStream(buttonAssignedAt),
@@ -152,15 +159,16 @@ const makeUIButtonEntityService = <T extends Patch, S, Reg>({
       getPressabilityChangesStream,
       isCurrentlyPlaying,
       getDownloadPercent,
-      isPressedFlagChangesStream: (value: T) => bus.isPressedStream(value),
+      isPressedFlagChangesStream: (value: TParamButton) =>
+        bus.isPressedStream(value),
     }
   })
 
-export class AccordUIButtonService extends Effect.Service<AccordUIButtonService>()(
-  'next-midi-demo/AccordUIButtonService',
+export class AccordParamButtonService extends Effect.Service<AccordParamButtonService>()(
+  'next-midi-demo/AccordParamButtonService',
   {
     accessors: true,
-    scoped: makeUIButtonEntityService({
+    scoped: makeParamButtonService({
       registryTag: AccordRegistry,
       busTag: AccordInputBus,
       getSelectedChangesStream: reg => reg.selectedAccordChanges,
@@ -173,11 +181,11 @@ export class AccordUIButtonService extends Effect.Service<AccordUIButtonService>
   },
 ) {}
 
-export class PatternUIButtonService extends Effect.Service<PatternUIButtonService>()(
-  'next-midi-demo/PatternUIButtonService',
+export class PatternParamButtonService extends Effect.Service<PatternParamButtonService>()(
+  'next-midi-demo/PatternParamButtonService',
   {
     accessors: true,
-    scoped: makeUIButtonEntityService({
+    scoped: makeParamButtonService({
       registryTag: PatternRegistry,
       busTag: PatternInputBus,
       getSelectedChangesStream: reg => reg.selectedPatternChanges,
@@ -190,11 +198,11 @@ export class PatternUIButtonService extends Effect.Service<PatternUIButtonServic
   },
 ) {}
 
-export class StrengthUIButtonService extends Effect.Service<StrengthUIButtonService>()(
-  'next-midi-demo/StrengthUIButtonService',
+export class StrengthParamButtonService extends Effect.Service<StrengthParamButtonService>()(
+  'next-midi-demo/StrengthParamButtonService',
   {
     accessors: true,
-    scoped: makeUIButtonEntityService({
+    scoped: makeParamButtonService({
       registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
       getSelectedChangesStream: reg => reg.selectedStrengthChanges,
