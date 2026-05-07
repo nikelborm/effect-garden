@@ -69,32 +69,23 @@ export const makeVirtualButtonTouchStateStream = <
         ]
       }
 
-      const oldElementOption = HashMap.get(oldMap, pointerId)
+      // Realistically pointerId guaranteed to be in oldMap. We can't expect
+      // finger to release or move away from something it haven't been touching
+      // in the first place. We don't crash, just ignore
+      const oldElement = getValueOrOther(HashMap.get(oldMap, pointerId))
       const mapWithoutCurrentPointerId = HashMap.remove(oldMap, pointerId)
 
       if (type === 'pointerup' || type === 'pointercancel')
         return [
           mapWithoutCurrentPointerId,
-          // Realistically oldElementOption === None should never happen. We
-          // can't expect finger to release something it haven't been touching
-          // in the first place. We don't crash, just ignore
-          Option.match(oldElementOption, {
-            onNone: () => Stream.empty,
-            onSome: oldElement =>
-              makeStreamWithElementIfMapDidntHaveIt(
-                mapWithoutCurrentPointerId,
-                oldElement,
-                NotPressed,
-              ),
-          }),
+          makeStreamWithElementIfMapDidntHaveIt(
+            mapWithoutCurrentPointerId,
+            oldElement,
+            NotPressed,
+          ),
         ]
 
       // type === 'pointermove'...
-
-      // Realistically oldElementOption === None should never happen. We can't
-      // expect finger to move out of nowhere without ever touching screen
-      // first. If that happens, we consider it came from irrelevant zone
-      const oldElement = getValueOrOther(oldElementOption)
 
       const latestElement = EFunction.pipe(
         document.elementFromPoint(clientX, clientY),
