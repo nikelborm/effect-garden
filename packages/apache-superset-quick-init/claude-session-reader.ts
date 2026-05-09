@@ -22,35 +22,32 @@ const CommonShitStructFields = {
   gitBranch: Schema.NonEmptyTrimmedString,
 }
 
-const Usage = Schema.Struct({
+const usageCommon = {
   input_tokens: Schema.NonNegativeInt,
-  cache_creation_input_tokens: Schema.NonNegativeInt,
-  cache_read_input_tokens: Schema.NonNegativeInt,
   output_tokens: Schema.NonNegativeInt,
-  server_tool_use: Schema.Struct({
-    web_search_requests: Schema.NonNegativeInt,
-    web_fetch_requests: Schema.NonNegativeInt,
-  }),
+  cache_read_input_tokens: Schema.NonNegativeInt,
+  cache_creation_input_tokens: Schema.NonNegativeInt,
   cache_creation: Schema.Struct({
     ephemeral_1h_input_tokens: Schema.NonNegativeInt,
     ephemeral_5m_input_tokens: Schema.NonNegativeInt,
   }),
+}
+
+const MessageIteration = Schema.Struct({
+  type: Schema.Literal('message'),
+  ...usageCommon,
+}).annotations({ title: 'MessageIteration' })
+
+const Usage = Schema.Struct({
+  server_tool_use: Schema.Struct({
+    web_search_requests: Schema.NonNegativeInt,
+    web_fetch_requests: Schema.NonNegativeInt,
+  }),
   inference_geo: Schema.String,
-  iterations: Schema.Array(
-    Schema.Struct({
-      type: Schema.Literal('message'),
-      input_tokens: Schema.NonNegativeInt,
-      output_tokens: Schema.NonNegativeInt,
-      cache_read_input_tokens: Schema.NonNegativeInt,
-      cache_creation_input_tokens: Schema.NonNegativeInt,
-      cache_creation: Schema.Struct({
-        ephemeral_1h_input_tokens: Schema.NonNegativeInt,
-        ephemeral_5m_input_tokens: Schema.NonNegativeInt,
-      }),
-    }),
-  ),
+  iterations: Schema.Array(MessageIteration),
   service_tier: Schema.Literal('standard'),
   speed: Schema.Literal('standard'),
+  ...usageCommon,
 }).annotations({ title: 'Usage' })
 
 const TextContent = Schema.Struct({
@@ -66,12 +63,20 @@ const ToolReference = Schema.Struct({
 const ToolResultContent = Schema.Struct({
   type: Schema.Literal('tool_result'),
   tool_use_id: Schema.NonEmptyTrimmedString,
-  is_error: Schema.optionalWith(Schema.Literal(true), { exact: true }),
-  content: Schema.Union(
-    Schema.NonEmptyString,
-    Schema.Array(Schema.Union(TextContent, ToolReference)),
+}).pipe(
+  Schema.extend(
+    Schema.Union(
+      Schema.Struct({
+        content: Schema.NonEmptyString,
+        is_error: Schema.optionalWith(Schema.Boolean, { exact: true }),
+      }),
+      Schema.Struct({
+        content: Schema.Array(Schema.Union(TextContent, ToolReference)),
+      }),
+    ),
   ),
-}).annotations({ title: 'ToolResultContent' })
+  Schema.annotations({ title: 'ToolResultContent' }),
+)
 
 const AiTitleMessage = Schema.Struct({
   type: Schema.Literal('ai-title'),
@@ -112,6 +117,47 @@ const WriteToolUseContent = Schema.Struct({
   caller: DirectCaller,
 }).annotations({ title: 'WriteToolUseContent' })
 
+const ReadToolUseContent = Schema.Struct({
+  type: Schema.Literal('tool_use'),
+  id: Schema.NonEmptyTrimmedString,
+  name: Schema.Literal('Read'),
+  input: Schema.Struct({
+    file_path: Schema.NonEmptyTrimmedString,
+    limit: Schema.NonNegativeInt,
+    offset: Schema.optionalWith(Schema.NonNegativeInt, { exact: true }),
+  }),
+  caller: DirectCaller,
+}).annotations({ title: 'ReadToolUseContent' })
+
+const StructuredPatch = Schema.Struct({
+  oldStart: Schema.NonNegativeInt,
+  oldLines: Schema.NonNegativeInt,
+  newStart: Schema.NonNegativeInt,
+  newLines: Schema.NonNegativeInt,
+  lines: Schema.NonEmptyArray(Schema.NonEmptyString),
+}).annotations({ title: 'StructuredPatch' })
+
+const EditToolUseResult = Schema.Struct({
+  filePath: Schema.NonEmptyTrimmedString,
+  oldString: Schema.NonEmptyString,
+  newString: Schema.NonEmptyString,
+  originalFile: Schema.NullOr(Schema.NonEmptyString),
+  structuredPatch: Schema.Array(StructuredPatch),
+  userModified: Schema.Boolean,
+  replaceAll: Schema.Boolean,
+}).annotations({ title: 'EditToolUseResult' })
+
+const ReadToolUseResult = Schema.Struct({
+  type: Schema.Literal('text'),
+  file: Schema.Struct({
+    filePath: Schema.NonEmptyTrimmedString,
+    content: Schema.NonEmptyString,
+    numLines: Schema.NonNegativeInt,
+    startLine: Schema.NonNegativeInt,
+    totalLines: Schema.NonNegativeInt,
+  }),
+}).annotations({ title: 'ReadToolUseResult' })
+
 const EditToolUseContent = Schema.Struct({
   type: Schema.Literal('tool_use'),
   id: Schema.NonEmptyTrimmedString,
@@ -132,9 +178,18 @@ const BashToolUseContent = Schema.Struct({
   input: Schema.Struct({
     command: Schema.NonEmptyTrimmedString,
     description: Schema.NonEmptyTrimmedString,
+    timeout: Schema.optionalWith(Schema.NonNegativeInt, { exact: true }),
   }),
   caller: DirectCaller,
 }).annotations({ title: 'BashToolUseContent' })
+
+const BashToolUseResult = Schema.Struct({
+  stdout: Schema.String,
+  stderr: Schema.String,
+  interrupted: Schema.Boolean,
+  isImage: Schema.Boolean,
+  noOutputExpected: Schema.Boolean,
+}).annotations({ title: 'BashToolUseResult' })
 
 const ToolSearchToolUseContent = Schema.Struct({
   type: Schema.Literal('tool_use'),
@@ -169,6 +224,7 @@ const AssistantMessageContent = Schema.Union(
   TextContent,
   AgentToolUseContent,
   WriteToolUseContent,
+  ReadToolUseContent,
   EditToolUseContent,
   BashToolUseContent,
   ExitPlanModeToolUseContent,
@@ -185,7 +241,7 @@ const AssistantMessage = Schema.Struct({
     id: Schema.NonEmptyTrimmedString,
     model: Schema.NonEmptyTrimmedString,
     role: Schema.Literal('assistant'),
-    stop_reason: Schema.Literal('tool_use'),
+    stop_reason: Schema.Literal('tool_use', 'end_turn'),
     stop_sequence: Schema.Null,
     stop_details: Schema.Null,
     usage: Usage,
@@ -213,11 +269,11 @@ const FileHistorySnapshotMessage = Schema.Struct({
   isSnapshotUpdate: Schema.Boolean,
 }).annotations({ title: 'FileHistorySnapshotMessage' })
 
-const ToolSearchUseResultContent = Schema.Struct({
+const ToolSearchToolUseResult = Schema.Struct({
   matches: Schema.Tuple(Schema.Literal('ExitPlanMode')),
   query: Schema.NonEmptyTrimmedString,
   total_deferred_tools: Schema.NonNegativeInt,
-}).annotations({ title: 'ToolSearchUseResultContent' })
+}).annotations({ title: 'ToolSearchToolUseResult' })
 
 const AgentToolUseResult = Schema.Struct({
   status: Schema.Literal('completed'),
@@ -258,7 +314,10 @@ const PlanToolUseResult = Schema.Struct({
 const ToolUseResult = Schema.Union(
   AgentToolUseResult,
   CreateToolUseResult,
-  ToolSearchUseResultContent,
+  ToolSearchToolUseResult,
+  BashToolUseResult,
+  EditToolUseResult,
+  ReadToolUseResult,
   PlanToolUseResult,
 ).annotations({ title: 'ToolUseResult' })
 
@@ -329,10 +388,17 @@ const TaskReminderAttachment = Schema.Struct({
   itemCount: Schema.NonNegativeInt,
 }).annotations({ title: 'TaskReminderAttachment' })
 
+const EditedTextFileAttachment = Schema.Struct({
+  type: Schema.Literal('edited_text_file'),
+  filename: Schema.NonEmptyTrimmedString,
+  snippet: Schema.NonEmptyTrimmedString,
+}).annotations({ title: 'EditedTextFileAttachment' })
+
 const Attachment = Schema.Union(
   DefferedToolUseDeltaAttachment,
   TaskReminderAttachment,
   SkillListingAttachment,
+  EditedTextFileAttachment,
   PlanModeExitAttachment,
   McpInstructionsDeltaAttachment,
   PlanModeAttachment,
@@ -396,7 +462,7 @@ await Effect.gen(function* () {
         Effect.all([
           Console.log(`Failed at ${index}/${parsed.length}`),
           // Console.log(element.message.content[0]),
-          Console.log(element.toolUseResult),
+          Console.dir(element, { colors: true, compact: false, depth: null }),
           // Console.log(element),
           Console.log(error.message),
           // Console.log(ParseResult.ArrayFormatter.formatErrorSync(error)),
