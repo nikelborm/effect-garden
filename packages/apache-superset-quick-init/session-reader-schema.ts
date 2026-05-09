@@ -13,9 +13,12 @@ import {
   optionalWith,
   Array as SArray,
   Boolean as SBoolean,
+  type Schema,
   String as SString,
+  StringFromBase64,
   Struct,
   Tuple,
+  transform,
   Union,
   UUID,
 } from 'effect/Schema'
@@ -73,10 +76,7 @@ export const DumbAssistantMessage = Struct({
     speed: Null,
   }),
   content: Tuple(
-    Struct({
-      type: Literal('text'),
-      text: Literal('No response requested.'),
-    }),
+    Struct({ type: Literal('text'), text: Literal('No response requested.') }),
   ),
   context_management: Null,
 }).annotations({ title: 'DumbAssistantMessage' })
@@ -118,9 +118,7 @@ export const ToolResultContent = Struct({
         content: NonEmptyString,
         is_error: optionalWith(SBoolean, { exact: true }),
       }),
-      Struct({
-        content: SArray(Union(TextContent, ToolReference)),
-      }),
+      Struct({ content: SArray(Union(TextContent, ToolReference)) }),
     ),
   ),
   annotations({ title: 'ToolResultContent' }),
@@ -135,12 +133,12 @@ export const AiTitleMessage = Struct({
 export const ThinkingContent = Struct({
   type: Literal('thinking'),
   thinking: SString,
-  signature: NonEmptyTrimmedString,
+  signature: StringFromBase64,
 }).annotations({ title: 'ThinkingContent' })
 
-export const DirectCaller = Struct({
-  type: Literal('direct'),
-}).annotations({ title: 'DirectCaller' })
+export const DirectCaller = Struct({ type: Literal('direct') }).annotations({
+  title: 'DirectCaller',
+})
 
 export const AgentToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -158,10 +156,7 @@ export const WriteToolUseContent = Struct({
   type: Literal('tool_use'),
   id: NonEmptyTrimmedString,
   name: Literal('Write'),
-  input: Struct({
-    file_path: NonEmptyTrimmedString,
-    content: NonEmptyString,
-  }),
+  input: Struct({ file_path: NonEmptyTrimmedString, content: NonEmptyString }),
   caller: DirectCaller,
 }).annotations({ title: 'WriteToolUseContent' })
 
@@ -248,10 +243,7 @@ export const ToolSearchToolUseContent = Struct({
   type: Literal('tool_use'),
   id: NonEmptyTrimmedString,
   name: Literal('ToolSearch'),
-  input: Struct({
-    query: NonEmptyTrimmedString,
-    max_results: NonNegativeInt,
-  }),
+  input: Struct({ query: NonEmptyTrimmedString, max_results: NonNegativeInt }),
   caller: DirectCaller,
 }).annotations({ title: 'ToolSearchToolUseContent' })
 
@@ -262,10 +254,7 @@ export const ExitPlanModeToolUseContent = Struct({
   input: Struct({
     plan: NonEmptyString,
     allowedPrompts: SArray(
-      Struct({
-        tool: Literal('Bash'),
-        prompt: NonEmptyTrimmedString,
-      }),
+      Struct({ tool: Literal('Bash'), prompt: NonEmptyTrimmedString }),
     ),
     planFilePath: NonEmptyTrimmedString,
   }),
@@ -300,15 +289,14 @@ export const AssistantMessage = Struct({
       stop_details: Null,
       usage: Usage,
       content: SArray(AssistantMessageContent),
-    }),
+    }).annotations({ title: 'UsualAssistantMessage' }),
   ),
-
   ...CommonShitStructFields,
 }).annotations({ title: 'AssistantMessage' })
 
 export const PermissionModeMessage = Struct({
   type: Literal('permission-mode'),
-  permissionMode: Literal('plan', 'acceptEdits'),
+  permissionMode: Literal('plan', 'acceptEdits', 'default'),
   sessionId: UUID,
 }).annotations({ title: 'PermissionModeMessage' })
 
@@ -472,6 +460,11 @@ export const SystemMessage = Struct({
         subtype: Literal('away_summary'),
         content: NonEmptyTrimmedString,
       }),
+      Struct({
+        subtype: Literal('local_command'),
+        content: NonEmptyTrimmedString,
+        level: Literal('info'),
+      }),
     ),
   ),
   annotations({ title: 'SystemMessage' }),
@@ -495,6 +488,8 @@ export const decodeClaudeSessionLine = decodeUnknownEither(
   ClaudeSessionMessage,
   { onExcessProperty: 'error' },
 )
+
+export type ClaudeSession = Schema.Type<typeof ClaudeSessionSchema>
 
 export const decodeClaudeSession = decodeUnknownEither(ClaudeSessionSchema, {
   onExcessProperty: 'error',

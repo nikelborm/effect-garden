@@ -5,14 +5,16 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Logger from 'effect/Logger'
 
-import { decodeClaudeSessionLine } from './session-reader-schema.ts'
+import {
+  type AssistantMessage,
+  decodeClaudeSession,
+  decodeClaudeSessionLine,
+} from './session-reader-schema.ts'
 
 const sessionPath =
   '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
 
 declare const Bun: any
-
-const walk = (asd: any): any => {}
 
 await Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
@@ -25,16 +27,26 @@ await Effect.gen(function* () {
       Effect.tapError(decodeClaudeSessionLine(element), error =>
         Effect.all([
           Console.log(`Failed at ${index}/${parsed.length}`),
-          // Console.log(element.message.content[0]),
           Console.dir(element, { colors: true, compact: false, depth: null }),
-          // Console.log(element),
           Console.log(error.message),
-          // Console.log(ParseResult.ArrayFormatter.formatErrorSync(error)),
         ]),
       ),
     ),
     Effect.andThen(Effect.log('Success 🎉')),
     Effect.ignore,
+  )
+  const validated = yield* decodeClaudeSession(parsed)
+
+  yield* Console.log(
+    validated
+      .filter(
+        (e): e is (typeof AssistantMessage)['Type'] => e.type === 'assistant',
+      )
+      .flatMap(e => e.message.content)
+      .filter(e => e.type === 'tool_use' && e.name === 'Bash')
+      .map(e => e.input)
+      .map(e => `$ ${e.command}\n  ${e.description}\n`)
+      .join('\n'),
   )
 }).pipe(
   Effect.provide(NodeContext.layer),
