@@ -10,6 +10,7 @@
     "@linaria/stylelint-config-standard-linaria": "^7.0.0",
     "@nikelborm/apache-superset-quick-init": "workspace:*",
     "@nikelborm/backend-config": "workspace:*",
+    "vscode-json-schemas-offline": "workspace:*",
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/effect-landscape": "workspace:*",

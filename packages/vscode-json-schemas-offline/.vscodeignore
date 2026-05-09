@@ -1,0 +1,12 @@
+schemastore/**
+scripts/**
+src/**
+node_modules/**
+tsconfig.json
+tsconfig.scripts.json
+.gitignore
+.eslintrc*
+*.map
+bun.lock
+bun.lockb
+.claude/**
