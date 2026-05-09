@@ -18,7 +18,6 @@ import {
   StringFromBase64,
   Struct,
   Tuple,
-  transform,
   Union,
   UUID,
 } from 'effect/Schema'
