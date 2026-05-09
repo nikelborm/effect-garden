@@ -20,6 +20,10 @@ const CommonShitStructFields = {
   sessionId: Schema.UUID,
   version: Schema.NonEmptyTrimmedString,
   gitBranch: Schema.NonEmptyTrimmedString,
+  parentUuid: Schema.NullOr(Schema.UUID),
+  isSidechain: Schema.Boolean,
+  isMeta: Schema.optionalWith(Schema.Boolean, { exact: true }),
+  slug: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
 }
 
 const usageCommon = {
@@ -32,6 +36,41 @@ const usageCommon = {
     ephemeral_5m_input_tokens: Schema.NonNegativeInt,
   }),
 }
+
+const DumbAssistantMessage = Schema.Struct({
+  id: Schema.UUID,
+  container: Schema.Null,
+  model: Schema.Literal('<synthetic>'),
+  role: Schema.Literal('assistant'),
+  stop_reason: Schema.Literal('stop_sequence'),
+  stop_sequence: Schema.Literal(''),
+  type: Schema.Literal('message'),
+  usage: Schema.Struct({
+    input_tokens: Schema.Literal(0),
+    output_tokens: Schema.Literal(0),
+    cache_creation_input_tokens: Schema.Literal(0),
+    cache_read_input_tokens: Schema.Literal(0),
+    server_tool_use: Schema.Struct({
+      web_search_requests: Schema.Literal(0),
+      web_fetch_requests: Schema.Literal(0),
+    }),
+    service_tier: Schema.Null,
+    cache_creation: Schema.Struct({
+      ephemeral_1h_input_tokens: Schema.Literal(0),
+      ephemeral_5m_input_tokens: Schema.Literal(0),
+    }),
+    inference_geo: Schema.Null,
+    iterations: Schema.Null,
+    speed: Schema.Null,
+  }),
+  content: Schema.Tuple(
+    Schema.Struct({
+      type: Schema.Literal('text'),
+      text: Schema.Literal('No response requested.'),
+    }),
+  ),
+  context_management: Schema.Null,
+}).annotations({ title: 'DumbAssistantMessage' })
 
 const MessageIteration = Schema.Struct({
   type: Schema.Literal('message'),
@@ -123,7 +162,7 @@ const ReadToolUseContent = Schema.Struct({
   name: Schema.Literal('Read'),
   input: Schema.Struct({
     file_path: Schema.NonEmptyTrimmedString,
-    limit: Schema.NonNegativeInt,
+    limit: Schema.optionalWith(Schema.NonNegativeInt, { exact: true }),
     offset: Schema.optionalWith(Schema.NonNegativeInt, { exact: true }),
   }),
   caller: DirectCaller,
@@ -138,13 +177,17 @@ const StructuredPatch = Schema.Struct({
 }).annotations({ title: 'StructuredPatch' })
 
 const EditToolUseResult = Schema.Struct({
+  type: Schema.optionalWith(Schema.Literal('create', 'update'), {
+    exact: true,
+  }),
   filePath: Schema.NonEmptyTrimmedString,
-  oldString: Schema.NonEmptyString,
-  newString: Schema.NonEmptyString,
+  content: Schema.optionalWith(Schema.NonEmptyString, { exact: true }),
+  oldString: Schema.optionalWith(Schema.NonEmptyString, { exact: true }),
+  newString: Schema.optionalWith(Schema.NonEmptyString, { exact: true }),
   originalFile: Schema.NullOr(Schema.NonEmptyString),
   structuredPatch: Schema.Array(StructuredPatch),
   userModified: Schema.Boolean,
-  replaceAll: Schema.Boolean,
+  replaceAll: Schema.optionalWith(Schema.Boolean, { exact: true }),
 }).annotations({ title: 'EditToolUseResult' })
 
 const ReadToolUseResult = Schema.Struct({
@@ -188,6 +231,9 @@ const BashToolUseResult = Schema.Struct({
   stderr: Schema.String,
   interrupted: Schema.Boolean,
   isImage: Schema.Boolean,
+  returnCodeInterpretation: Schema.optionalWith(Schema.NonEmptyTrimmedString, {
+    exact: true,
+  }),
   noOutputExpected: Schema.Boolean,
 }).annotations({ title: 'BashToolUseResult' })
 
@@ -233,22 +279,23 @@ const AssistantMessageContent = Schema.Union(
 
 const AssistantMessage = Schema.Struct({
   type: Schema.Literal('assistant'),
-  requestId: Schema.NonEmptyTrimmedString,
-  parentUuid: Schema.UUID,
-  isSidechain: Schema.Boolean,
-  message: Schema.Struct({
-    type: Schema.Literal('message'),
-    id: Schema.NonEmptyTrimmedString,
-    model: Schema.NonEmptyTrimmedString,
-    role: Schema.Literal('assistant'),
-    stop_reason: Schema.Literal('tool_use', 'end_turn'),
-    stop_sequence: Schema.Null,
-    stop_details: Schema.Null,
-    usage: Usage,
-    content: Schema.Array(AssistantMessageContent),
-  }),
+  requestId: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
+  isApiErrorMessage: Schema.optionalWith(Schema.Boolean, { exact: true }),
+  message: Schema.Union(
+    DumbAssistantMessage,
+    Schema.Struct({
+      type: Schema.Literal('message'),
+      id: Schema.NonEmptyTrimmedString,
+      model: Schema.NonEmptyTrimmedString,
+      role: Schema.Literal('assistant'),
+      stop_reason: Schema.Literal('tool_use', 'end_turn'),
+      stop_sequence: Schema.Null,
+      stop_details: Schema.Null,
+      usage: Usage,
+      content: Schema.Array(AssistantMessageContent),
+    }),
+  ),
 
-  slug: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
   ...CommonShitStructFields,
 }).annotations({ title: 'AssistantMessage' })
 
@@ -296,15 +343,6 @@ const AgentToolUseResult = Schema.Struct({
   }),
 }).annotations({ title: 'AgentToolUseResult' })
 
-const CreateToolUseResult = Schema.Struct({
-  type: Schema.Literal('create'),
-  filePath: Schema.NonEmptyTrimmedString,
-  content: Schema.NonEmptyString,
-  originalFile: Schema.Null,
-  userModified: Schema.Boolean,
-  structuredPatch: Schema.Array(Schema.Struct({})),
-}).annotations({ title: 'CreateToolUseResult' })
-
 const PlanToolUseResult = Schema.Struct({
   isAgent: Schema.Boolean,
   filePath: Schema.NonEmptyTrimmedString,
@@ -313,7 +351,6 @@ const PlanToolUseResult = Schema.Struct({
 
 const ToolUseResult = Schema.Union(
   AgentToolUseResult,
-  CreateToolUseResult,
   ToolSearchToolUseResult,
   BashToolUseResult,
   EditToolUseResult,
@@ -323,8 +360,6 @@ const ToolUseResult = Schema.Union(
 
 const UserMessage = Schema.Struct({
   type: Schema.Literal('user'),
-  parentUuid: Schema.NullOr(Schema.UUID),
-  isSidechain: Schema.Boolean,
   promptId: Schema.UUID,
   message: Schema.Struct({
     role: Schema.Literal('user'),
@@ -338,11 +373,9 @@ const UserMessage = Schema.Struct({
     Schema.Union(ToolUseResult, Schema.NonEmptyTrimmedString),
     { exact: true },
   ),
-  permissionMode: Schema.optionalWith(Schema.Literal('plan'), {
+  permissionMode: Schema.optionalWith(Schema.Literal('plan', 'acceptEdits'), {
     exact: true,
   }),
-  slug: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
-  isMeta: Schema.optionalWith(Schema.Boolean, { exact: true }),
   ...CommonShitStructFields,
 }).annotations({ title: 'UserMessage' })
 
@@ -406,16 +439,15 @@ const Attachment = Schema.Union(
 
 const AttachmentMessage = Schema.Struct({
   type: Schema.Literal('attachment'),
-  parentUuid: Schema.UUID,
-  isSidechain: Schema.Boolean,
-  slug: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
   attachment: Attachment,
   ...CommonShitStructFields,
 }).annotations({ title: 'AttachmentMessage' })
 
 const LastPromptMessage = Schema.Struct({
   type: Schema.Literal('last-prompt'),
-  lastPrompt: Schema.NonEmptyTrimmedString,
+  lastPrompt: Schema.optionalWith(Schema.NonEmptyTrimmedString, {
+    exact: true,
+  }),
   leafUuid: Schema.UUID,
   sessionId: Schema.UUID,
 }).annotations({ title: 'LastPromptMessage' })
@@ -426,10 +458,31 @@ const AgentNameMessage = Schema.Struct({
   sessionId: Schema.UUID,
 }).annotations({ title: 'AgentNameMessage' })
 
+const SystemMessage = Schema.Struct({
+  type: Schema.Literal('system'),
+  ...CommonShitStructFields,
+}).pipe(
+  Schema.extend(
+    Schema.Union(
+      Schema.Struct({
+        subtype: Schema.Literal('turn_duration'),
+        durationMs: Schema.NonNegativeInt,
+        messageCount: Schema.NonNegativeInt,
+      }),
+      Schema.Struct({
+        subtype: Schema.Literal('away_summary'),
+        content: Schema.NonEmptyTrimmedString,
+      }),
+    ),
+  ),
+  Schema.annotations({ title: 'SystemMessage' }),
+)
+
 const ClaudeSessionMessage = Schema.Union(
   PermissionModeMessage,
   FileHistorySnapshotMessage,
   UserMessage,
+  SystemMessage,
   AgentNameMessage,
   AttachmentMessage,
   AiTitleMessage,
