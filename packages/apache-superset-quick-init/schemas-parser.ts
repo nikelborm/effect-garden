@@ -235,25 +235,27 @@ Effect.gen(function* () {
   )
 }).pipe(
   Effect.catchTag('ParseError', error => {
-    const raised = raise(error.issue)
-    console.log(raised.actual)
-    return Console.log(ParseResult.TreeFormatter.formatIssueSync(raised))
+    const unfolded = unfoldUntilBranch(error.issue)
+    console.log(unfolded.actual)
+    return Console.log(ParseResult.TreeFormatter.formatIssueSync(unfolded))
   }),
   Effect.provide(AppLayer),
   NodeRuntime.runMain,
 )
 
-const raise = (issue: ParseResult.ParseIssue): ParseResult.ParseIssue =>
+const unfoldUntilBranch = (
+  issue: ParseResult.ParseIssue,
+): ParseResult.ParseIssue =>
   issue._tag === 'Composite'
     ? EArray.isArray(issue.issues) &&
       EArray.isNonEmptyReadonlyArray(issue.issues)
       ? issue.issues.length > 1
         ? issue
-        : raise(issue.issues[0])
-      : raise(issue.issues as ParseResult.ParseIssue)
+        : unfoldUntilBranch(issue.issues[0])
+      : unfoldUntilBranch(issue.issues as ParseResult.ParseIssue)
     : issue._tag === 'Unexpected' ||
         issue._tag === 'Type' ||
         issue._tag === 'Missing' ||
         issue._tag === 'Forbidden'
       ? issue
-      : raise(issue.issue)
+      : unfoldUntilBranch(issue.issue)
