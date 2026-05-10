@@ -41,6 +41,8 @@ const FineURLFromString = Schema.URL.pipe(
 
 declare const Bun: any
 
+// TODO: Maybe it's time to shine for my git-dl?
+
 const parseJsonOrYaml = Schema.transformOrFail(
   Schema.String.annotations({
     description: 'a string to be decoded from JSON/YAML',
@@ -144,6 +146,7 @@ const CatalogEntry = Schema.Struct({
           (host === 'raw.githubusercontent.com' &&
             pathname.startsWith(dumbPrefix))
 
+        // TODO: reorder domain names by `.`, when the time will cum
         const localSchemstoreSchemaFile = path.join(
           base,
           'schemas',
@@ -155,8 +158,8 @@ const CatalogEntry = Schema.Struct({
                 .replace(/^schemastore.org$/, 'www.schemastore.org'),
               pathname
                 // TODO: PR to fix the `s` typo in upstream schemastore repo
-                // TODO: Report this dumbass: github.com/DannyBen/completely/blob/master/schemas/completely.json, who put html page link there
-                // TODO: also report Angular and other motherfuckers who don't expose their relative import URLs
+                // TODO: Report this dumbass: github.com/DannyBen/completely/blob/master/schemas/completely.json, why the fuck did he put html page link there??
+                // TODO: also report Angular and other motherfuckers who don't expose their relative import URLs (or that's just me who didn't resolve the schema links recursively?...)
                 .replace('winutil-preset.json', 'winutil-presets.json')
                 .replace(dumbPrefix, ''),
             ]),
