@@ -236,8 +236,10 @@ Effect.gen(function* () {
 }).pipe(
   Effect.catchTag('ParseError', error => {
     const unfolded = unfoldUntilBranch(error.issue)
-    console.log(unfolded.actual)
-    return Console.log(ParseResult.TreeFormatter.formatIssueSync(unfolded))
+    return Console.log(
+      unfolded.actual,
+      ParseResult.TreeFormatter.formatIssueSync(unfolded),
+    )
   }),
   Effect.provide(AppLayer),
   NodeRuntime.runMain,
