@@ -8,7 +8,7 @@ import { flow } from 'effect/Function'
 
 import { allWithInheritedConcurrencyByDefault } from './allWithInheritedConcurrency.ts'
 import { createPipRequirementsConfig } from './createPipRequirementsConfig.ts'
-import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndNewNetworkToIt.ts'
+import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndAddNewNetworkToIt.ts'
 import { repo } from './repo.ts'
 import { updateEnvFile } from './updateEnvFile.ts'
 import { updateJwtSecretInSupersetWebsocketConfig } from './updateJwtSecretInSupersetWebsocketConfig.ts'
@@ -26,9 +26,7 @@ export const createApacheSupersetFolder: (config: {
   }) {
     const [fs, path] = yield* all([FileSystem, Path])
 
-    yield* fs.makeDirectory(destinationPath, {
-      recursive: true,
-    })
+    yield* fs.makeDirectory(destinationPath, { recursive: true })
 
     const downloadDockerFolder = downloadEntityFromRepo({
       pathToEntityInRepo: 'docker',

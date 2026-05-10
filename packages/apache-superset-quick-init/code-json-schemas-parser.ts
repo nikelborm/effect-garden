@@ -83,7 +83,7 @@ const parseJsonOrYaml = Schema.transformOrFail(
   },
 ).annotations({ title: 'parseJsonOrYaml' })
 
-// 2 dumb motherfuckers host YAML, although given how easier it's to read for
+// 2 motherfuckers host YAML, although given how much easier it's to read for
 // human, they are actually smarter than everybody else
 const CachedFileSchema = Schema.compose(
   parseJsonOrYaml,

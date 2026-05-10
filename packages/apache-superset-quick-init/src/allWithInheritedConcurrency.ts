@@ -18,8 +18,4 @@ export const allWithInheritedConcurrencyByDefault = <
 >(
   arg: Arg,
   options?: O,
-) =>
-  all(arg, {
-    concurrency: 'inherit',
-    ...options,
-  })
+) => all(arg, { concurrency: 'inherit', ...options })
