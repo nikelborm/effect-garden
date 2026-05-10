@@ -4,7 +4,6 @@
     "allowUnusedLabels": true,
     "noUnusedParameters": false,
     "noUnusedLocals": false,
-
     "verbatimModuleSyntax": true,
     "preserveValueImports": false,
     "importHelpers": true,
@@ -13,7 +12,6 @@
     "disableSizeLimit": true,
     "stripInternal": false,
     "allowImportingTsExtensions": true,
-    "downlevelIteration": true,
     "resolvePackageJsonExports": true,
     "isolatedDeclarations": false,
     "noUncheckedSideEffectImports": true,
@@ -41,7 +39,11 @@
     "preserveWatchOutput": true,
     "allowUnreachableCode": false,
     "incremental": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "exactOptionalPropertyTypes": true,
     "allowJs": false,
     "noErrorTruncation": true,
