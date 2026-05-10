@@ -11,7 +11,7 @@ import {
   decodeClaudeSessionLine,
 } from './claude-session-reader-schema.ts'
 
-// Test recursively on other files there.
+// TODO: Test recursively on other .jsonl files in that folder.
 
 const sessionPath =
   '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
