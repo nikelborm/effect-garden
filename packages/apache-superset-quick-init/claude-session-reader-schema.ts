@@ -1,5 +1,7 @@
 import {
+  Array as Array$,
   annotations,
+  Boolean as Boolean$,
   DateFromString,
   decodeUnknownEither,
   extend,
@@ -11,10 +13,8 @@ import {
   Null,
   NullOr,
   optionalWith,
-  Array as SArray,
-  Boolean as SBoolean,
   type Schema,
-  String as SString,
+  String as String$,
   StringFromBase64,
   Struct,
   Tuple,
@@ -32,8 +32,8 @@ export const CommonShitStructFields = {
   version: NonEmptyTrimmedString,
   gitBranch: NonEmptyTrimmedString,
   parentUuid: NullOr(UUID),
-  isSidechain: SBoolean,
-  isMeta: optionalWith(SBoolean, { exact: true }),
+  isSidechain: Boolean$,
+  isMeta: optionalWith(Boolean$, { exact: true }),
   slug: optionalWith(NonEmptyTrimmedString, { exact: true }),
 }
 
@@ -90,8 +90,8 @@ export const Usage = Struct({
     web_search_requests: NonNegativeInt,
     web_fetch_requests: NonNegativeInt,
   }),
-  inference_geo: SString,
-  iterations: SArray(MessageIteration),
+  inference_geo: String$,
+  iterations: Array$(MessageIteration),
   service_tier: Literal('standard'),
   speed: Literal('standard'),
   ...usageCommon,
@@ -115,9 +115,9 @@ export const ToolResultContent = Struct({
     Union(
       Struct({
         content: NonEmptyString,
-        is_error: optionalWith(SBoolean, { exact: true }),
+        is_error: optionalWith(Boolean$, { exact: true }),
       }),
-      Struct({ content: SArray(Union(TextContent, ToolReference)) }),
+      Struct({ content: Array$(Union(TextContent, ToolReference)) }),
     ),
   ),
   annotations({ title: 'ToolResultContent' }),
@@ -131,7 +131,7 @@ export const AiTitleMessage = Struct({
 
 export const ThinkingContent = Struct({
   type: Literal('thinking'),
-  thinking: SString,
+  thinking: String$,
   signature: StringFromBase64,
 }).annotations({ title: 'ThinkingContent' })
 
@@ -186,9 +186,9 @@ export const EditToolUseResult = Struct({
   oldString: optionalWith(NonEmptyString, { exact: true }),
   newString: optionalWith(NonEmptyString, { exact: true }),
   originalFile: NullOr(NonEmptyString),
-  structuredPatch: SArray(StructuredPatch),
-  userModified: SBoolean,
-  replaceAll: optionalWith(SBoolean, { exact: true }),
+  structuredPatch: Array$(StructuredPatch),
+  userModified: Boolean$,
+  replaceAll: optionalWith(Boolean$, { exact: true }),
 }).annotations({ title: 'EditToolUseResult' })
 
 export const ReadToolUseResult = Struct({
@@ -207,7 +207,7 @@ export const EditToolUseContent = Struct({
   id: NonEmptyTrimmedString,
   name: Literal('Edit'),
   input: Struct({
-    replace_all: SBoolean,
+    replace_all: Boolean$,
     file_path: NonEmptyTrimmedString,
     old_string: NonEmptyString,
     new_string: NonEmptyString,
@@ -228,14 +228,14 @@ export const BashToolUseContent = Struct({
 }).annotations({ title: 'BashToolUseContent' })
 
 export const BashToolUseResult = Struct({
-  stdout: SString,
-  stderr: SString,
-  interrupted: SBoolean,
-  isImage: SBoolean,
+  stdout: String$,
+  stderr: String$,
+  interrupted: Boolean$,
+  isImage: Boolean$,
   returnCodeInterpretation: optionalWith(NonEmptyTrimmedString, {
     exact: true,
   }),
-  noOutputExpected: SBoolean,
+  noOutputExpected: Boolean$,
 }).annotations({ title: 'BashToolUseResult' })
 
 export const ToolSearchToolUseContent = Struct({
@@ -252,7 +252,7 @@ export const ExitPlanModeToolUseContent = Struct({
   name: Literal('ExitPlanMode'),
   input: Struct({
     plan: NonEmptyString,
-    allowedPrompts: SArray(
+    allowedPrompts: Array$(
       Struct({ tool: Literal('Bash'), prompt: NonEmptyTrimmedString }),
     ),
     planFilePath: NonEmptyTrimmedString,
@@ -275,7 +275,7 @@ export const AssistantMessageContent = Union(
 export const AssistantMessage = Struct({
   type: Literal('assistant'),
   requestId: optionalWith(NonEmptyTrimmedString, { exact: true }),
-  isApiErrorMessage: optionalWith(SBoolean, { exact: true }),
+  isApiErrorMessage: optionalWith(Boolean$, { exact: true }),
   message: Union(
     DumbAssistantMessage,
     Struct({
@@ -287,7 +287,7 @@ export const AssistantMessage = Struct({
       stop_sequence: Null,
       stop_details: Null,
       usage: Usage,
-      content: SArray(AssistantMessageContent),
+      content: Array$(AssistantMessageContent),
     }).annotations({ title: 'UsualAssistantMessage' }),
   ),
   ...CommonShitStructFields,
@@ -307,7 +307,7 @@ export const FileHistorySnapshotMessage = Struct({
     trackedFileBackups: Struct({}),
     timestamp: DateFromString,
   }),
-  isSnapshotUpdate: SBoolean,
+  isSnapshotUpdate: Boolean$,
 }).annotations({ title: 'FileHistorySnapshotMessage' })
 
 export const ToolSearchToolUseResult = Struct({
@@ -324,7 +324,7 @@ export const AgentToolUseResult = Struct({
   totalTokens: NonNegativeInt,
   totalToolUseCount: NonNegativeInt,
   agentType: Literal('Explore'),
-  content: SArray(TextContent),
+  content: Array$(TextContent),
   usage: Usage,
   toolStats: Struct({
     readCount: NonNegativeInt,
@@ -338,7 +338,7 @@ export const AgentToolUseResult = Struct({
 }).annotations({ title: 'AgentToolUseResult' })
 
 export const PlanToolUseResult = Struct({
-  isAgent: SBoolean,
+  isAgent: Boolean$,
   filePath: NonEmptyTrimmedString,
   plan: NonEmptyString,
 }).annotations({ title: 'PlanToolUseResult' })
@@ -357,7 +357,7 @@ export const UserMessage = Struct({
   promptId: UUID,
   message: Struct({
     role: Literal('user'),
-    content: Union(NonEmptyTrimmedString, SArray(ToolResultContent)),
+    content: Union(NonEmptyTrimmedString, Array$(ToolResultContent)),
   }),
   sourceToolAssistantUUID: optionalWith(UUID, { exact: true }),
   toolUseResult: optionalWith(Union(ToolUseResult, NonEmptyTrimmedString), {
@@ -369,43 +369,43 @@ export const UserMessage = Struct({
 
 export const DefferedToolUseDeltaAttachment = Struct({
   type: Literal('deferred_tools_delta'),
-  addedNames: SArray(NonEmptyTrimmedString),
-  addedLines: SArray(NonEmptyTrimmedString),
-  removedNames: SArray(NonEmptyTrimmedString),
-  readdedNames: SArray(NonEmptyTrimmedString),
+  addedNames: Array$(NonEmptyTrimmedString),
+  addedLines: Array$(NonEmptyTrimmedString),
+  removedNames: Array$(NonEmptyTrimmedString),
+  readdedNames: Array$(NonEmptyTrimmedString),
 }).annotations({ title: 'DefferedToolUseDeltaAttachment' })
 
 export const SkillListingAttachment = Struct({
   type: Literal('skill_listing'),
   content: NonEmptyTrimmedString,
   skillCount: NonNegativeInt,
-  isInitial: SBoolean,
+  isInitial: Boolean$,
 }).annotations({ title: 'SkillListingAttachment' })
 
 export const McpInstructionsDeltaAttachment = Struct({
   type: Literal('mcp_instructions_delta'),
-  addedNames: SArray(NonEmptyTrimmedString),
-  addedBlocks: SArray(NonEmptyTrimmedString),
-  removedNames: SArray(NonEmptyTrimmedString),
+  addedNames: Array$(NonEmptyTrimmedString),
+  addedBlocks: Array$(NonEmptyTrimmedString),
+  removedNames: Array$(NonEmptyTrimmedString),
 }).annotations({ title: 'McpInstructionsDeltaAttachment' })
 
 export const PlanModeAttachment = Struct({
   type: Literal('plan_mode'),
   reminderType: Literal('full'),
-  isSubAgent: SBoolean,
+  isSubAgent: Boolean$,
   planFilePath: NonEmptyTrimmedString,
-  planExists: SBoolean,
+  planExists: Boolean$,
 }).annotations({ title: 'PlanModeAttachment' })
 
 export const PlanModeExitAttachment = Struct({
   type: Literal('plan_mode_exit'),
   planFilePath: NonEmptyTrimmedString,
-  planExists: SBoolean,
+  planExists: Boolean$,
 }).annotations({ title: 'PlanModeExitAttachment' })
 
 export const TaskReminderAttachment = Struct({
   type: Literal('task_reminder'),
-  content: SArray(Struct({})),
+  content: Array$(Struct({})),
   itemCount: NonNegativeInt,
 }).annotations({ title: 'TaskReminderAttachment' })
 
@@ -481,7 +481,7 @@ export const ClaudeSessionMessage = Union(
   LastPromptMessage,
 ).annotations({ title: 'ClaudeSessionMessage' })
 
-export const ClaudeSessionSchema = SArray(ClaudeSessionMessage)
+export const ClaudeSessionSchema = Array$(ClaudeSessionMessage)
 
 export const decodeClaudeSessionLine = decodeUnknownEither(
   ClaudeSessionMessage,

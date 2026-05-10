@@ -9,7 +9,7 @@ import {
   type AssistantMessage,
   decodeClaudeSession,
   decodeClaudeSessionLine,
-} from './session-reader-schema.ts'
+} from './claude-session-reader-schema.ts'
 
 const sessionPath =
   '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
