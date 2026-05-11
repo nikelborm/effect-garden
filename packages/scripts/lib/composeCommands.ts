@@ -18,13 +18,12 @@ const groupsOfUser = (await $`id -nG ${USER}`.quiet()).text().trim().split(' ')
 
 export const composeCMD: string[] = []
 
-if (!groupsOfUser.includes('docker')) {
+if (!groupsOfUser.includes('docker'))
   if (groupsOfUser.includes('sudo')) composeCMD.push('sudo')
   else
     throw new Error(
       "I have no idea how am I supposed to run docker command if I'm neither in docker group nor in sudo group",
     )
-}
 
 const isComposeAvailableAsSubcommandOfDocker =
   (await $`docker compose`.nothrow().quiet()).exitCode === 0

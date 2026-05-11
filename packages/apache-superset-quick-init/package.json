@@ -40,7 +40,7 @@
     "rollup-plugin-visualizer": "catalog:",
     "tslib": "catalog:",
     "vitest": "catalog:",
-    "yaml": "^2.8.2"
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@effect/language-service": "catalog:",

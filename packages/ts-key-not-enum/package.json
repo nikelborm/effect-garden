@@ -26,21 +26,21 @@
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@microsoft/tsdoc": "^0.16.0",
+    "@microsoft/tsdoc": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
-    "@types/unist": "^3.0.3",
+    "@types/unist": "catalog:",
     "effect": "catalog:",
     "@types/bun": "catalog:",
-    "ts-pattern": "^5.9.0",
-    "effect-mdx": "^0.2.2",
-    "prettier": "^3.8.0",
-    "prettier-plugin-jsdoc": "^1.8.0",
+    "ts-pattern": "catalog:",
+    "effect-mdx": "catalog:",
+    "prettier": "catalog:",
+    "prettier-plugin-jsdoc": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:",
-    "unified": "^11.0.5"
+    "unified": "catalog:"
   },
   "publishConfig": {
     "access": "public",

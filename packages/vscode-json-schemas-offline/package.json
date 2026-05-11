@@ -9757,11 +9757,11 @@
     "package": "vsce package --allow-package-secrets slack --allow-package-secrets github"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.80.0",
-    "@vscode/vsce": "^3.0.0",
-    "esbuild": "^0.21.0",
-    "typescript": "^5.4.0"
+    "@types/node": "catalog:",
+    "@types/vscode": "catalog:",
+    "@vscode/vsce": "catalog:",
+    "esbuild": "catalog:",
+    "typescript": "catalog:"
   },
   "trustedDependencies": [
     "@vscode/vsce-sign"

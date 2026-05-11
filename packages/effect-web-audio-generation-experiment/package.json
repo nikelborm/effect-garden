@@ -27,7 +27,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@webref/idl": "^3.72.2",
+    "@webref/idl": "catalog:",
     "effect-web-audio": "workspace:*"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio-generate",
@@ -37,7 +37,7 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:",
-    "webidl2": "^24.5.0"
+    "webidl2": "catalog:"
   },
   "publishConfig": {
     "access": "public",

@@ -48,3 +48,5 @@ export const databasePackageDirPath = join(packagesDirPath, 'database')
 export const migrationsDirPath = join(databasePackageDirPath, 'migrations')
 
 export const migrationsMetaDirPath = join(migrationsDirPath, 'meta')
+
+export const playgroundPackageDirPath = join(packagesDirPath, 'playground')

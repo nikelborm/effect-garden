@@ -14,6 +14,7 @@ import * as Tuple from 'effect/Tuple'
 
 import {
   packagesDirPath,
+  playgroundPackageDirPath,
   projectRootAbsolutePath,
   rootPackageJsonPath,
 } from './lib/paths.ts'
@@ -274,7 +275,7 @@ for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
       'Failed to install added to catalog bun deps into specific package',
   })
 }
-// ensure typescript package is in dev deps of everything that doesn't have it
+// TODO: ensure typescript package is in dev deps of everything that doesn't have it
 // (except in tsconfig package). check the same shit for every deps of tsconfig
 // package, so that I define ts related shit in one place
 
@@ -291,29 +292,47 @@ const _myMonorepoTsconfigPackage = pipe(
 for (const { devDependencies } of myMonorepoPackages) {
   // if(!)
 }
-
-// ensure all dirs inside packages folder are installed as devDeps of root
+// TODO: ensure all dirs inside packages folder are installed as devDeps of root
 // package, plus playground should be filled with all catalog deps and workspace
 // deps and a few others
 
-// write auto tool that will scan packages folder, and properly fill
+// TODO: write auto tool that will scan packages folder, and properly fill
 // dependencies of root package json, exposing all the stuff, and then will
 // properly set dependencies of playground, and then call `bun install`
 
-// write a helper that will report packages that are `@nikelborm/...`, but have
+// TODO: write a helper that will report packages that are `@nikelborm/...`, but have
 // versions not equal to `workspace:*`
 
-// ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
+// TODO: ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
 
-// ensure there are no packages with the same name
+// TODO: ensure there are no packages with the same name
 
-// ensure properly added everywhere:
+// TODO: ensure properly added everywhere:
 // "@effect/language-service": "catalog:",
 // "@nikelborm/tsconfig": "workspace:*",
 // "ts-namespace-import": "catalog:",
 // "ts-patch": "catalog:",
 // "typescript": "catalog:"
 
-// ensure version field is present everywhere as well as name
+// TODO: ensure version field is present everywhere as well as name
 
-// Add task ensuring effect is in peer deps where necessary instead of hard deps
+// TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
+
+// adds all the deps into playground
+;({ myMonorepoPackages, rootPackageJson } = await getPackagesInfo())
+
+const depsToInstall = pipe(
+  myMonorepoPackages,
+  EArray.map(pkg => pkg.allDependencies),
+  EArray.reduce({} as { [x: string]: string }, (prev, cur) =>
+    Object.assign(prev, cur),
+  ),
+  Record.toEntries,
+  EArray.map(([pkgName, pkgVersion]) => pkgName + '@' + pkgVersion),
+)
+
+await transparentSpawn({
+  cmd: ['bun', 'add', ...depsToInstall],
+  cwd: playgroundPackageDirPath,
+  failureMessage: 'Failed to install dependencies in playground',
+})
