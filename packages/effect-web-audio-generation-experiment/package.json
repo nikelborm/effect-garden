@@ -12,7 +12,6 @@
     "generate:watch": "bun --watch scripts/generate.ts"
   },
   "files": [
-    ".github/FUNDING.yml",
     "dist-types",
     "dist",
     "index.ts",

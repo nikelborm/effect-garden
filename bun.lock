@@ -242,6 +242,20 @@
         "effect": "catalog:",
       },
     },
+    "packages/effect-web-template": {
+      "name": "effect-namespace",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@nikelborm/tsconfig": "workspace:*",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "effect": "catalog:",
+      },
+    },
     "packages/git-dl": {
       "name": "@nikelborm/git-dl",
       "version": "0.1.28",
@@ -494,10 +508,12 @@
     "packages/scripts": {
       "name": "@nikelborm/scripts",
       "dependencies": {
+        "@effect/platform": "^0.96.1",
+        "@effect/platform-bun": "^0.89.0",
         "@nikelborm/effect-helpers": "workspace:*",
         "dotenv": "catalog:",
         "drizzle-kit": "catalog:",
-        "effect": "catalog:",
+        "effect": "^3.21.2",
       },
       "devDependencies": {
         "@nikelborm/tsconfig": "workspace:*",
@@ -1913,6 +1929,8 @@
     "effect-errors": ["effect-errors@1.10.24", "", { "dependencies": { "comment-json": "5.0.0", "picocolors": "1.1.1", "source-map-js": "1.2.1" }, "peerDependencies": { "@effect/cluster": "0.x", "@effect/platform": "0.x", "@effect/platform-node": "0.x", "@effect/rpc": "0.x", "@effect/sql": "0.x", "effect": "3.x" } }, "sha512-DwuDYeydiGkcSPligJmQH0OWfbMYuyGvp7PgdETfGIrAqgC/A7kKckTclKtsJtkhGCA/fQJR0Q2ivhV2lwN97Q=="],
 
     "effect-mdx": ["effect-mdx@0.2.2", "", { "dependencies": { "@mdx-js/mdx": "^3.1.0", "gray-matter": "^4.0.3", "rehype-stringify": "^10.0.1", "remark-gfm": "^4.0.1", "remark-parse": "^11.0.0", "remark-rehype": "^11.1.2", "unified": "^11.0.5", "yaml": "^2.8.1" }, "peerDependencies": { "@effect/platform": "^0.90.10", "@effect/platform-node": "^0.94.2", "effect": "^3.18.0" }, "optionalPeers": ["@effect/platform-node"] }, "sha512-yb0wzIMN3FDy6k+VUKm58yoANC2nqxgA7fHUIw8KZZXrxEBHi/1s74igV7oHdm1As4VoAJgb0evpUEksWg7LTQ=="],
+
+    "effect-namespace": ["effect-namespace@workspace:packages/effect-web-template"],
 
     "effect-octokit-layer": ["effect-octokit-layer@1.15.1", "", { "dependencies": { "@octokit/core": "7.0.6", "date-fns": "4.1.0", "picocolors": "1.1.1" }, "peerDependencies": { "@effect/platform": "0.x", "effect": "3.x" } }, "sha512-XRZBB8BMdm9DEG/oSgylK/HwpNmz/PyaXHMM9TMU5uwDD6TGIchMtVA2LfTRN7CdtVy3f68PH/rHOn/lZzGM1w=="],
 

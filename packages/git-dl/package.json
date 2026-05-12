@@ -79,7 +79,6 @@
     "!**/*.tsbuildinfo",
     "!**/*.spec.*",
     "!**/scratchpad.*",
-    ".github/FUNDING.yml",
     "template.env",
     "cli.ts",
     "errors.ts",

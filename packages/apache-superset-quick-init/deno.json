@@ -10,13 +10,15 @@
   },
   "publish": {
     "include": [
-      ".github/FUNDING.yml",
       "template.env",
       "apache-superset-quick-init.ts",
       "src/**/*.ts",
       "README.md",
       "LICENSE"
     ],
-    "exclude": ["**/*.spec.*", "scratchpad.*"]
+    "exclude": [
+      "**/*.spec.*",
+      "scratchpad.*"
+    ]
   }
 }

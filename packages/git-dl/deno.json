@@ -14,7 +14,6 @@
   },
   "publish": {
     "include": [
-      ".github/FUNDING.yml",
       "template.env",
       "git-dl.ts",
       "src/**/*.ts",
@@ -24,6 +23,9 @@
       "README.md",
       "LICENSE"
     ],
-    "exclude": ["**/*.spec.*", "scratchpad.*"]
+    "exclude": [
+      "**/*.spec.*",
+      "scratchpad.*"
+    ]
   }
 }

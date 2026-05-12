@@ -76,7 +76,6 @@
     "!**/*.tsbuildinfo",
     "!**/*.spec.*",
     "!**/scratchpad.*",
-    ".github/FUNDING.yml",
     "template.env"
   ],
   "homepage": "https://github.com/nikelborm/apache-superset-quick-init#readme",

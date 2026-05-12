@@ -8,9 +8,11 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@effect/platform": "^0.96.1",
+    "@effect/platform-bun": "^0.89.0",
     "@nikelborm/effect-helpers": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
-    "effect": "catalog:"
+    "effect": "^3.21.2"
   }
 }
