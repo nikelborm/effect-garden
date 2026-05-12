@@ -50,6 +50,7 @@
         "noChildrenProp": "info",
         "useJsonImportAttributes": "error",
         // TODO: report this buggy behavior on TS Effect monorepo
+        "noUndeclaredDependencies": "off",
         "noUnresolvedImports": "off"
       },
       "style": {

@@ -246,6 +246,10 @@
     "packages/effect-zstd": {
       "name": "effect-zstd",
       "version": "0.1.0",
+      "dependencies": {
+        "@effect/platform-node-shared": "catalog:",
+        "@types/node": "catalog:",
+      },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",

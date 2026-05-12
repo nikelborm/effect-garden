@@ -1,1 +1,5 @@
-export {} from './internal/ZStd.ts'
+export {
+  ZStd,
+  ZstdCompressionError,
+  ZstdDecompressionError,
+} from './internal/ZStd.ts'

@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { console } from 'node:inspector'
 import { join } from 'node:path'

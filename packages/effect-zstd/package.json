@@ -81,5 +81,9 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "dependencies": {
+    "@effect/platform-node-shared": "catalog:",
+    "@types/node": "catalog:"
+  }
 }
