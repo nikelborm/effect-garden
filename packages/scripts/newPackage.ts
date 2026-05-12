@@ -165,16 +165,14 @@ Effect.gen(function* () {
 
   yield* fs.makeDirectory(vscodeDirPath, { recursive: true })
   yield* fs.makeDirectory(internalDirPath, { recursive: true })
+  const toJSON = (e: any) => JSON.stringify(e, null, 2) + '\n'
 
   const map = {
-    [path.join(vscodeDirPath, 'settings.json')]: JSON.stringify(vscodeConfig),
-    [path.join(packagePath, 'package.json')]: JSON.stringify(
-      packageJson(config),
-    ),
-    [path.join(packagePath, 'tsconfig.json')]: JSON.stringify(tsconfigJson),
-    [path.join(packagePath, 'README.md')]: JSON.stringify(
-      '# ' + config.name + '\n\n' + config.description,
-    ),
+    [path.join(vscodeDirPath, 'settings.json')]: toJSON(vscodeConfig),
+    [path.join(packagePath, 'package.json')]: toJSON(packageJson(config)),
+    [path.join(packagePath, 'tsconfig.json')]: toJSON(tsconfigJson),
+    [path.join(packagePath, 'README.md')]:
+      '# ' + config.name + '\n\n' + config.description + '\n',
     [path.join(packagePath, 'index.ts')]: `export * from './src/index.ts'\n`,
 
     [path.join(srcDirPath, 'index.ts')]: namespaces
@@ -202,12 +200,12 @@ Effect.gen(function* () {
   yield* Command.make('bun', 'add', config.name + '@workspace:*').pipe(
     Command.workingDirectory(projectRootAbsolutePath),
     Command.stream,
-    Stream.run(BunSink.stdout),
-  )
-
-  yield* Command.make('bun', 'install').pipe(
-    Command.workingDirectory(packagePath),
-    Command.stream,
+    Stream.concat(
+      Command.make('bun', 'install').pipe(
+        Command.workingDirectory(packagePath),
+        Command.stream,
+      ),
+    ),
     Stream.run(BunSink.stdout),
   )
 }).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)
