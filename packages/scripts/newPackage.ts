@@ -1,11 +1,18 @@
+#!/usr/bin/env bun
+
+import * as Prompt from '@effect/cli/Prompt'
+import * as Command from '@effect/platform/Command'
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunSink from '@effect/platform-bun/BunSink'
 import * as Effect from 'effect/Effect'
+import * as Either from 'effect/Either'
 import * as Record from 'effect/Record'
+import * as Stream from 'effect/Stream'
 
-import { packagesDirPath } from './lib/paths.ts'
+import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
 const vscodeConfig = {
   'git.openRepositoryInParentFolders': 'always',
@@ -121,8 +128,31 @@ import * as Effect from 'effect/Effect'
 `
 
 Effect.gen(function* () {
-  const config = { name: 'namespace', description: 'namespace description' }
-  const namespaces: string[] = ['Namespace']
+  const { namespaces, ...config } = yield* Prompt.all({
+    name: Prompt.text({
+      message: `Enter package name (if you want, add 'effect-' prefix):`,
+      validate: value =>
+        value.length <= 3
+          ? Either.left('Name is too short. At least 3 characters')
+          : Either.right(value),
+    }),
+    description: Prompt.text({
+      message: `Enter single-line short package description for readme and package.json:`,
+      validate: value =>
+        value.length <= 3
+          ? Either.left('Name is too short. At least 3 characters')
+          : Either.right(value),
+    }),
+    namespaces: Prompt.list({
+      delimiter: ' ',
+      message:
+        'Enter a list of namespaces to create empty files for, delimited by space',
+      validate: value =>
+        value.length <= 1
+          ? Either.left('Name is too short. At least 3 characters')
+          : Either.right(value),
+    }),
+  }).pipe(Prompt.run)
 
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
@@ -143,7 +173,7 @@ Effect.gen(function* () {
     ),
     [path.join(packagePath, 'tsconfig.json')]: JSON.stringify(tsconfigJson),
     [path.join(packagePath, 'README.md')]: JSON.stringify(
-      '# ' + config.description,
+      '# ' + config.name + '\n\n' + config.description,
     ),
     [path.join(packagePath, 'index.ts')]: `export * from './src/index.ts'\n`,
 
@@ -167,5 +197,17 @@ Effect.gen(function* () {
 
   yield* Effect.forEach(Record.toEntries(map), ([path, content]) =>
     fs.writeFileString(path, content),
+  )
+
+  yield* Command.make('bun', 'add', config.name + '@workspace:*').pipe(
+    Command.workingDirectory(projectRootAbsolutePath),
+    Command.stream,
+    Stream.run(BunSink.stdout),
+  )
+
+  yield* Command.make('bun', 'install').pipe(
+    Command.workingDirectory(packagePath),
+    Command.stream,
+    Stream.run(BunSink.stdout),
   )
 }).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)

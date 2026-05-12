@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 import { $ } from 'bun'
 
 await $`sudo mkdir -p certbot/conf/dhparam certbot/www certbot/logs`

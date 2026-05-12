@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.15/schema.json",
   "files": {
     "ignoreUnknown": true,
     "includes": [
@@ -15,7 +15,9 @@
       "!packages/next-midi-demo/public/sw.js"
     ]
   },
-  "plugins": ["./node_modules/biome-plugin-drizzle/dist/drizzle.grit"],
+  "plugins": [
+    "./node_modules/biome-plugin-drizzle/dist/drizzle.grit"
+  ],
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -46,7 +48,9 @@
       },
       "correctness": {
         "noChildrenProp": "info",
-        "useJsonImportAttributes": "error"
+        "useJsonImportAttributes": "error",
+        // TODO: report this buggy behavior on TS Effect monorepo
+        "noUnresolvedImports": "off"
       },
       "style": {
         "useComponentExportOnlyModules": "off",
@@ -87,7 +91,10 @@
           "level": "on",
           "options": {
             "groups": [
-              [":BUN:", ":NODE:"],
+              [
+                ":BUN:",
+                ":NODE:"
+              ],
               ":BLANK_LINE:",
               [
                 ":PACKAGE:",
@@ -98,7 +105,12 @@
                 "!@effect-atom/**"
               ],
               ":BLANK_LINE:",
-              ["effect", "effect/**", "@effect/**", "@effect-atom/**"],
+              [
+                "effect",
+                "effect/**",
+                "@effect/**",
+                "@effect-atom/**"
+              ],
               ":BLANK_LINE:",
               ":URL:",
               ":BLANK_LINE:",
