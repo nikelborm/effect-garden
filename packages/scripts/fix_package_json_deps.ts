@@ -1,10 +1,12 @@
 #!/usr/bin/env bun
 
-import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { console } from 'node:inspector'
 import { join } from 'node:path'
 
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
 import * as EArray from 'effect/Array'
+import * as Effect from 'effect/Effect'
 import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
@@ -30,7 +32,7 @@ const deps = Schema.Record({
   value: Schema.NonEmptyTrimmedString,
 })
 
-const RootPackageJsonSchema = Schema.parseJson(
+export const RootPackageJsonSchema = Schema.parseJson(
   Schema.Struct({
     name: Schema.NonEmptyTrimmedString,
     dependencies: deps.pipe(OptionalProperty),
@@ -39,7 +41,7 @@ const RootPackageJsonSchema = Schema.parseJson(
   }),
 )
 
-const SubPackageJsonSchema = Schema.parseJson(
+export const SubPackageJsonSchema = Schema.parseJson(
   Schema.Struct({
     name: Schema.NonEmptyTrimmedString,
     devDependencies: deps.pipe(OptionalProperty),
@@ -48,50 +50,100 @@ const SubPackageJsonSchema = Schema.parseJson(
   }),
 )
 
-const getPackagesInfo = async () => {
-  const rootPackageJsonString = await readFile(rootPackageJsonPath, 'utf-8')
+export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
+  Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
+  Effect.flatMap(Schema.decode(RootPackageJsonSchema)),
+)
 
-  const rootPackageJson = Schema.decodeSync(RootPackageJsonSchema)(
-    rootPackageJsonString,
-  )
-
-  const myMonorepoPackagesDirectoryNames = await readdir(packagesDirPath)
-
-  const myMonorepoPackages = await Promise.all(
-    myMonorepoPackagesDirectoryNames.map(directoryName =>
-      readFile(join(packagesDirPath, directoryName, 'package.json'), 'utf8')
-        .then(Schema.decodeSync(SubPackageJsonSchema))
-        .then(myMonorepoPackage => ({
-          ...myMonorepoPackage,
-          directoryPath: join(packagesDirPath, directoryName),
-          allDependencies: {
-            ...myMonorepoPackage.dependencies,
-            ...myMonorepoPackage.devDependencies,
-          },
-        })),
+export const myMonorepoPackagesDirectoryNamesEffect =
+  FileSystem.FileSystem.pipe(
+    Effect.flatMap(fs => fs.readDirectory(packagesDirPath)),
+    Effect.flatMap(
+      Schema.decodeUnknown(Schema.NonEmptyArray(Schema.NonEmptyTrimmedString)),
     ),
   )
 
-  return { rootPackageJsonString, rootPackageJson, myMonorepoPackages }
-}
+export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
+  function* (directoryName: string) {
+    const fs = yield* FileSystem.FileSystem
+    const path = yield* Path.Path
 
-// ensure dependencies with devDependencies have no intersections
+    yield* Effect.annotateCurrentSpan({ directoryName })
 
-let { myMonorepoPackages, rootPackageJson, rootPackageJsonString } =
-  await getPackagesInfo()
+    const packageJsonPath = path.join(
+      packagesDirPath,
+      directoryName,
+      'package.json',
+    )
 
-for (const myMonorepoPackage of myMonorepoPackages) {
-  const intersection = Record.intersection(
-    myMonorepoPackage.dependencies ?? {},
-    myMonorepoPackage.devDependencies ?? {},
-    (prodVersion, devVersion) => ({ devVersion, prodVersion }),
+    const myMonorepoPackage = yield* Effect.flatMap(
+      fs.readFileString(packageJsonPath),
+      Schema.decode(SubPackageJsonSchema),
+    )
+
+    return {
+      ...myMonorepoPackage,
+      directoryPath: join(packagesDirPath, directoryName),
+      allDependencies: {
+        ...myMonorepoPackage.dependencies,
+        ...myMonorepoPackage.devDependencies,
+      },
+    }
+  },
+)
+
+export const myMonorepoPackagesEffect =
+  myMonorepoPackagesDirectoryNamesEffect.pipe(
+    Effect.flatMap(
+      Effect.forEach(getMyMonorepoPackage, { concurrency: 'unbounded' }),
+    ),
+    Effect.withSpan('myMonorepoPackages'),
   )
 
-  if (Object.keys(intersection).length > 0)
-    throw new Error(
-      `Dev and prod dependencies of ${myMonorepoPackage.name} intersect: ${JSON.stringify(intersection, null, 2)}`,
-    )
+export const getPackagesInfoEffect = Effect.all({
+  rootPackageJson: rootPackageJsonEffect,
+  myMonorepoPackages: myMonorepoPackagesEffect,
+})
+
+export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<IntersectionOfDevAndProdDeps>()(
+  'IntersectionOfDevAndProdDeps',
+  {
+    packageName: Schema.NonEmptyTrimmedString,
+    intersection: Schema.Record({
+      key: Schema.NonEmptyTrimmedString,
+      value: Schema.Struct({
+        devVersion: Schema.NonEmptyTrimmedString,
+        prodVersion: Schema.NonEmptyTrimmedString,
+      }),
+    }),
+  },
+) {
+  override get message(): string {
+    return `Dev and prod dependencies of ${this.packageName} intersect: ${JSON.stringify(this.intersection, null, 2)}`
+  }
 }
+
+const ensureProdAndDevDependenciesHaveNoIntersections = Effect.flatMap(
+  myMonorepoPackagesEffect,
+  Effect.forEach(
+    myMonorepoPackage => {
+      const intersection = Record.intersection(
+        myMonorepoPackage.dependencies ?? {},
+        myMonorepoPackage.devDependencies ?? {},
+        (prodVersion, devVersion) => ({ devVersion, prodVersion }),
+      )
+
+      if (Object.keys(intersection).length)
+        return new IntersectionOfDevAndProdDeps({
+          intersection,
+          packageName: myMonorepoPackage.name,
+        })
+
+      return Effect.void
+    },
+    { discard: true },
+  ),
+)
 
 // Ensure packages/ dependencies are not duplicated and put into catalog
 

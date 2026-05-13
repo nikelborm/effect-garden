@@ -1,0 +1,89 @@
+{
+  "name": "effect-npm-api",
+  "version": "0.1.0",
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/effect-npm-api"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "catalog:"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "description": "Effect HTTP API declarations for NPM Registry",
+  "files": [
+    "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ],
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api",
+  "license": "MIT",
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "scripts": {
+    "build": "tspc",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",
+    "dev": "tspc --watch --preserveWatchOutput false"
+  },
+  "type": "module",
+  "types": "./dist-types/index.d.ts",
+  "dependencies": {
+    "@effect/platform": "^0.96.1",
+    "@nikelborm/openapi-gen": "^0.4.17"
+  }
+}

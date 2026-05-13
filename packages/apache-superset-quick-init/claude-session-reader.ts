@@ -11,10 +11,12 @@ import {
   decodeClaudeSessionLine,
 } from './claude-session-reader-schema.ts'
 
-// TODO: Test recursively on other .jsonl files in that folder.
+// TODO: Test recursively on other `.jsonl` files in that folder.
 
 const sessionPath =
   '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
+
+// TODO: maybe make PR into https://github.com/effect-anything/session-mind
 
 declare const Bun: any
 

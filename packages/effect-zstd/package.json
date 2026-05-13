@@ -1,6 +1,6 @@
 {
   "name": "effect-zstd",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "type": "module",
   "description": "Zstd de/compression service for effect",
   "license": "MIT",

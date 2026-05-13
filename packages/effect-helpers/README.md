@@ -1,0 +1,23 @@
+# my helpers in Effect ecosystem
+
+- `AbsentProperty`
+- `BadExitCodeError`
+- `buildEntityParts`
+- `changeEncodedTypeToString`
+- `ensureReturningOneId`
+- `FiniteNonNegativeIntegerFromString`
+- `holdLatestValue`
+- `OptionalProperty`
+- `ParseErrorSchema`
+- `passthroughErrorsWithTagsOrElseMapError`
+- `ProcessStdinSink`
+- `renameClass`
+- `simpleExec`
+- `Uint8ArrayStreamToString`
+- `withCacheScopedPerHttpRequest`
+- `withInferredFromTagIdentifierSchemaAnnotation`
+- `withNewStructFields`
+- `withNewStructTag`
+- `withOpenApiAnnotations`
+- `withSchemaAnnotation`
+- `withUniqueStreamValues`
