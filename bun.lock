@@ -119,7 +119,7 @@
     },
     "packages/effect-btrfs": {
       "name": "effect-btrfs",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@effect/platform": "catalog:",
         "@nikelborm/effect-helpers": "workspace:*",
@@ -142,6 +142,9 @@
         "@effect/cli": "^0.75.1",
         "@effect/platform": "^0.96.1",
         "@effect/platform-node-shared": "^0.59.0",
+        "@effect/vitest": "^0.29.0",
+        "@nikelborm/effect-helpers": "^0.1.1",
+        "@types/bun": "^1.3.14",
         "@types/node": "^25.7.0",
       },
       "devDependencies": {
@@ -176,7 +179,7 @@
     },
     "packages/effect-helpers": {
       "name": "@nikelborm/effect-helpers",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
@@ -317,6 +320,23 @@
       },
       "peerDependencies": {
         "effect": "catalog:",
+      },
+    },
+    "packages/effect-yt-music-export": {
+      "name": "effect-yt-music-export",
+      "version": "0.1.0",
+      "dependencies": {
+        "@types/bun": "^1.3.14",
+      },
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@nikelborm/tsconfig": "workspace:*",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "effect": "^3.21.2",
       },
     },
     "packages/effect-zstd": {
@@ -592,7 +612,7 @@
         "@effect/cli": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
-        "@nikelborm/effect-helpers": "workspace:*",
+        "@nikelborm/effect-helpers": "^0.1.1",
         "dotenv": "catalog:",
         "drizzle-kit": "catalog:",
         "effect": "catalog:",
@@ -1610,7 +1630,7 @@
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.10.2", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg=="],
 
-    "@types/bun": ["@types/bun@1.3.13", "", { "dependencies": { "bun-types": "1.3.13" } }, "sha512-9fqXWk5YIHGGnUau9TEi+qdlTYDAnOj+xLCmSTwXfAIqXr2x4tytJb43E9uCvt09zJURKXwAtkoH4nLQfzeTXw=="],
+    "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 
@@ -1838,7 +1858,7 @@
 
     "buffer-from": ["buffer-from@1.1.2", "", {}, "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ=="],
 
-    "bun-types": ["bun-types@1.3.13", "", { "dependencies": { "@types/node": "*" } }, "sha512-QXKeHLlOLqQX9LgYaHJfzdBaV21T63HhFJnvuRCcjZiaUDpbs5ED1MgxbMra71CsryN/1dAoXuJJJwIv/2drVA=="],
+    "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
     "bundle-name": ["bundle-name@4.1.0", "", { "dependencies": { "run-applescript": "^7.0.0" } }, "sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q=="],
 
@@ -2035,6 +2055,8 @@
     "effect-web-mediacapture-streams": ["effect-web-mediacapture-streams@workspace:packages/effect-web-mediacapture-streams"],
 
     "effect-web-midi": ["effect-web-midi@workspace:packages/effect-web-midi"],
+
+    "effect-yt-music-export": ["effect-yt-music-export@workspace:packages/effect-yt-music-export"],
 
     "effect-zstd": ["effect-zstd@workspace:packages/effect-zstd"],
 

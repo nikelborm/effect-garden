@@ -11,7 +11,7 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@nikelborm/effect-helpers": "workspace:*",
+    "@nikelborm/effect-helpers": "^0.1.1",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "effect": "catalog:"

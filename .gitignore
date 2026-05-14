@@ -41,3 +41,4 @@ fetch-github-folder_issues_data.json
 packages/ts-key-not-enum/report.json
 packages/ts-key-not-enum/mdast.json
 packages/git-dl/gh-page/bundled_deps
+temp-store
