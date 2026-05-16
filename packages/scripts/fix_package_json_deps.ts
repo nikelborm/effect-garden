@@ -7,11 +7,12 @@ import {
   AbsentProperty,
   OptionalProperty,
   observableExec,
-  simpleExec,
 } from '@nikelborm/effect-helpers'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
+import * as BunContext from '@effect/platform-bun/BunContext'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import { flow, pipe } from 'effect/Function'
@@ -19,7 +20,6 @@ import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
-import * as EString from 'effect/String'
 import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
@@ -39,6 +39,7 @@ export const RootPackageJsonSchema = Schema.parseJson(
   Schema.Struct(
     {
       name: Schema.NonEmptyTrimmedString,
+      version: Schema.NonEmptyTrimmedString,
       dependencies: deps.pipe(OptionalProperty),
       catalog: deps,
       devDependencies: AbsentProperty,
@@ -50,6 +51,7 @@ export const RootPackageJsonSchema = Schema.parseJson(
 export const SubPackageJsonSchema = Schema.parseJson(
   Schema.Struct({
     name: Schema.NonEmptyTrimmedString,
+    version: Schema.NonEmptyTrimmedString,
     devDependencies: deps.pipe(OptionalProperty),
     catalog: AbsentProperty,
     dependencies: deps.pipe(OptionalProperty),
@@ -344,8 +346,6 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 // "ts-patch": "catalog:",
 // "typescript": "catalog:"
 
-// TODO: ensure version field is present everywhere as well as name
-
 // TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
 
 const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
@@ -368,7 +368,48 @@ const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
   })
 })
 
-// TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency. example. If a package depends on @nikelborm/effect-helpers version 0.1.0, it should be rewritten to use workspace:*
+const fixNonWorkspaceDepsEffect = Effect.gen(function* () {
+  const myMonorepoPackages = yield* myMonorepoPackagesEffect
+
+  const workspacePackageNames = new Set(myMonorepoPackages.map(pkg => pkg.name))
+
+  const fixable = flow(
+    Record.filterMap((version: string, name: string) =>
+      workspacePackageNames.has(name) && version !== 'workspace:*'
+        ? Option.some(version)
+        : Option.none(),
+    ),
+    Record.keys,
+  )
+
+  yield* Effect.forEach(
+    myMonorepoPackages,
+    Effect.fn(function* (pkg) {
+      const depsToFix = fixable(pkg.dependencies ?? {})
+      const devDepsToFix = fixable(pkg.devDependencies ?? {})
+
+      if (depsToFix.length)
+        yield* observableExec({
+          cmd: ['bun', 'add', ...depsToFix.map(name => `${name}@workspace:*`)],
+          cwd: pkg.directoryPath,
+          badExitCodeErrorMessage: `Failed to fix workspace dependencies in ${pkg.name}`,
+        })
+
+      if (devDepsToFix.length)
+        yield* observableExec({
+          cmd: [
+            'bun',
+            'add',
+            '-D',
+            ...devDepsToFix.map(name => `${name}@workspace:*`),
+          ],
+          cwd: pkg.directoryPath,
+          badExitCodeErrorMessage: `Failed to fix workspace dev dependencies in ${pkg.name}`,
+        })
+    }),
+    { discard: true },
+  )
+})
 
 const REQUIRED_VSCODE_SETTINGS = {
   'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
@@ -412,7 +453,7 @@ const ensureVscodeSettingsInPackage = Effect.fn(
   )
 })
 
-export const ensureVscodeSettingsExistInAllPackages =
+const ensureVscodeSettingsExistInAllPackages =
   myMonorepoPackagesDirectoryNamesEffect.pipe(
     Effect.flatMap(
       Effect.forEach(ensureVscodeSettingsInPackage, {
@@ -421,5 +462,13 @@ export const ensureVscodeSettingsExistInAllPackages =
     ),
     Effect.withSpan('ensureVscodeSettingsExistInAllPackages'),
   )
+
+Effect.all([
+  ensureProdAndDevDependenciesHaveNoIntersections,
+  ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized,
+  addAllDepsToPlaygroundEffect,
+  fixNonWorkspaceDepsEffect,
+  ensureVscodeSettingsExistInAllPackages,
+]).pipe(Effect.scoped, Effect.provide(BunContext.layer), BunRuntime.runMain)
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] }
