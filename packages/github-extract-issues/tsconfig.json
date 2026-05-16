@@ -3,9 +3,14 @@
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
-    "rootDir": "./"
+    "rootDir": "./",
+    "types": [
+      "bun"
+    ]
   },
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts"
+  ],
   "exclude": [
     ".github",
     ".stryker-tmp",
