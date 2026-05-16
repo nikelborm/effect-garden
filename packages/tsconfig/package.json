@@ -2,12 +2,22 @@
   "name": "@nikelborm/tsconfig",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "description": "My relatively strict tsconfig just how I like it",
   "dependencies": {
     "@effect/language-service": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/tsconfig"
   },
   "private": false,
   "publishConfig": {

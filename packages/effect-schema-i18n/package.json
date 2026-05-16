@@ -8,6 +8,10 @@
     "build": "tspc",
     "dev": "tspc --watch"
   },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
   "files": [
     "dist",
     "dist-types",

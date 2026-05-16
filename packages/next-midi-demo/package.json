@@ -1,8 +1,18 @@
 {
   "name": "next-midi-demo",
   "version": "0.1.0",
+  "type": "module",
   "license": "UNLICENSED",
   "description": "Demo of MIDI and Web audio capabilities on frontend with Effect",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/next-midi-demo"
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "catalog:",

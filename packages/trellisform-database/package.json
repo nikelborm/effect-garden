@@ -11,6 +11,15 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/trellisform-database"
+  },
   "dependencies": {
     "@nikelborm/effect-drizzle-helpers": "workspace:*",
     "drizzle-kit": "catalog:",

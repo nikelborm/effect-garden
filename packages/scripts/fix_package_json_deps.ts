@@ -54,6 +54,7 @@ export const SubPackageJsonSchema = Schema.parseJson(
   Schema.Struct(
     {
       name: Schema.NonEmptyTrimmedString,
+      type: Schema.Literal('module'),
       version: Schema.NonEmptyTrimmedString,
       license: Schema.Literal('MIT', 'UNLICENSED'),
       description: Schema.NonEmptyTrimmedString,
@@ -61,6 +62,19 @@ export const SubPackageJsonSchema = Schema.parseJson(
       peerDependencies: deps.pipe(OptionalProperty),
       catalog: AbsentProperty,
       dependencies: deps.pipe(OptionalProperty),
+      bugs: Schema.Struct({
+        url: Schema.Literal(
+          'https://github.com/nikelborm/effect-garden/issues',
+        ),
+        email: Schema.Literal('evadev@duck.com'),
+      }),
+      repository: Schema.Struct({
+        type: Schema.Literal('git'),
+        url: Schema.Literal(
+          'git+ssh://git@github.com/nikelborm/effect-garden.git',
+        ),
+        directory: Schema.TemplateLiteral('packages/', Schema.String),
+      }),
     },
     { key: Schema.String, value: Schema.Unknown },
   ).annotations({ title: 'SubPackageJson' }),

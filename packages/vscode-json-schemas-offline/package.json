@@ -4,11 +4,16 @@
   "description": "Offline JSON schema validation using the full SchemaStore catalog — no internet required.",
   "version": "0.1.3",
   "publisher": "evadev",
+  "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/vscode-json-schemas-offline"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
   "engines": {
     "vscode": "^1.80.0"

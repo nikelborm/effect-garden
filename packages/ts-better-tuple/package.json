@@ -3,10 +3,20 @@
   "version": "0.1.0",
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
   "license": "MIT",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "build": "tspc",
     "dev": "tspc --watch"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/ts-better-tuple"
   },
   "keywords": [],
   "dependencies": {

@@ -2,7 +2,17 @@
   "name": "@nikelborm/effect-landscape",
   "version": "0.0.1",
   "license": "MIT",
+  "type": "module",
   "description": "Overview analytics of the whole effect ecosystem",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/effect-landscape"
+  },
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",

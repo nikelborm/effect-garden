@@ -3,6 +3,15 @@
   "version": "0.1.0",
   "license": "MIT",
   "description": "A bunch of scripts to automate things and maintain the monorepo",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/scripts"
+  },
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",

@@ -8,6 +8,10 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
   "dependencies": {
     "@total-typescript/ts-reset": "catalog:",
     "effect-errors": "catalog:",

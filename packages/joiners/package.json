@@ -4,6 +4,10 @@
   "type": "module",
   "description": "Join 2 or more iterables as if it's SQL joins but with the level of type-safety you didn't know you need",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
   "scripts": {
     "scratchpad": "node --use-strict ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
@@ -51,10 +55,6 @@
   "main": "./dist/src/index.js",
   "module": "./dist/src/index.js",
   "types": "./dist-types/src/index.d.ts",
-  "bugs": {
-    "url": "https://github.com/nikelborm/joiners/issues",
-    "email": "evadev@duck.com"
-  },
   "files": [
     "dist",
     "src",
