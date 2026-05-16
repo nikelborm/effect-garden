@@ -368,12 +368,58 @@ const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
   })
 })
 
-// TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency
+// TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency. example. If a package depends on @nikelborm/effect-helpers version 0.1.0, it should be rewritten to use workspace:*
 
-// TODO: make a rule to maintain consisten vscode/settings.json configs in submodules have at least these keys, and if not append them
-// {
-//   "js/ts.tsdk.path": "../tsconfig/node_modules/typescript/lib",
-//   "git.openRepositoryInParentFolders": "always"
-// }
+const REQUIRED_VSCODE_SETTINGS = {
+  'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
+  'git.openRepositoryInParentFolders': 'always',
+} as const satisfies Record<string, string>
+
+const ensureVscodeSettingsInPackage = Effect.fn(
+  'ensureVscodeSettingsInPackage',
+)(function* (directoryName: string) {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
+
+  const vscodeDir = path.join(packagesDirPath, directoryName, '.vscode')
+  const settingsPath = path.join(vscodeDir, 'settings.json')
+
+  const settingsExist = yield* fs.exists(settingsPath)
+
+  let currentSettings: Record<string, unknown> = {}
+
+  if (settingsExist) {
+    const content = yield* fs.readFileString(settingsPath)
+    currentSettings = JSON.parse(content) as Record<string, unknown>
+  } else {
+    yield* fs.makeDirectory(vscodeDir, { recursive: true })
+  }
+
+  const missingEntries = Object.entries(REQUIRED_VSCODE_SETTINGS).filter(
+    ([key, value]) => currentSettings[key] !== value,
+  )
+
+  if (!missingEntries.length) return
+
+  const updatedSettings = {
+    ...currentSettings,
+    ...Object.fromEntries(missingEntries),
+  }
+
+  yield* fs.writeFileString(
+    settingsPath,
+    JSON.stringify(updatedSettings, null, 2) + '\n',
+  )
+})
+
+export const ensureVscodeSettingsExistInAllPackages =
+  myMonorepoPackagesDirectoryNamesEffect.pipe(
+    Effect.flatMap(
+      Effect.forEach(ensureVscodeSettingsInPackage, {
+        concurrency: 'unbounded',
+      }),
+    ),
+    Effect.withSpan('ensureVscodeSettingsExistInAllPackages'),
+  )
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] }
