@@ -22,7 +22,7 @@
   "peerDependencies": {
     "effect": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-btrfs",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-btrfs#readme",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",

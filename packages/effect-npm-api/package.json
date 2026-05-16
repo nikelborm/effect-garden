@@ -62,7 +62,7 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api#readme",
   "license": "MIT",
   "maintainers": [
     {

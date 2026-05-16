@@ -1,6 +1,7 @@
 [tools]
 bun = "latest"
 node = "24"
+cargo = "latest"
 
 [tasks]
 

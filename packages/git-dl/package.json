@@ -84,7 +84,7 @@
     "errors.ts",
     "index.ts"
   ],
-  "homepage": "https://github.com/nikelborm/effect-garden#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dl#readme",
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",

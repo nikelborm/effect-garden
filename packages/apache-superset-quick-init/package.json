@@ -78,7 +78,7 @@
     "!**/scratchpad.*",
     "template.env"
   ],
-  "homepage": "https://github.com/nikelborm/apache-superset-quick-init#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/apache-superset-quick-init#readme",
   "exports": {
     ".": {
       "types": "./dist-types/src/index.d.ts",

@@ -1,0 +1,104 @@
+{
+  "name": "bliss-audio-ts",
+  "version": "0.1.7",
+  "type": "module",
+  "private": false,
+  "description": "TypeScript bindings (bun) for bliss-audio, a music analysis library producing fixed-length feature vectors from audio files to find similar songs and build automatic playlists",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/bliss-audio-ts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/bliss-audio-ts"
+  },
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist-types",
+    "dist",
+    "native/target/release/libbliss_native.so",
+    "index.ts",
+    "package.json",
+    "src",
+    "!examples",
+    "examples/*.ts",
+    "!**/*.spec.*",
+    "!**/*.test.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ],
+  "scripts": {
+    "build": "bun build:ts && bun build:native",
+    "build:ts": "tsc",
+    "build:native": "cd native && cargo build --release",
+    "build:native-debug": "cd native && cargo build",
+    "test": "bun --bun run vitest",
+    "test:stryker": "bun --bun run stryker run stryker.conf.js",
+    "typecheck": "tsc --noEmit",
+    "format": "bun format:ts && bun format:native",
+    "format:ts": "biome check --write --unsafe .",
+    "format:native": "cd native && cargo fmt",
+    "prepack": "rm -rf dist dist-types && bun build:ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "@nikelborm/tsconfig": "^1.0.0",
+    "@stryker-mutator/api": "^9.6.1",
+    "@stryker-mutator/core": "^9.6.1",
+    "@stryker-mutator/instrumenter": "^9.6.1",
+    "@stryker-mutator/vitest-runner": "^9.6.1",
+    "numpy-ts": "^1.3.2",
+    "typescript": "^5",
+    "vitest": "^4.1.6"
+  },
+  "peerDependencies": {
+    "@types/bun": "latest"
+  },
+  "patchedDependencies": {
+    "@stryker-mutator/instrumenter@9.6.1": "patches/@stryker-mutator%2Finstrumenter@9.6.1.patch"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ]
+}

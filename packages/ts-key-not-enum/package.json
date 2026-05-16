@@ -22,7 +22,7 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-key-not-enum#readme",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@microsoft/tsdoc": "catalog:",

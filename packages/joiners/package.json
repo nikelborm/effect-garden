@@ -64,7 +64,7 @@
     "!**/scratchpad.*",
     ".github/FUNDING.yml"
   ],
-  "homepage": "https://github.com/nikelborm/joiners#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/joiners#readme",
   "exports": {
     ".": {
       "types": "./dist-types/src/index.d.ts",

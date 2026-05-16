@@ -11,6 +11,7 @@
     "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/effect-landscape": "workspace:*",
     "@nikelborm/effect-schema-i18n": "workspace:*",
+    "bliss-audio-ts": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
     "@nikelborm/github-extract-issues": "workspace:*",
     "@nikelborm/joiners": "workspace:*",

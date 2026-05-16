@@ -16,6 +16,7 @@ import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
 const vscodeConfig = {
   'git.openRepositoryInParentFolders': 'always',
+  'js/ts.tsdk.path': '../../packages/tsconfig/node_modules/typescript/lib',
 }
 
 const author = {
@@ -48,9 +49,8 @@ const packageJson = (config: { name: string; description: string }) => ({
   peerDependencies: {
     effect: 'catalog:',
   },
-  homepage:
-    `https://github.com/nikelborm/effect-garden/tree/main/packages/` +
-    config.name,
+  // TODO: Ask for package name and folder name separately
+  homepage: `https://github.com/nikelborm/effect-garden/tree/main/packages/${config.name}#readme`,
   devDependencies: {
     '@effect/language-service': 'catalog:',
     '@nikelborm/tsconfig': 'workspace:*',
@@ -58,6 +58,7 @@ const packageJson = (config: { name: string; description: string }) => ({
     'ts-patch': 'catalog:',
     typescript: 'catalog:',
   },
+  private: false,
   publishConfig: {
     access: 'public',
     provenance: false,

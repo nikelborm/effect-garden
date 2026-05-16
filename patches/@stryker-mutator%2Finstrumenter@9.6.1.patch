@@ -1,0 +1,75 @@
+diff --git a/dist/src/mutant.js b/dist/src/mutant.js
+index 4c1fe6557b65960b3709eaea669bb609f9f37092..026a153b2086659f80aaf1923a574f55f163e1f5 100644
+--- a/dist/src/mutant.js
++++ b/dist/src/mutant.js
+@@ -2,7 +2,7 @@ import babel from '@babel/core';
+ import generate from '@babel/generator';
+ import { deepCloneNode, eqNode } from './util/index.js';
+ const { traverse } = babel;
+-const generator = generate.default;
++const generator = typeof generate === 'function' ? generate : generate.default;
+ export class Mutant {
+     id;
+     fileName;
+diff --git a/dist/src/printers/js-printer.js b/dist/src/printers/js-printer.js
+index 166446d954eff392481bc72c3c382ef11d93a015..04b1088312a0a0587ae1e69854518648b9b6152a 100644
+--- a/dist/src/printers/js-printer.js
++++ b/dist/src/printers/js-printer.js
+@@ -1,5 +1,5 @@
+ import generator from '@babel/generator';
+-const generate = generator.default;
++const generate = typeof generator === 'function' ? generator : generator.default;
+ export const print = (file) => {
+     return generate(file.root, { sourceMaps: false }).code;
+ };
+diff --git a/dist/src/printers/ts-printer.js b/dist/src/printers/ts-printer.js
+index dc12451bff39654e2e7817b4f5f292f96708d418..13d5bf19aae1f68b46391bc0119343eb67a72067 100644
+--- a/dist/src/printers/ts-printer.js
++++ b/dist/src/printers/ts-printer.js
+@@ -1,5 +1,5 @@
+ import generator from '@babel/generator';
+-const generate = generator.default;
++const generate = typeof generator === 'function' ? generator : generator.default;
+ export const print = (file) => {
+     return generate(file.root, {
+         decoratorsBeforeExport: true,
+diff --git a/src/mutant.ts b/src/mutant.ts
+index 49a13e36bc4306e708208c90179bef5fcff5f5e0..a5bc4abf92f3f10be03524be1cbcb3f80c770d6d 100644
+--- a/src/mutant.ts
++++ b/src/mutant.ts
+@@ -10,8 +10,7 @@ import { deepCloneNode, eqNode } from './util/index.js';
+ 
+ const { traverse } = babel;
+ 
+-const generator = generate.default;
+-
++const generator = typeof generate === 'function' ? generate : generate.default;
+ export interface Mutable {
+   mutatorName: string;
+   ignoreReason?: string;
+diff --git a/src/printers/js-printer.ts b/src/printers/js-printer.ts
+index 91e2f07871cf988ba2fc009016d76bcd0af86ef6..bd19fc3af872a342f9982fad87dd3ec48e760034 100644
+--- a/src/printers/js-printer.ts
++++ b/src/printers/js-printer.ts
+@@ -4,7 +4,7 @@ import { JSAst } from '../syntax/index.js';
+ 
+ import { Printer } from './index.js';
+ 
+-const generate = generator.default;
++const generate = typeof generator === 'function' ? generator : generator.default;
+ 
+ export const print: Printer<JSAst> = (file) => {
+   return generate(file.root, { sourceMaps: false }).code;
+diff --git a/src/printers/ts-printer.ts b/src/printers/ts-printer.ts
+index 82521460cf56dea72416d66ccaaec0a65c9338cc..2ac3960422b64b56a40586d2fba0694d1d594283 100644
+--- a/src/printers/ts-printer.ts
++++ b/src/printers/ts-printer.ts
+@@ -4,7 +4,7 @@ import { TSAst, TsxAst } from '../syntax/index.js';
+ 
+ import { Printer } from './index.js';
+ 
+-const generate = generator.default;
++const generate = typeof generator === 'function' ? generator : generator.default;
+ 
+ export const print: Printer<TSAst | TsxAst> = (file) => {
+   return generate(file.root, {

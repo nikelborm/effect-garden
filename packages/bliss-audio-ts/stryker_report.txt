@@ -1,0 +1,382 @@
+[Survived] StringLiteral
+bliss.ts:342:9
+-       ...('artist' in raw ? { artist: raw.artist! } : {}),
++       ...("" in raw ? { artist: raw.artist! } : {}),
+
+[Survived] ObjectLiteral
+bliss.ts:342:27
+-       ...('artist' in raw ? { artist: raw.artist! } : {}),
++       ...('artist' in raw ? {} : {}),
+
+[Survived] StringLiteral
+bliss.ts:343:9
+-       ...('title' in raw ? { title: raw.title! } : {}),
++       ...("" in raw ? { title: raw.title! } : {}),
+
+[Survived] ObjectLiteral
+bliss.ts:343:26
+-       ...('title' in raw ? { title: raw.title! } : {}),
++       ...('title' in raw ? {} : {}),
+
+[Survived] StringLiteral
+bliss.ts:344:9
+-       ...('album' in raw ? { album: raw.album! } : {}),
++       ...("" in raw ? { album: raw.album! } : {}),
+
+[Survived] ObjectLiteral
+bliss.ts:344:26
+-       ...('album' in raw ? { album: raw.album! } : {}),
++       ...('album' in raw ? {} : {}),
+
+[Survived] StringLiteral
+bliss.ts:348:9
+-       ...('genre' in raw ? { genre: raw.genre! } : {}),
++       ...("" in raw ? { genre: raw.genre! } : {}),
+
+[Survived] ObjectLiteral
+bliss.ts:348:26
+-       ...('genre' in raw ? { genre: raw.genre! } : {}),
++       ...('genre' in raw ? {} : {}),
+
+[Survived] ConditionalExpression
+bliss.ts:369:7
+-     if ('error_tag' in raw && 'error' in raw) {
++     if (true) {
+
+[Survived] LogicalOperator
+bliss.ts:369:7
+-     if ('error_tag' in raw && 'error' in raw) {
++     if ('error_tag' in raw || 'error' in raw) {
+
+[Survived] LogicalOperator
+bliss.ts:384:7
+-     if ('error_tag' in raw && 'error' in raw) {
++     if ('error_tag' in raw || 'error' in raw) {
+
+[Survived] ConditionalExpression
+bliss.ts:392:7
+-     if (typeof value !== 'object' || value === null) return false
++     if (false || value === null) return false
+
+[Survived] ConditionalExpression
+bliss.ts:412:7
+-     if (analysis.featuresVersion !== FeaturesVersion.LATEST) {
++     if (true) {
+
+[Survived] ConditionalExpression
+bliss.ts:428:7
+-     if (analysis.featuresVersion !== FeaturesVersion.Version1) {
++     if (true) {
+
+[Survived] LogicalOperator
+bliss.ts:537:7
+-     if ('error_tag' in raw && 'error' in raw) {
++     if ('error_tag' in raw || 'error' in raw) {
+
+[Survived] LogicalOperator
+bliss.ts:548:7
+-     if ('error_tag' in raw && 'error' in raw) {
++     if ('error_tag' in raw || 'error' in raw) {
+
+[Survived] ArrayDeclaration
+bliss.ts:552:43
+-       songs: ('songs' in raw ? raw.songs! : []).map((meta, i) =>
++       songs: ('songs' in raw ? raw.songs! : ["Stryker was here"]).map((meta, i) =>
+
+[Survived] EqualityOperator
+bliss.ts:701:19
+-     for (let i = 0; i < n; i++) delta[i] = (a[i] ?? 0) - (b[i] ?? 0)
++     for (let i = 0; i <= n; i++) delta[i] = (a[i] ?? 0) - (b[i] ?? 0)
+
+[Survived] EqualityOperator
+bliss.ts:705:19
+-     for (let j = 0; j < n; j++) {
++     for (let j = 0; j <= n; j++) {
+
+[Survived] EqualityOperator
+bliss.ts:707:21
+-       for (let i = 0; i < n; i++) sum += (delta[i] ?? 0) * (m[i * n + j] ?? 0)
++       for (let i = 0; i <= n; i++) sum += (delta[i] ?? 0) * (m[i * n + j] ?? 0)
+
+[Survived] EqualityOperator
+bliss.ts:712:19
+-     for (let j = 0; j < n; j++) dot += (deltaM[j] ?? 0) * (delta[j] ?? 0)
++     for (let j = 0; j <= n; j++) dot += (deltaM[j] ?? 0) * (delta[j] ?? 0)
+
+[Survived] BlockStatement
+bliss.ts:735:52
+-   function meanFeatures(songs: Song[]): Float32Array {
+-     const n = songs.length
+-     const result = new Float32Array(NUMBER_FEATURES)
+-     for (const song of songs) {
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
+-       }
+-     }
+-     for (let i = 0; i < NUMBER_FEATURES; i++) {
+-       result[i] = (result[i] ?? 0) / n
+-     }
+-     return result
+-   }
++   function meanFeatures(songs: Song[]): Float32Array {}
+
+[Survived] BlockStatement
+bliss.ts:738:29
+-     for (const song of songs) {
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
+-       }
+-     }
++     for (const song of songs) {}
+
+[Survived] ConditionalExpression
+bliss.ts:739:21
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
++       for (let i = 0; false; i++) {
+
+[Survived] EqualityOperator
+bliss.ts:739:21
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
++       for (let i = 0; i <= NUMBER_FEATURES; i++) {
+
+[Survived] EqualityOperator
+bliss.ts:739:21
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
++       for (let i = 0; i >= NUMBER_FEATURES; i++) {
+
+[Survived] BlockStatement
+bliss.ts:739:47
+-       for (let i = 0; i < NUMBER_FEATURES; i++) {
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
+-       }
++       for (let i = 0; i < NUMBER_FEATURES; i++) {}
+
+[Survived] ArithmeticOperator
+bliss.ts:740:19
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
++         result[i] = (result[i] ?? 0) - (song.analysis.features[i] ?? 0)
+
+[Survived] LogicalOperator
+bliss.ts:740:20
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
++         result[i] = (result[i] && 0) + (song.analysis.features[i] ?? 0)
+
+[Survived] LogicalOperator
+bliss.ts:740:39
+-         result[i] = (result[i] ?? 0) + (song.analysis.features[i] ?? 0)
++         result[i] = (result[i] ?? 0) + (song.analysis.features[i] && 0)
+
+[Survived] ConditionalExpression
+bliss.ts:743:19
+-     for (let i = 0; i < NUMBER_FEATURES; i++) {
++     for (let i = 0; false; i++) {
+
+[Survived] EqualityOperator
+bliss.ts:743:19
+-     for (let i = 0; i < NUMBER_FEATURES; i++) {
++     for (let i = 0; i <= NUMBER_FEATURES; i++) {
+
+[Survived] EqualityOperator
+bliss.ts:743:19
+-     for (let i = 0; i < NUMBER_FEATURES; i++) {
++     for (let i = 0; i >= NUMBER_FEATURES; i++) {
+
+[Survived] BlockStatement
+bliss.ts:743:45
+-     for (let i = 0; i < NUMBER_FEATURES; i++) {
+-       result[i] = (result[i] ?? 0) / n
+-     }
++     for (let i = 0; i < NUMBER_FEATURES; i++) {}
+
+[Survived] ArithmeticOperator
+bliss.ts:744:17
+-       result[i] = (result[i] ?? 0) / n
++       result[i] = (result[i] ?? 0) * n
+
+[Survived] LogicalOperator
+bliss.ts:744:18
+-       result[i] = (result[i] ?? 0) / n
++       result[i] = (result[i] && 0) / n
+
+[Survived] MethodExpression
+bliss.ts:777:18
+-     const albums = [...albumMap.entries()]
+-       .map(([album, songs]) => ({ album, songs, mean: meanFeatures(songs) }))
+-       .sort(
+-         (a, b) => distanceFn(groupMean, a.mean) - distanceFn(groupMean, b.mean),
+-       )
++     const albums = [...albumMap.entries()].map(([album, songs]) => ({
++     album,
++     songs,
++     mean: meanFeatures(songs)
++   }))
+
+[Survived] ArrowFunction
+bliss.ts:780:7
+-         (a, b) => distanceFn(groupMean, a.mean) - distanceFn(groupMean, b.mean),
++         () => undefined,
+
+[Survived] ArithmeticOperator
+bliss.ts:780:17
+-         (a, b) => distanceFn(groupMean, a.mean) - distanceFn(groupMean, b.mean),
++         (a, b) => distanceFn(groupMean, a.mean) + distanceFn(groupMean, b.mean),
+
+[Survived] LogicalOperator
+bliss.ts:788:10
+-           (a.trackNumber ?? 0) - (b.trackNumber ?? 0),
++           (a.trackNumber && 0) - (b.trackNumber ?? 0),
+
+[Survived] EqualityOperator
+bliss.ts:846:10
+-     while (pool.length > 0) {
++     while (pool.length >= 0) {
+
+[Survived] EqualityOperator
+bliss.ts:849:21
+-       for (let i = 0; i < pool.length; i++) {
++       for (let i = 0; i <= pool.length; i++) {
+
+[Survived] ConditionalExpression
+bliss.ts:851:11
+-         if (!poolSong) continue
++         if (false) continue
+
+[Survived] ConditionalExpression
+bliss.ts:862:9
+-       if (!song) break
++       if (false) break
+
+[Survived] EqualityOperator
+bliss.ts:896:19
+-     for (let i = 0; i < n; i++) {
++     for (let i = 0; i <= n; i++) {
+
+[Survived] ArithmeticOperator
+bliss.ts:897:18
+-       for (let j = i + 1; j < n; j++) {
++       for (let j = i - 1; j < n; j++) {
+
+[Survived] EqualityOperator
+bliss.ts:897:25
+-       for (let j = i + 1; j < n; j++) {
++       for (let j = i + 1; j <= n; j++) {
+
+[Survived] ConditionalExpression
+bliss.ts:900:11
+-         if (!si || !sj) continue
++         if (false) continue
+
+[Survived] LogicalOperator
+bliss.ts:900:11
+-         if (!si || !sj) continue
++         if (!si && !sj) continue
+
+[Survived] ConditionalExpression
+bliss.ts:927:7
+-     if (playlist.length === 0) return []
++     if (false) return []
+
+[Survived] ConditionalExpression
+bliss.ts:929:7
+-     if (!first) return []
++     if (false) return []
+
+[Survived] ArrayDeclaration
+bliss.ts:929:22
+-     if (!first) return []
++     if (!first) return ["Stryker was here"]
+
+[Survived] EqualityOperator
+bliss.ts:931:19
+-     for (let i = 1; i < playlist.length; i++) {
++     for (let i = 1; i <= playlist.length; i++) {
+
+[Survived] ConditionalExpression
+bliss.ts:934:9
+-       if (!last || !curr) continue
++       if (false) continue
+
+[Survived] LogicalOperator
+bliss.ts:934:9
+-       if (!last || !curr) continue
++       if (!last && !curr) continue
+
+[Survived] EqualityOperator
+bliss.ts:936:7
+-         distanceFn(last.analysis.features, curr.analysis.features) <
+-         distanceThreshold
++         distanceFn(last.analysis.features, curr.analysis.features) <= distanceThreshold
+
+[Survived] ConditionalExpression
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
+-         curr.artist &&
+-         last.title === curr.title &&
++         true &&
+
+[Survived] LogicalOperator
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
+-         curr.artist &&
+-         last.title === curr.title &&
++         last.title && curr.title && last.artist && curr.artist || last.title === curr.title &&
+
+[Survived] ConditionalExpression
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
+-         curr.artist &&
++         true &&
+
+[Survived] LogicalOperator
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
+-         curr.artist &&
++         last.title && curr.title && last.artist || curr.artist &&
+
+[Survived] ConditionalExpression
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
++         true &&
+
+[Survived] LogicalOperator
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
+-         last.artist &&
++         last.title && curr.title || last.artist &&
+
+[Survived] ConditionalExpression
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
++         true &&
+
+[Survived] LogicalOperator
+bliss.ts:939:7
+-         last.title &&
+-         curr.title &&
++         last.title || curr.title &&
+
+[Survived] ConditionalExpression
+bliss.ts:943:7
+-         last.title === curr.title &&
++         true &&
+
+Ran 0.95 tests per mutant on average.
+----------|------------------|----------|-----------|------------|----------|----------|
+          | % Mutation score |          |           |            |          |          |
+File      |  total | covered | # killed | # timeout | # survived | # no cov | # errors |
+----------|--------|---------|----------|-----------|------------|----------|----------|
+All files |  82.19 |   82.19 |      282 |        18 |         65 |        0 |        0 |
+ bliss.ts |  82.19 |   82.19 |      282 |        18 |         65 |        0 |        0 |
+----------|--------|---------|----------|-----------|------------|----------|----------|
