@@ -1,3 +1,4 @@
 {
+  "js/ts.tsdk.path": "../tsconfig/node_modules/typescript/lib",
   "git.openRepositoryInParentFolders": "always"
 }

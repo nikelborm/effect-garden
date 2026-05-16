@@ -369,3 +369,9 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 // })
 
 // // TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency
+
+// TODO: make a rule to maintain consisten vscode configs in submodules
+// {
+//   "js/ts.tsdk.path": "../tsconfig/node_modules/typescript/lib",
+//   "git.openRepositoryInParentFolders": "always"
+// }
