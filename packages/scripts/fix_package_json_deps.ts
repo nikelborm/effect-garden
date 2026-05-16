@@ -408,24 +408,58 @@ const ensureNoPackagesWithSameName = myMonorepoPackagesEffect.pipe(
   Effect.withSpan('ensureNoPackagesWithSameName'),
 )
 
-// TODO: ensure typescript package is in dev deps of everything that doesn't have it
-// (except in tsconfig package). check the same shit for every deps of tsconfig
-// package, so that I define ts related shit in one place
+const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
+  const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
-// TODO: write auto tool that will scan packages folder, and properly fill
-// dependencies of root package json, exposing all the stuff, and then will
-// properly set dependencies of playground, and then call `bun install`
+  const tsconfigPkg = myMonorepoPackages.find(
+    pkg => pkg.name === '@nikelborm/tsconfig',
+  )
 
-// TODO: ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
+  if (!tsconfigPkg) return
 
-// TODO: ensure properly added everywhere:
-// "@effect/language-service": "catalog:",
-// "@nikelborm/tsconfig": "workspace:*",
-// "ts-namespace-import": "catalog:",
-// "ts-patch": "catalog:",
-// "typescript": "catalog:"
+  const tsconfigDirectDeps = Object.entries(tsconfigPkg.dependencies ?? {})
 
-// TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
+  const otherPackages = myMonorepoPackages.filter(
+    pkg => pkg.name !== '@nikelborm/tsconfig',
+  )
+
+  yield* Effect.forEach(
+    otherPackages,
+    Effect.fn('ensureTsconfigDepsInPackage')(function* (pkg) {
+      yield* Effect.annotateCurrentSpan(
+        Struct.pick(pkg, 'name', 'directoryPath'),
+      )
+
+      const devDeps = pkg.devDependencies ?? {}
+
+      const toInstall: string[] = []
+
+      if (devDeps['@nikelborm/tsconfig'] !== 'workspace:*')
+        toInstall.push('@nikelborm/tsconfig@workspace:*')
+
+      for (const [dep, version] of tsconfigDirectDeps)
+        if (!pkg.allDependencies[dep]) toInstall.push(`${dep}@${version}`)
+
+      if (!toInstall.length) return
+
+      yield* Console.log(`\nInstalling missing tsconfig deps into ${pkg.name}:`)
+      yield* Console.log(toInstall.join(', '))
+
+      yield* observableExec({
+        cmd: ['bun', 'add', '-D', ...toInstall],
+        cwd: pkg.directoryPath,
+        badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.name}`,
+      })
+    }),
+    { discard: true },
+  )
+}).pipe(Effect.withSpan('ensureTsconfigDepsAreInAllPackages'))
+
+// TODO: Add task ensuring `effect` and all `@effect/*` prod deps will be
+// reinstalled as peer deps. This should not affect the things installed into
+// dev deps however. Only move effect related packages from prod to peer. also
+// validate all the other code to properly handle this case and to not conflict
+// with this task.
 
 const addAllDepsToPlayground = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
@@ -441,7 +475,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   )
 
   yield* observableExec({
-    cmd: ['bun', 'add', ...depsToInstall],
+    cmd: ['bun', 'add', '-D', ...depsToInstall],
     cwd: playgroundPackageDirPath,
     badExitCodeErrorMessage: 'Failed to install dependencies in playground',
   })
@@ -556,6 +590,7 @@ Effect.all([
   addAllDepsToPlayground,
   ensureVscodeSettingsExistInAllPackages,
   ensureAllMonorepoPackagesAreRootDeps,
+  ensureTsconfigDepsAreInAllPackages,
 ]).pipe(
   Effect.scoped,
   Effect.provide(BunContext.layer),

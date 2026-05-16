@@ -524,7 +524,7 @@
     "packages/playground": {
       "name": "@nikelborm/playground",
       "version": "0.1.0",
-      "dependencies": {
+      "devDependencies": {
         "@base-ui/react": "catalog:",
         "@biomejs/biome": "catalog:",
         "@effect-atom/atom": "catalog:",
