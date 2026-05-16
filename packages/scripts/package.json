@@ -1,6 +1,7 @@
 {
   "name": "@nikelborm/scripts",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
   "devDependencies": {
     "@nikelborm/tsconfig": "workspace:*",
@@ -11,9 +12,10 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@nikelborm/effect-helpers": "^0.1.1",
+    "@nikelborm/effect-helpers": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
-    "effect": "catalog:"
+    "effect": "catalog:",
+    "effect-errors": "catalog:"
   }
 }

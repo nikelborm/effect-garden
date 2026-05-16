@@ -84,6 +84,6 @@
     }
   ],
   "dependencies": {
-    "@effect/ai-google": "^0.14.0"
+    "@effect/ai-google": "catalog:"
   }
 }

@@ -4,7 +4,9 @@ import * as Effect from 'effect/Effect'
 
 import { Uint8ArrayStreamToString } from './Uint8ArrayStreamToString.ts'
 
-export const simpleExec = Effect.fn(function* (command: Command.Command) {
+export const simpleExec = Effect.fn('simpleExec')(function* (
+  command: Command.Command,
+) {
   const executor = yield* CommandExecutor.CommandExecutor
   const process = yield* executor.start(command)
 

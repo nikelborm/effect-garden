@@ -8,12 +8,14 @@ import {
   OptionalProperty,
   observableExec,
 } from '@nikelborm/effect-helpers'
+import { prettyPrint } from 'effect-errors'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as EArray from 'effect/Array'
+import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
@@ -45,7 +47,7 @@ export const RootPackageJsonSchema = Schema.parseJson(
       devDependencies: AbsentProperty,
     },
     { key: Schema.String, value: Schema.Unknown },
-  ),
+  ).annotations({ title: 'RootPackageJson' }),
 )
 
 export const SubPackageJsonSchema = Schema.parseJson(
@@ -55,12 +57,13 @@ export const SubPackageJsonSchema = Schema.parseJson(
     devDependencies: deps.pipe(OptionalProperty),
     catalog: AbsentProperty,
     dependencies: deps.pipe(OptionalProperty),
-  }),
+  }).annotations({ title: 'SubPackageJson' }),
 )
 
 export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
   Effect.flatMap(Schema.decode(RootPackageJsonSchema)),
+  Effect.withSpan('rootPackageJson'),
 )
 
 export const myMonorepoPackagesDirectoryNamesEffect =
@@ -69,6 +72,7 @@ export const myMonorepoPackagesDirectoryNamesEffect =
     Effect.flatMap(
       Schema.decodeUnknown(Schema.NonEmptyArray(Schema.NonEmptyTrimmedString)),
     ),
+    Effect.withSpan('myMonorepoPackagesDirectoryNames'),
   )
 
 export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
@@ -83,6 +87,8 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
       directoryName,
       'package.json',
     )
+
+    yield* Effect.annotateCurrentSpan({ packageJsonPath })
 
     const myMonorepoPackage = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
@@ -113,6 +119,20 @@ export const getPackagesInfoEffect = Effect.all({
   myMonorepoPackages: myMonorepoPackagesEffect,
 })
 
+export class AmbiguousDependencyVersions extends Schema.TaggedError<AmbiguousDependencyVersions>()(
+  'AmbiguousDependencyVersions',
+  {
+    conflicts: Schema.Record({
+      key: Schema.NonEmptyTrimmedString,
+      value: Schema.Array(Schema.NonEmptyTrimmedString),
+    }),
+  },
+) {
+  override get message(): string {
+    return `Intervention required. The following dependencies have conflicting versions across packages. Select the desired version and put them into catalog manually:\n${JSON.stringify(this.conflicts, null, 2)}`
+  }
+}
+
 export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<IntersectionOfDevAndProdDeps>()(
   'IntersectionOfDevAndProdDeps',
   {
@@ -131,27 +151,30 @@ export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<Intersectio
   }
 }
 
-const ensureProdAndDevDependenciesHaveNoIntersections = Effect.flatMap(
-  myMonorepoPackagesEffect,
-  Effect.forEach(
-    myMonorepoPackage => {
-      const intersection = Record.intersection(
-        myMonorepoPackage.dependencies ?? {},
-        myMonorepoPackage.devDependencies ?? {},
-        (prodVersion, devVersion) => ({ devVersion, prodVersion }),
-      )
+const ensureProdAndDevDependenciesHaveNoIntersections =
+  myMonorepoPackagesEffect.pipe(
+    Effect.flatMap(
+      Effect.forEach(
+        myMonorepoPackage => {
+          const intersection = Record.intersection(
+            myMonorepoPackage.dependencies ?? {},
+            myMonorepoPackage.devDependencies ?? {},
+            (prodVersion, devVersion) => ({ devVersion, prodVersion }),
+          )
 
-      if (Object.keys(intersection).length)
-        return new IntersectionOfDevAndProdDeps({
-          intersection,
-          packageName: myMonorepoPackage.name,
-        })
+          if (Object.keys(intersection).length)
+            return new IntersectionOfDevAndProdDeps({
+              intersection,
+              packageName: myMonorepoPackage.name,
+            })
 
-      return Effect.void
-    },
-    { discard: true },
-  ),
-)
+          return Effect.void
+        },
+        { discard: true },
+      ),
+    ),
+    Effect.withSpan('ensureProdAndDevDependenciesHaveNoIntersections'),
+  )
 
 const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
   Effect.gen(function* () {
@@ -235,11 +258,13 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     )
 
     if (Record.size(installationIntoRootCatalogTasksWithHumanInput)) {
-      console.log('\nInstallation into root catalog tasks with human input')
-      console.table(installationIntoRootCatalogTasksWithHumanInput)
-      throw new Error(
-        'Intervention required. Select the desired packages versions and put them into catalog manually',
+      yield* Console.log(
+        '\nInstallation into root catalog tasks with human input',
       )
+      yield* Console.table(installationIntoRootCatalogTasksWithHumanInput)
+      return yield* new AmbiguousDependencyVersions({
+        conflicts: installationIntoRootCatalogTasksWithHumanInput,
+      })
     }
 
     const tasksToInstallCatalogVersionsOfDeps = pipe(
@@ -255,9 +280,9 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     )
 
     if (Record.size(tasksToInstallCatalogVersionsOfDeps)) {
-      console.log('\nTasks to install catalog versions of deps')
+      yield* Console.log('\nTasks to install catalog versions of deps')
 
-      console.table(
+      yield* Console.table(
         Record.map(
           tasksToInstallCatalogVersionsOfDeps,
           dependencyNamesToInstall => dependencyNamesToInstall.join(', '),
@@ -280,9 +305,11 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     )
 
     if (Record.size(additionalCatalogDependencies)) {
-      console.log('Installation into root catalog tasks without human input')
+      yield* Console.log(
+        'Installation into root catalog tasks without human input',
+      )
 
-      console.table(additionalCatalogDependencies)
+      yield* Console.table(additionalCatalogDependencies)
 
       const tmp: Mutable<typeof rootPackageJson> =
         structuredClone(rootPackageJson)
@@ -302,7 +329,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
         cwd: projectRootAbsolutePath,
         badExitCodeErrorMessage:
           'Failed to install added to catalog bun deps into root package',
-      })
+      }).pipe(Effect.withSpan('installDependenciesInRootAfterUpdatingCatalog'))
     }
 
     for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
@@ -318,7 +345,11 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
         badExitCodeErrorMessage:
           'Failed to install added to catalog bun deps into specific package',
       })
-  })
+  }).pipe(
+    Effect.withSpan(
+      'ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized',
+    ),
+  )
 
 // TODO: ensure typescript package is in dev deps of everything that doesn't have it
 // (except in tsconfig package). check the same shit for every deps of tsconfig
@@ -348,8 +379,8 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
 // TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
 
-const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
-  const { myMonorepoPackages } = yield* getPackagesInfoEffect
+const addAllDepsToPlayground = Effect.gen(function* () {
+  const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const depsToInstall = pipe(
     myMonorepoPackages,
@@ -366,9 +397,9 @@ const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
     cwd: playgroundPackageDirPath,
     badExitCodeErrorMessage: 'Failed to install dependencies in playground',
   })
-})
+}).pipe(Effect.withSpan('addAllDepsToPlayground'))
 
-const fixNonWorkspaceDepsEffect = Effect.gen(function* () {
+const fixNonWorkspaceDeps = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const workspacePackageNames = new Set(myMonorepoPackages.map(pkg => pkg.name))
@@ -384,7 +415,11 @@ const fixNonWorkspaceDepsEffect = Effect.gen(function* () {
 
   yield* Effect.forEach(
     myMonorepoPackages,
-    Effect.fn(function* (pkg) {
+    Effect.fn('fixNonWorkspaceDepsOfPackage')(function* (pkg) {
+      yield* Effect.annotateCurrentSpan(
+        Struct.pick(pkg, 'name', 'directoryPath'),
+      )
+
       const depsToFix = fixable(pkg.dependencies ?? {})
       const devDepsToFix = fixable(pkg.devDependencies ?? {})
 
@@ -393,7 +428,7 @@ const fixNonWorkspaceDepsEffect = Effect.gen(function* () {
           cmd: ['bun', 'add', ...depsToFix.map(name => `${name}@workspace:*`)],
           cwd: pkg.directoryPath,
           badExitCodeErrorMessage: `Failed to fix workspace dependencies in ${pkg.name}`,
-        })
+        }).pipe(Effect.withSpan('fixProdDeps'))
 
       if (devDepsToFix.length)
         yield* observableExec({
@@ -405,11 +440,11 @@ const fixNonWorkspaceDepsEffect = Effect.gen(function* () {
           ],
           cwd: pkg.directoryPath,
           badExitCodeErrorMessage: `Failed to fix workspace dev dependencies in ${pkg.name}`,
-        })
+        }).pipe(Effect.withSpan('fixDevDeps'))
     }),
     { discard: true },
   )
-})
+}).pipe(Effect.withSpan('fixNonWorkspaceDeps'))
 
 const REQUIRED_VSCODE_SETTINGS = {
   'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
@@ -424,8 +459,10 @@ const ensureVscodeSettingsInPackage = Effect.fn(
 
   const vscodeDir = path.join(packagesDirPath, directoryName, '.vscode')
   const settingsPath = path.join(vscodeDir, 'settings.json')
+  yield* Effect.annotateCurrentSpan({ directoryName, vscodeDir, settingsPath })
 
   const settingsExist = yield* fs.exists(settingsPath)
+  yield* Effect.annotateCurrentSpan({ settingsExist })
 
   let currentSettings: Record<string, unknown> = {}
 
@@ -465,10 +502,21 @@ const ensureVscodeSettingsExistInAllPackages =
 
 Effect.all([
   ensureProdAndDevDependenciesHaveNoIntersections,
+  fixNonWorkspaceDeps,
   ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized,
-  addAllDepsToPlaygroundEffect,
-  fixNonWorkspaceDepsEffect,
+  addAllDepsToPlayground,
   ensureVscodeSettingsExistInAllPackages,
-]).pipe(Effect.scoped, Effect.provide(BunContext.layer), BunRuntime.runMain)
+]).pipe(
+  Effect.scoped,
+  Effect.provide(BunContext.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catchAll(e => {
+    console.error(prettyPrint(e))
+
+    return Effect.fail(e)
+  }),
+  BunRuntime.runMain,
+)
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] }

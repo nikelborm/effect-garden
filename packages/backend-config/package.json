@@ -1,6 +1,7 @@
 {
   "name": "@nikelborm/backend-config",
   "type": "module",
+  "version": "0.1.0",
   "scripts": {
     "build": "tspc",
     "dev": "bun --hot --no-clear-screen ./index.ts"

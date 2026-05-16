@@ -83,7 +83,7 @@
   "type": "module",
   "types": "./dist-types/index.d.ts",
   "dependencies": {
-    "@effect/platform": "^0.96.1",
-    "@nikelborm/openapi-gen": "^0.4.17"
+    "@effect/platform": "catalog:",
+    "@nikelborm/openapi-gen": "catalog:"
   }
 }

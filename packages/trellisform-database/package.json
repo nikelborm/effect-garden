@@ -1,6 +1,7 @@
 {
   "name": "@trellisform/database",
   "type": "module",
+  "version": "0.1.0",
   "private": true,
   "exports": {
     ".": {

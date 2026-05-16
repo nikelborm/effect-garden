@@ -66,15 +66,15 @@
     "prepack": "rm -rf dist dist-types && bun build:ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.15",
-    "@nikelborm/tsconfig": "^1.0.0",
-    "@stryker-mutator/api": "^9.6.1",
-    "@stryker-mutator/core": "^9.6.1",
-    "@stryker-mutator/instrumenter": "^9.6.1",
-    "@stryker-mutator/vitest-runner": "^9.6.1",
-    "numpy-ts": "^1.3.2",
-    "typescript": "^5",
-    "vitest": "^4.1.6"
+    "@biomejs/biome": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@stryker-mutator/api": "catalog:",
+    "@stryker-mutator/core": "catalog:",
+    "@stryker-mutator/instrumenter": "catalog:",
+    "@stryker-mutator/vitest-runner": "catalog:",
+    "numpy-ts": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@types/bun": "latest"
