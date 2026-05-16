@@ -1,7 +1,23 @@
 {
   "name": "@trellisform/database",
-  "type": "module",
   "version": "0.1.0",
+  "license": "MIT",
+  "description": "Now it's just a showcase of effect-drizzle-helpers's capabilities. Previously were a promising startup",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/pg": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:"
+  },
+  "type": "module",
   "private": true,
   "exports": {
     ".": {
@@ -29,22 +45,10 @@
     "build": "tspc",
     "dev": "tspc --watch"
   },
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "@types/pg": "catalog:",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  },
-  "dependencies": {
+  "peerDependencies": {
     "@effect/sql": "catalog:",
     "@effect/sql-drizzle": "catalog:",
     "@effect/sql-pg": "catalog:",
-    "@nikelborm/effect-drizzle-helpers": "workspace:*",
-    "drizzle-kit": "catalog:",
-    "drizzle-orm": "catalog:",
-    "effect": "catalog:",
-    "pg": "catalog:"
+    "effect": "catalog:"
   }
 }

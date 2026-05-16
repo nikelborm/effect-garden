@@ -1,6 +1,14 @@
 {
   "name": "@nikelborm/tsconfig",
   "version": "1.0.0",
+  "license": "MIT",
+  "description": "My relatively strict tsconfig just how I like it",
+  "dependencies": {
+    "@effect/language-service": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
   "private": false,
   "publishConfig": {
     "access": "public",
@@ -12,11 +20,5 @@
   "files": [
     "package.json",
     "tsconfig.json"
-  ],
-  "dependencies": {
-    "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  }
+  ]
 }

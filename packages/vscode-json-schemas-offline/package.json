@@ -9757,10 +9757,14 @@
     "package": "vsce package --allow-package-secrets slack --allow-package-secrets github"
   },
   "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/vscode": "catalog:",
     "@vscode/vsce": "catalog:",
     "esbuild": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "trustedDependencies": [

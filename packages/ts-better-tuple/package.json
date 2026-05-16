@@ -1,15 +1,14 @@
 {
   "name": "@nikelborm/ts-better-tuple",
   "version": "0.1.0",
-  "description": "",
+  "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
+  "license": "MIT",
   "main": "index.ts",
   "scripts": {
     "build": "tspc",
     "dev": "tspc --watch"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@total-typescript/ts-reset": "catalog:",
     "change-case": "catalog:",

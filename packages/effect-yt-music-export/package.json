@@ -20,7 +20,7 @@
     "!**/scratchpad.*"
   ],
   "peerDependencies": {
-    "effect": "^3.21.2"
+    "effect": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-yt-music-export#readme",
   "devDependencies": {

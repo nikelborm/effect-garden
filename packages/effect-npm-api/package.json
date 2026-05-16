@@ -1,6 +1,18 @@
 {
   "name": "effect-npm-api",
   "version": "0.1.0",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "@nikelborm/openapi-gen": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "catalog:",
+    "@effect/platform": "catalog:"
+  },
   "author": {
     "name": "nikelborm",
     "email": "evadev@duck.com",
@@ -13,16 +25,6 @@
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  },
-  "peerDependencies": {
-    "effect": "catalog:"
-  },
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",
@@ -81,9 +83,5 @@
     "dev": "tspc --watch --preserveWatchOutput false"
   },
   "type": "module",
-  "types": "./dist-types/index.d.ts",
-  "dependencies": {
-    "@effect/platform": "catalog:",
-    "@nikelborm/openapi-gen": "catalog:"
-  }
+  "types": "./dist-types/index.d.ts"
 }

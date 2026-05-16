@@ -1,26 +1,28 @@
 {
   "name": "next-midi-demo",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --experimental-https",
-    "build": "next build --webpack",
-    "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write"
+  "license": "UNLICENSED",
+  "description": "Demo of MIDI and Web audio capabilities on frontend with Effect",
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-browser": "catalog:",
-    "@effect/platform-bun": "catalog:",
     "@fp-ts/optic": "catalog:",
     "@nikelborm/effect-helpers": "workspace:*",
     "@serwist/next": "catalog:",
     "@wyw-in-js/babel-preset": "catalog:",
-    "effect": "catalog:",
     "effect-web-audio": "workspace:*",
     "effect-web-midi": "workspace:*",
     "next": "catalog:",
@@ -31,14 +33,18 @@
     "serwist": "catalog:",
     "ts-key-not-enum": "workspace:*"
   },
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "ts-namespace-import": "catalog:",
-    "@biomejs/biome": "catalog:",
-    "@types/node": "catalog:",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
-    "babel-plugin-react-compiler": "catalog:",
-    "typescript": "catalog:"
+  "private": true,
+  "scripts": {
+    "dev": "next dev --experimental-https",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "biome check",
+    "format": "biome format --write"
+  },
+  "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "@effect/platform-browser": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
   }
 }

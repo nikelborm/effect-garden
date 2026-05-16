@@ -2,6 +2,8 @@
   "name": "@nikelborm/playground",
   "type": "module",
   "version": "0.1.0",
+  "license": "MIT",
+  "description": "A bunch of hidden scripts for exploration. depends on all packages mentioned in the monorepo",
   "private": true,
   "devDependencies": {
     "@base-ui/react": "catalog:",

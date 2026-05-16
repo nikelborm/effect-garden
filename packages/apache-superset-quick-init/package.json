@@ -18,11 +18,6 @@
     "watch-docs": "find src/ ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },
   "dependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-node": "catalog:",
-    "@effect/platform-node-shared": "catalog:",
-    "@effect/vitest": "catalog:",
     "@nikelborm/git-dl": "workspace:*",
     "@octokit/core": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",
@@ -31,7 +26,6 @@
     "@rollup/plugin-terser": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "effect": "catalog:",
     "effect-errors": "catalog:",
     "jsr": "catalog:",
     "outdent": "catalog:",
@@ -131,5 +125,13 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "@effect/platform-node-shared": "catalog:",
+    "@effect/vitest": "catalog:",
+    "effect": "catalog:"
+  }
 }

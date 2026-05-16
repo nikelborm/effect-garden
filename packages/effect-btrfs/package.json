@@ -1,6 +1,20 @@
 {
   "name": "effect-btrfs",
   "version": "0.1.1",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "catalog:",
+    "@effect/platform": "catalog:"
+  },
+  "dependencies": {
+    "@nikelborm/effect-helpers": "workspace:*"
+  },
   "type": "module",
   "description": "Tooling to work with btrfs with Effect",
   "license": "MIT",
@@ -19,17 +33,7 @@
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
   ],
-  "peerDependencies": {
-    "effect": "catalog:"
-  },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-btrfs#readme",
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  },
   "publishConfig": {
     "access": "public",
     "provenance": false
@@ -81,9 +85,5 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ],
-  "dependencies": {
-    "@effect/platform": "catalog:",
-    "@nikelborm/effect-helpers": "workspace:*"
-  }
+  ]
 }

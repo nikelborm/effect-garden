@@ -1,37 +1,6 @@
 {
   "name": "@nikelborm/git-dl",
   "version": "0.1.28",
-  "type": "module",
-  "description": "Download any directory at any depth from any repo on GitHub on any git ref",
-  "license": "MIT",
-  "scripts": {
-    "start": "node --env-file=.env ./git-dl.ts",
-    "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
-    "test": "vitest --typecheck --watch",
-    "format": "",
-    "coverage": "vitest run --coverage",
-    "test-once": "vitest --run",
-    "test-jsr": "tspc && jsr publish --dry-run",
-    "build": "./scripts/build.sh",
-    "doc": "./scripts/generate_docs.sh",
-    "docs": "./scripts/generate_docs.sh",
-    "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
-    "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
-  },
-  "dependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-node": "catalog:",
-    "@octokit/core": "catalog:",
-    "@octokit/request-error": "catalog:",
-    "@octokit/types": "catalog:",
-    "effect": "catalog:",
-    "effect-errors": "catalog:",
-    "outdent": "catalog:",
-    "tar-fs": "catalog:",
-    "tsafe": "catalog:",
-    "tslib": "catalog:"
-  },
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
@@ -51,6 +20,33 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@octokit/core": "catalog:",
+    "@octokit/request-error": "catalog:",
+    "@octokit/types": "catalog:",
+    "effect-errors": "catalog:",
+    "outdent": "catalog:",
+    "tar-fs": "catalog:",
+    "tsafe": "catalog:",
+    "tslib": "catalog:"
+  },
+  "type": "module",
+  "description": "Download any directory at any depth from any repo on GitHub on any git ref",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --env-file=.env ./git-dl.ts",
+    "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
+    "test": "vitest --typecheck --watch",
+    "format": "",
+    "coverage": "vitest run --coverage",
+    "test-once": "vitest --run",
+    "test-jsr": "tspc && jsr publish --dry-run",
+    "build": "./scripts/build.sh",
+    "doc": "./scripts/generate_docs.sh",
+    "docs": "./scripts/generate_docs.sh",
+    "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
+    "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },
   "publishConfig": {
     "access": "public",
@@ -148,5 +144,11 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:"
+  }
 }

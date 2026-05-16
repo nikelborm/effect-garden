@@ -1,11 +1,8 @@
 {
   "name": "@nikelborm/backend-config",
-  "type": "module",
   "version": "0.1.0",
-  "scripts": {
-    "build": "tspc",
-    "dev": "bun --hot --no-clear-screen ./index.ts"
-  },
+  "license": "MIT",
+  "description": "Reusable Effect tags to know which exact config params does effect/layer depends on and see if they weren't provided",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -13,7 +10,12 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
-  "dependencies": {
+  "type": "module",
+  "scripts": {
+    "build": "tspc",
+    "dev": "bun --hot --no-clear-screen ./index.ts"
+  },
+  "peerDependencies": {
     "@effect/platform": "catalog:",
     "effect": "catalog:"
   }

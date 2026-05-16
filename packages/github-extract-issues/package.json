@@ -1,6 +1,18 @@
 {
   "name": "@nikelborm/github-extract-issues",
   "version": "0.1.0",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@total-typescript/ts-reset": "catalog:",
+    "effect-errors": "catalog:",
+    "effect-octokit-layer": "catalog:"
+  },
   "type": "module",
   "description": "Script to extract issues with comments from repo",
   "license": "MIT",
@@ -15,22 +27,6 @@
     "index.ts",
     "package.json"
   ],
-  "dependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-bun": "catalog:",
-    "@total-typescript/ts-reset": "catalog:",
-    "effect": "catalog:",
-    "effect-errors": "catalog:",
-    "effect-octokit-layer": "catalog:"
-  },
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  },
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -65,5 +61,11 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
+  }
 }

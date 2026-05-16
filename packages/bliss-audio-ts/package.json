@@ -67,17 +67,20 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
     "@stryker-mutator/api": "catalog:",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/instrumenter": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
     "numpy-ts": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "catalog:"
   },
   "patchedDependencies": {
     "@stryker-mutator/instrumenter@9.6.1": "patches/@stryker-mutator%2Finstrumenter@9.6.1.patch"
