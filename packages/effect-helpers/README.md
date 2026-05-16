@@ -10,7 +10,6 @@
 - `OptionalProperty`
 - `ParseErrorSchema`
 - `passthroughErrorsWithTagsOrElseMapError`
-- `ProcessStdinSink`
 - `renameClass`
 - `simpleExec`
 - `Uint8ArrayStreamToString`
