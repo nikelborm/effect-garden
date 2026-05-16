@@ -30,6 +30,7 @@
         "effect-npm-api": "workspace:*",
         "effect-npm-api-schema": "workspace:*",
         "effect-opfs": "workspace:*",
+        "effect-schema-writer": "workspace:*",
         "effect-web-audio": "workspace:*",
         "effect-web-audio-generate": "workspace:*",
         "effect-web-mediacapture-streams": "workspace:*",
@@ -120,7 +121,7 @@
     },
     "packages/bliss-audio-ts": {
       "name": "bliss-audio-ts",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "devDependencies": {
         "@biomejs/biome": "^2.4.15",
         "@nikelborm/tsconfig": "^1.0.0",
@@ -266,6 +267,23 @@
     "packages/effect-schema-i18n": {
       "name": "@nikelborm/effect-schema-i18n",
       "version": "0.1.0",
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@nikelborm/tsconfig": "workspace:*",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "effect": "catalog:",
+      },
+    },
+    "packages/effect-schema-writer": {
+      "name": "effect-schema-writer",
+      "version": "0.1.0",
+      "dependencies": {
+        "@effect/ai-google": "^0.14.0",
+      },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
@@ -2071,6 +2089,8 @@
     "effect-octokit-layer": ["effect-octokit-layer@1.15.1", "", { "dependencies": { "@octokit/core": "7.0.6", "date-fns": "4.1.0", "picocolors": "1.1.1" }, "peerDependencies": { "@effect/platform": "0.x", "effect": "3.x" } }, "sha512-XRZBB8BMdm9DEG/oSgylK/HwpNmz/PyaXHMM9TMU5uwDD6TGIchMtVA2LfTRN7CdtVy3f68PH/rHOn/lZzGM1w=="],
 
     "effect-opfs": ["effect-opfs@workspace:packages/effect-opfs"],
+
+    "effect-schema-writer": ["effect-schema-writer@workspace:packages/effect-schema-writer"],
 
     "effect-web-audio": ["effect-web-audio@workspace:packages/effect-web-audio"],
 

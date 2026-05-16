@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import {
   AbsentProperty,
   OptionalProperty,
+  observableExec,
   simpleExec,
 } from '@nikelborm/effect-helpers'
 
@@ -24,6 +25,7 @@ import * as Tuple from 'effect/Tuple'
 
 import {
   packagesDirPath,
+  playgroundPackageDirPath,
   projectRootAbsolutePath,
   rootPackageJsonPath,
 } from './lib/paths.ts'
@@ -34,12 +36,15 @@ const deps = Schema.Record({
 })
 
 export const RootPackageJsonSchema = Schema.parseJson(
-  Schema.Struct({
-    name: Schema.NonEmptyTrimmedString,
-    dependencies: deps.pipe(OptionalProperty),
-    catalog: deps,
-    devDependencies: AbsentProperty,
-  }),
+  Schema.Struct(
+    {
+      name: Schema.NonEmptyTrimmedString,
+      dependencies: deps.pipe(OptionalProperty),
+      catalog: deps,
+      devDependencies: AbsentProperty,
+    },
+    { key: Schema.String, value: Schema.Unknown },
+  ),
 )
 
 export const SubPackageJsonSchema = Schema.parseJson(
@@ -148,6 +153,7 @@ const ensureProdAndDevDependenciesHaveNoIntersections = Effect.flatMap(
 
 const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
   Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem
     const dependencyNameToItsInstances = pipe(
       yield* myMonorepoPackagesEffect,
       EArray.flatMap(myMonorepoPackage =>
@@ -276,102 +282,98 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
       console.table(additionalCatalogDependencies)
 
-      const tmp = JSON.parse(rootPackageJsonString)
+      const tmp: Mutable<typeof rootPackageJson> =
+        structuredClone(rootPackageJson)
 
-      tmp.catalog = { ...tmp.catalog, ...additionalCatalogDependencies }
+      tmp.catalog = {
+        ...rootPackageJson.catalog,
+        ...additionalCatalogDependencies,
+      }
 
-      yield* writeFile(rootPackageJsonPath, JSON.stringify(tmp, null, 2) + '\n')
+      yield* fs.writeFileString(
+        rootPackageJsonPath,
+        JSON.stringify(tmp, null, 2) + '\n',
+      )
 
-      yield* transparentSpawn({
+      yield* observableExec({
         cmd: ['bun', 'install'],
         cwd: projectRootAbsolutePath,
-        failureMessage:
+        badExitCodeErrorMessage:
           'Failed to install added to catalog bun deps into root package',
       })
     }
 
     for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
       tasksToInstallCatalogVersionsOfDeps,
-    )) {
-      yield* observableSpawn({
+    ))
+      yield* observableExec({
         cmd: [
           'bun',
           'add',
           ...dependencyNamesToInstall.map(name => name + '@catalog:'),
         ],
         cwd,
-        failureMessage:
+        badExitCodeErrorMessage:
           'Failed to install added to catalog bun deps into specific package',
       })
-    }
   })
 
 // TODO: ensure typescript package is in dev deps of everything that doesn't have it
 // (except in tsconfig package). check the same shit for every deps of tsconfig
 // package, so that I define ts related shit in one place
 
-// ;({ myMonorepoPackages, rootPackageJson } = yield* getPackagesInfo())
+// TODO: ensure all dirs inside packages folder are installed as devDeps of root
+// package, plus playground should be filled with all catalog deps and workspace
+// deps and a few others
 
-// const _myMonorepoTsconfigPackage = pipe(
-//   myMonorepoPackages,
-//   EArray.filter(x => x.name === '@nikelborm/tsconfig'),
-//   Option.liftPredicate(Predicate.isTupleOf(1)),
-//   Option.map(Tuple.at(0)),
-//   Option.getOrThrow,
-// )
+// TODO: write auto tool that will scan packages folder, and properly fill
+// dependencies of root package json, exposing all the stuff, and then will
+// properly set dependencies of playground, and then call `bun install`
 
-// for (const { devDependencies } of myMonorepoPackages) {
-//   // if(!)
-// }
-// // TODO: ensure all dirs inside packages folder are installed as devDeps of root
-// // package, plus playground should be filled with all catalog deps and workspace
-// // deps and a few others
+// TODO: write a helper that will report packages that are `@nikelborm/...`, but have
+// versions not equal to `workspace:*`
 
-// // TODO: write auto tool that will scan packages folder, and properly fill
-// // dependencies of root package json, exposing all the stuff, and then will
-// // properly set dependencies of playground, and then call `bun install`
+// TODO: ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
 
-// // TODO: write a helper that will report packages that are `@nikelborm/...`, but have
-// // versions not equal to `workspace:*`
+// TODO: ensure there are no packages with the same name
 
-// // TODO: ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
+// TODO: ensure properly added everywhere:
+// "@effect/language-service": "catalog:",
+// "@nikelborm/tsconfig": "workspace:*",
+// "ts-namespace-import": "catalog:",
+// "ts-patch": "catalog:",
+// "typescript": "catalog:"
 
-// // TODO: ensure there are no packages with the same name
+// TODO: ensure version field is present everywhere as well as name
 
-// // TODO: ensure properly added everywhere:
-// // "@effect/language-service": "catalog:",
-// // "@nikelborm/tsconfig": "workspace:*",
-// // "ts-namespace-import": "catalog:",
-// // "ts-patch": "catalog:",
-// // "typescript": "catalog:"
+// TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
 
-// // TODO: ensure version field is present everywhere as well as name
+const addAllDepsToPlaygroundEffect = Effect.gen(function* () {
+  const { myMonorepoPackages } = yield* getPackagesInfoEffect
 
-// // TODO: Add task ensuring effect is in peer deps where necessary instead of hard deps
+  const depsToInstall = pipe(
+    myMonorepoPackages,
+    EArray.map(pkg => pkg.allDependencies),
+    EArray.reduce({} as { [x: string]: string }, (prev, cur) =>
+      Object.assign(prev, cur),
+    ),
+    Record.toEntries,
+    EArray.map(([pkgName, pkgVersion]) => pkgName + '@' + pkgVersion),
+  )
 
-// // adds all the deps into playground
-// ;({ myMonorepoPackages, rootPackageJson } = yield* getPackagesInfo())
+  yield* observableExec({
+    cmd: ['bun', 'add', ...depsToInstall],
+    cwd: playgroundPackageDirPath,
+    badExitCodeErrorMessage: 'Failed to install dependencies in playground',
+  })
+})
 
-// const depsToInstall = pipe(
-//   myMonorepoPackages,
-//   EArray.map(pkg => pkg.allDependencies),
-//   EArray.reduce({} as { [x: string]: string }, (prev, cur) =>
-//     Object.assign(prev, cur),
-//   ),
-//   Record.toEntries,
-//   EArray.map(([pkgName, pkgVersion]) => pkgName + '@' + pkgVersion),
-// )
+// TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency
 
-// yield* transparentSpawn({
-//   cmd: ['bun', 'add', ...depsToInstall],
-//   cwd: playgroundPackageDirPath,
-//   failureMessage: 'Failed to install dependencies in playground',
-// })
-
-// // TODO: should automatically fix dependecies added as not a workspace, when they are accesible as a worspace dependency
-
-// TODO: make a rule to maintain consisten vscode configs in submodules
+// TODO: make a rule to maintain consisten vscode/settings.json configs in submodules have at least these keys, and if not append them
 // {
 //   "js/ts.tsdk.path": "../tsconfig/node_modules/typescript/lib",
 //   "git.openRepositoryInParentFolders": "always"
 // }
+
+type Mutable<T> = { -readonly [P in keyof T]: T[P] }
