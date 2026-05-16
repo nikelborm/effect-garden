@@ -151,6 +151,20 @@ export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<Intersectio
   }
 }
 
+export class DuplicatePackageNames extends Schema.TaggedError<DuplicatePackageNames>()(
+  'DuplicatePackageNames',
+  {
+    duplicates: Schema.Record({
+      key: Schema.NonEmptyTrimmedString,
+      value: Schema.Array(Schema.NonEmptyTrimmedString),
+    }),
+  },
+) {
+  override get message(): string {
+    return `Multiple packages share the same name. Fix the package names to proceed:\n${JSON.stringify(this.duplicates, null, 2)}`
+  }
+}
+
 const ensureProdAndDevDependenciesHaveNoIntersections =
   myMonorepoPackagesEffect.pipe(
     Effect.flatMap(
@@ -351,24 +365,58 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     ),
   )
 
+const ensureAllMonorepoPackagesAreRootDeps = Effect.gen(function* () {
+  const { rootPackageJson, myMonorepoPackages } = yield* getPackagesInfoEffect
+
+  const currentDeps = rootPackageJson.dependencies ?? {}
+
+  const toInstall = myMonorepoPackages
+    .filter(pkg => currentDeps[pkg.name] !== 'workspace:*')
+    .map(pkg => `${pkg.name}@workspace:*`)
+
+  if (!toInstall.length) return
+
+  yield* Console.log(
+    '\nAdding missing workspace packages as root dependencies:',
+  )
+  yield* Console.log(toInstall.join(', '))
+
+  yield* observableExec({
+    cmd: ['bun', 'add', ...toInstall],
+    cwd: projectRootAbsolutePath,
+    badExitCodeErrorMessage:
+      'Failed to add workspace packages as root dependencies',
+  })
+}).pipe(Effect.withSpan('ensureAllMonorepoPackagesAreRootDeps'))
+
+const ensureNoPackagesWithSameName = myMonorepoPackagesEffect.pipe(
+  Effect.flatMap(myMonorepoPackages => {
+    const duplicates = pipe(
+      myMonorepoPackages,
+      EArray.groupBy(_ => _.name),
+      Record.filterMap(packages =>
+        packages.length > 1
+          ? Option.some(packages.map(_ => _.directoryPath))
+          : Option.none(),
+      ),
+    )
+
+    if (!Record.size(duplicates)) return Effect.void
+
+    return new DuplicatePackageNames({ duplicates })
+  }),
+  Effect.withSpan('ensureNoPackagesWithSameName'),
+)
+
 // TODO: ensure typescript package is in dev deps of everything that doesn't have it
 // (except in tsconfig package). check the same shit for every deps of tsconfig
 // package, so that I define ts related shit in one place
-
-// TODO: ensure all dirs inside packages folder are installed as devDeps of root
-// package, plus playground should be filled with all catalog deps and workspace
-// deps and a few others
 
 // TODO: write auto tool that will scan packages folder, and properly fill
 // dependencies of root package json, exposing all the stuff, and then will
 // properly set dependencies of playground, and then call `bun install`
 
-// TODO: write a helper that will report packages that are `@nikelborm/...`, but have
-// versions not equal to `workspace:*`
-
 // TODO: ensure presence of `"@nikelborm/tsconfig": "workspace:*",` everywhere
-
-// TODO: ensure there are no packages with the same name
 
 // TODO: ensure properly added everywhere:
 // "@effect/language-service": "catalog:",
@@ -501,11 +549,13 @@ const ensureVscodeSettingsExistInAllPackages =
   )
 
 Effect.all([
+  ensureNoPackagesWithSameName,
   ensureProdAndDevDependenciesHaveNoIntersections,
   fixNonWorkspaceDeps,
   ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized,
   addAllDepsToPlayground,
   ensureVscodeSettingsExistInAllPackages,
+  ensureAllMonorepoPackagesAreRootDeps,
 ]).pipe(
   Effect.scoped,
   Effect.provide(BunContext.layer),
