@@ -1,9 +1,18 @@
 {
   "name": "@nikelborm/tsconfig",
   "version": "1.0.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     "default": "./tsconfig.json"
   },
+  "files": [
+    "package.json",
+    "tsconfig.json"
+  ],
   "dependencies": {
     "@effect/language-service": "catalog:",
     "ts-namespace-import": "catalog:",

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    // TODO: change back to opposites, when it's less annoying
+    // TODO: change back allowUnusedLabels, noUnusedParameters, noUnusedLocals to opposites, when it's less annoying
     "allowUnusedLabels": true,
     "noUnusedParameters": false,
     "noUnusedLocals": false,
