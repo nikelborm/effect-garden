@@ -549,15 +549,29 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
 const addAllDepsToPlayground = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
-  const depsToInstall = pipe(
+  const allDeps: Record<string, string> = pipe(
     myMonorepoPackages,
     EArray.map(pkg => pkg.allDependencies),
-    EArray.reduce({} as { [x: string]: string }, (prev, cur) =>
+    EArray.reduce({} as Record<string, string>, (prev, cur) =>
       Object.assign(prev, cur),
     ),
-    Record.toEntries,
-    EArray.map(([pkgName, pkgVersion]) => pkgName + '@' + pkgVersion),
   )
+
+  const playground = myMonorepoPackages.find(
+    pkg => pkg.myMonorepoPackage.name === '@nikelborm/playground',
+  )
+  if (!playground) return yield* Effect.dieMessage('absurd')
+
+  const existingDevDeps = playground.myMonorepoPackage.devDependencies ?? {}
+
+  const depsToInstall = pipe(
+    allDeps,
+    Record.toEntries,
+    EArray.filter(([name, version]) => existingDevDeps[name] !== version),
+    EArray.map(([name, version]) => name + '@' + version),
+  )
+
+  if (!depsToInstall.length) return
 
   yield* observableExec({
     cmd: ['bun', 'add', '-D', ...depsToInstall],
