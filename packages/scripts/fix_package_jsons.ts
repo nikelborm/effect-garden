@@ -10,6 +10,7 @@ import {
   observableExec,
 } from '@nikelborm/effect-helpers'
 import { prettyPrint } from 'effect-errors'
+import sortPackageJson from 'sort-package-json'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
@@ -772,6 +773,19 @@ const ensureVscodeSettingsExistInAllPackages =
     ),
     Effect.withSpan('ensureVscodeSettingsExistInAllPackages'),
   )
+
+const sortPackageJsonEffect = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
+  for (const {
+    myMonorepoPackage,
+    directoryPath,
+  } of yield* myMonorepoPackagesEffect) {
+    const jsonPath = path.join(directoryPath, 'package.json')
+    const sorted = sortPackageJson(myMonorepoPackage)
+    yield* fs.writeFileString(jsonPath, JSON.stringify(sorted, null, 2) + '\n')
+  }
+})
 
 const program = Effect.all([
   ensureNoPackagesWithSameName,

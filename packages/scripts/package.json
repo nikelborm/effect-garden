@@ -49,7 +49,8 @@
     "@nikelborm/effect-helpers": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
-    "effect-errors": "catalog:"
+    "effect-errors": "catalog:",
+    "sort-package-json": "^3.6.1"
   },
   "type": "module",
   "peerDependencies": {
