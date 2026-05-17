@@ -2,7 +2,13 @@
   "name": "@nikelborm/effect-landscape",
   "version": "0.0.1",
   "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "type": "module",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-landscape#readme",
   "description": "Overview analytics of the whole effect ecosystem",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
@@ -19,5 +25,24 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
-  }
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ]
 }

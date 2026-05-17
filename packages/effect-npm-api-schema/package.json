@@ -2,6 +2,7 @@
   "name": "effect-npm-api-schema",
   "version": "0.1.0",
   "type": "module",
+  "private": false,
   "description": "Effect schemas of objects returned by NPM API",
   "license": "MIT",
   "scripts": {

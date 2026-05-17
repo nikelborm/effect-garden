@@ -11,10 +11,30 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/trellisform-database#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
   },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
@@ -27,7 +47,11 @@
     "pg": "catalog:"
   },
   "type": "module",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",

@@ -211,7 +211,7 @@
     },
     "packages/effect-helpers": {
       "name": "@nikelborm/effect-helpers",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
@@ -464,7 +464,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
-        "@types/bun": "^1.3.14",
+        "@types/bun": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",

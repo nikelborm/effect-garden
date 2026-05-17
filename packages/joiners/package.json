@@ -2,6 +2,7 @@
   "name": "@nikelborm/joiners",
   "version": "0.1.0",
   "type": "module",
+  "private": false,
   "description": "Join 2 or more iterables as if it's SQL joins but with the level of type-safety you didn't know you need",
   "license": "MIT",
   "bugs": {
@@ -11,7 +12,6 @@
   "scripts": {
     "scratchpad": "node --use-strict ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
-    "format": "",
     "coverage": "vitest run --coverage",
     "test-once": "vitest --run",
     "test:mutate": "stryker run",
@@ -45,7 +45,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

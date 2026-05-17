@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Effect schema i18n",
+  "private": false,
   "license": "MIT",
   "scripts": {
     "build": "tspc",
@@ -12,6 +13,7 @@
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-schema-i18n#readme",
   "files": [
     "dist",
     "dist-types",
@@ -31,7 +33,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

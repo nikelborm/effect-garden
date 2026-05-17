@@ -5,6 +5,7 @@ import { join } from 'node:path'
 
 import {
   AbsentProperty,
+  NonEmptyRecord,
   OptionalProperty,
   observableExec,
 } from '@nikelborm/effect-helpers'
@@ -31,16 +32,27 @@ import {
   projectRootAbsolutePath,
   rootPackageJsonPath,
 } from './lib/paths.ts'
+import {
+  email,
+  githubUser,
+  gitSshUrl,
+  httpsRepoLink,
+  httpsUserLink,
+  issuesLink,
+  vscodeConfig,
+} from './newPackage.ts'
 
-const deps = Schema.Record({
-  key: Schema.NonEmptyTrimmedString,
-  value: Schema.NonEmptyTrimmedString,
-})
+const deps = NonEmptyRecord(
+  Schema.NonEmptyTrimmedString,
+  Schema.NonEmptyTrimmedString,
+)
 
 export const RootPackageJsonSchema = Schema.parseJson(
   Schema.Struct(
     {
       name: Schema.NonEmptyTrimmedString,
+      // to avoid accidental publishs
+      private: Schema.Literal(true),
       version: Schema.NonEmptyTrimmedString,
       dependencies: deps.pipe(OptionalProperty),
       catalog: deps,
@@ -50,35 +62,89 @@ export const RootPackageJsonSchema = Schema.parseJson(
   ).annotations({ title: 'RootPackageJson' }),
 )
 
-export const SubPackageJsonSchema = Schema.parseJson(
-  Schema.Struct(
-    {
-      name: Schema.NonEmptyTrimmedString,
-      type: Schema.Literal('module'),
-      version: Schema.NonEmptyTrimmedString,
-      license: Schema.Literal('MIT', 'UNLICENSED'),
-      description: Schema.NonEmptyTrimmedString,
-      devDependencies: deps.pipe(OptionalProperty),
-      peerDependencies: deps.pipe(OptionalProperty),
-      catalog: AbsentProperty,
-      dependencies: deps.pipe(OptionalProperty),
-      bugs: Schema.Struct({
-        url: Schema.Literal(
-          'https://github.com/nikelborm/effect-garden/issues',
-        ),
-        email: Schema.Literal('evadev@duck.com'),
+const emailSchema = Schema.Literal(email)
+const myUserSchema = Schema.Struct({
+  name: Schema.Literal(githubUser),
+  email: emailSchema,
+  url: Schema.Literal(httpsUserLink),
+})
+const userSchema = Schema.Struct({
+  name: Schema.NonEmptyTrimmedString,
+  email: Schema.NonEmptyTrimmedString,
+  url: Schema.NonEmptyTrimmedString,
+})
+
+export const SubPackageJsonSchema = Schema.Struct(
+  {
+    name: Schema.NonEmptyTrimmedString,
+    type: Schema.Literal('module'),
+    version: Schema.NonEmptyTrimmedString,
+
+    description: Schema.NonEmptyTrimmedString,
+    devDependencies: deps.pipe(OptionalProperty),
+    peerDependencies: deps.pipe(OptionalProperty),
+
+    catalog: AbsentProperty,
+    dependencies: deps.pipe(OptionalProperty),
+    homepage: Schema.TemplateLiteralParser(
+      httpsRepoLink,
+      `/tree/main/packages/`,
+      Schema.NonEmptyTrimmedString,
+      `#readme`,
+    ),
+    bugs: Schema.Struct({
+      url: Schema.Literal(issuesLink),
+      email: emailSchema,
+    }),
+    keywords: Schema.NonEmptyArray(Schema.NonEmptyTrimmedString).pipe(
+      OptionalProperty,
+    ),
+    repository: Schema.Struct({
+      type: Schema.Literal('git'),
+      url: Schema.Literal(gitSshUrl),
+      directory: Schema.TemplateLiteralParser(
+        'packages/',
+        Schema.NonEmptyTrimmedString,
+      ),
+    }),
+    scripts: NonEmptyRecord(
+      Schema.NonEmptyTrimmedString,
+      Schema.NonEmptyTrimmedString,
+    ).pipe(OptionalProperty),
+    author: myUserSchema,
+    contributors: Schema.Tuple([myUserSchema], userSchema),
+    maintainers: Schema.Tuple([myUserSchema], userSchema),
+  },
+  { key: Schema.String, value: Schema.Unknown },
+).pipe(
+  Schema.extend(
+    Schema.Union(
+      Schema.Struct({
+        license: Schema.Literal('UNLICENSED'),
+        private: Schema.Literal(true),
+        publishConfig: AbsentProperty,
       }),
-      repository: Schema.Struct({
-        type: Schema.Literal('git'),
-        url: Schema.Literal(
-          'git+ssh://git@github.com/nikelborm/effect-garden.git',
-        ),
-        directory: Schema.TemplateLiteral('packages/', Schema.String),
+      Schema.Struct({
+        license: Schema.Literal('MIT'),
+        private: Schema.Literal(false),
+        publishConfig: Schema.Struct({
+          access: Schema.Literal('public'),
+          // TODO: my github actions are a mess right now
+          provenance: Schema.Literal(false),
+          // TODO: should make creating a separate package.json as well as README, and use this, to create a crafted package folder. for example to not publish "scripts" and other repo-only fields
+          // directory: Schema.Literal('dist'),
+          // linkDirectory: Schema.Literal(false),
+        }),
       }),
-    },
-    { key: Schema.String, value: Schema.Unknown },
-  ).annotations({ title: 'SubPackageJson' }),
+    ),
+  ),
+  Schema.annotations({ title: 'SubPackageJson' }),
 )
+
+export const SubPackageJsonSchemaFromString =
+  Schema.parseJson(SubPackageJsonSchema)
+
+export type SubPackageJson = (typeof SubPackageJsonSchema)['Encoded']
 
 export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
@@ -112,7 +178,7 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
 
     const myMonorepoPackage = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
-      Schema.decode(SubPackageJsonSchema),
+      Schema.decode(SubPackageJsonSchemaFromString),
     )
 
     return {
@@ -660,11 +726,6 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
   )
 }).pipe(Effect.withSpan('fixNonWorkspaceDeps'))
 
-const REQUIRED_VSCODE_SETTINGS = {
-  'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
-  'git.openRepositoryInParentFolders': 'always',
-} as const satisfies Record<string, string>
-
 const ensureVscodeSettingsInPackage = Effect.fn(
   'ensureVscodeSettingsInPackage',
 )(function* (directoryName: string) {
@@ -687,16 +748,14 @@ const ensureVscodeSettingsInPackage = Effect.fn(
     yield* fs.makeDirectory(vscodeDir, { recursive: true })
   }
 
-  const missingEntries = Object.entries(REQUIRED_VSCODE_SETTINGS).filter(
-    ([key, value]) => currentSettings[key] !== value,
+  const missing = Record.filter(
+    vscodeConfig,
+    (value, key) => currentSettings[key] !== value,
   )
 
-  if (!missingEntries.length) return
+  if (!Record.size(missing)) return
 
-  const updatedSettings = {
-    ...currentSettings,
-    ...Object.fromEntries(missingEntries),
-  }
+  const updatedSettings = { ...currentSettings, ...missing }
 
   yield* fs.writeFileString(
     settingsPath,
@@ -714,7 +773,7 @@ const ensureVscodeSettingsExistInAllPackages =
     Effect.withSpan('ensureVscodeSettingsExistInAllPackages'),
   )
 
-Effect.all([
+const program = Effect.all([
   ensureNoPackagesWithSameName,
   ensureProdAndDevDependenciesHaveNoIntersections,
   fixNonWorkspaceDeps,
@@ -734,7 +793,8 @@ Effect.all([
 
     return Effect.fail(e)
   }),
-  BunRuntime.runMain,
 )
+
+if (import.meta.main) BunRuntime.runMain(program)
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] }

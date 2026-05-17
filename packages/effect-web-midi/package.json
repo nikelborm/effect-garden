@@ -30,6 +30,7 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "private": false,
   "publishConfig": {
     "access": "public",
     "provenance": false

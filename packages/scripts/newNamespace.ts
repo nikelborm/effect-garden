@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import { prettyPrint } from 'effect-errors'
+
 import * as Prompt from '@effect/cli/Prompt'
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
@@ -8,7 +10,7 @@ import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Effect from 'effect/Effect'
 import * as Either from 'effect/Either'
 
-import { myMonorepoPackagesEffect } from './fix_package_json_deps.ts'
+import { myMonorepoPackagesEffect } from './fix_package_jsons.ts'
 import { packagesDirPath } from './lib/paths.ts'
 
 const emptyInternalTsNamespaceFile = `/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
@@ -67,20 +69,30 @@ export const createNamespaceRelatedFiles = Effect.fn(
   )
 })
 
-if (import.meta.main)
-  Effect.gen(function* () {
-    const myMonorepoPackages = yield* myMonorepoPackagesEffect
+const program = Effect.gen(function* () {
+  const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
-    const { namespaces, packageName } = yield* Prompt.all({
-      packageName: Prompt.select({
-        message: `Choose a package:`,
-        choices: myMonorepoPackages.map(pkg => ({
-          title: pkg.name,
-          value: pkg.directoryPath,
-        })),
-      }),
-      namespaces: listOfNamespacesPrompt,
-    }).pipe(Prompt.run)
+  const { namespaces, packageName } = yield* Prompt.all({
+    packageName: Prompt.select({
+      message: `Choose a package:`,
+      choices: myMonorepoPackages.map(pkg => ({
+        title: pkg.myMonorepoPackage.name,
+        value: pkg.directoryPath,
+      })),
+    }),
+    namespaces: listOfNamespacesPrompt,
+  }).pipe(Prompt.run)
 
-    yield* createNamespaceRelatedFiles(packageName, namespaces)
-  }).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)
+  yield* createNamespaceRelatedFiles(packageName, namespaces)
+}).pipe(
+  Effect.provide(BunContext.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catchAll(e => {
+    console.error(prettyPrint(e))
+
+    return Effect.fail(e)
+  }),
+)
+
+if (import.meta.main) BunRuntime.runMain(program)

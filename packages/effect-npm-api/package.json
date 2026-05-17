@@ -66,6 +66,10 @@
   ],
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api#readme",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "maintainers": [
     {
       "name": "nikelborm",
@@ -73,10 +77,7 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
+  "private": false,
   "scripts": {
     "build": "tspc",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",

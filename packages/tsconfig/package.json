@@ -10,6 +10,7 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/tsconfig#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -27,6 +28,25 @@
   "exports": {
     "default": "./tsconfig.json"
   },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "files": [
     "package.json",
     "tsconfig.json"

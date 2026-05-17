@@ -1,6 +1,7 @@
 {
   "name": "@nikelborm/effect-garden",
   "version": "1.0.0",
+  "private": true,
   "dependencies": {
     "@biomejs/biome": "catalog:",
     "@linaria/postcss-linaria": "^7.0.0",

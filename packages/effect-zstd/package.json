@@ -1,6 +1,7 @@
 {
   "name": "effect-zstd",
   "version": "0.1.4",
+  "private": false,
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",

@@ -2,13 +2,13 @@
   "name": "@nikelborm/apache-superset-quick-init",
   "version": "0.1.5",
   "type": "module",
+  "private": false,
   "description": "Quickly download files needed to run Apache Superset deployment in docker and preconfigure them for production",
   "license": "MIT",
   "scripts": {
     "start": "node --env-file=.env ./apache-superset-quick-init.ts",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
     "test": "vitest --watch",
-    "format": "",
     "coverage": "vitest run --coverage",
     "test-once": "vitest --run",
     "test-jsr": "tspc && jsr publish --dry-run",
@@ -45,7 +45,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

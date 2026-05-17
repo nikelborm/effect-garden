@@ -2,18 +2,42 @@
   "name": "@nikelborm/playground",
   "type": "module",
   "version": "0.1.0",
-  "license": "MIT",
   "description": "A bunch of hidden scripts for exploration. depends on all packages mentioned in the monorepo",
-  "private": true,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "private": false,
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/playground#readme",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/playground"
   },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "devDependencies": {
     "@base-ui/react": "catalog:",
     "@biomejs/biome": "catalog:",

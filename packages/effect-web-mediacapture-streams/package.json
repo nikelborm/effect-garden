@@ -2,6 +2,7 @@
   "name": "effect-web-mediacapture-streams",
   "version": "0.2.0",
   "type": "module",
+  "private": false,
   "description": "Effect WEB Media Capture and Streams API wrapper",
   "license": "MIT",
   "scripts": {

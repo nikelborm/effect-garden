@@ -27,7 +27,31 @@
     "type-fest": "catalog:"
   },
   "type": "module",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-drizzle-helpers#readme",
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "exports": {
     "types": "./dist-types/index.d.ts",
     "default": "./dist/index.js"

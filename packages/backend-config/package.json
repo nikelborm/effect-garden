@@ -19,11 +19,36 @@
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/backend-config"
   },
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/backend-config#readme",
   "type": "module",
   "scripts": {
     "build": "tspc",
     "dev": "bun --hot --no-clear-screen ./index.ts"
   },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "peerDependencies": {
     "@effect/platform": "catalog:",
     "effect": "catalog:"

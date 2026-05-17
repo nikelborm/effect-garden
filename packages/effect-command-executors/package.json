@@ -1,6 +1,7 @@
 {
   "name": "effect-command-executors",
   "version": "0.1.0",
+  "private": false,
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",

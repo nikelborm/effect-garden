@@ -1,2 +1,5 @@
-*.ts
-intext.txt
+*
+!package.json
+!vscode/settings.json
+!.gitignore
+!tsconfig.json

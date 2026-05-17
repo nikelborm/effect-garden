@@ -2,6 +2,12 @@
   "name": "@nikelborm/scripts",
   "version": "0.1.0",
   "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/scripts#readme",
   "description": "A bunch of scripts to automate things and maintain the monorepo",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
@@ -12,6 +18,25 @@
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/scripts"
   },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -27,7 +52,6 @@
     "effect-errors": "catalog:"
   },
   "type": "module",
-  "private": true,
   "peerDependencies": {
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",

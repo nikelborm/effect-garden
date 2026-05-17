@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "license": "UNLICENSED",
+  "private": true,
   "description": "Demo of MIDI and Web audio capabilities on frontend with Effect",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/next-midi-demo#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -43,7 +45,6 @@
     "serwist": "catalog:",
     "ts-key-not-enum": "workspace:*"
   },
-  "private": true,
   "scripts": {
     "dev": "next dev --experimental-https",
     "build": "next build --webpack",
@@ -56,5 +57,24 @@
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
-  }
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ]
 }

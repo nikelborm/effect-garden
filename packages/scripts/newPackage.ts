@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import { prettyPrint } from 'effect-errors'
+
 import * as Prompt from '@effect/cli/Prompt'
 import * as Command from '@effect/platform/Command'
 import * as FileSystem from '@effect/platform/FileSystem'
@@ -12,90 +14,94 @@ import * as Either from 'effect/Either'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 
+import type { SubPackageJson } from './fix_package_jsons.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
-const vscodeConfig = {
+export const vscodeConfig = {
   'git.openRepositoryInParentFolders': 'always',
-  'js/ts.tsdk.path': '../../packages/tsconfig/node_modules/typescript/lib',
+  'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
 }
 
-const author = {
-  name: 'nikelborm',
-  email: 'evadev@duck.com',
-  url: 'https://github.com/nikelborm',
-}
+export const githubUser = 'nikelborm'
+export const repo = 'effect-garden'
+export const email = 'evadev@duck.com'
 
-const packageJson = (config: { name: string; description: string }) => ({
-  name: config.name,
-  version: '0.1.0',
-  type: 'module',
-  description: config.description,
-  license: 'MIT',
-  scripts: {
-    build: 'tspc',
-    prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tspc',
-    dev: 'tspc --watch --preserveWatchOutput false',
-  },
-  files: [
-    'dist-types',
-    'dist',
-    'index.ts',
-    'package.json',
-    'src',
-    '!**/*.spec.*',
-    '!**/*.tsbuildinfo',
-    '!**/scratchpad.*',
-  ],
-  peerDependencies: {
-    effect: 'catalog:',
-  },
-  // TODO: Ask for package name and folder name separately
-  homepage: `https://github.com/nikelborm/effect-garden/tree/main/packages/${config.name}#readme`,
-  devDependencies: {
-    '@effect/language-service': 'catalog:',
-    '@nikelborm/tsconfig': 'workspace:*',
-    'ts-namespace-import': 'catalog:',
-    'ts-patch': 'catalog:',
-    typescript: 'catalog:',
-  },
-  private: false,
-  publishConfig: {
-    access: 'public',
-    provenance: false,
-  },
-  repository: {
-    type: 'git',
-    url: 'git+ssh://git@github.com/nikelborm/effect-garden.git',
-    directory: 'packages/' + config.name,
-  },
-  bugs: {
-    url: 'https://github.com/nikelborm/effect-garden/issues',
-    email: 'evadev@duck.com',
-  },
-  main: './dist/index.js',
-  module: './dist/index.js',
-  types: './dist-types/index.d.ts',
-  exports: {
-    '.': {
-      types: './dist-types/index.d.ts',
-      default: './dist/index.js',
+export const userProtolessLink = `github.com/${githubUser}`
+export const repoProtolessLink = `${userProtolessLink}/${repo}`
+
+export const httpsRepoLink = `https://${repoProtolessLink}`
+export const httpsUserLink = `https://${userProtolessLink}`
+export const issuesLink = `${httpsRepoLink}/issues`
+export const gitSshUrl = `git+ssh://git@${repoProtolessLink}.git`
+
+export const author = { name: githubUser, email, url: httpsUserLink } as const
+
+const packageJson = (config: { name: string; description: string }) =>
+  ({
+    name: config.name,
+    version: '0.1.0',
+    type: 'module',
+    description: config.description,
+    license: 'MIT',
+    scripts: {
+      build: 'tspc',
+      prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tspc',
+      dev: 'tspc --watch --preserveWatchOutput false',
     },
-    './*.js': {
-      types: './dist-types/src/*.d.ts',
-      default: './dist/src/*.js',
+    files: [
+      'dist-types',
+      'dist',
+      'index.ts',
+      'package.json',
+      'src',
+      '!**/*.spec.*',
+      '!**/*.tsbuildinfo',
+      '!**/scratchpad.*',
+    ],
+    peerDependencies: {
+      effect: 'catalog:',
     },
-    './*.ts': './src/*.ts',
-    './*': {
-      types: './dist-types/src/*.d.ts',
-      default: './dist/src/*.js',
+    // TODO: Ask for package name and folder name separately
+    homepage: `${httpsRepoLink}/tree/main/packages/${config.name}#readme`,
+    devDependencies: {
+      '@nikelborm/tsconfig': 'workspace:*',
+      '@effect/language-service': 'catalog:',
+      'ts-namespace-import': 'catalog:',
+      'ts-patch': 'catalog:',
+      typescript: 'catalog:',
     },
-    './internal/*': null,
-    './package.json': './package.json',
-  },
-  author: author,
-  contributors: [author],
-  maintainers: [author],
-})
+    private: false,
+    publishConfig: { access: 'public', provenance: false },
+    repository: {
+      type: 'git',
+      url: gitSshUrl,
+      directory: `packages/${config.name}`,
+    },
+    bugs: { url: issuesLink, email },
+    main: './dist/index.js',
+    module: './dist/index.js',
+    types: './dist-types/index.d.ts',
+    exports: {
+      '.': {
+        types: './dist-types/index.d.ts',
+        default: './dist/index.js',
+      },
+      './*.js': {
+        types: './dist-types/src/*.d.ts',
+        default: './dist/src/*.js',
+      },
+      './*.ts': './src/*.ts',
+      './*': {
+        types: './dist-types/src/*.d.ts',
+        default: './dist/src/*.js',
+      },
+      './internal/*': null,
+      './package.json': './package.json',
+    },
+    author: author,
+    contributors: [author],
+    maintainers: [author],
+  }) as const satisfies SubPackageJson
 
 const tsconfigJson = {
   extends: '@nikelborm/tsconfig',
@@ -128,7 +134,7 @@ const emptyInternalTsNamespaceFile = `/** biome-ignore-all lint/style/useShortha
 import * as Effect from 'effect/Effect'
 `
 
-Effect.gen(function* () {
+const program = Effect.gen(function* () {
   const { namespaces, ...config } = yield* Prompt.all({
     name: Prompt.text({
       message: `Enter package name (if you want, add 'effect-' prefix):`,
@@ -209,4 +215,15 @@ Effect.gen(function* () {
     ),
     Stream.run(BunSink.stdout),
   )
-}).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)
+}).pipe(
+  Effect.provide(BunContext.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catchAll(e => {
+    console.error(prettyPrint(e))
+
+    return Effect.fail(e)
+  }),
+)
+
+if (import.meta.main) BunRuntime.runMain(program)

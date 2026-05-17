@@ -38,6 +38,7 @@
     "access": "public",
     "provenance": false
   },
+  "private": false,
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",

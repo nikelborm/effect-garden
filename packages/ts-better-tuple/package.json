@@ -4,6 +4,12 @@
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
   "license": "MIT",
   "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-better-tuple#readme",
   "main": "index.ts",
   "scripts": {
     "build": "tspc",
@@ -18,7 +24,25 @@
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/ts-better-tuple"
   },
-  "keywords": [],
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
   "dependencies": {
     "@total-typescript/ts-reset": "catalog:",
     "change-case": "catalog:",

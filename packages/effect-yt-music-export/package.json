@@ -2,6 +2,7 @@
   "name": "effect-yt-music-export",
   "version": "0.1.0",
   "type": "module",
+  "private": false,
   "description": "Trying to export my library from youtube music",
   "license": "MIT",
   "scripts": {

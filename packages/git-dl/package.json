@@ -1,6 +1,7 @@
 {
   "name": "@nikelborm/git-dl",
   "version": "0.1.28",
+  "private": false,
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
@@ -38,7 +39,6 @@
     "start": "node --env-file=.env ./git-dl.ts",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
-    "format": "",
     "coverage": "vitest run --coverage",
     "test-once": "vitest --run",
     "test-jsr": "tspc && jsr publish --dry-run",
@@ -50,7 +50,7 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": false
   },
   "repository": {
     "type": "git",

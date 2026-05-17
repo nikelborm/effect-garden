@@ -8,6 +8,11 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -30,15 +35,12 @@
     "index.ts",
     "package.json"
   ],
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/archive-compress-encrypt-and-back"
   },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/archive-compress-encrypt-and-back#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
