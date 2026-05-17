@@ -11,10 +11,13 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
+    "@types/bun": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
-    "@types/bun": "catalog:"
+    "googleapis": "catalog:",
+    "music-metadata": "catalog:",
+    "node-taglib-sharp": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-yt-music-export#readme",
   "bugs": {

@@ -12,10 +12,8 @@
   },
   "peerDependencies": {
     "@effect/platform-node-shared": "catalog:",
+    "@types/node": "catalog:",
     "effect": "catalog:"
-  },
-  "dependencies": {
-    "@types/node": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-zstd#readme",
   "bugs": {

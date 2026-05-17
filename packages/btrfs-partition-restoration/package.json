@@ -20,10 +20,7 @@
   "dependencies": {
     "@nikelborm/effect-helpers": "workspace:*",
     "effect-btrfs": "workspace:*",
-    "googleapis": "catalog:",
-    "level": "catalog:",
-    "music-metadata": "catalog:",
-    "node-taglib-sharp": "catalog:"
+    "level": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/btrfs-partition-restoration#readme",
   "bugs": {

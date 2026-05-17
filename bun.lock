@@ -96,7 +96,6 @@
       "name": "@nikelborm/ace",
       "version": "0.1.0",
       "dependencies": {
-        "@types/bun": "catalog:",
         "effect-errors": "catalog:",
       },
       "devDependencies": {
@@ -110,6 +109,7 @@
         "@effect/cli": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
+        "@types/bun": "catalog:",
         "effect": "catalog:",
       },
     },
@@ -155,10 +155,7 @@
       "dependencies": {
         "@nikelborm/effect-helpers": "workspace:*",
         "effect-btrfs": "workspace:*",
-        "googleapis": "catalog:",
         "level": "catalog:",
-        "music-metadata": "catalog:",
-        "node-taglib-sharp": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
@@ -198,8 +195,6 @@
       "version": "0.1.0",
       "dependencies": {
         "@nikelborm/effect-helpers": "workspace:*",
-        "@types/bun": "catalog:",
-        "@types/node": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
@@ -213,6 +208,8 @@
         "@effect/platform": "catalog:",
         "@effect/platform-node-shared": "catalog:",
         "@effect/vitest": "catalog:",
+        "@types/bun": "catalog:",
+        "@types/node": "catalog:",
         "effect": "catalog:",
       },
     },
@@ -406,7 +403,9 @@
       "name": "effect-yt-music-export",
       "version": "0.1.0",
       "dependencies": {
-        "@types/bun": "catalog:",
+        "googleapis": "catalog:",
+        "music-metadata": "catalog:",
+        "node-taglib-sharp": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
@@ -416,15 +415,13 @@
         "typescript": "catalog:",
       },
       "peerDependencies": {
+        "@types/bun": "catalog:",
         "effect": "catalog:",
       },
     },
     "packages/effect-zstd": {
       "name": "effect-zstd",
       "version": "0.1.4",
-      "dependencies": {
-        "@types/node": "catalog:",
-      },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@nikelborm/tsconfig": "workspace:*",
@@ -434,6 +431,7 @@
       },
       "peerDependencies": {
         "@effect/platform-node-shared": "catalog:",
+        "@types/node": "catalog:",
         "effect": "catalog:",
       },
     },

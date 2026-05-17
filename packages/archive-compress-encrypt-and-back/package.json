@@ -14,10 +14,10 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
+    "@types/bun": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
-    "@types/bun": "catalog:",
     "effect-errors": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/archive-compress-encrypt-and-back#readme",

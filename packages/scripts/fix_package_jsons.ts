@@ -424,12 +424,12 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
       yield* Console.table(additionalCatalogDependencies)
 
-      const newRoot: Mutable<typeof rootPackageJson> =
-        structuredClone(rootPackageJson)
-
-      newRoot.catalog = {
-        ...rootPackageJson.catalog,
-        ...additionalCatalogDependencies,
+      const newRoot = {
+        ...rootPackageJson,
+        catalog: {
+          ...rootPackageJson.catalog,
+          ...additionalCatalogDependencies,
+        },
       }
 
       yield* fs.writeFileString(
@@ -557,18 +557,15 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
   )
 }).pipe(Effect.withSpan('ensureTsconfigDepsAreInAllPackages'))
 
-const isEffectRelated = (name: string) =>
-  name === 'effect' || name.startsWith('@effect/')
+const shouldBePeerDep = (name: string) =>
+  ['effect', '@types/node', '@types/bun'].includes(name) ||
+  name.startsWith('@effect/')
 
 const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
-  const path = yield* Path.Path
-  const myMonorepoPackages = yield* myMonorepoPackagesEffect
-
-  const packagesToModify = myMonorepoPackages
+  const packagesToModify = (yield* myMonorepoPackagesEffect)
     .filter(pkg => pkg.pkg.name !== '@nikelborm/tsconfig')
     .filter(pkg =>
-      Object.keys(pkg.pkg.dependencies ?? {}).some(isEffectRelated),
+      Object.keys(pkg.pkg.dependencies ?? {}).some(shouldBePeerDep),
     )
 
   if (!packagesToModify.length) return
@@ -583,7 +580,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
 
       const effectDepsExtractedFromProdDeps = Record.filter(
         _.pkg.dependencies ?? {},
-        (_, name) => isEffectRelated(name),
+        (_, name) => shouldBePeerDep(name),
       )
 
       if (!Object.keys(effectDepsExtractedFromProdDeps).length) return
@@ -600,7 +597,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
 
       const updatedProdDepsWithoutEffectDeps = Record.filter(
         currentProdDeps,
-        (_v, name) => !isEffectRelated(name),
+        (_v, name) => !shouldBePeerDep(name),
       )
 
       const updatedPkg = {
