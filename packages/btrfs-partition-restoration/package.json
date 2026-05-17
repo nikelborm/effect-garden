@@ -1,0 +1,24 @@
+{
+  "name": "btrfs-partition-restoration",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^2.4.13",
+    "@effect/cli": "^0.75.1",
+    "@effect/platform-bun": "^0.89.0",
+    "@nikelborm/effect-helpers": "^0.1.1",
+    "effect": "^3.21.2",
+    "effect-btrfs": "^0.1.1",
+    "googleapis": "^171.4.0",
+    "level": "^10.0.0",
+    "music-metadata": "^11.12.3",
+    "node-taglib-sharp": "^6.0.3"
+  }
+}
