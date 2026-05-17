@@ -5,8 +5,8 @@
   "description": "Offline JSON schema validation using the full SchemaStore catalog — no internet required.",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@effect/platform": "^0.96.1",
-    "@effect/platform-node": "^0.106.0",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/vscode": "catalog:",
@@ -15,6 +15,9 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "effect": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/vscode-json-schemas-offline#readme",
   "bugs": {
@@ -9801,8 +9804,5 @@
   },
   "trustedDependencies": [
     "@vscode/vsce-sign"
-  ],
-  "dependencies": {
-    "effect": "^3.21.2"
-  }
+  ]
 }

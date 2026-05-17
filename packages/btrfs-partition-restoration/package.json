@@ -1,24 +1,63 @@
 {
   "name": "btrfs-partition-restoration",
-  "module": "index.ts",
   "type": "module",
-  "private": true,
+  "version": "0.1.0",
+  "description": "I fucked a few very important files and still trying to recover stuff from them. 😭😭",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "@effect/cli": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:",
+    "typescript": "catalog:"
   },
   "dependencies": {
-    "@biomejs/biome": "^2.4.13",
-    "@effect/cli": "^0.75.1",
-    "@effect/platform-bun": "^0.89.0",
-    "@nikelborm/effect-helpers": "^0.1.1",
-    "effect": "^3.21.2",
-    "effect-btrfs": "^0.1.1",
-    "googleapis": "^171.4.0",
-    "level": "^10.0.0",
-    "music-metadata": "^11.12.3",
-    "node-taglib-sharp": "^6.0.3"
-  }
+    "@nikelborm/effect-helpers": "workspace:*",
+    "effect-btrfs": "workspace:*",
+    "googleapis": "catalog:",
+    "level": "catalog:",
+    "music-metadata": "catalog:",
+    "node-taglib-sharp": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/btrfs-partition-restoration#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/btrfs-partition-restoration"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "module": "main.ts"
 }
