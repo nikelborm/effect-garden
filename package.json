@@ -38,6 +38,7 @@
     "effect-web-midi": "workspace:*",
     "effect-yt-music-export": "workspace:*",
     "effect-zstd": "workspace:*",
+    "interview-monarchs-task": "workspace:*",
     "next-midi-demo": "workspace:*",
     "postcss-styled-syntax": "^0.7.1",
     "stylelint": "^17.11.1",

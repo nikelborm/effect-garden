@@ -1,0 +1,48 @@
+{
+  "name": "interview-monarchs-task",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "I've been friends with one girl. She turned out to be a piece of shit. We're no longer friends. This repo is the result of my attempt to help her pass the interview and get a job, when I was thinking she's an adequate human being and were willing to do anything for her.",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ts-toolbelt": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/interview-monarchs-task#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/bliss-audio-ts"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "index.js"
+}

@@ -1,3 +1,4 @@
+import { allFast } from '@nikelborm/effect-helpers'
 import { downloadEntityFromRepo } from '@nikelborm/git-dl'
 import type { Octokit } from '@octokit/core'
 
@@ -6,7 +7,6 @@ import { Path } from '@effect/platform/Path'
 import { all, andThen, type Effect, fn, orDie } from 'effect/Effect'
 import { flow } from 'effect/Function'
 
-import { allWithInheritedConcurrencyByDefault } from './allWithInheritedConcurrency.ts'
 import { createPipRequirementsConfig } from './createPipRequirementsConfig.ts'
 import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndAddNewNetworkToIt.ts'
 import { repo } from './repo.ts'
@@ -38,13 +38,13 @@ export const createApacheSupersetFolder: (config: {
       gitRef,
     })
 
-    const patchSomeStuffInDockerFolder = allWithInheritedConcurrencyByDefault([
+    const patchSomeStuffInDockerFolder = allFast([
       updateJwtSecretInSupersetWebsocketConfig(destinationPath),
       updateEnvFile(destinationPath),
       createPipRequirementsConfig(destinationPath),
     ])
 
-    yield* allWithInheritedConcurrencyByDefault([
+    yield* allFast([
       downloadComposeFileAndAddNewNetworkToIt(destinationPath, gitRef),
       downloadDockerFolder.pipe(andThen(patchSomeStuffInDockerFolder)),
     ])

@@ -1,3 +1,5 @@
+import { allFast } from '@nikelborm/effect-helpers'
+
 import { FileSystem } from '@effect/platform/FileSystem'
 import { Path } from '@effect/platform/Path'
 import { all, flatMap, fn } from 'effect/Effect'
@@ -10,7 +12,6 @@ import {
   Record,
 } from 'effect/Schema'
 
-import { allWithInheritedConcurrencyByDefault } from './allWithInheritedConcurrency.ts'
 import { generateRandomPassword } from './generateRandomPassword.ts'
 
 export const updateJwtSecretInSupersetWebsocketConfig = fn(
@@ -25,13 +26,12 @@ export const updateJwtSecretInSupersetWebsocketConfig = fn(
     'config.json',
   )
 
-  const { configFileParsed, jwtSecret } =
-    yield* allWithInheritedConcurrencyByDefault({
-      configFileParsed: fs
-        .readFileString(supersetWebsocketConfigPath, 'utf8')
-        .pipe(flatMap(decodeSupersetWebsocketConfig)),
-      jwtSecret: generateRandomPassword,
-    })
+  const { configFileParsed, jwtSecret } = yield* allFast({
+    configFileParsed: fs
+      .readFileString(supersetWebsocketConfigPath, 'utf8')
+      .pipe(flatMap(decodeSupersetWebsocketConfig)),
+    jwtSecret: generateRandomPassword,
+  })
 
   const config = yield* encodeSupersetWebsocketConfig({
     ...configFileParsed,

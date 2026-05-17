@@ -1,7 +1,7 @@
 import { all, type Effect } from 'effect/Effect'
 import type { Concurrency, NoExcessProperties } from 'effect/Types'
 
-export const allWithInheritedConcurrencyByDefault = <
+export const allFast = <
   const Arg extends
     | Iterable<Effect<any, any, any>>
     | Record<string, Effect<any, any, any>>,
@@ -18,8 +18,4 @@ export const allWithInheritedConcurrencyByDefault = <
 >(
   arg: Arg,
   options?: O,
-) =>
-  all(arg, {
-    concurrency: 'inherit',
-    ...options,
-  })
+) => all(arg, { concurrency: 'inherit', ...options })

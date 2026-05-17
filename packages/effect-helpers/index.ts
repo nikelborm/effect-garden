@@ -1,4 +1,5 @@
 export * from './src/AbsentProperty.ts'
+export * from './src/allFast.ts'
 export * from './src/BadExitCodeError.ts'
 export * from './src/buildEntityParts.ts'
 export * from './src/changeEncodedTypeToString.ts'

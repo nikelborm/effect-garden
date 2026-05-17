@@ -19,6 +19,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "@nikelborm/effect-helpers": "workspace:*",
     "@nikelborm/git-dl": "workspace:*",
     "@octokit/core": "catalog:",
     "@rollup/plugin-commonjs": "catalog:",

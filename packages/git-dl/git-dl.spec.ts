@@ -1,3 +1,5 @@
+import { allFast } from '@nikelborm/effect-helpers'
+
 import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as PlatformCommand from '@effect/platform/Command'
@@ -12,7 +14,6 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
 import pkg from './package.json' with { type: 'json' }
-import { allWithInheritedConcurrencyByDefault } from './src/allWithInheritedConcurrency.ts'
 import {
   destinationPathCLIOptionBackedByEnv,
   downloadEntityFromRepo,
@@ -76,12 +77,11 @@ const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
 
     const process = yield* executor.start(command)
 
-    const [exitCode, stdout, stderr] =
-      yield* allWithInheritedConcurrencyByDefault([
-        process.exitCode,
-        Uint8ArrayStreamToString(process.stdout),
-        Uint8ArrayStreamToString(process.stderr),
-      ])
+    const [exitCode, stdout, stderr] = yield* allFast([
+      process.exitCode,
+      Uint8ArrayStreamToString(process.stdout),
+      Uint8ArrayStreamToString(process.stderr),
+    ])
 
     if (exitCode !== 0)
       return yield* new CommandFinishedWithNonZeroCode({
@@ -181,7 +181,7 @@ const fetchAndHashBothDirs = Effect.fn('fetchAndHashBothDirs')(function* (
     tempDirPath,
   }
 
-  return yield* allWithInheritedConcurrencyByDefault({
+  return yield* allFast({
     hashOfOriginalGitRepo: bareCloneAndHashRepoContents(params),
     hashOfGitRepoFetchedUsingOurCLI: cliFetchAndHashRepoContents(params),
   })

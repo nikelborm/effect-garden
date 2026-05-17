@@ -1,5 +1,6 @@
 import { text } from 'node:stream/consumers'
 
+import { allFast } from '@nikelborm/effect-helpers'
 import type { Octokit } from '@octokit/core'
 import { RequestError } from '@octokit/request-error'
 import { assert, typeGuard } from 'tsafe'
@@ -21,7 +22,6 @@ import {
 import { isRight } from 'effect/Either'
 import { pipe } from 'effect/Function'
 
-import { allWithInheritedConcurrencyByDefault } from '../allWithInheritedConcurrency.ts'
 import { FailedToCastDataToReadableStreamError } from '../castToReadableStream.ts'
 import {
   GitHubApiAuthRatelimitedError,
@@ -172,7 +172,7 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
       const {
         ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
         ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI,
-      } = yield* allWithInheritedConcurrencyByDefault({
+      } = yield* allFast({
         ...validateErrorOf('RawStreamOfRepoPathContentsFromGitHubAPI'),
         ...validateErrorOf('UnparsedMetaInfoAboutPathContentsFromGitHubAPI'),
       })
