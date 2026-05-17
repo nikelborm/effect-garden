@@ -140,11 +140,13 @@ const CatalogEntry = Schema.Struct({
           '../vscode-json-schemas-offline',
         )
         const { host, pathname } = decodedSelf.originalRemoteURL
-        const dumbPrefix = '/SchemaStore/schemastore/master/src/schemas/json'
+        // because github dies less often then the fucking original domain lol
+        const smarterThanEveryoneElsePrefix =
+          '/SchemaStore/schemastore/master/src/schemas/json'
         const isSchemaStoreNative =
           SCHEMASTORE_HOSTS.has(host) ||
           (host === 'raw.githubusercontent.com' &&
-            pathname.startsWith(dumbPrefix))
+            pathname.startsWith(smarterThanEveryoneElsePrefix))
 
         // TODO: reorder domain names by `.`, when the time will cum
         const localSchemstoreSchemaFile = path.join(
@@ -152,16 +154,17 @@ const CatalogEntry = Schema.Struct({
           'schemas',
           ...((pathname === '/' && [host + '.json']) ||
             (!isSchemaStoreNative && [host, pathname]) || [
+              // might be fixed in https://github.com/SchemaStore/schemastore/pull/5640 ?
               host
                 .replace(/^raw.githubusercontent.com$/, 'www.schemastore.org')
                 .replace(/^json.schemastore.org$/, 'www.schemastore.org')
                 .replace(/^schemastore.org$/, 'www.schemastore.org'),
               pathname
-                // TODO: PR to fix the `s` typo in upstream schemastore repo
-                // TODO: Report this dumbass: github.com/DannyBen/completely/blob/master/schemas/completely.json, why the fuck did he put html page link there??
+                // TODO: wait for https://github.com/SchemaStore/schemastore/pull/5695
+                // TODO: wait for https://github.com/SchemaStore/schemastore/pull/5696
                 // TODO: also report Angular and other motherfuckers who don't expose their relative import URLs (or that's just me who didn't resolve the schema links recursively?...)
                 .replace('winutil-preset.json', 'winutil-presets.json')
-                .replace(dumbPrefix, ''),
+                .replace(smarterThanEveryoneElsePrefix, ''),
             ]),
         )
 
