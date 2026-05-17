@@ -1,8 +1,7 @@
 {
   "name": "@nikelborm/tsconfig",
-  "version": "1.0.0",
-  "license": "MIT",
   "type": "module",
+  "version": "1.0.0",
   "description": "My relatively strict tsconfig just how I like it",
   "dependencies": {
     "@effect/language-service": "catalog:",
@@ -19,14 +18,6 @@
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/tsconfig"
-  },
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "exports": {
-    "default": "./tsconfig.json"
   },
   "author": {
     "name": "nikelborm",
@@ -47,6 +38,15 @@
       "url": "https://github.com/nikelborm"
     }
   ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    "default": "./tsconfig.json"
+  },
   "files": [
     "package.json",
     "tsconfig.json"

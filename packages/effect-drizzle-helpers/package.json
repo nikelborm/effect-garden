@@ -1,7 +1,7 @@
 {
   "name": "@nikelborm/effect-drizzle-helpers",
+  "type": "module",
   "version": "0.0.1",
-  "license": "MIT",
   "description": "Write drizzle table declarations in functional style, and make reusable table parts easily",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -11,6 +11,16 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "peerDependencies": {
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "@nevware21/ts-utils": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:",
+    "type-fest": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-drizzle-helpers#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -20,19 +30,10 @@
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/effect-drizzle-helpers"
   },
-  "dependencies": {
-    "@nevware21/ts-utils": "catalog:",
-    "drizzle-orm": "catalog:",
-    "pg": "catalog:",
-    "type-fest": "catalog:"
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
   },
-  "type": "module",
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-drizzle-helpers#readme",
   "author": {
     "name": "nikelborm",
     "email": "evadev@duck.com",
@@ -52,13 +53,15 @@
       "url": "https://github.com/nikelborm"
     }
   ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     "types": "./dist-types/index.d.ts",
     "default": "./dist/index.js"
-  },
-  "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
   },
   "files": [
     "dist",
@@ -66,8 +69,5 @@
     "src",
     "index.ts",
     "package.json"
-  ],
-  "peerDependencies": {
-    "effect": "catalog:"
-  }
+  ]
 }

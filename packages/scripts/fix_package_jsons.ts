@@ -61,6 +61,7 @@ export const RootPackageJsonSchema = Schema.parseJson(
     },
     { key: Schema.String, value: Schema.Unknown },
   ).annotations({ title: 'RootPackageJson' }),
+  { space: 2 },
 )
 
 const emailSchema = Schema.Literal(email)
@@ -142,8 +143,10 @@ export const SubPackageJsonSchema = Schema.Struct(
   Schema.annotations({ title: 'SubPackageJson' }),
 )
 
-export const SubPackageJsonSchemaFromString =
-  Schema.parseJson(SubPackageJsonSchema)
+export const SubPackageJsonSchemaFromString = Schema.parseJson(
+  SubPackageJsonSchema,
+  { space: 2 },
+)
 
 export type SubPackageJson = (typeof SubPackageJsonSchema)['Encoded']
 
@@ -177,19 +180,26 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
 
     yield* Effect.annotateCurrentSpan({ packageJsonPath })
 
-    const myMonorepoPackage = yield* Effect.flatMap(
+    const pkg = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
       Schema.decode(SubPackageJsonSchemaFromString),
     )
 
     return {
-      myMonorepoPackage,
+      pkg,
+      update: flow(
+        Schema.encode(SubPackageJsonSchemaFromString),
+        Effect.flatMap(encoded =>
+          fs.writeFileString(packageJsonPath, encoded + '\n'),
+        ),
+      ),
+      packageJsonPath,
       directoryName,
       directoryPath: join(packagesDirPath, directoryName),
       allDependencies: {
-        ...myMonorepoPackage.dependencies,
-        ...myMonorepoPackage.devDependencies,
-        ...myMonorepoPackage.peerDependencies,
+        ...pkg.dependencies,
+        ...pkg.devDependencies,
+        ...pkg.peerDependencies,
       },
     }
   },
@@ -258,17 +268,17 @@ const ensureProdAndDevDependenciesHaveNoIntersections =
   myMonorepoPackagesEffect.pipe(
     Effect.flatMap(
       Effect.forEach(
-        ({ myMonorepoPackage }) => {
+        ({ pkg }) => {
           const intersection = Record.intersection(
-            myMonorepoPackage.dependencies ?? {},
-            myMonorepoPackage.devDependencies ?? {},
+            pkg.dependencies ?? {},
+            pkg.devDependencies ?? {},
             (prodVersion, devVersion) => ({ devVersion, prodVersion }),
           )
 
           if (Object.keys(intersection).length)
             return new IntersectionOfDevAndProdDeps({
               intersection,
-              packageName: myMonorepoPackage.name,
+              packageName: pkg.name,
             })
 
           return Effect.void
@@ -284,13 +294,13 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     const fs = yield* FileSystem.FileSystem
     const dependencyNameToItsInstances = pipe(
       yield* myMonorepoPackagesEffect,
-      EArray.flatMap(({ allDependencies, myMonorepoPackage, directoryPath }) =>
+      EArray.flatMap(({ allDependencies, pkg, directoryPath }) =>
         pipe(
           allDependencies,
           Record.map((dependencyVersion, dependencyName) => ({
             dependency: { name: dependencyName, version: dependencyVersion },
-            myMonorepoPackage: {
-              name: myMonorepoPackage.name,
+            pkg: {
+              name: pkg.name,
               directoryPath,
             },
           })),
@@ -340,7 +350,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
           versionPresentInCatalog,
           packagesInsideOfWhichCatalogDepsWillBeInstalled: dependencyInstances
             .filter(_ => _.dependency.version !== 'catalog:')
-            .map(_ => _.myMonorepoPackage),
+            .map(_ => _.pkg),
 
           uniqueVersions: uniqueVersions,
           wouldRequireChoosingVersionToPutIntoCatalog,
@@ -373,11 +383,12 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       badDeps,
       Record.toEntries,
       EArray.flatMap(([dependencyName, meta]) =>
-        meta.packagesInsideOfWhichCatalogDepsWillBeInstalled.map(
-          myMonorepoPackage => ({ myMonorepoPackage, dependencyName }),
-        ),
+        meta.packagesInsideOfWhichCatalogDepsWillBeInstalled.map(pkg => ({
+          pkg,
+          dependencyName,
+        })),
       ),
-      EArray.groupBy(_ => _.myMonorepoPackage.directoryPath),
+      EArray.groupBy(_ => _.pkg.directoryPath),
       Record.map(EArray.map(_ => _.dependencyName)),
     )
 
@@ -413,17 +424,17 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
       yield* Console.table(additionalCatalogDependencies)
 
-      const tmp: Mutable<typeof rootPackageJson> =
+      const newRoot: Mutable<typeof rootPackageJson> =
         structuredClone(rootPackageJson)
 
-      tmp.catalog = {
+      newRoot.catalog = {
         ...rootPackageJson.catalog,
         ...additionalCatalogDependencies,
       }
 
       yield* fs.writeFileString(
         rootPackageJsonPath,
-        JSON.stringify(tmp, null, 2) + '\n',
+        (yield* Schema.encode(RootPackageJsonSchema)(newRoot)) + '\n',
       )
 
       yield* observableExec({
@@ -459,11 +470,8 @@ const ensureAllMonorepoPackagesAreRootDeps = Effect.gen(function* () {
   const currentDeps = rootPackageJson.dependencies ?? {}
 
   const toInstall = myMonorepoPackages
-    .filter(
-      ({ myMonorepoPackage }) =>
-        currentDeps[myMonorepoPackage.name] !== 'workspace:*',
-    )
-    .map(({ myMonorepoPackage }) => `${myMonorepoPackage.name}@workspace:*`)
+    .filter(({ pkg }) => currentDeps[pkg.name] !== 'workspace:*')
+    .map(({ pkg }) => `${pkg.name}@workspace:*`)
 
   if (!toInstall.length) return
 
@@ -484,7 +492,7 @@ const ensureNoPackagesWithSameName = myMonorepoPackagesEffect.pipe(
   Effect.flatMap(myMonorepoPackages => {
     const duplicates = pipe(
       myMonorepoPackages,
-      EArray.groupBy(_ => _.myMonorepoPackage.name),
+      EArray.groupBy(_ => _.pkg.name),
       Record.filterMap(packages =>
         packages.length > 1
           ? Option.some(packages.map(_ => _.directoryPath))
@@ -503,28 +511,26 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const tsconfigPkg = myMonorepoPackages.find(
-    pkg => pkg.myMonorepoPackage.name === '@nikelborm/tsconfig',
+    pkg => pkg.pkg.name === '@nikelborm/tsconfig',
   )
 
   if (!tsconfigPkg) return
 
-  const tsconfigDirectDeps = Object.entries(
-    tsconfigPkg.myMonorepoPackage.dependencies ?? {},
-  )
+  const tsconfigDirectDeps = Object.entries(tsconfigPkg.pkg.dependencies ?? {})
 
   const otherPackages = myMonorepoPackages.filter(
-    pkg => pkg.myMonorepoPackage.name !== '@nikelborm/tsconfig',
+    pkg => pkg.pkg.name !== '@nikelborm/tsconfig',
   )
 
   yield* Effect.forEach(
     otherPackages,
     Effect.fn('ensureTsconfigDepsInPackage')(function* (pkg) {
       yield* Effect.annotateCurrentSpan({
-        name: pkg.myMonorepoPackage.name,
+        name: pkg.pkg.name,
         directoryPath: pkg.directoryPath,
       })
 
-      const devDeps = pkg.myMonorepoPackage.devDependencies ?? {}
+      const devDeps = pkg.pkg.devDependencies ?? {}
 
       const toInstall: string[] = []
 
@@ -537,14 +543,14 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
       if (!toInstall.length) return
 
       yield* Console.log(
-        `\nInstalling missing tsconfig deps into ${pkg.myMonorepoPackage.name}:`,
+        `\nInstalling missing tsconfig deps into ${pkg.pkg.name}:`,
       )
       yield* Console.log(toInstall.join(', '))
 
       yield* observableExec({
         cmd: ['bun', 'add', '-D', ...toInstall],
         cwd: pkg.directoryPath,
-        badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.myMonorepoPackage.name}`,
+        badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.pkg.name}`,
       })
     }),
     { discard: true },
@@ -560,11 +566,9 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const packagesToModify = myMonorepoPackages
-    .filter(pkg => pkg.myMonorepoPackage.name !== '@nikelborm/tsconfig')
+    .filter(pkg => pkg.pkg.name !== '@nikelborm/tsconfig')
     .filter(pkg =>
-      Object.keys(pkg.myMonorepoPackage.dependencies ?? {}).some(
-        isEffectRelated,
-      ),
+      Object.keys(pkg.pkg.dependencies ?? {}).some(isEffectRelated),
     )
 
   if (!packagesToModify.length) return
@@ -573,26 +577,26 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
     packagesToModify,
     Effect.fn('moveEffectDepsInPackage')(function* (_) {
       yield* Effect.annotateCurrentSpan({
-        name: _.myMonorepoPackage.name,
+        name: _.pkg.name,
         directoryPath: _.directoryPath,
       })
 
       const effectDepsExtractedFromProdDeps = Record.filter(
-        _.myMonorepoPackage.dependencies ?? {},
+        _.pkg.dependencies ?? {},
         (_, name) => isEffectRelated(name),
       )
 
       if (!Object.keys(effectDepsExtractedFromProdDeps).length) return
 
       yield* Console.log(
-        `\nMoving effect deps to peerDependencies in ${_.myMonorepoPackage.name}:`,
+        `\nMoving effect deps to peerDependencies in ${_.pkg.name}:`,
       )
       yield* Console.log(
         Object.keys(effectDepsExtractedFromProdDeps).join(', '),
       )
 
-      const currentProdDeps = _.myMonorepoPackage.dependencies ?? {}
-      const currentPeerDeps = _.myMonorepoPackage.peerDependencies ?? {}
+      const currentProdDeps = _.pkg.dependencies ?? {}
+      const currentPeerDeps = _.pkg.peerDependencies ?? {}
 
       const updatedProdDepsWithoutEffectDeps = Record.filter(
         currentProdDeps,
@@ -600,7 +604,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
       )
 
       const updatedPkg = {
-        ..._.myMonorepoPackage,
+        ..._.pkg,
         peerDependencies: {
           ...currentPeerDeps,
           ...effectDepsExtractedFromProdDeps,
@@ -611,10 +615,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
         updatedPkg.dependencies = updatedProdDepsWithoutEffectDeps
       else delete updatedPkg.dependencies
 
-      yield* fs.writeFileString(
-        path.join(_.directoryPath, 'package.json'),
-        JSON.stringify(updatedPkg, null, 2) + '\n',
-      )
+      yield* _.update(updatedPkg)
     }),
     { concurrency: 'unbounded', discard: true },
   )
@@ -639,11 +640,11 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   )
 
   const playground = myMonorepoPackages.find(
-    pkg => pkg.myMonorepoPackage.name === '@nikelborm/playground',
+    pkg => pkg.pkg.name === '@nikelborm/playground',
   )
   if (!playground) return yield* Effect.dieMessage('absurd')
 
-  const existingDevDeps = playground.myMonorepoPackage.devDependencies ?? {}
+  const existingDevDeps = playground.pkg.devDependencies ?? {}
 
   const depsToInstall = pipe(
     allDeps,
@@ -665,7 +666,7 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const workspacePackageNames = new Set(
-    myMonorepoPackages.map(pkg => pkg.myMonorepoPackage.name),
+    myMonorepoPackages.map(pkg => pkg.pkg.name),
   )
 
   const fixable = flow(
@@ -679,20 +680,20 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
 
   yield* Effect.forEach(
     myMonorepoPackages,
-    Effect.fn('fixNonWorkspaceDepsOfPackage')(function* (pkg) {
+    Effect.fn('fixNonWorkspaceDepsOfPackage')(function* (_) {
       yield* Effect.annotateCurrentSpan({
-        name: pkg.myMonorepoPackage.name,
-        directoryPath: pkg.directoryPath,
+        name: _.pkg.name,
+        directoryPath: _.directoryPath,
       })
 
-      const depsToFix = fixable(pkg.myMonorepoPackage.dependencies ?? {})
-      const devDepsToFix = fixable(pkg.myMonorepoPackage.devDependencies ?? {})
+      const depsToFix = fixable(_.pkg.dependencies ?? {})
+      const devDepsToFix = fixable(_.pkg.devDependencies ?? {})
 
       if (depsToFix.length)
         yield* observableExec({
           cmd: ['bun', 'add', ...depsToFix.map(name => `${name}@workspace:*`)],
-          cwd: pkg.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace dependencies in ${pkg.myMonorepoPackage.name}`,
+          cwd: _.directoryPath,
+          badExitCodeErrorMessage: `Failed to fix workspace dependencies in ${_.pkg.name}`,
         }).pipe(Effect.withSpan('fixProdDeps'))
 
       if (devDepsToFix.length)
@@ -703,13 +704,11 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
             '-D',
             ...devDepsToFix.map(name => `${name}@workspace:*`),
           ],
-          cwd: pkg.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace dev dependencies in ${pkg.myMonorepoPackage.name}`,
+          cwd: _.directoryPath,
+          badExitCodeErrorMessage: `Failed to fix workspace dev dependencies in ${_.pkg.name}`,
         }).pipe(Effect.withSpan('fixDevDeps'))
 
-      const peerDepsToFix = fixable(
-        pkg.myMonorepoPackage.peerDependencies ?? {},
-      )
+      const peerDepsToFix = fixable(_.pkg.peerDependencies ?? {})
 
       if (peerDepsToFix.length)
         yield* observableExec({
@@ -719,8 +718,8 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
             '--peer',
             ...peerDepsToFix.map(name => `${name}@workspace:*`),
           ],
-          cwd: pkg.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace peer dependencies in ${pkg.myMonorepoPackage.name}`,
+          cwd: _.directoryPath,
+          badExitCodeErrorMessage: `Failed to fix workspace peer dependencies in ${_.pkg.name}`,
         }).pipe(Effect.withSpan('fixPeerDeps'))
     }),
     { discard: true },
@@ -775,15 +774,9 @@ const ensureVscodeSettingsExistInAllPackages =
   )
 
 const sortPackageJsonEffect = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
-  const path = yield* Path.Path
-  for (const {
-    myMonorepoPackage,
-    directoryPath,
-  } of yield* myMonorepoPackagesEffect) {
-    const jsonPath = path.join(directoryPath, 'package.json')
-    const sorted = sortPackageJson(myMonorepoPackage)
-    yield* fs.writeFileString(jsonPath, JSON.stringify(sorted, null, 2) + '\n')
+  for (const { pkg, update } of yield* myMonorepoPackagesEffect) {
+    const sorted = sortPackageJson(pkg)
+    yield* update(sorted)
   }
 })
 
@@ -797,6 +790,7 @@ const program = Effect.all([
   ensureVscodeSettingsExistInAllPackages,
   ensureAllMonorepoPackagesAreRootDeps,
   ensureTsconfigDepsAreInAllPackages,
+  sortPackageJsonEffect,
 ]).pipe(
   Effect.scoped,
   Effect.provide(BunContext.layer),

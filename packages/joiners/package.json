@@ -1,31 +1,8 @@
 {
   "name": "@nikelborm/joiners",
-  "version": "0.1.0",
   "type": "module",
-  "private": false,
+  "version": "0.1.0",
   "description": "Join 2 or more iterables as if it's SQL joins but with the level of type-safety you didn't know you need",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
-  "scripts": {
-    "scratchpad": "node --use-strict ./scratchpad.ts",
-    "test": "vitest --typecheck --watch",
-    "coverage": "vitest run --coverage",
-    "test-once": "vitest --run",
-    "test:mutate": "stryker run",
-    "test-jsr": "tspc && jsr publish --dry-run",
-    "build": "./scripts/build.sh",
-    "doc": "./scripts/generate_docs.sh",
-    "docs": "./scripts/generate_docs.sh",
-    "watch-docs": "find src/ ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
-  },
-  "dependencies": {
-    "outdent": "catalog:",
-    "tsafe": "catalog:",
-    "tslib": "catalog:"
-  },
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -43,42 +20,15 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
+  "dependencies": {
+    "outdent": "catalog:",
+    "tsafe": "catalog:",
+    "tslib": "catalog:"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/joiners"
-  },
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist-types/src/index.d.ts",
-  "files": [
-    "dist",
-    "src",
-    "!dist/minified",
-    "!**/*.tsbuildinfo",
-    "!**/*.spec.*",
-    "!**/scratchpad.*",
-    ".github/FUNDING.yml"
-  ],
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/joiners#readme",
-  "exports": {
-    ".": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
-    },
-    "./index": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
-    },
-    "./index.js": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
-    },
-    "./package.json": "./package.json"
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
   "keywords": [
     "joiner",
@@ -113,6 +63,23 @@
     "cartesian",
     "cartesian-product"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/joiners"
+  },
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "coverage": "vitest run --coverage",
+    "doc": "./scripts/generate_docs.sh",
+    "docs": "./scripts/generate_docs.sh",
+    "scratchpad": "node --use-strict ./scratchpad.ts",
+    "test": "vitest --typecheck --watch",
+    "test:mutate": "stryker run",
+    "test-jsr": "tspc && jsr publish --dry-run",
+    "test-once": "vitest --run",
+    "watch-docs": "find src/ ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
+  },
   "author": {
     "name": "nikelborm",
     "email": "evadev@duck.com",
@@ -131,5 +98,38 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    ".": {
+      "types": "./dist-types/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./index": {
+      "types": "./dist-types/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./index.js": {
+      "types": "./dist-types/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/src/index.js",
+  "module": "./dist/src/index.js",
+  "types": "./dist-types/src/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "!dist/minified",
+    "!**/*.tsbuildinfo",
+    "!**/*.spec.*",
+    "!**/scratchpad.*",
+    ".github/FUNDING.yml"
   ]
 }

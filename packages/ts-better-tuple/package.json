@@ -1,20 +1,24 @@
 {
   "name": "@nikelborm/ts-better-tuple",
+  "type": "module",
   "version": "0.1.0",
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
-  "license": "MIT",
-  "type": "module",
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-patch": "catalog:"
+  },
+  "dependencies": {
+    "@total-typescript/ts-reset": "catalog:",
+    "change-case": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-toolbelt": "catalog:",
+    "tsafe": "catalog:",
+    "type-fest": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/ts-better-tuple#readme",
-  "main": "index.ts",
-  "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
-  },
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -23,6 +27,10 @@
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/ts-better-tuple"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
   },
   "author": {
     "name": "nikelborm",
@@ -43,19 +51,11 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "dependencies": {
-    "@total-typescript/ts-reset": "catalog:",
-    "change-case": "catalog:",
-    "ts-namespace-import": "catalog:",
-    "ts-toolbelt": "catalog:",
-    "tsafe": "catalog:",
-    "type-fest": "catalog:",
-    "typescript": "catalog:",
-    "zod": "catalog:"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
   },
-  "devDependencies": {
-    "ts-patch": "catalog:",
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*"
-  }
+  "main": "index.ts"
 }

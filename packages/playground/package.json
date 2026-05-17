@@ -3,41 +3,6 @@
   "type": "module",
   "version": "0.1.0",
   "description": "A bunch of hidden scripts for exploration. depends on all packages mentioned in the monorepo",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "private": false,
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/playground#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/playground"
-  },
-  "author": {
-    "name": "nikelborm",
-    "email": "evadev@duck.com",
-    "url": "https://github.com/nikelborm"
-  },
-  "contributors": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
-  "maintainers": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
   "devDependencies": {
     "@base-ui/react": "catalog:",
     "@biomejs/biome": "catalog:",
@@ -147,6 +112,7 @@
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "serwist": "catalog:",
+    "sort-package-json": "catalog:",
     "tar-fs": "catalog:",
     "tinybench": "catalog:",
     "ts-key-not-enum": "workspace:*",
@@ -164,5 +130,40 @@
     "webidl2": "catalog:",
     "yaml": "catalog:",
     "zod": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/playground#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/playground"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
   }
 }

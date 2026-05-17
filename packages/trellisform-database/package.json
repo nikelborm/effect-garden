@@ -1,7 +1,7 @@
 {
   "name": "@trellisform/database",
+  "type": "module",
   "version": "0.1.0",
-  "license": "MIT",
   "description": "Now it's just a showcase of effect-drizzle-helpers's capabilities. Previously were a promising startup",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -11,10 +11,31 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "peerDependencies": {
+    "@effect/sql": "catalog:",
+    "@effect/sql-drizzle": "catalog:",
+    "@effect/sql-pg": "catalog:",
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "drizzle-kit": "catalog:",
+    "drizzle-orm": "catalog:",
+    "pg": "catalog:"
+  },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/trellisform-database#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/trellisform-database"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
   },
   "author": {
     "name": "nikelborm",
@@ -35,18 +56,7 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/trellisform-database"
-  },
-  "dependencies": {
-    "@nikelborm/effect-drizzle-helpers": "workspace:*",
-    "drizzle-kit": "catalog:",
-    "drizzle-orm": "catalog:",
-    "pg": "catalog:"
-  },
-  "type": "module",
+  "license": "MIT",
   "private": false,
   "publishConfig": {
     "access": "public",
@@ -73,15 +83,5 @@
       "types": "./dist-types/src/schema.d.ts",
       "default": "./dist/src/schema.js"
     }
-  },
-  "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
-  },
-  "peerDependencies": {
-    "@effect/sql": "catalog:",
-    "@effect/sql-drizzle": "catalog:",
-    "@effect/sql-pg": "catalog:",
-    "effect": "catalog:"
   }
 }

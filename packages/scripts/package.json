@@ -1,14 +1,30 @@
 {
   "name": "@nikelborm/scripts",
+  "type": "module",
   "version": "0.1.0",
-  "license": "MIT",
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
+  "description": "A bunch of scripts to automate things and maintain the monorepo",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "@types/bun": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "@nikelborm/effect-helpers": "workspace:*",
+    "dotenv": "catalog:",
+    "drizzle-kit": "catalog:",
+    "effect-errors": "catalog:",
+    "sort-package-json": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/scripts#readme",
-  "description": "A bunch of scripts to automate things and maintain the monorepo",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -37,26 +53,10 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "@types/bun": "catalog:",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
-  },
-  "dependencies": {
-    "@nikelborm/effect-helpers": "workspace:*",
-    "dotenv": "catalog:",
-    "drizzle-kit": "catalog:",
-    "effect-errors": "catalog:",
-    "sort-package-json": "^3.6.1"
-  },
-  "type": "module",
-  "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
   }
 }

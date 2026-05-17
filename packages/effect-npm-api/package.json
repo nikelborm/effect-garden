@@ -1,30 +1,60 @@
 {
   "name": "effect-npm-api",
+  "type": "module",
   "version": "0.1.0",
+  "description": "Effect HTTP API declarations for NPM Registry",
   "devDependencies": {
     "@effect/language-service": "catalog:",
+    "@nikelborm/openapi-gen": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
-    "@nikelborm/openapi-gen": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "effect": "catalog:",
-    "@effect/platform": "catalog:"
+    "@effect/platform": "catalog:",
+    "effect": "catalog:"
   },
-  "author": {
-    "name": "nikelborm",
-    "email": "evadev@duck.com",
-    "url": "https://github.com/nikelborm"
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/effect-npm-api"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch --preserveWatchOutput false",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",
@@ -42,18 +72,9 @@
     "./internal/*": null,
     "./package.json": "./package.json"
   },
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
-  "contributors": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
-  "description": "Effect HTTP API declarations for NPM Registry",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
   "files": [
     "dist-types",
     "dist",
@@ -63,26 +84,5 @@
     "!**/*.spec.*",
     "!**/*.tsbuildinfo",
     "!**/scratchpad.*"
-  ],
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api#readme",
-  "license": "MIT",
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "maintainers": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
-  "private": false,
-  "scripts": {
-    "build": "tspc",
-    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",
-    "dev": "tspc --watch --preserveWatchOutput false"
-  },
-  "type": "module",
-  "types": "./dist-types/index.d.ts"
+  ]
 }

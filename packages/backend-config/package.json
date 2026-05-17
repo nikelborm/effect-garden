@@ -1,7 +1,7 @@
 {
   "name": "@nikelborm/backend-config",
+  "type": "module",
   "version": "0.1.0",
-  "license": "MIT",
   "description": "Reusable Effect tags to know which exact config params does effect/layer depends on and see if they weren't provided",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -10,6 +10,11 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
+  "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "effect": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/backend-config#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -19,13 +24,6 @@
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/backend-config"
   },
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/backend-config#readme",
-  "type": "module",
   "scripts": {
     "build": "tspc",
     "dev": "bun --hot --no-clear-screen ./index.ts"
@@ -49,8 +47,10 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "peerDependencies": {
-    "@effect/platform": "catalog:",
-    "effect": "catalog:"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
   }
 }

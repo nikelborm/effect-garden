@@ -1,20 +1,8 @@
 {
   "name": "next-midi-demo",
-  "version": "0.1.0",
   "type": "module",
-  "license": "UNLICENSED",
-  "private": true,
+  "version": "0.1.0",
   "description": "Demo of MIDI and Web audio capabilities on frontend with Effect",
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/next-midi-demo#readme",
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/next-midi-demo"
-  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "catalog:",
@@ -26,6 +14,12 @@
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "@effect/platform-browser": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
@@ -45,18 +39,22 @@
     "serwist": "catalog:",
     "ts-key-not-enum": "workspace:*"
   },
-  "scripts": {
-    "dev": "next dev --experimental-https",
-    "build": "next build --webpack",
-    "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write"
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/next-midi-demo#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
-  "peerDependencies": {
-    "@effect/platform": "catalog:",
-    "@effect/platform-browser": "catalog:",
-    "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "packages/next-midi-demo"
+  },
+  "scripts": {
+    "build": "next build --webpack",
+    "dev": "next dev --experimental-https",
+    "format": "biome format --write",
+    "lint": "biome check",
+    "start": "next start"
   },
   "author": {
     "name": "nikelborm",
@@ -76,5 +74,7 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "license": "UNLICENSED",
+  "private": true
 }

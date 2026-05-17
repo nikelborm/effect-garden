@@ -1,6 +1,8 @@
 {
   "name": "@nikelborm/ace",
+  "type": "module",
   "version": "0.1.0",
+  "description": "Archive, compress, encrypt and back",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -8,45 +10,29 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
   },
   "dependencies": {
     "@types/bun": "catalog:",
     "effect-errors": "catalog:"
   },
-  "type": "module",
-  "description": "Archive, compress, encrypt and back",
-  "license": "MIT",
-  "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/archive-compress-encrypt-and-back#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
-  "files": [
-    "dist",
-    "dist-types",
-    "src",
-    "index.ts",
-    "package.json"
-  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/archive-compress-encrypt-and-back"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/archive-compress-encrypt-and-back#readme",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist-types/index.d.ts",
-  "exports": {
-    "types": "./dist-types/index.d.ts",
-    "default": "./dist/index.js"
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
   },
   "author": {
     "name": "nikelborm",
@@ -67,10 +53,24 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
-  }
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "files": [
+    "dist",
+    "dist-types",
+    "src",
+    "index.ts",
+    "package.json"
+  ]
 }

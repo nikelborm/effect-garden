@@ -1,7 +1,8 @@
 {
   "name": "@nikelborm/git-dl",
+  "type": "module",
   "version": "0.1.28",
-  "private": false,
+  "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
@@ -22,6 +23,12 @@
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
+  "peerDependencies": {
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:"
+  },
   "dependencies": {
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
@@ -32,55 +39,68 @@
     "tsafe": "catalog:",
     "tslib": "catalog:"
   },
-  "type": "module",
-  "description": "Download any directory at any depth from any repo on GitHub on any git ref",
-  "license": "MIT",
-  "scripts": {
-    "start": "node --env-file=.env ./git-dl.ts",
-    "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
-    "test": "vitest --typecheck --watch",
-    "coverage": "vitest run --coverage",
-    "test-once": "vitest --run",
-    "test-jsr": "tspc && jsr publish --dry-run",
-    "build": "./scripts/build.sh",
-    "doc": "./scripts/generate_docs.sh",
-    "docs": "./scripts/generate_docs.sh",
-    "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
-    "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dl#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
+  "keywords": [
+    "github",
+    "git",
+    "octokit",
+    "github-api",
+    "folder",
+    "scraper",
+    "downloader",
+    "download",
+    "extract",
+    "tarball",
+    "targz",
+    "directory"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/git-dl"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist-types/index.d.ts",
-  "bin": {
-    "git-dl": "dist/git-dl.js",
-    "gdl": "dist/git-dl.js"
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "coverage": "vitest run --coverage",
+    "doc": "./scripts/generate_docs.sh",
+    "docs": "./scripts/generate_docs.sh",
+    "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
+    "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
+    "start": "node --env-file=.env ./git-dl.ts",
+    "test": "vitest --typecheck --watch",
+    "test-jsr": "tspc && jsr publish --dry-run",
+    "test-once": "vitest --run",
+    "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
   },
-  "files": [
-    "dist",
-    "src",
-    "!dist/minified",
-    "!**/*.tsbuildinfo",
-    "!**/*.spec.*",
-    "!**/scratchpad.*",
-    "template.env",
-    "cli.ts",
-    "errors.ts",
-    "index.ts"
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
   ],
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dl#readme",
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",
@@ -112,43 +132,23 @@
     },
     "./package.json": "./package.json"
   },
-  "keywords": [
-    "github",
-    "git",
-    "octokit",
-    "github-api",
-    "folder",
-    "scraper",
-    "downloader",
-    "download",
-    "extract",
-    "tarball",
-    "targz",
-    "directory"
-  ],
-  "author": {
-    "name": "nikelborm",
-    "email": "evadev@duck.com",
-    "url": "https://github.com/nikelborm"
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "bin": {
+    "gdl": "dist/git-dl.js",
+    "git-dl": "dist/git-dl.js"
   },
-  "contributors": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
-  "maintainers": [
-    {
-      "name": "nikelborm",
-      "email": "evadev@duck.com",
-      "url": "https://github.com/nikelborm"
-    }
-  ],
-  "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
-    "@effect/platform-node": "catalog:",
-    "effect": "catalog:"
-  }
+  "files": [
+    "dist",
+    "src",
+    "!dist/minified",
+    "!**/*.tsbuildinfo",
+    "!**/*.spec.*",
+    "!**/scratchpad.*",
+    "template.env",
+    "cli.ts",
+    "errors.ts",
+    "index.ts"
+  ]
 }

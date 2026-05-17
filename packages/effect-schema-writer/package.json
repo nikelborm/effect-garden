@@ -1,6 +1,8 @@
 {
   "name": "effect-schema-writer",
+  "type": "module",
   "version": "0.1.0",
+  "description": "Infer effect schemas with AI",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
@@ -9,61 +11,23 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "effect": "catalog:",
-    "@effect/ai-google": "catalog:"
+    "@effect/ai-google": "catalog:",
+    "effect": "catalog:"
   },
-  "type": "module",
-  "description": "Infer effect schemas with AI",
-  "license": "MIT",
-  "scripts": {
-    "build": "tspc",
-    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc",
-    "dev": "tspc --watch --preserveWatchOutput false"
-  },
-  "files": [
-    "dist-types",
-    "dist",
-    "index.ts",
-    "package.json",
-    "src",
-    "!**/*.spec.*",
-    "!**/*.tsbuildinfo",
-    "!**/scratchpad.*"
-  ],
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-schema-writer#readme",
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
   },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/effect-schema-writer"
   },
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist-types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist-types/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./*.js": {
-      "types": "./dist-types/src/*.d.ts",
-      "default": "./dist/src/*.js"
-    },
-    "./*.ts": "./src/*.ts",
-    "./*": {
-      "types": "./dist-types/src/*.d.ts",
-      "default": "./dist/src/*.js"
-    },
-    "./internal/*": null,
-    "./package.json": "./package.json"
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch --preserveWatchOutput false",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc"
   },
   "author": {
     "name": "nikelborm",
@@ -83,5 +47,41 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "files": [
+    "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
   ]
 }

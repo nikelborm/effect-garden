@@ -1,15 +1,16 @@
 {
   "name": "@nikelborm/effect-landscape",
-  "version": "0.0.1",
-  "license": "MIT",
-  "private": false,
-  "publishConfig": {
-    "access": "public",
-    "provenance": false
-  },
   "type": "module",
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-landscape#readme",
+  "version": "0.0.1",
   "description": "Overview analytics of the whole effect ecosystem",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@nikelborm/tsconfig": "workspace:*",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-landscape#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -18,13 +19,6 @@
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "packages/effect-landscape"
-  },
-  "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
-    "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:",
-    "typescript": "catalog:"
   },
   "author": {
     "name": "nikelborm",
@@ -44,5 +38,11 @@
       "email": "evadev@duck.com",
       "url": "https://github.com/nikelborm"
     }
-  ]
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  }
 }

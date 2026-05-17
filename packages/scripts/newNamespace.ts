@@ -76,7 +76,7 @@ const program = Effect.gen(function* () {
     packageName: Prompt.select({
       message: `Choose a package:`,
       choices: myMonorepoPackages.map(pkg => ({
-        title: pkg.myMonorepoPackage.name,
+        title: pkg.pkg.name,
         value: pkg.directoryPath,
       })),
     }),
