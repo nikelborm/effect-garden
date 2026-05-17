@@ -5,6 +5,8 @@
   "description": "Offline JSON schema validation using the full SchemaStore catalog — no internet required.",
   "devDependencies": {
     "@effect/language-service": "catalog:",
+    "@effect/platform": "^0.96.1",
+    "@effect/platform-node": "^0.106.0",
     "@nikelborm/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/vscode": "catalog:",
@@ -9799,5 +9801,8 @@
   },
   "trustedDependencies": [
     "@vscode/vsce-sign"
-  ]
+  ],
+  "dependencies": {
+    "effect": "^3.21.2"
+  }
 }

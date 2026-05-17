@@ -2,24 +2,24 @@ import { readFile } from 'node:fs/promises'
 
 import * as Schema from 'effect/Schema'
 
-const artists2Schema = Schema.parseJson(
+const artistsSchema = Schema.parseJson(
   Schema.NonEmptyArray(
     Schema.Struct({
       image: Schema.NonEmptyTrimmedString,
       title: Schema.NonEmptyString,
     }).annotations({ title: 'Artist' }),
   ),
-).annotations({ title: 'Artists_2' })
+).annotations({ title: 'Artists' })
 
-const artists2 = Schema.decodeUnknownSync(artists2Schema)(
-  await readFile('artists2.json', 'utf-8'),
+const artists = Schema.decodeUnknownSync(artistsSchema)(
+  await readFile('artists.json', 'utf-8'),
 )
 
-console.log('artists2.length ', artists2.length)
+console.log('artists.length ', artists.length)
 
-const artists2_deduped = new Set(artists2.map(e => e.title))
+const artists_deduped = new Set(artists.map(e => e.title))
 
-console.log('artists2_deduped.length ', artists2_deduped.size)
+console.log('artists_deduped.length ', artists_deduped.size)
 
 const findDupes = <TIn, TOut extends string>(
   arr: readonly TIn[] | TIn[],
@@ -37,4 +37,4 @@ const findDupes = <TIn, TOut extends string>(
       )
 }
 
-findDupes(artists2, e => e.title)
+findDupes(artists, e => e.title)

@@ -23,7 +23,7 @@ Bun.serve({
     const url = new URL(req.url)
     if (url.pathname !== '/data') return goaway()
 
-    const filePath = path.join('temp-store', randomUUID() + '.txt')
+    const filePath = path.join('tmp', 'store', randomUUID() + '.txt')
     if (!req.body) return goaway()
 
     await pipeline(req.body, createWriteStream(filePath))
