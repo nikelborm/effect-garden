@@ -12,6 +12,7 @@
   },
   "peerDependencies": {
     "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:",
     "typescript": "catalog:"

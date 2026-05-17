@@ -153,7 +153,6 @@
       "name": "btrfs-partition-restoration",
       "version": "0.1.0",
       "dependencies": {
-        "@biomejs/biome": "catalog:",
         "@nikelborm/effect-helpers": "workspace:*",
         "effect-btrfs": "workspace:*",
         "googleapis": "catalog:",
@@ -170,6 +169,7 @@
       },
       "peerDependencies": {
         "@effect/cli": "catalog:",
+        "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
         "effect": "catalog:",
         "typescript": "catalog:",

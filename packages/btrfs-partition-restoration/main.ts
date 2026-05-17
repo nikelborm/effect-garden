@@ -1,19 +1,20 @@
 import { FiniteNonNegativeInteger, simpleExec } from '@nikelborm/effect-helpers'
 import { Btrfs } from 'effect-btrfs'
 
-import { Prompt } from '@effect/cli'
-import { Command, FileSystem, Path } from '@effect/platform'
-import { BunContext, BunRuntime } from '@effect/platform-bun'
-import {
-  Console,
-  Data,
-  Effect,
-  Iterable,
-  Layer,
-  pipe,
-  Redacted,
-  Schema,
-} from 'effect'
+import * as Prompt from '@effect/cli/Prompt'
+import * as Command from '@effect/platform/Command'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as BunContext from '@effect/platform-bun/BunContext'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as Console from 'effect/Console'
+import * as Data from 'effect/Data'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as Iterable from 'effect/Iterable'
+import * as Layer from 'effect/Layer'
+import * as Redacted from 'effect/Redacted'
+import * as Schema from 'effect/Schema'
 
 import { pathToRegExpPattern } from './pathToRegExpPattern.ts'
 
@@ -44,7 +45,7 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
       }).pipe(Prompt.run)
 
       const run = (...args: string[]) =>
-        pipe(
+        EFunction.pipe(
           Command.make(
             'sudo',
             '--prompt=',
@@ -64,7 +65,7 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
     }),
   },
 ) {
-  static LiveBackedByFsCache = pipe(
+  static LiveBackedByFsCache = EFunction.pipe(
     Effect.all({
       fs: FileSystem.FileSystem,
       cacheFileWriteSemaphore: Effect.makeSemaphore(1),
@@ -87,7 +88,7 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
             value = yield* req.defaultPrivelegedExecutor.run(...args)
             req.cache.set(key, value)
             const addition = JSON.stringify([key, value]) + '\n'
-            yield* pipe(
+            yield* EFunction.pipe(
               req.fs.writeFileString(cacheFilePath, addition, { flag: 'a' }),
               req.cacheFileWriteSemaphore.withPermits(1),
               Effect.forkIn(req.scope),
