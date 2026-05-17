@@ -6,6 +6,7 @@
       "**",
       "!**/node_modules",
       "!**/.next",
+      "!**/bun.lock",
       "!**/gh-page",
       "!**/dist",
       // TODO: remove later?

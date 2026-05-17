@@ -24,6 +24,7 @@
     "biome-plugin-drizzle": "^0.1.0",
     "bliss-audio-ts": "workspace:*",
     "chokidar-cli": "^3.0.0",
+    "cloc": "^2.6.0-cloc",
     "effect-btrfs": "workspace:*",
     "effect-command-executors": "workspace:*",
     "effect-npm-api": "workspace:*",
