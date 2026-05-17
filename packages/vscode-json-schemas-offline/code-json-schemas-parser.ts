@@ -96,6 +96,13 @@ const CachedFileSchema = Schema.compose(
   }),
 )
 
+// TODO: also report Angular and other motherfuckers who don't expose their
+// relative import URLs (or that's just me who didn't resolve the schema links
+// recursively?...)
+
+// TODO: wait for https://github.com/SchemaStore/schemastore/pull/5696 (fix:
+// made completely.yml point at the json schema and not html page) before running again
+
 const getErrorMessage = (e: unknown): string =>
   e instanceof Error ? e.message : String(e)
 
@@ -160,9 +167,8 @@ const CatalogEntry = Schema.Struct({
                 .replace(/^json.schemastore.org$/, 'www.schemastore.org')
                 .replace(/^schemastore.org$/, 'www.schemastore.org'),
               pathname
-                // TODO: wait for https://github.com/SchemaStore/schemastore/pull/5695
-                // TODO: wait for https://github.com/SchemaStore/schemastore/pull/5696
-                // TODO: also report Angular and other motherfuckers who don't expose their relative import URLs (or that's just me who didn't resolve the schema links recursively?...)
+
+                // TODO: remove the line below when https://github.com/SchemaStore/schemastore/pull/5695 (fix: removed duplicate Winutil schema entries, added forgotten s) is merged
                 .replace('winutil-preset.json', 'winutil-presets.json')
                 .replace(smarterThanEveryoneElsePrefix, ''),
             ]),
