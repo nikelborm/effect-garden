@@ -7,7 +7,7 @@ import { pipe } from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 
-import { TracksFromGoogleExportSchema } from './TracksFromGoogleExportSchema.ts'
+import { TracksFromGoogleExportSchema } from '../schemas/TracksFromGoogleExportSchema.ts'
 
 const parsed = pipe(
   await readFile('./rawData/musicLibraryFromGoogleExport.csv', 'utf-8'),

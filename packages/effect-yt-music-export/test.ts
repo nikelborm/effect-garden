@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 
-import { MetadataSchemaFromString } from './revisers/MetadataSchema.ts'
+import { MetadataSchemaFromString } from './schemas/MetadataSchema.ts'
 import { tracksFromBigMediaFolder } from './tracksFromBigMediaFolder.ts'
 
 const videoMetadataFetchedFromYoutubeDataApi = Schema.decodeSync(

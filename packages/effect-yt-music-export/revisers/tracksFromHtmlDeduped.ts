@@ -6,7 +6,7 @@ import * as HashSet from 'effect/HashSet'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 
-import { HtmlTracksSchema } from './HtmlTracksSchema.ts'
+import { HtmlTracksSchema } from '../schemas/HtmlTracksSchema.ts'
 
 const shitImage =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'

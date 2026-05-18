@@ -1,4 +1,3 @@
-import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 
 const image = Schema.Struct({
@@ -55,9 +54,7 @@ export const MetadataSchema = Schema.Struct({
     caption: Schema.BooleanFromString,
     licensedContent: Schema.Boolean,
     projection: Schema.String,
-    contentRating: Schema.Struct({
-      ytRating: Schema.optional(Schema.String),
-    }),
+    contentRating: Schema.Struct({ ytRating: Schema.optional(Schema.String) }),
     regionRestriction: Schema.optional(
       Schema.Struct({
         allowed: Schema.optional(Schema.Array(Schema.String)),
@@ -67,9 +64,7 @@ export const MetadataSchema = Schema.Struct({
   }),
   topicDetails: Schema.optionalWith(
     Schema.transform(
-      Schema.Struct({
-        topicCategories: Schema.Array(Schema.String),
-      }),
+      Schema.Struct({ topicCategories: Schema.Array(Schema.String) }),
       Schema.Array(Schema.String),
       {
         decode: ({ topicCategories }) =>
@@ -80,20 +75,8 @@ export const MetadataSchema = Schema.Struct({
         strict: true,
       },
     ),
-    {
-      default: () => [],
-    },
+    { default: () => [] },
   ),
-}).pipe(e =>
-  Schema.transform(
-    Schema.Array(Schema.Tuple(Schema.String, e)),
-    Schema.Record({ key: Schema.String, value: e }),
-    {
-      decode: (_, fromI) => Record.fromEntries(fromI),
-      encode: (_, toA) => Record.toEntries(toA),
-      strict: true,
-    },
-  ),
-)
+}).pipe(value => Schema.Record({ key: Schema.NonEmptyTrimmedString, value }))
 
 export const MetadataSchemaFromString = Schema.parseJson(MetadataSchema)
