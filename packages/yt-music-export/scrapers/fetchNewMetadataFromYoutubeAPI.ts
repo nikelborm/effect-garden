@@ -36,7 +36,10 @@ export const fetchNewMetadataFromYoutubeAPI = flow(
             ] as const,
         ),
         Record.fromEntries,
-        content => writeFile('./tmp.json', JSON.stringify(content, null, 2)),
+        content =>
+          writeFile('./tmp.json', JSON.stringify(content, null, 2)).then(
+            () => content,
+          ),
       ),
     ),
 )
