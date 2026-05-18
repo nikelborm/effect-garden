@@ -11,32 +11,6 @@ const musicVideoRegexp =
 
 const doubleSpaceRegex = / {2,}/g
 
-// const youtube = google.youtube({
-//   version: 'v3',
-//   auth: 'put required auth here',
-// })
-// const content = await pipe(
-//   tracksBase,
-//   EArray.map(v => v.youtubeId),
-//   EArray.chunksOf(50),
-//   EArray.map((chunk) => youtube.videos.list({
-//     id: chunk,
-//     part: ['snippet', 'contentDetails', 'topicDetails'],
-//   })),
-//   response => Promise.all(response),
-// ).then(flow(
-//   EArray.flatMap(r => r.data.items ?? []),
-//   EArray.map(i => [
-//     i.id!,
-//     {
-//       snippet: i.snippet!,
-//       contentDetails: i.contentDetails!,
-//       topicDetails: i.topicDetails!,
-//     }
-//   ] as const),
-// ))
-// await writeFile('./videoMetadataFetchedFromYoutubeDataApi.json', JSON.stringify(content, null, 2))
-
 const content = JSON.parse(
   await readFile(
     './rawData/videoMetadataFetchedFromYoutubeDataApi.json',
