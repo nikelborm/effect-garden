@@ -146,7 +146,8 @@
     "googleapis": "^171.4.0",
     "level": "^10.0.0",
     "music-metadata": "^11.12.3",
-    "node-taglib-sharp": "^6.0.3"
+    "node-taglib-sharp": "^6.0.3",
+    "csv-parse": "^6.2.1"
   },
   "packageManager": "bun@1.3.0",
   "scripts": {

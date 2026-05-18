@@ -2,7 +2,7 @@
   "name": "@nikelborm/playground",
   "type": "module",
   "version": "0.1.0",
-  "description": "A bunch of hidden scripts for exploration. depends on all packages mentioned in the monorepo",
+  "description": "A bunch of hidden scripts for exploration. This package aggregates all of the dependencies from the monorepo",
   "devDependencies": {
     "@base-ui/react": "catalog:",
     "@biomejs/biome": "catalog:",
@@ -85,6 +85,7 @@
     "@wyw-in-js/babel-preset": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "change-case": "catalog:",
+    "csv-parse": "catalog:",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
