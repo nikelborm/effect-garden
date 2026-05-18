@@ -7,6 +7,7 @@ import type {
   VVA,
 } from './types.ts';
 
+// TODO: Add data-dirst, data-last signatures for piping
 export function buildJoinerOnJoinNameWithCustomDetailingModifier<
   LevelOfDetail extends LevelOfDetailModifier = 'A',
 >(): JoinerOnJoinNameWithCustomDetailingModifier<LevelOfDetail> {
