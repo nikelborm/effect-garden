@@ -36,7 +36,7 @@
     "effect-web-audio-generate": "workspace:*",
     "effect-web-mediacapture-streams": "workspace:*",
     "effect-web-midi": "workspace:*",
-    "effect-yt-music-export": "workspace:*",
+    "yt-music-export": "workspace:*",
     "effect-zstd": "workspace:*",
     "interview-monarchs-task": "workspace:*",
     "next-midi-demo": "workspace:*",

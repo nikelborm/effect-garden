@@ -1,5 +1,5 @@
 {
-  "name": "effect-yt-music-export",
+  "name": "yt-music-export",
   "type": "module",
   "version": "0.1.0",
   "description": "Trying to export my library from youtube music",
@@ -20,7 +20,7 @@
     "music-metadata": "catalog:",
     "node-taglib-sharp": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-yt-music-export#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/yt-music-export#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -28,7 +28,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/effect-yt-music-export"
+    "directory": "packages/yt-music-export"
   },
   "scripts": {
     "build": "tspc",
