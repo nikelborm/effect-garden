@@ -2,6 +2,7 @@
 bun = "latest"
 node = "24"
 cargo = "latest"
+deno = "latest"
 
 [tasks]
 

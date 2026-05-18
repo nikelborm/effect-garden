@@ -13,18 +13,6 @@ import * as Logger from 'effect/Logger'
 import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
 
-declare global {
-  interface ImportMeta {
-    readonly dir: string
-    readonly dirname: string
-    readonly env: string
-    readonly file: string
-    readonly path: string
-    readonly filename: string
-    readonly main: string
-  }
-}
-
 const SCHEMASTORE_HOSTS = new Set([
   'www.schemastore.org',
   'json.schemastore.org',
@@ -100,9 +88,6 @@ const CachedFileSchema = Schema.compose(
 // relative import URLs (or that's just me who didn't resolve the schema links
 // recursively?...)
 
-// TODO: wait for https://github.com/SchemaStore/schemastore/pull/5696 (fix:
-// made completely.yml point at the json schema and not html page) before running again
-
 const getErrorMessage = (e: unknown): string =>
   e instanceof Error ? e.message : String(e)
 
@@ -166,11 +151,7 @@ const CatalogEntry = Schema.Struct({
                 .replace(/^raw.githubusercontent.com$/, 'www.schemastore.org')
                 .replace(/^json.schemastore.org$/, 'www.schemastore.org')
                 .replace(/^schemastore.org$/, 'www.schemastore.org'),
-              pathname
-
-                // TODO: remove the line below when https://github.com/SchemaStore/schemastore/pull/5695 (fix: removed duplicate Winutil schema entries, added forgotten s) is merged
-                .replace('winutil-preset.json', 'winutil-presets.json')
-                .replace(smarterThanEveryoneElsePrefix, ''),
+              pathname.replace(smarterThanEveryoneElsePrefix, ''),
             ]),
         )
 

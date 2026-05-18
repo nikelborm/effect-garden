@@ -11,25 +11,6 @@ const musicVideoRegexp =
 
 const doubleSpaceRegex = / {2,}/g
 
-const tracksBase = (await readdir('/big_media/yt-music/'))
-  .map(filename => ({
-    filename,
-    ...(filename.match(
-      /(?<audioTitle>.*) \[(?<youtubeId>[a-zA-Z-_\d]*)\]\.(?<extension>[\da-z]*)$/,
-    )?.groups || {}),
-  }))
-  .filter(
-    (
-      v,
-    ): v is {
-      filename: string
-      audioTitle: string
-      youtubeId: string
-      extension: string
-    } => !!v,
-  )
-  .sort((a, b) => a.youtubeId.localeCompare(b.youtubeId))
-
 // const youtube = google.youtube({
 //   version: 'v3',
 //   auth: 'put required auth here',
@@ -54,9 +35,14 @@ const tracksBase = (await readdir('/big_media/yt-music/'))
 //     }
 //   ] as const),
 // ))
-// await writeFile('./content.json', JSON.stringify(content, null, 2))
+// await writeFile('./videoMetadataFetchedFromYoutubeDataApi.json', JSON.stringify(content, null, 2))
 
-const content = JSON.parse(await readFile('./content.json', 'utf-8'))
+const content = JSON.parse(
+  await readFile(
+    './rawData/videoMetadataFetchedFromYoutubeDataApi.json',
+    'utf-8',
+  ),
+)
 
 const contentSchema = Schema.Array(
   Schema.Tuple(

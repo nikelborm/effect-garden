@@ -15,6 +15,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "csv-parse": "^6.2.1",
     "googleapis": "catalog:",
     "music-metadata": "catalog:",
     "node-taglib-sharp": "catalog:"
