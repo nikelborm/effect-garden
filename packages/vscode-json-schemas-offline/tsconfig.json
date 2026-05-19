@@ -1,5 +1,8 @@
 {
-  // TODO: use my tsconfig, or create a separate specifically for bundling vscode extension
+  // TODO: use my tsconfig, or create a separate specifically for bundling
+  // vscode extension vscode not supporting esm is not a problem, because there
+  // would be 2 configs. one for building the actual dummy file of the
+  // extension, the other is for typechecking the scripts folder etc
   "compilerOptions": {
     "target": "ES2022",
     "module": "es2022",
