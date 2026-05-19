@@ -6,6 +6,11 @@ import * as Effect from 'effect/Effect'
 
 import { repo } from './repo.ts'
 
+// TODO: appends file just plainly like this because, the YAML is not guaranteed
+// to be valid, for example in cases where keys of objects are derived with env
+// substitutions. Althouth for such to be present in apache superset is
+// unlikely. Maybe should try a hybrid approach?
+
 export const downloadComposeFileAndAddNewNetworkToIt = Effect.fn(
   'downloadComposeFileAndAddNewNetworkToIt',
 )(function* (basePath: string, gitRef: string) {

@@ -5,6 +5,7 @@ import * as Effect from 'effect/Effect'
 
 const randomFillAsync = promisify(randomFill)
 
+// TODO: Expose Error in typesystem?
 export const generateRandomPassword = Effect.promise(async () => {
   const buffer = Buffer.alloc(48)
   await randomFillAsync(buffer)
