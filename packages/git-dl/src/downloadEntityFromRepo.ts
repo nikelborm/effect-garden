@@ -55,7 +55,7 @@ const downloadEntityFromRepoWithoutContext = Effect.gen(function* () {
       RawStreamOfRepoPathContentsFromGitHubAPI,
     )
 
-  yield* Effect.fail(new Error('LFS files are not yet supported'))
+  yield* Effect.dieMessage('LFS files are not yet supported')
 })
 
 // Extracting to a separate type is required by JSR, so that consumers of the

@@ -32,7 +32,8 @@ export const parseGitLFSObjectEither = ({
 
     const matchedByRegexpAndParsedByEffectSchema = Either.isRight(parsingResult)
     const doesSizeFromGitLFSInfoAlignWithExpectedContentSize =
-      Either.isRight(parsingResult) && parsingResult.right.size === expectedContentSize
+      Either.isRight(parsingResult) &&
+      parsingResult.right.size === expectedContentSize
 
     const shouldFailIfItIsNotGitLFS =
       contentAsBuffer.byteLength !== expectedContentSize
@@ -116,7 +117,7 @@ type InconsistentSizesDynamicContext = {
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 
-export const _2: TaggedErrorClass<{
+const _2: TaggedErrorClass<{
   ErrorName: 'InconsistentExpectedAndRealContentSizeError'
   StaticContext: { comment: string }
   DynamicContext: InconsistentSizesDynamicContext

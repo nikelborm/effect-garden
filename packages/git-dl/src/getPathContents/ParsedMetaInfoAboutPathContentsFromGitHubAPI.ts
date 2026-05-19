@@ -12,20 +12,22 @@ import { RepoPathContentsFromGitHubAPI } from './RepoPathContentsFromGitHubAPI.t
 export const UnparsedMetaInfoAboutPathContentsFromGitHubAPI =
   RepoPathContentsFromGitHubAPI('object')
 
-export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.gen(function* () {
-  const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
+export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.gen(
+  function* () {
+    const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
 
-  return yield* Either.mapLeft(
-    decodeResponse(response.data),
-    parseError =>
-      new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(
-        parseError,
-        {
-          response,
-        },
-      ),
-  )
-})
+    return yield* Either.mapLeft(
+      decodeResponse(response.data),
+      parseError =>
+        new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(
+          parseError,
+          {
+            response,
+          },
+        ),
+    )
+  },
+)
 
 const GitSomethingFields = {
   size: Schema.Number,

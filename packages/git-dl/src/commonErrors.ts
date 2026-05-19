@@ -7,7 +7,7 @@ import {
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _1: TaggedErrorClass<{
+const _1: TaggedErrorClass<{
   ErrorName: 'GitHubApiGeneralServerError'
   ExpectedCauseClass: typeof RequestError
 }> = buildTaggedErrorClassVerifyingCause()(
@@ -20,7 +20,7 @@ export class GitHubApiGeneralServerError extends _1 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _2: TaggedErrorClass<{
+const _2: TaggedErrorClass<{
   ErrorName: 'GitHubApiGeneralUserError'
   ExpectedCauseClass: typeof RequestError
   DynamicContext: { readonly notes?: string }
@@ -47,7 +47,7 @@ export class GitHubApiThingNotExistsOrYouDontHaveAccessError extends _3 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _4: TaggedErrorClass<{
+const _4: TaggedErrorClass<{
   ErrorName: 'GitHubApiRepoIsEmptyError'
   ExpectedCauseClass: typeof RequestError
 }> = buildTaggedErrorClassVerifyingCause()(
@@ -60,7 +60,7 @@ export class GitHubApiRepoIsEmptyError extends _4 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _5: TaggedErrorClass<{
+const _5: TaggedErrorClass<{
   ErrorName: 'GitHubApiNoCommitFoundForGitRefError'
   ExpectedCauseClass: typeof RequestError
   DynamicContext: { gitRef: string }
@@ -74,7 +74,7 @@ export class GitHubApiNoCommitFoundForGitRefError extends _5 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _6: TaggedErrorClass<{
+const _6: TaggedErrorClass<{
   ErrorName: 'GitHubApiBadCredentialsError'
   ExpectedCauseClass: typeof RequestError
 }> = buildTaggedErrorClassVerifyingCause()(
@@ -87,7 +87,7 @@ export class GitHubApiBadCredentialsError extends _6 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _7: TaggedErrorClass<{
+const _7: TaggedErrorClass<{
   ErrorName: 'GitHubApiAuthRatelimitedError'
   ExpectedCauseClass: typeof RequestError
 }> = buildTaggedErrorClassVerifyingCause()(
@@ -100,7 +100,7 @@ export class GitHubApiAuthRatelimitedError extends _7 {}
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-export const _8: TaggedErrorClass<{
+const _8: TaggedErrorClass<{
   ErrorName: 'GitHubApiRatelimitedError'
   ExpectedCauseClass: typeof RequestError
 }> = buildTaggedErrorClassVerifyingCause()(

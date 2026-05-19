@@ -8,7 +8,9 @@ import {
   type TaggedErrorClass,
 } from './TaggedErrorVerifyingCause.ts'
 
-export const CastToReadableStream = <E, R>(self: Effect.Effect<unknown, E, R>) =>
+export const CastToReadableStream = <E, R>(
+  self: Effect.Effect<unknown, E, R>,
+) =>
   Effect.gen(function* () {
     const data = yield* self
 
