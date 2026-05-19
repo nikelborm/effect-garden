@@ -48,7 +48,7 @@ const deps = NonEmptyRecord(
   Schema.NonEmptyTrimmedString,
 )
 
-export const RootPackageJsonSchema = Schema.parseJson(
+export const RootPackageJsonFromStringSchema = Schema.parseJson(
   Schema.Struct(
     {
       name: Schema.NonEmptyTrimmedString,
@@ -160,7 +160,7 @@ export type SubPackageJson = (typeof SubPackageJsonSchema)['Encoded']
 
 export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
-  Effect.flatMap(Schema.decode(RootPackageJsonSchema)),
+  Effect.flatMap(Schema.decode(RootPackageJsonFromStringSchema)),
   Effect.withSpan('rootPackageJson'),
 )
 
@@ -445,7 +445,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
       yield* fs.writeFileString(
         rootPackageJsonPath,
-        (yield* Schema.encode(RootPackageJsonSchema)(newRoot)) + '\n',
+        (yield* Schema.encode(RootPackageJsonFromStringSchema)(newRoot)) + '\n',
       )
 
       yield* observableExec({
@@ -559,7 +559,7 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
       yield* Console.log(toInstall.join(', '))
 
       yield* observableExec({
-        cmd: ['bun', 'add', '-D', ...toInstall],
+        cmd: ['bun', 'add', '--dev', ...toInstall],
         cwd: pkg.directoryPath,
         badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.pkg.name}`,
       })
@@ -664,7 +664,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   if (!depsToInstall.length) return
 
   yield* observableExec({
-    cmd: ['bun', 'add', '-D', ...depsToInstall],
+    cmd: ['bun', 'add', '--dev', ...depsToInstall],
     cwd: playgroundPackageDirPath,
     badExitCodeErrorMessage: 'Failed to install dependencies in playground',
   })
@@ -694,41 +694,29 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
         directoryPath: _.directoryPath,
       })
 
-      const depsToFix = fixable(_.pkg.dependencies ?? {})
-      const devDepsToFix = fixable(_.pkg.devDependencies ?? {})
+      for (const depType of [
+        'dependencies',
+        'devDependencies',
+        'peerDependencies',
+      ] as const) {
+        const toFix = fixable(_.pkg[depType] ?? {})
+        if (!toFix.length) continue
 
-      if (depsToFix.length)
-        yield* observableExec({
-          cmd: ['bun', 'add', ...depsToFix.map(name => `${name}@workspace:*`)],
-          cwd: _.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace dependencies in ${_.pkg.name}`,
-        }).pipe(Effect.withSpan('fixProdDeps'))
-
-      if (devDepsToFix.length)
         yield* observableExec({
           cmd: [
             'bun',
             'add',
-            '-D',
-            ...devDepsToFix.map(name => `${name}@workspace:*`),
+            ...(depType === 'devDependencies'
+              ? ['--dev']
+              : depType === 'peerDependencies'
+                ? ['--peer']
+                : []),
+            ...toFix.map(name => `${name}@workspace:*`),
           ],
           cwd: _.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace dev dependencies in ${_.pkg.name}`,
-        }).pipe(Effect.withSpan('fixDevDeps'))
-
-      const peerDepsToFix = fixable(_.pkg.peerDependencies ?? {})
-
-      if (peerDepsToFix.length)
-        yield* observableExec({
-          cmd: [
-            'bun',
-            'add',
-            '--peer',
-            ...peerDepsToFix.map(name => `${name}@workspace:*`),
-          ],
-          cwd: _.directoryPath,
-          badExitCodeErrorMessage: `Failed to fix workspace peer dependencies in ${_.pkg.name}`,
-        }).pipe(Effect.withSpan('fixPeerDeps'))
+          badExitCodeErrorMessage: `Failed to fix workspace ${depType} in ${_.pkg.name}`,
+        })
+      }
     }),
     { discard: true },
   )
@@ -788,9 +776,109 @@ const sortPackageJsonEffect = Effect.gen(function* () {
   }
 })
 
-// TODO: should identify in catalog deps, that nobody depends on. Should
-// hardcode back at call-site if used only once, and delete if nobody depends on
-// it
+const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
+  const {
+    rootPackageJson,
+    rootPackageJson: { catalog },
+    myMonorepoPackages,
+  } = yield* getPackagesInfoEffect
+  const depTypes = [
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+  ] as const
+
+  const catalogPackageNameToUsage = new Map<
+    string,
+    | { type: 'never' }
+    | {
+        type: 'once'
+        pkg: (typeof myMonorepoPackages)[number]
+        depType: (typeof depTypes)[number]
+        catalogDepVersion: string
+      }
+    | { type: 'multiple' }
+  >(Object.keys(catalog).map(name => [name, { type: 'never' }]))
+
+  catalogLoop: for (const [depName, catalogDepVersion] of Object.entries(
+    catalog,
+  )) {
+    pkgLoop: for (const pkg of myMonorepoPackages) {
+      for (const depType of depTypes) {
+        const localDepVersion = pkg.pkg[depType]?.[depName]
+        if (localDepVersion === undefined) continue
+        if (localDepVersion !== 'catalog:')
+          return yield* Effect.dieMessage(
+            'Found package pointing at non-catalog version, while catalog were available\n' +
+              JSON.stringify({
+                depName,
+                catalogDepVersion,
+                depType,
+                installedInto: pkg.pkg.name,
+              }),
+          )
+
+        const seen = catalogPackageNameToUsage.get(depName)
+        if (!seen)
+          return yield* Effect.dieMessage(
+            'assertion failed. expected map to be prefilled',
+          )
+
+        if (seen.type === 'never') {
+          catalogPackageNameToUsage.set(depName, {
+            type: 'once',
+            depType,
+            pkg,
+            catalogDepVersion,
+          })
+          continue pkgLoop
+        }
+
+        if (seen.type === 'once') {
+          catalogPackageNameToUsage.set(depName, { type: 'multiple' })
+          continue catalogLoop
+        }
+      }
+    }
+  }
+
+  const newCatalog = { ...catalog }
+  let changed = false
+
+  for (const [depName, usage] of catalogPackageNameToUsage) {
+    if (usage.type === 'never' || usage.type === 'once') {
+      changed = true
+      delete newCatalog[depName]
+    }
+    if (usage.type === 'once')
+      yield* observableExec({
+        cmd: [
+          'bun',
+          'add',
+          ...(usage.depType === 'devDependencies'
+            ? ['--dev']
+            : usage.depType === 'peerDependencies'
+              ? ['--peer']
+              : []),
+          usage.catalogDepVersion,
+        ],
+        cwd: usage.pkg.directoryPath,
+        badExitCodeErrorMessage:
+          'Failed to install dependency into specific package',
+      })
+  }
+
+  if (!changed) return
+
+  yield* fs.writeFileString(
+    rootPackageJsonPath,
+    (yield* Schema.encode(RootPackageJsonFromStringSchema)({
+      ...rootPackageJson,
+      catalog: newCatalog,
+    })) + '\n',
+  )
+}).pipe(Effect.withSpan('ensureCatalogHasNoUnusedOrSinglyUsedEntries'))
 
 const program = Effect.all([
   ensureNoPackagesWithSameName,
@@ -802,6 +890,7 @@ const program = Effect.all([
   ensureVscodeSettingsExistInAllPackages,
   ensureAllMonorepoPackagesAreRootDeps,
   ensureTsconfigDepsAreInAllPackages,
+  ensureCatalogHasNoUnusedOrUsedOnceEntries,
   sortPackageJsonEffect,
 ]).pipe(
   Effect.scoped,
@@ -816,5 +905,3 @@ const program = Effect.all([
 )
 
 if (import.meta.main) BunRuntime.runMain(program)
-
-type Mutable<T> = { -readonly [P in keyof T]: T[P] }
