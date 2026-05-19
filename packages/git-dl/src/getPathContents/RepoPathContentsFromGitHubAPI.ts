@@ -22,6 +22,11 @@ export const RepoPathContentsFromGitHubAPI = Effect.fn(
   const octokit = yield* OctokitTag
 
   const { gitRef, pathToEntityInRepo, repo } = yield* InputConfigTag
+  // TODO: improve sitation on what's default with git ref. Better set null
+  // instead of empty string? to signify it's not present actually. Also should
+  // note that HEAD could mean something different when ref is not specified.
+  // Should consider if we should fallback to HEAD or just not specifiying the
+  // property at all.
 
   return yield* Effect.tryPromise({
     try: signal =>
