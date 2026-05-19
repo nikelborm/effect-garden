@@ -1,2 +1,8 @@
 create an agent/harness to get the tests and start implementing them one by one.
 https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
+
+
+Automatic rendering of readme table from packages folder
+
+1. documentation on scripts
+2. integrate hot reload from [nounder/effect-start](https://github.com/nounder/effect-start)?
