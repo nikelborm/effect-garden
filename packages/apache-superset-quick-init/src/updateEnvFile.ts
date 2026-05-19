@@ -20,6 +20,8 @@ export const updateEnvFile = Effect.fn('updateEnvFile')(function* (
     supersetSecretKey: generateRandomPassword,
   })
 
+  // TODO: Make sure the replacements actually happen and console.warn if not
+
   const newEnvFile = envFile
     .replaceAll(
       /^(DEV_MODE|FLASK_DEBUG|PUPPETEER_SKIP_CHROMIUM_DOWNLOAD)=.*/gm,

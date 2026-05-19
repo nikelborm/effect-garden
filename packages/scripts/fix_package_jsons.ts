@@ -788,6 +788,10 @@ const sortPackageJsonEffect = Effect.gen(function* () {
   }
 })
 
+// TODO: should identify in catalog deps, that nobody depends on. Should
+// hardcode back at call-site if used only once, and delete if nobody depends on
+// it
+
 const program = Effect.all([
   ensureNoPackagesWithSameName,
   ensureProdAndDevDependenciesHaveNoIntersections,

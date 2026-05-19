@@ -10,8 +10,6 @@
     "@total-typescript/ts-reset": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "change-case": "catalog:",
-    "jsr": "catalog:",
-    "rimraf": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "ts-toolbelt": "catalog:",
@@ -22,8 +20,7 @@
   },
   "dependencies": {
     "outdent": "catalog:",
-    "tsafe": "catalog:",
-    "tslib": "catalog:"
+    "tsafe": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/joiners#readme",
   "bugs": {

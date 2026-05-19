@@ -11,11 +11,7 @@
     "@rollup/plugin-json": "catalog:",
     "@rollup/plugin-node-resolve": "catalog:",
     "@rollup/plugin-terser": "catalog:",
-    "@total-typescript/ts-reset": "catalog:",
-    "@types/tar-fs": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "jsr": "catalog:",
-    "rimraf": "catalog:",
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -30,14 +26,15 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/tar-fs": "catalog:",
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
     "@octokit/types": "catalog:",
     "effect-errors": "catalog:",
     "outdent": "catalog:",
     "tar-fs": "catalog:",
-    "tsafe": "catalog:",
-    "tslib": "catalog:"
+    "tsafe": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dl#readme",
   "bugs": {
