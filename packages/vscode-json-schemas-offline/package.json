@@ -30,9 +30,9 @@
     "directory": "packages/vscode-json-schemas-offline"
   },
   "scripts": {
-    "build": "bun run build:schemas && bun run build:ext",
-    "build:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node",
-    "build:schemas": "bun scripts/build-schemas.ts",
+    "//": "TODO: add tsc compilation here too as build",
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node",
+    "fetch-schemas": "bun scripts/fetch-schemas.ts",
     "package": "vsce package --allow-package-secrets slack --allow-package-secrets github"
   },
   "author": {
