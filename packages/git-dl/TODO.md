@@ -1,3 +1,7 @@
+# Autogenerate vscode tasks from my cli
+
+# combine whole project little scripts into one project cli
+
 # Try to use .handler method on crafted commands in tests
 
 ([example](https://github.com/schickling/dilagent/blob/77d7d90d19d921841a18df350b6430c5bdc9eea3/apps/dilagent-cli/src/commands/manager/all.ts#L63))
