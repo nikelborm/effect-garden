@@ -76,6 +76,14 @@ const userSchema = Schema.Struct({
   url: Schema.NonEmptyTrimmedString,
 })
 
+// TODO: add tooling to maintain options on what's CLI, what's library, what's
+// both etc. Create a semantic conventions on the naming, if something is a CLI.
+// Like the naming of files, and the wiring of it should be streamlined in the
+// build proces. A good idea would be to add a new field to package JSON and
+// validate against it. Also make author etc boilerplate fields not pinned in
+// the actual package.json's but rather added to JSON's at compile-time. As well
+// as validation them against actual directory names etc
+
 export const SubPackageJsonSchema = Schema.Struct(
   {
     name: Schema.NonEmptyTrimmedString,

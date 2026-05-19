@@ -16,20 +16,18 @@ const invalidGitHubSlugMessage =
 // https://developer.mozilla.org/en-US/docs/Glossary/Slug
 const GitHubSlugStringSchema = Schema.NonEmptyString.pipe(
   Schema.filter(s => isGitHubSlug(s) || invalidGitHubSlugMessage),
+  // TODO brandify this
 )
+
+// TODO change approach to default values. Either remove defaults completely or
+// provided an easy way to set for people their own defaults instead of
+// comparing them to the hardcoded default value. Also document the helpers for
+// overriding defaults in TSDoc of exported CLIOptions objects
 
 const withGitHubSlugConfigValidation = Config.validate({
   message: invalidGitHubSlugMessage,
   validation: isGitHubSlug,
 })
-
-// const toDoc = <T extends TemplateStringsArray>(arg: T) => {
-//   const lines = outdent(arg).split('\n')
-
-//   if (!Tuple.isTupleOfAtLeast(1)(lines)) throw new Error('')
-
-//   return HelpDoc.enumeration(EArray.map(lines, HelpDoc.p))
-// }
 
 const pathToEntityInRepoDescription = 'Path to file or directory in repo'
 

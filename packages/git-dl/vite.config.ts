@@ -22,7 +22,7 @@ export default defineConfig({
         'tmp/**',
         'errors.[jt]s',
         'cli.[jt]s',
-        '**/{scratchpad,index,logObjectPretty}[.][jt]s',
+        '**/{scratchpad,index}[.][jt]s',
       ],
     },
   },

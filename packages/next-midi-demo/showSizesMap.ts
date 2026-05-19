@@ -6,6 +6,8 @@ import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as Stream from 'effect/Stream'
 
+// TODO: delete this useless(?) script?
+
 await Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const list = (yield* fs.readDirectory('./public/samples')).filter(e =>
@@ -41,5 +43,7 @@ await Effect.gen(function* () {
 }).pipe(
   Effect.provide(BunFileSystem.layer),
   Effect.provide(FetchHttpClient.layer),
+  // TODO: make custom runtime
+  // https://typeonce.dev/course/effect-beginners-complete-getting-started/effect-in-production/most-common-effect-patterns#use-a-custom-runtime-from-the-beginning
   Effect.runPromise,
 )

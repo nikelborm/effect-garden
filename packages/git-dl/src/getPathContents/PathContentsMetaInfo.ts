@@ -57,14 +57,11 @@ export const PathContentsMetaInfo = Effect.gen(function* () {
 
   // In the end it leads to much lower complexity with a ton of IFs removed
 
-  const { content, encoding, sha: blobSha, ..._ } = response
-  const base = { ..._, blobSha }
+  const { content, encoding, sha: blobSha, ...restFileObjectFields } = response
+  const base = { ...restFileObjectFields, blobSha }
 
   if (encoding === 'none')
-    return {
-      ...base,
-      meta: 'This file can be downloaded as a blob',
-    } as const
+    return { ...base, meta: 'This file can be downloaded as a blob' } as const
 
   const contentAsBuffer = Buffer.from(content, encoding)
 

@@ -25,6 +25,10 @@ import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
 const appCommand = CLICommand.make(
   pkg.name,
   {
+    // TODO change approach to default values. Either remove defaults completely
+    // or provided an easy way to set for people their own defaults instead of
+    // comparing them to the hardcoded default value. Also document the helpers
+    // for overriding defaults in TSDoc of exported CLIOptions objects
     destinationPath: destinationPathCLIOptionBackedByEnv.pipe(
       CLIOptions.map(e => (e === './destination' ? './superset' : e)),
     ),

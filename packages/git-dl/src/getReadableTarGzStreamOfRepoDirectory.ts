@@ -21,6 +21,8 @@ export const getReadableTarGzStreamOfRepoDirectory = (
     CastToReadableStream,
   )
 
+// TODO: better return type signature so that we actually show what's returned
+// buffer, stream or something else. Octokit sucks
 const requestTarballFromGitHubAPI = (
   gitRefWhichWillBeUsedToIdentifyGitTree = '',
 ) =>

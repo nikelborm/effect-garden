@@ -12,6 +12,10 @@ import {
   type TaggedErrorClass,
 } from './TaggedErrorVerifyingCause.ts'
 
+// TODO: Use this maybe for tar.gz unpacking?
+// https://github.com/leonitousconforti/eftar
+// TODO: Or implement my own wrapper around node:zlib?
+
 export const unpackRepoFolderTarGzStreamToFs = <E, R>(
   self: Effect.Effect<Readable, E, R>,
 ) =>

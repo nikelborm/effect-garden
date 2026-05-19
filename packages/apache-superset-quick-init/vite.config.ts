@@ -15,7 +15,7 @@ export default defineConfig({
         ...coverageConfigDefaults.exclude,
         'destination/**',
         'tmp/**',
-        '**/{scratchpad,index,logObjectPretty}[.][jt]s',
+        '**/{scratchpad,index}[.][jt]s',
       ],
     },
   },

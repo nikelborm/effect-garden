@@ -8,6 +8,9 @@ import {
   type TaggedErrorClass,
 } from './TaggedErrorVerifyingCause.ts'
 
+// TODO: should eventually delete this shit because:
+// 1. Effect has streams and I now know them well
+// 2. Effect has Platform's utilities like BunSink and BunStream
 export const CastToReadableStream = <E, R>(
   self: Effect.Effect<unknown, E, R>,
 ) =>

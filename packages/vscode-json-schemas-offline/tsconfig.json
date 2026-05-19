@@ -1,4 +1,5 @@
 {
+  // TODO: use my tsconfig, or create a separate specifically for bundling vscode extension
   "compilerOptions": {
     "target": "ES2022",
     "module": "es2022",

@@ -13,6 +13,9 @@ import {
 import { InputConfigTag } from '../configContext.ts'
 import { OctokitTag } from '../octokit.ts'
 
+// TODO make better typesignature so that it actually reflects what's returned:
+// stream or parsed body use params as a generic. (but generally fuck github API
+// and their fucking octokit)
 export const RepoPathContentsFromGitHubAPI = Effect.fn(
   'getRepoPathContentsFromGitHubAPI',
 )(function* (format: 'object' | 'raw', streamBody?: boolean) {

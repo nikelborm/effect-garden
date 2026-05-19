@@ -254,5 +254,7 @@ await pipe(
     yield* renderMdToStdout(md)
   }),
   Effect.provide(AppLayer),
+  // TODO: make custom runtime
+  // https://typeonce.dev/course/effect-beginners-complete-getting-started/effect-in-production/most-common-effect-patterns#use-a-custom-runtime-from-the-beginning
   Effect.runPromise,
 )

@@ -10,6 +10,8 @@ import {
   type TaggedErrorClass,
 } from './TaggedErrorVerifyingCause.ts'
 
+// TODO: use effect platform streams
+
 export const writeFileStreamToDestinationPath = <E, R>(
   self: Effect.Effect<Readable, E, R>,
 ) =>
