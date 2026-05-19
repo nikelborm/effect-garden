@@ -1,8 +1,8 @@
 import type { Equals } from 'tsafe'
 
-import type { YieldableError } from 'effect/Cause'
-import { TaggedError } from 'effect/Data'
-import { isFunction } from 'effect/Predicate'
+import type * as Cause from 'effect/Cause'
+import * as Data from 'effect/Data'
+import * as Predicate from 'effect/Predicate'
 
 const removeLastIfItIsEmptyObject = (arr: Array<unknown>) =>
   Object.keys(arr.at(-1) ?? {}).length ? arr : arr.slice(0, -1)
@@ -26,7 +26,7 @@ export const buildTaggedErrorClassVerifyingCause =
     staticContext?: StaticContext,
   ): TaggedErrorClass<Config> => {
     // TODO: Consider using Schema.TaggedError instead of Data.TaggedError
-    const CustomTaggedErrorClass = TaggedError(errorName)<
+    const CustomTaggedErrorClass = Data.TaggedError(errorName)<
       Record<'message' | '_tag' | 'name', unknown>
     >
 
@@ -47,7 +47,7 @@ export const buildTaggedErrorClassVerifyingCause =
 
         super({
           name: errorName,
-          message: isFunction(customMessage)
+          message: Predicate.isFunction(customMessage)
             ? customMessage(...customMessageRendererArgs)
             : customMessage,
           ...(!!expectedCauseClass && { cause: args[0] }),
@@ -66,7 +66,7 @@ export type TaggedErrorClass<Config extends ConfigTemplate> = [string] extends [
   ? 'ErrorName should be a string literal'
   : new (
       ...args: ConstructorArgs<Config>
-    ) => YieldableError &
+    ) => Cause.YieldableError &
       Readonly<
         {
           message: string

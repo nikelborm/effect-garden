@@ -1,13 +1,8 @@
 import { outdent } from 'outdent'
 
-import { type Either, gen, isRight, left, mapLeft } from 'effect/Either'
-import { ParseError } from 'effect/ParseResult'
-import {
-  decodeUnknownEither,
-  NonEmptyTrimmedString,
-  NumberFromString,
-  Struct,
-} from 'effect/Schema'
+import * as Either from 'effect/Either'
+import * as ParseResult from 'effect/ParseResult'
+import * as Schema from 'effect/Schema'
 
 import {
   buildTaggedErrorClassVerifyingCause,
@@ -21,13 +16,13 @@ export const parseGitLFSObjectEither = ({
   contentAsBuffer: Buffer<ArrayBuffer>
   expectedContentSize: number
 }) =>
-  gen(function* () {
+  Either.gen(function* () {
     // gitLFS info usually is no longer than MAX_GIT_LFS_INFO_SIZE bytes
     const contentAsString = contentAsBuffer
       .subarray(0, MAX_GIT_LFS_INFO_SIZE)
       .toString('utf8')
 
-    const parsingResult = mapLeft(
+    const parsingResult = Either.mapLeft(
       decodeGitLFSInfoSchema(contentAsString.match(gitLFSInfoRegexp)?.groups),
       cause =>
         new FailedToParseGitLFSInfoError(cause, {
@@ -35,9 +30,9 @@ export const parseGitLFSObjectEither = ({
         }),
     )
 
-    const matchedByRegexpAndParsedByEffectSchema = isRight(parsingResult)
+    const matchedByRegexpAndParsedByEffectSchema = Either.isRight(parsingResult)
     const doesSizeFromGitLFSInfoAlignWithExpectedContentSize =
-      isRight(parsingResult) && parsingResult.right.size === expectedContentSize
+      Either.isRight(parsingResult) && parsingResult.right.size === expectedContentSize
 
     const shouldFailIfItIsNotGitLFS =
       contentAsBuffer.byteLength !== expectedContentSize
@@ -53,7 +48,7 @@ export const parseGitLFSObjectEither = ({
       } as const
 
     if (shouldFailIfItIsNotGitLFS)
-      return yield* left(
+      return yield* Either.left(
         new InconsistentExpectedAndRealContentSizeError({
           actual: contentAsBuffer.byteLength,
           expected: expectedContentSize,
@@ -76,13 +71,13 @@ const MAX_GIT_LFS_INFO_SIZE = 137
 const gitLFSInfoRegexp =
   /^version (?<version>https:\/\/git-lfs\.github\.com\/spec\/v1)\noid sha256:(?<oidSha256>[0-9a-f]{64})\nsize (?<size>[1-9]\d{0,11})\n$/m
 
-const GitLFSInfoSchema = Struct({
-  version: NonEmptyTrimmedString,
-  oidSha256: NonEmptyTrimmedString,
-  size: NumberFromString,
+const GitLFSInfoSchema = Schema.Struct({
+  version: Schema.NonEmptyTrimmedString,
+  oidSha256: Schema.NonEmptyTrimmedString,
+  size: Schema.NumberFromString,
 })
 
-const decodeGitLFSInfoSchema = decodeUnknownEither(GitLFSInfoSchema, {
+const decodeGitLFSInfoSchema = Schema.decodeUnknownEither(GitLFSInfoSchema, {
   exact: true,
 })
 
@@ -90,7 +85,7 @@ const decodeGitLFSInfoSchema = decodeUnknownEither(GitLFSInfoSchema, {
 // library will have much faster type inference
 export type FailedToParseGitLFSInfoErrorClass = TaggedErrorClass<{
   ErrorName: 'FailedToParseGitLFSInfoError'
-  ExpectedCauseClass: typeof ParseError
+  ExpectedCauseClass: typeof ParseResult.ParseError
   DynamicContext: { partOfContentThatCouldBeGitLFSInfo: string }
 }>
 
@@ -100,7 +95,7 @@ const _1: FailedToParseGitLFSInfoErrorClass =
   }>()(
     'FailedToParseGitLFSInfoError',
     `Failed to parse git LFS announcement`,
-    ParseError,
+    ParseResult.ParseError,
   )
 
 export class FailedToParseGitLFSInfoError extends _1 {}
@@ -108,7 +103,7 @@ export class FailedToParseGitLFSInfoError extends _1 {}
 type InconsistentSizesDynamicContext = {
   actual: number
   expected: number
-  gitLFSInfo: Either<
+  gitLFSInfo: Either.Either<
     Readonly<{
       version: string
       oidSha256: string

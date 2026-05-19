@@ -2,7 +2,7 @@ import { createWriteStream } from 'node:fs'
 import type { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 
-import { type Effect, gen, tryPromise } from 'effect/Effect'
+import * as Effect from 'effect/Effect'
 
 import { OutputConfigTag } from './configContext.ts'
 import {
@@ -11,16 +11,16 @@ import {
 } from './TaggedErrorVerifyingCause.ts'
 
 export const writeFileStreamToDestinationPath = <E, R>(
-  self: Effect<Readable, E, R>,
+  self: Effect.Effect<Readable, E, R>,
 ) =>
-  gen(function* () {
+  Effect.gen(function* () {
     const fileStream = yield* self
 
     const {
       localPathAtWhichEntityFromRepoWillBeAvailable: localDownloadedFilePath,
     } = yield* OutputConfigTag
 
-    yield* tryPromise({
+    yield* Effect.tryPromise({
       try: signal =>
         pipeline(fileStream, createWriteStream(localDownloadedFilePath), {
           signal,

@@ -1,6 +1,6 @@
-import { GenericTag } from 'effect/Context'
-import { type Effect, provide } from 'effect/Effect'
-import { merge, succeed } from 'effect/Layer'
+import * as Context from 'effect/Context'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 export type InputConfig = Readonly<{
   repo: Readonly<{
@@ -11,22 +11,22 @@ export type InputConfig = Readonly<{
   gitRef: string
 }>
 
-export const InputConfigTag = GenericTag<InputConfig>('InputConfig')
+export const InputConfigTag = Context.GenericTag<InputConfig>('InputConfig')
 
 export type OutputConfig = Readonly<{
   localPathAtWhichEntityFromRepoWillBeAvailable: string
 }>
 
-export const OutputConfigTag = GenericTag<OutputConfig>('OutputConfig')
+export const OutputConfigTag = Context.GenericTag<OutputConfig>('OutputConfig')
 
 const InputConfigLive = (inputConfig: InputConfig) =>
-  succeed(InputConfigTag, InputConfigTag.of(inputConfig))
+  Layer.succeed(InputConfigTag, InputConfigTag.of(inputConfig))
 
 export const provideInputConfig = (inputConfig: InputConfig) =>
-  provide(InputConfigLive(inputConfig))
+  Effect.provide(InputConfigLive(inputConfig))
 
 const OutputConfigLive = (outputConfig: OutputConfig) =>
-  succeed(OutputConfigTag, OutputConfigTag.of(outputConfig))
+  Layer.succeed(OutputConfigTag, OutputConfigTag.of(outputConfig))
 
 export type SingleTargetConfig = InputConfig & OutputConfig
 
@@ -34,10 +34,10 @@ export const provideSingleDownloadTargetConfig = ({
   localPathAtWhichEntityFromRepoWillBeAvailable,
   ...inputConfig
 }: SingleTargetConfig): (<A, E, R>(
-  self: Effect<A, E, R>,
-) => Effect<A, E, Exclude<R, InputConfig | OutputConfig>>) =>
-  provide(
-    merge(
+  self: Effect.Effect<A, E, R>,
+) => Effect.Effect<A, E, Exclude<R, InputConfig | OutputConfig>>) =>
+  Effect.provide(
+    Layer.merge(
       InputConfigLive(inputConfig),
       OutputConfigLive({
         localPathAtWhichEntityFromRepoWillBeAvailable,

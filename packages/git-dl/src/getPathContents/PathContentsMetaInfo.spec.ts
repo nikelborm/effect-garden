@@ -5,22 +5,11 @@ import type { Octokit } from '@octokit/core'
 import { RequestError } from '@octokit/request-error'
 import { assert, typeGuard } from 'tsafe'
 
-import { describe, it, type TestContext } from '@effect/vitest'
-import { UnknownException } from 'effect/Cause'
-import {
-  andThen,
-  asVoid,
-  die,
-  type Effect,
-  either,
-  flatMap,
-  gen,
-  map,
-  provide,
-  succeed,
-} from 'effect/Effect'
-import { isRight } from 'effect/Either'
-import { pipe } from 'effect/Function'
+import * as Vitest from '@effect/vitest'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
+import * as Either from 'effect/Either'
+import * as EFunction from 'effect/Function'
 
 import { FailedToCastDataToReadableStreamError } from '../castToReadableStream.ts'
 import {
@@ -46,7 +35,7 @@ const defaultRepo = {
 
 const UnexpectedErrors = [
   RequestError,
-  UnknownException,
+  Cause.UnknownException,
   GitHubApiAuthRatelimitedError,
   GitHubApiRatelimitedError,
   GitHubApiGeneralServerError,
@@ -57,7 +46,7 @@ type ErrorExpectedToBeThrown = (typeof UnexpectedErrors)[number] extends new (
   ...args: any
 ) => infer UnexpectedErrorInstance
   ? Exclude<
-      typeof RawStreamOfRepoPathContentsFromGitHubAPI extends Effect<
+      typeof RawStreamOfRepoPathContentsFromGitHubAPI extends Effect.Effect<
         unknown,
         infer AllPotentialErrorInstances,
         unknown
@@ -75,7 +64,7 @@ const effectsToTestForErrors = {
 
 const testValidityOfErrorThrownByEffect =
   <const ExpectedErrorClass extends ErrorExpectedToBeThrown>(
-    ctx: TestContext,
+    ctx: Vitest.TestContext,
     ExpectedErrorClass: new (...args: any) => ExpectedErrorClass,
     effectDescription: string,
   ) =>
@@ -86,11 +75,11 @@ const testValidityOfErrorThrownByEffect =
     effectToTest: EffectToTest,
   ) =>
     effectToTest.pipe(
-      asVoid as <E, R>(self: Effect<any, E, R>) => Effect<void, E, R>,
-      either,
-      flatMap(res => {
-        if (isRight(res))
-          return die({
+      Effect.asVoid as <E, R>(self: Effect.Effect<any, E, R>) => Effect.Effect<void, E, R>,
+      Effect.either,
+      Effect.flatMap(res => {
+        if (Either.isRight(res))
+          return Effect.die({
             message:
               `Effect ${effectDescription} succeeded when expected to fail` as const,
             unexpectedlySuccessfulResult: res.right,
@@ -125,7 +114,7 @@ const testValidityOfErrorThrownByEffect =
           >(err, true),
         )
 
-        return succeed(err)
+        return Effect.succeed(err)
       }),
     )
 
@@ -144,8 +133,8 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
   gitRef?: string | undefined
   pathToEntityInRepo: string
 }) =>
-  it.effect(`Should throw ${ExpectedErrorClass.name} when ${when}`, ctx =>
-    gen(function* () {
+  Vitest.it.effect(`Should throw ${ExpectedErrorClass.name} when ${when}`, ctx =>
+    Effect.gen(function* () {
       const validateErrorOf = <T extends keyof typeof effectsToTestForErrors>(
         chosenEffectName: T,
       ) => {
@@ -162,7 +151,7 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
             `${chosenEffectName} (${JSON.stringify(inputConfig)})`,
           ),
           provideInputConfig(inputConfig),
-          provide(OctokitLayer({ auth: authToken })),
+          Effect.provide(OctokitLayer({ auth: authToken })),
         )
         return { [newKey]: newVal } as {
           [k in typeof newKey]: typeof newVal
@@ -189,24 +178,24 @@ const expectNotFail = (
   descriptionOfWhatItShouldReturn: string,
   pathToEntityInRepo: string,
   testEffect: (
-    ctx: TestContext,
+    ctx: Vitest.TestContext,
     pathContentsMetaInfo: typeof PathContentsMetaInfo,
-  ) => Effect<unknown, unknown, Octokit | InputConfig>,
+  ) => Effect.Effect<unknown, unknown, Octokit | InputConfig>,
   authToken: string = '',
 ) =>
-  it.effect('Should return ' + descriptionOfWhatItShouldReturn, ctx =>
-    pipe(
+  Vitest.it.effect('Should return ' + descriptionOfWhatItShouldReturn, ctx =>
+    EFunction.pipe(
       testEffect(ctx, PathContentsMetaInfo),
       provideInputConfig({
         pathToEntityInRepo,
         gitRef: '',
         repo: defaultRepo,
       }),
-      provide(OctokitLayer(authToken ? { auth: authToken } : void 0)),
+      Effect.provide(OctokitLayer(authToken ? { auth: authToken } : void 0)),
     ),
   )
 
-describe('PathContentsMetaInfo', { concurrent: true }, () => {
+Vitest.describe('PathContentsMetaInfo', { concurrent: true }, () => {
   expectError({
     when: 'asked for empty repo',
     ExpectedErrorClass: GitHubApiRepoIsEmptyError,
@@ -272,7 +261,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
   })
 
   expectNotFail(`children of root directory`, '', (ctx, pathContentsMetaInfo) =>
-    map(pathContentsMetaInfo, e =>
+    Effect.map(pathContentsMetaInfo, e =>
       ctx.expect(e).toMatchInlineSnapshot(`
         {
           "entries": [
@@ -352,7 +341,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `little inlined file directly in root directory`,
     'Readme.md',
     (ctx, pathContentsMetaInfo) =>
-      gen(function* () {
+      Effect.gen(function* () {
         const info = yield* pathContentsMetaInfo
 
         if (
@@ -366,7 +355,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         ctx
           .expect({
             ...rest,
-            content: yield* andThen(contentStream, text),
+            content: yield* Effect.andThen(contentStream, text),
           })
           .toMatchInlineSnapshot(`
           {
@@ -387,7 +376,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `inlined file with size 1 byte less than 1mb placed directly in root directory`,
     '1023kb+1023b_file.txt',
     (ctx, pathContentsMetaInfo) =>
-      gen(function* () {
+      Effect.gen(function* () {
         const info = yield* pathContentsMetaInfo
 
         if (
@@ -401,7 +390,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         ctx
           .expect({
             ...rest,
-            content: yield* andThen(contentStream, text),
+            content: yield* Effect.andThen(contentStream, text),
           })
           .toEqual({
             type: 'file',
@@ -419,7 +408,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `blob info for file with size exactly 1mb`,
     '1mb_file.txt',
     (ctx, pathContentsMetaInfo) =>
-      map(pathContentsMetaInfo, e =>
+      Effect.map(pathContentsMetaInfo, e =>
         ctx.expect(e).toMatchInlineSnapshot(`
         {
           "blobSha": "7c7377879f52df073befeb0cb7df4d1a4b6b7563",
@@ -437,7 +426,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `Git-LFS info`,
     '2mb_lfs_file.txt',
     (ctx, pathContentsMetaInfo) =>
-      map(pathContentsMetaInfo, e =>
+      Effect.map(pathContentsMetaInfo, e =>
         ctx.expect(e).toMatchInlineSnapshot(`
           {
             "blobSha": "949b64f08bed89afc8de31addc4836432e31d5a2",
@@ -457,7 +446,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `little inlined file inside of a nested directory`,
     'parentFolderDirectlyInRoot/childFolder/nestedFile.md',
     (ctx, pathContentsMetaInfo) =>
-      gen(function* () {
+      Effect.gen(function* () {
         const info = yield* pathContentsMetaInfo
 
         if (
@@ -471,7 +460,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
         ctx
           .expect({
             ...rest,
-            content: yield* andThen(contentStream, text),
+            content: yield* Effect.andThen(contentStream, text),
           })
           .toMatchInlineSnapshot(`
         {
@@ -492,7 +481,7 @@ describe('PathContentsMetaInfo', { concurrent: true }, () => {
     `children of nested directory`,
     'parentFolderDirectlyInRoot/childFolder',
     (ctx, pathContentsMetaInfo) =>
-      map(pathContentsMetaInfo, e =>
+      Effect.map(pathContentsMetaInfo, e =>
         ctx.expect(e).toMatchInlineSnapshot(`
         {
           "entries": [

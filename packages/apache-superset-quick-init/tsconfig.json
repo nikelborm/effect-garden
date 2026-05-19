@@ -3,6 +3,9 @@
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
+    "types": [
+      "bun"
+    ],
     "rootDir": "./"
   },
   "include": [

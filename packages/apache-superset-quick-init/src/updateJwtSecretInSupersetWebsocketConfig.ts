@@ -1,23 +1,16 @@
 import { allFast } from '@nikelborm/effect-helpers'
 
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { all, flatMap, fn } from 'effect/Effect'
-import {
-  Any,
-  decode,
-  encode,
-  NonEmptyString,
-  parseJson,
-  Record,
-} from 'effect/Schema'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 
 import { generateRandomPassword } from './generateRandomPassword.ts'
 
-export const updateJwtSecretInSupersetWebsocketConfig = fn(
+export const updateJwtSecretInSupersetWebsocketConfig = Effect.fn(
   'updateJwtSecretInSupersetWebsocketConfig',
 )(function* (basePath: string) {
-  const [fs, path] = yield* all([FileSystem, Path])
+  const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
   const supersetWebsocketConfigPath = path.join(
     basePath,
@@ -29,7 +22,7 @@ export const updateJwtSecretInSupersetWebsocketConfig = fn(
   const { configFileParsed, jwtSecret } = yield* allFast({
     configFileParsed: fs
       .readFileString(supersetWebsocketConfigPath, 'utf8')
-      .pipe(flatMap(decodeSupersetWebsocketConfig)),
+      .pipe(Effect.flatMap(decodeSupersetWebsocketConfig)),
     jwtSecret: generateRandomPassword,
   })
 
@@ -43,12 +36,12 @@ export const updateJwtSecretInSupersetWebsocketConfig = fn(
   })
 })
 
-const SupersetWebsocketConfigSchema = parseJson(
-  Record({
-    key: NonEmptyString,
-    value: Any,
+const SupersetWebsocketConfigSchema = Schema.parseJson(
+  Schema.Record({
+    key: Schema.NonEmptyString,
+    value: Schema.Any,
   }),
 )
 
-const decodeSupersetWebsocketConfig = decode(SupersetWebsocketConfigSchema)
-const encodeSupersetWebsocketConfig = encode(SupersetWebsocketConfigSchema)
+const decodeSupersetWebsocketConfig = Schema.decode(SupersetWebsocketConfigSchema)
+const encodeSupersetWebsocketConfig = Schema.encode(SupersetWebsocketConfigSchema)

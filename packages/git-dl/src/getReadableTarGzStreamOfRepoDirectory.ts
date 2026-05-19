@@ -1,8 +1,8 @@
 import { RequestError } from '@octokit/request-error'
 
-import { UnknownException } from 'effect/Cause'
-import { gen, map, tryPromise } from 'effect/Effect'
-import { pipe } from 'effect/Function'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
 
 import { CastToReadableStream } from './castToReadableStream.ts'
 import {
@@ -15,23 +15,23 @@ import { OctokitTag } from './octokit.ts'
 export const getReadableTarGzStreamOfRepoDirectory = (
   gitRefWhichWillBeUsedToIdentifyGitTree?: string,
 ) =>
-  pipe(
+  EFunction.pipe(
     requestTarballFromGitHubAPI(gitRefWhichWillBeUsedToIdentifyGitTree),
-    map(({ data }) => data),
+    Effect.map(({ data }) => data),
     CastToReadableStream,
   )
 
 const requestTarballFromGitHubAPI = (
   gitRefWhichWillBeUsedToIdentifyGitTree = '',
 ) =>
-  gen(function* () {
+  Effect.gen(function* () {
     const octokit = yield* OctokitTag
 
     const {
       repo: { owner, name },
     } = yield* InputConfigTag
 
-    return yield* tryPromise({
+    return yield* Effect.tryPromise({
       try: signal =>
         octokit.request('GET /repos/{owner}/{repo}/tarball/{ref}', {
           owner,
@@ -47,7 +47,7 @@ const requestTarballFromGitHubAPI = (
         }),
       catch: error => {
         if (!(error instanceof RequestError))
-          return new UnknownException(
+          return new Cause.UnknownException(
             error,
             'Failed to request .tar.gz file from GitHub API',
           )

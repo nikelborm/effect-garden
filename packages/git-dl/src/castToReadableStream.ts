@@ -1,15 +1,15 @@
 import { Readable } from 'node:stream'
 import { ReadableStream } from 'node:stream/web'
 
-import { type Effect, gen } from 'effect/Effect'
+import * as Effect from 'effect/Effect'
 
 import {
   buildTaggedErrorClassVerifyingCause,
   type TaggedErrorClass,
 } from './TaggedErrorVerifyingCause.ts'
 
-export const CastToReadableStream = <E, R>(self: Effect<unknown, E, R>) =>
-  gen(function* () {
+export const CastToReadableStream = <E, R>(self: Effect.Effect<unknown, E, R>) =>
+  Effect.gen(function* () {
     const data = yield* self
 
     if (data instanceof ArrayBuffer || data instanceof Buffer)

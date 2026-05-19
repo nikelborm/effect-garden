@@ -1,10 +1,10 @@
-import { gen, succeed } from 'effect/Effect'
+import * as Effect from 'effect/Effect'
 
 import { CastToReadableStream } from '../castToReadableStream.ts'
 import { ParsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
 import { parseGitLFSObjectEither } from './parseGitLFSObjectEither.ts'
 
-export const PathContentsMetaInfo = gen(function* () {
+export const PathContentsMetaInfo = Effect.gen(function* () {
   const response = yield* ParsedMetaInfoAboutPathContentsFromGitHubAPI
 
   const { type, name, path, size } = response
@@ -82,7 +82,7 @@ export const PathContentsMetaInfo = gen(function* () {
 
   return {
     ...base,
-    contentStream: CastToReadableStream(succeed(contentAsBuffer)),
+    contentStream: CastToReadableStream(Effect.succeed(contentAsBuffer)),
     meta: 'This file is small enough that GitHub API decided to inline it',
   } as const
 })

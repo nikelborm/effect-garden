@@ -1,9 +1,9 @@
 import { outdent } from 'outdent'
 import { assert, type Equals } from 'tsafe'
 
-import { describe, it } from '@effect/vitest'
-import { right } from 'effect/Either'
-import { ParseError, Unexpected } from 'effect/ParseResult'
+import * as Vitest from '@effect/vitest'
+import * as Either from 'effect/Either'
+import * as ParseResult from 'effect/ParseResult'
 
 import { FailedToParseGitLFSInfoError } from './getPathContents/index.ts'
 import { InconsistentExpectedAndRealContentSizeError } from './getPathContents/parseGitLFSObjectEither.ts'
@@ -12,12 +12,12 @@ import {
   type GetValueByKey,
 } from './TaggedErrorVerifyingCause.ts'
 
-describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
-  it('Should have expected fields from both contexts: dynamic and static ', ctx => {
+Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
+  Vitest.it('Should have expected fields from both contexts: dynamic and static ', ctx => {
     const dynamicContext = {
       actual: 12,
       expected: 13,
-      gitLFSInfo: right({
+      gitLFSInfo: Either.right({
         oidSha256: 'iosdvhksjsl',
         size: 14,
         version: 'lakdvfhjaljskhk',
@@ -68,10 +68,10 @@ describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
     })
   })
 
-  it('Should throw when incorrect cause provided during constructor call', ctx => {
+  Vitest.it('Should throw when incorrect cause provided during constructor call', ctx => {
     try {
       const error = new FailedToParseGitLFSInfoError(
-        new Error('bad error') as ParseError,
+        new Error('bad error') as ParseResult.ParseError,
         {
           partOfContentThatCouldBeGitLFSInfo:
             'Part of content that could be git lfs info',
@@ -91,9 +91,9 @@ describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
     }
   })
 
-  it('Should not try to call message string', ctx => {
-    const causeOriginal = new ParseError({
-      issue: new Unexpected('asdf'),
+  Vitest.it('Should not try to call message string', ctx => {
+    const causeOriginal = new ParseResult.ParseError({
+      issue: new ParseResult.Unexpected('asdf'),
     })
 
     const error = new FailedToParseGitLFSInfoError(causeOriginal, {
@@ -125,7 +125,7 @@ describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
     })
   })
 
-  it('Should pass cause and full context when message renderer is called and ExpectedCauseClass is provided', ctx => {
+  Vitest.it('Should pass cause and full context when message renderer is called and ExpectedCauseClass is provided', ctx => {
     class CustomCauseErrorClass extends Error {
       constructor(message: string) {
         super(message)

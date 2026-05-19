@@ -1,13 +1,15 @@
 import { allFast } from '@nikelborm/effect-helpers'
 
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { all, fn } from 'effect/Effect'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as Effect from 'effect/Effect'
 
 import { generateRandomPassword } from './generateRandomPassword.ts'
 
-export const updateEnvFile = fn('updateEnvFile')(function* (basePath: string) {
-  const [fs, path] = yield* all([FileSystem, Path])
+export const updateEnvFile = Effect.fn('updateEnvFile')(function* (
+  basePath: string,
+) {
+  const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
   const envFilePath = path.join(basePath, 'docker', '.env')
 

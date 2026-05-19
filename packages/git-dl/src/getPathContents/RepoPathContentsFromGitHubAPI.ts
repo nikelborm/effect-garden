@@ -1,8 +1,8 @@
 import { RequestError } from '@octokit/request-error'
 import type { OctokitResponse } from '@octokit/types'
 
-import { UnknownException } from 'effect/Cause'
-import { fn, tryPromise } from 'effect/Effect'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
 
 import {
   GitHubApiNoCommitFoundForGitRefError,
@@ -13,14 +13,14 @@ import {
 import { InputConfigTag } from '../configContext.ts'
 import { OctokitTag } from '../octokit.ts'
 
-export const RepoPathContentsFromGitHubAPI = fn(
+export const RepoPathContentsFromGitHubAPI = Effect.fn(
   'getRepoPathContentsFromGitHubAPI',
 )(function* (format: 'object' | 'raw', streamBody?: boolean) {
   const octokit = yield* OctokitTag
 
   const { gitRef, pathToEntityInRepo, repo } = yield* InputConfigTag
 
-  return yield* tryPromise({
+  return yield* Effect.tryPromise({
     try: signal =>
       octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
         owner: repo.owner,
@@ -38,7 +38,7 @@ export const RepoPathContentsFromGitHubAPI = fn(
       }),
     catch: error => {
       if (!(error instanceof RequestError))
-        return new UnknownException(
+        return new Cause.UnknownException(
           error,
           'Failed to request contents at the path inside GitHub repo',
         )

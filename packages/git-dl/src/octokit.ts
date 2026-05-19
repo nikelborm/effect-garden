@@ -1,15 +1,15 @@
 import { Octokit, type OctokitOptions } from '@octokit/core'
 
-import { GenericTag, type Tag } from 'effect/Context'
-import { type Layer, succeed } from 'effect/Layer'
+import * as Context from 'effect/Context'
+import * as Layer from 'effect/Layer'
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-type OctokitTag = Tag<Octokit, Octokit>
+type OctokitTag = Context.Tag<Octokit, Octokit>
 
-export const OctokitTag: OctokitTag = GenericTag<Octokit>('OctokitTag')
+export const OctokitTag: OctokitTag = Context.GenericTag<Octokit>('OctokitTag')
 
 export const OctokitLayer: (
   options?: OctokitOptions,
-) => Layer<Octokit, never, never> = (options?: OctokitOptions) =>
-  succeed(OctokitTag, OctokitTag.of(new Octokit(options)))
+) => Layer.Layer<Octokit, never, never> = (options?: OctokitOptions) =>
+  Layer.succeed(OctokitTag, OctokitTag.of(new Octokit(options)))

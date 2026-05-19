@@ -1,7 +1,7 @@
 import type { Octokit } from '@octokit/core'
 
-import type { UnknownException } from 'effect/Cause'
-import { type Effect, fail, gen } from 'effect/Effect'
+import type * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
 
 import type { FailedToCastDataToReadableStreamError } from './castToReadableStream.ts'
 import type {
@@ -34,7 +34,7 @@ import {
   writeFileStreamToDestinationPath,
 } from './writeFileStreamToDestinationPath.ts'
 
-const downloadEntityFromRepoWithoutContext = gen(function* () {
+const downloadEntityFromRepoWithoutContext = Effect.gen(function* () {
   const pathContentsMetaInfo = yield* PathContentsMetaInfo
 
   if (pathContentsMetaInfo.type === 'dir')
@@ -55,20 +55,20 @@ const downloadEntityFromRepoWithoutContext = gen(function* () {
       RawStreamOfRepoPathContentsFromGitHubAPI,
     )
 
-  yield* fail(new Error('LFS files are not yet supported'))
+  yield* Effect.fail(new Error('LFS files are not yet supported'))
 })
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 export const downloadEntityFromRepo = (
   target: SingleTargetConfig,
-): Effect<
+): Effect.Effect<
   void,
   | Error
   | InconsistentExpectedAndRealContentSizeError
   | FailedToWriteFileStreamToDestinationPathError
   | FailedToUnpackRepoFolderTarGzStreamToFsError
-  | UnknownException
+  | Cause.UnknownException
   | GitHubApiRepoIsEmptyError
   | GitHubApiNoCommitFoundForGitRefError
   | GitHubApiThingNotExistsOrYouDontHaveAccessError

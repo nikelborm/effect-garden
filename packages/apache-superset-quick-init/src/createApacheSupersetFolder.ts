@@ -2,10 +2,10 @@ import { allFast } from '@nikelborm/effect-helpers'
 import { downloadEntityFromRepo } from '@nikelborm/git-dl'
 import type { Octokit } from '@octokit/core'
 
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { all, andThen, type Effect, fn, orDie } from 'effect/Effect'
-import { flow } from 'effect/Function'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as Path from '@effect/platform/Path'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
 
 import { createPipRequirementsConfig } from './createPipRequirementsConfig.ts'
 import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndAddNewNetworkToIt.ts'
@@ -16,15 +16,15 @@ import { updateJwtSecretInSupersetWebsocketConfig } from './updateJwtSecretInSup
 export const createApacheSupersetFolder: (config: {
   gitRef: string
   destinationPath: string
-}) => Effect<void, never, FileSystem | Path | Octokit> = flow(
-  fn('createApacheSupersetFolder')(function* ({
+}) => Effect.Effect<void, never, FileSystem.FileSystem | Path.Path | Octokit> = EFunction.flow(
+  Effect.fn('createApacheSupersetFolder')(function* ({
     gitRef,
     destinationPath,
   }: {
     gitRef: string
     destinationPath: string
   }) {
-    const [fs, path] = yield* all([FileSystem, Path])
+    const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
     yield* fs.makeDirectory(destinationPath, { recursive: true })
 
@@ -46,8 +46,8 @@ export const createApacheSupersetFolder: (config: {
 
     yield* allFast([
       downloadComposeFileAndAddNewNetworkToIt(destinationPath, gitRef),
-      downloadDockerFolder.pipe(andThen(patchSomeStuffInDockerFolder)),
+      downloadDockerFolder.pipe(Effect.andThen(patchSomeStuffInDockerFolder)),
     ])
   }),
-  orDie,
+  Effect.orDie,
 )

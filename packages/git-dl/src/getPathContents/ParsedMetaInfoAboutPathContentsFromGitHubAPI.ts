@@ -1,15 +1,7 @@
-import { gen } from 'effect/Effect'
-import { mapLeft } from 'effect/Either'
-import { ParseError } from 'effect/ParseResult'
-import {
-  Array as ArraySchema,
-  decodeUnknownEither,
-  Literal,
-  Number as SchemaNumber,
-  String as SchemaString,
-  Struct,
-  Union,
-} from 'effect/Schema'
+import * as Effect from 'effect/Effect'
+import * as Either from 'effect/Either'
+import * as ParseResult from 'effect/ParseResult'
+import * as Schema from 'effect/Schema'
 
 import {
   buildTaggedErrorClassVerifyingCause,
@@ -20,10 +12,10 @@ import { RepoPathContentsFromGitHubAPI } from './RepoPathContentsFromGitHubAPI.t
 export const UnparsedMetaInfoAboutPathContentsFromGitHubAPI =
   RepoPathContentsFromGitHubAPI('object')
 
-export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = gen(function* () {
+export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.gen(function* () {
   const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
 
-  return yield* mapLeft(
+  return yield* Either.mapLeft(
     decodeResponse(response.data),
     parseError =>
       new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(
@@ -36,33 +28,33 @@ export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = gen(function* () {
 })
 
 const GitSomethingFields = {
-  size: SchemaNumber,
-  name: SchemaString,
-  path: SchemaString,
-  sha: SchemaString,
+  size: Schema.Number,
+  name: Schema.String,
+  path: Schema.String,
+  sha: Schema.String,
 }
 
-const dirLiteral = Literal('dir')
-const nonDirLiterals = Literal('file', 'submodule', 'symlink')
+const dirLiteral = Schema.Literal('dir')
+const nonDirLiterals = Schema.Literal('file', 'submodule', 'symlink')
 
-export const ResponseSchema = Union(
-  Struct({
-    type: Literal('dir'),
-    entries: Struct({
-      type: Union(dirLiteral, nonDirLiterals),
+export const ResponseSchema = Schema.Union(
+  Schema.Struct({
+    type: Schema.Literal('dir'),
+    entries: Schema.Struct({
+      type: Schema.Union(dirLiteral, nonDirLiterals),
       ...GitSomethingFields,
-    }).pipe(ArraySchema),
+    }).pipe(Schema.Array),
     ...GitSomethingFields,
   }),
-  Struct({
-    type: Literal('file'),
-    encoding: Literal('base64', 'none'),
-    content: SchemaString,
+  Schema.Struct({
+    type: Schema.Literal('file'),
+    encoding: Schema.Literal('base64', 'none'),
+    content: Schema.String,
     ...GitSomethingFields,
   }),
 )
 
-const decodeResponse = decodeUnknownEither(ResponseSchema, {
+const decodeResponse = Schema.decodeUnknownEither(ResponseSchema, {
   exact: true,
 })
 
@@ -71,12 +63,12 @@ const decodeResponse = decodeUnknownEither(ResponseSchema, {
 
 const _1: TaggedErrorClass<{
   ErrorName: 'FailedToParseResponseFromRepoPathContentsMetaInfoAPI'
-  ExpectedCauseClass: typeof ParseError
+  ExpectedCauseClass: typeof ParseResult.ParseError
   DynamicContext: { response: unknown }
 }> = buildTaggedErrorClassVerifyingCause<{ response: unknown }>()(
   'FailedToParseResponseFromRepoPathContentsMetaInfoAPI',
   `Failed to parse response from repo path contents meta info API`,
-  ParseError,
+  ParseResult.ParseError,
 )
 
 export class FailedToParseResponseFromRepoPathContentsMetaInfoAPIError extends _1 {}

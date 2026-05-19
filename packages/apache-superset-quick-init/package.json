@@ -6,6 +6,7 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@nikelborm/tsconfig": "workspace:*",
+    "@types/bun": "^1.3.14",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

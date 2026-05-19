@@ -1,23 +1,12 @@
 import { outdent } from 'outdent'
 
-import {
-  type Options,
-  text,
-  withFallbackConfig,
-  withDescription as withOptionDescription,
-  withSchema,
-} from '@effect/cli/Options'
-import { Path } from '@effect/platform/Path'
-import {
-  nonEmptyString as nonEmptyStringConfig,
-  validate as validateConfig,
-  withDefault as withConfigDefault,
-  withDescription as withConfigDescription,
-} from 'effect/Config'
-import { flatMap } from 'effect/Effect'
-import { pipe } from 'effect/Function'
-import { fail, succeed, Type } from 'effect/ParseResult'
-import { filter, NonEmptyString, transformOrFail } from 'effect/Schema'
+import * as CLIOptions from '@effect/cli/Options'
+import * as Path from '@effect/platform/Path'
+import * as Config from 'effect/Config'
+import * as Effect from 'effect/Effect'
+import * as EFunction from 'effect/Function'
+import * as ParseResult from 'effect/ParseResult'
+import * as Schema from 'effect/Schema'
 
 const isGitHubSlug = (s: string) => !!s.match(/^[a-z0-9.\-_]+$/gi)
 
@@ -25,11 +14,11 @@ const invalidGitHubSlugMessage =
   'GitHub handle should have only ASCII letters, digits, and the characters ".", "-", and "_"'
 
 // https://developer.mozilla.org/en-US/docs/Glossary/Slug
-const GitHubSlugStringSchema = NonEmptyString.pipe(
-  filter(s => isGitHubSlug(s) || invalidGitHubSlugMessage),
+const GitHubSlugStringSchema = Schema.NonEmptyString.pipe(
+  Schema.filter(s => isGitHubSlug(s) || invalidGitHubSlugMessage),
 )
 
-const withGitHubSlugConfigValidation = validateConfig({
+const withGitHubSlugConfigValidation = Config.validate({
   message: invalidGitHubSlugMessage,
   validation: isGitHubSlug,
 })
@@ -72,43 +61,43 @@ const gitRefDescription = outdent`
   in the repository will be used.
 `
 
-const RepoNameConfig = pipe(
-  nonEmptyStringConfig('REPO_NAME'),
+const RepoNameConfig = EFunction.pipe(
+  Config.nonEmptyString('REPO_NAME'),
   withGitHubSlugConfigValidation,
-  withConfigDescription(repoNameDescription),
+  Config.withDescription(repoNameDescription),
 )
 
-const RepoOwnerConfig = pipe(
-  nonEmptyStringConfig('REPO_OWNER'),
+const RepoOwnerConfig = EFunction.pipe(
+  Config.nonEmptyString('REPO_OWNER'),
   withGitHubSlugConfigValidation,
-  withConfigDescription(repoOwnerDescription),
+  Config.withDescription(repoOwnerDescription),
 )
 
-const DestinationPathConfig = pipe(
-  nonEmptyStringConfig('DESTINATION_PATH'),
-  withConfigDefault('./destination'),
-  withConfigDescription(destinationPathDescription),
+const DestinationPathConfig = EFunction.pipe(
+  Config.nonEmptyString('DESTINATION_PATH'),
+  Config.withDefault('./destination'),
+  Config.withDescription(destinationPathDescription),
 )
 
-const PathToEntityInRepoConfig = pipe(
-  nonEmptyStringConfig('PATH_TO_ENTITY_IN_REPO'),
-  withConfigDefault('.'),
-  withConfigDescription(pathToEntityInRepoDescription),
+const PathToEntityInRepoConfig = EFunction.pipe(
+  Config.nonEmptyString('PATH_TO_ENTITY_IN_REPO'),
+  Config.withDefault('.'),
+  Config.withDescription(pathToEntityInRepoDescription),
 )
 
-const GitRefConfig = pipe(
-  nonEmptyStringConfig('GIT_REF'),
-  withConfigDefault('HEAD'),
-  withConfigDescription(gitRefDescription),
+const GitRefConfig = EFunction.pipe(
+  Config.nonEmptyString('GIT_REF'),
+  Config.withDefault('HEAD'),
+  Config.withDescription(gitRefDescription),
 )
 
-const CleanRepoEntityPathString = transformOrFail(
-  NonEmptyString,
-  NonEmptyString,
+const CleanRepoEntityPathString = Schema.transformOrFail(
+  Schema.NonEmptyString,
+  Schema.NonEmptyString,
   {
     strict: true,
     decode: (dirtyPathToEntityInRepo, _, ast) =>
-      flatMap(Path, path => {
+      Effect.flatMap(Path.Path, path => {
         // dot can be there only when that's all there is. path.join(...)
         // removes all './', so '.' will never be just left by themself. If it's
         // there, it's very intentional and no other elements in the path exist.
@@ -117,16 +106,16 @@ const CleanRepoEntityPathString = transformOrFail(
           .replaceAll(/\/?$/g, '')
 
         if (cleanPathToEntityInRepo.startsWith('..'))
-          return fail(
-            new Type(
+          return ParseResult.fail(
+            new ParseResult.Type(
               ast,
               dirtyPathToEntityInRepo,
               "Can't request contents that lie higher than the root of the repo",
             ),
           )
-        return succeed(cleanPathToEntityInRepo)
+        return ParseResult.succeed(cleanPathToEntityInRepo)
       }),
-    encode: succeed,
+    encode: ParseResult.succeed,
   },
 )
 
@@ -147,12 +136,13 @@ const CleanRepoEntityPathString = transformOrFail(
  * @category CLI options
  * @constant
  */
-export const pathToEntityInRepoCLIOptionBackedByEnv: Options<string> = pipe(
-  text(`pathToEntityInRepo`),
-  withOptionDescription(pathToEntityInRepoDescription),
-  withFallbackConfig(PathToEntityInRepoConfig),
-  withSchema(CleanRepoEntityPathString),
-)
+export const pathToEntityInRepoCLIOptionBackedByEnv: CLIOptions.Options<string> =
+  EFunction.pipe(
+    CLIOptions.text(`pathToEntityInRepo`),
+    CLIOptions.withDescription(pathToEntityInRepoDescription),
+    CLIOptions.withFallbackConfig(PathToEntityInRepoConfig),
+    CLIOptions.withSchema(CleanRepoEntityPathString),
+  )
 
 /**
  * Text parameter containing URL slug of the user which owns the repo.
@@ -174,12 +164,13 @@ export const pathToEntityInRepoCLIOptionBackedByEnv: Options<string> = pipe(
  * @category CLI options
  * @constant
  */
-export const repoOwnerCLIOptionBackedByEnv: Options<string> = pipe(
-  text(`repoOwner`),
-  withOptionDescription(repoOwnerDescription),
-  withFallbackConfig(RepoOwnerConfig),
-  withSchema(GitHubSlugStringSchema),
-)
+export const repoOwnerCLIOptionBackedByEnv: CLIOptions.Options<string> =
+  EFunction.pipe(
+    CLIOptions.text(`repoOwner`),
+    CLIOptions.withDescription(repoOwnerDescription),
+    CLIOptions.withFallbackConfig(RepoOwnerConfig),
+    CLIOptions.withSchema(GitHubSlugStringSchema),
+  )
 
 /**
  * Text parameter containing URL slug of the repo itself.
@@ -201,12 +192,13 @@ export const repoOwnerCLIOptionBackedByEnv: Options<string> = pipe(
  * @category CLI options
  * @constant
  */
-export const repoNameCLIOptionBackedByEnv: Options<string> = pipe(
-  text(`repoName`),
-  withOptionDescription(repoNameDescription),
-  withFallbackConfig(RepoNameConfig),
-  withSchema(GitHubSlugStringSchema),
-)
+export const repoNameCLIOptionBackedByEnv: CLIOptions.Options<string> =
+  EFunction.pipe(
+    CLIOptions.text(`repoName`),
+    CLIOptions.withDescription(repoNameDescription),
+    CLIOptions.withFallbackConfig(RepoNameConfig),
+    CLIOptions.withSchema(GitHubSlugStringSchema),
+  )
 
 /**
  * Text parameter containing path inside your local file system, your new
@@ -230,11 +222,12 @@ export const repoNameCLIOptionBackedByEnv: Options<string> = pipe(
  * @constant
  * @readonly
  */
-export const destinationPathCLIOptionBackedByEnv: Options<string> = pipe(
-  text(`destinationPath`),
-  withOptionDescription(destinationPathDescription),
-  withFallbackConfig(DestinationPathConfig),
-)
+export const destinationPathCLIOptionBackedByEnv: CLIOptions.Options<string> =
+  EFunction.pipe(
+    CLIOptions.text(`destinationPath`),
+    CLIOptions.withDescription(destinationPathDescription),
+    CLIOptions.withFallbackConfig(DestinationPathConfig),
+  )
 
 /**
  * Text parameter containing commit SHA hash, branch name, or tag name you want
@@ -258,8 +251,9 @@ export const destinationPathCLIOptionBackedByEnv: Options<string> = pipe(
  * @category CLI options
  * @constant
  */
-export const gitRefCLIOptionBackedByEnv: Options<string> = pipe(
-  text(`gitRef`),
-  withOptionDescription(gitRefDescription),
-  withFallbackConfig(GitRefConfig),
-)
+export const gitRefCLIOptionBackedByEnv: CLIOptions.Options<string> =
+  EFunction.pipe(
+    CLIOptions.text(`gitRef`),
+    CLIOptions.withDescription(gitRefDescription),
+    CLIOptions.withFallbackConfig(GitRefConfig),
+  )
