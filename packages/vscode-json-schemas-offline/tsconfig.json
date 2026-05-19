@@ -3,6 +3,7 @@
   // vscode extension vscode not supporting esm is not a problem, because there
   // would be 2 configs. one for building the actual dummy file of the
   // extension, the other is for typechecking the scripts folder etc
+  // https://code.visualstudio.com/updates/v1_101#_adopting-esm-in-a-realworld-extension
   // TODO: also consider adding "extensionKind": ["workspace"] to package.json
   // https://claude.ai/chat/90deb166-4665-4203-975d-d634a2499f78
   "compilerOptions": {
