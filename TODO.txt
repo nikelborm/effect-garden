@@ -1,0 +1,2 @@
+create an agent/harness to get the tests and start implementing them one by one.
+https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
