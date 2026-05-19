@@ -135,6 +135,7 @@
     "vitest": "catalog:",
     "webidl2": "catalog:",
     "yaml": "catalog:",
+    "ytmusic-api": "catalog:",
     "zod": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/playground#readme",

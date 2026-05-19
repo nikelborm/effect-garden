@@ -387,6 +387,9 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       })
     }
 
+    // TODO: ensure when installing catalog versions of deps it doesn't move
+    // them from peer/dev deps into prod deps
+
     const tasksToInstallCatalogVersionsOfDeps = pipe(
       badDeps,
       Record.toEntries,

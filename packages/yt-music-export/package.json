@@ -19,7 +19,7 @@
     "googleapis": "catalog:",
     "music-metadata": "catalog:",
     "node-taglib-sharp": "catalog:",
-    "ytmusic-api": "^5.3.1"
+    "ytmusic-api": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/yt-music-export#readme",
   "bugs": {
