@@ -18,7 +18,8 @@
     "csv-parse": "catalog:",
     "googleapis": "catalog:",
     "music-metadata": "catalog:",
-    "node-taglib-sharp": "catalog:"
+    "node-taglib-sharp": "catalog:",
+    "ytmusic-api": "^5.3.1"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/yt-music-export#readme",
   "bugs": {

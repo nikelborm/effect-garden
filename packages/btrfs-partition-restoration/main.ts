@@ -31,8 +31,8 @@ const decodeCacheEntries = Schema.decodeUnknownEither(
   Schema.Array(Schema.Tuple(Schema.String, CacheValueSchema)),
 )
 
-class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor>()(
-  'PrivelegedCommandExecutor',
+class SudoCommandExecutor extends Effect.Service<SudoCommandExecutor>()(
+  'SudoCommandExecutor',
   {
     accessors: true,
     effect: Effect.gen(function* () {
@@ -55,7 +55,7 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
           ),
           Command.feed(Redacted.value(password)),
           simpleExec,
-          Effect.withSpan('PrivelegedCommandExecutor.run', {
+          Effect.withSpan('SudoCommandExecutor.run', {
             attributes: { args },
           }),
           Effect.scoped,
@@ -69,7 +69,7 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
     Effect.all({
       fs: FileSystem.FileSystem,
       cacheFileWriteSemaphore: Effect.makeSemaphore(1),
-      defaultPrivelegedExecutor: this,
+      defaultSudoExecutor: this,
       scope: Effect.scope,
       cache: FileSystem.FileSystem.pipe(
         Effect.flatMap(fs => fs.readFileString(cacheFilePath)),
@@ -80,24 +80,24 @@ class PrivelegedCommandExecutor extends Effect.Service<PrivelegedCommandExecutor
       ),
     }),
     Effect.map(req => {
-      const run = Effect.fn('PrivelegedCommandExecutorBackedByCache.run')(
-        function* (...args: string[]) {
-          const key = args.join()
-          let value = req.cache.get(key)
-          if (!value) {
-            value = yield* req.defaultPrivelegedExecutor.run(...args)
-            req.cache.set(key, value)
-            const addition = JSON.stringify([key, value]) + '\n'
-            yield* EFunction.pipe(
-              req.fs.writeFileString(cacheFilePath, addition, { flag: 'a' }),
-              req.cacheFileWriteSemaphore.withPermits(1),
-              Effect.forkIn(req.scope),
-            )
-          }
-          // value is extracted, so that we can add common post-extraction logic here later
-          return value
-        },
-      )
+      const run = Effect.fn('SudoCommandExecutorBackedByCache.run')(function* (
+        ...args: string[]
+      ) {
+        const key = args.join()
+        let value = req.cache.get(key)
+        if (!value) {
+          value = yield* req.defaultSudoExecutor.run(...args)
+          req.cache.set(key, value)
+          const addition = JSON.stringify([key, value]) + '\n'
+          yield* EFunction.pipe(
+            req.fs.writeFileString(cacheFilePath, addition, { flag: 'a' }),
+            req.cacheFileWriteSemaphore.withPermits(1),
+            Effect.forkIn(req.scope),
+          )
+        }
+        // value is extracted, so that we can add common post-extraction logic here later
+        return value
+      })
       return this.make({ run })
     }),
     Layer.scoped(this),
@@ -195,7 +195,7 @@ const program = Effect.gen(function* () {
       regexp,
     }) {
       const outFolderName = `${regexpName}_${root.byteNumber}_${fsTreeRoot.byteNumber}`
-      const { stdout } = yield* PrivelegedCommandExecutor.run(
+      const { stdout } = yield* SudoCommandExecutor.run(
         'btrfs',
         '--verbose',
         'restore',
@@ -228,7 +228,7 @@ const program = Effect.gen(function* () {
 })
 
 const AppLayer = Layer.provideMerge(
-  PrivelegedCommandExecutor.LiveBackedByFsCache,
+  SudoCommandExecutor.LiveBackedByFsCache,
   BunContext.layer,
 )
 
