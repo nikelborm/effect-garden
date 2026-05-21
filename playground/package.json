@@ -98,7 +98,7 @@
     "effect-web-mediacapture-streams": "workspace:*",
     "effect-web-midi": "workspace:*",
     "esbuild": "catalog:",
-    "git-dl": "workspace:*",
+    "git-dlp": "workspace:*",
     "googleapis": "catalog:",
     "level": "catalog:",
     "music-metadata": "catalog:",

@@ -5,7 +5,7 @@ import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
-} from 'git-dl'
+} from 'git-dlp'
 
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as CLICommand from '@effect/cli/Command'

@@ -15,7 +15,7 @@ command -v jq >/dev/null 2>&1 || {
   exit 1
 }
 
-rm -rf dist gh-page/bundled_deps
+rm -rf dist dist-types gh-page/bundled_deps
 tspc
 mkdir -p ./dist/minified
 rollup -c ./rollup.config.mts

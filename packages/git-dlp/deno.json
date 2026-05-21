@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-  "name": "@evadev/git-dl",
+  "name": "@evadev/git-dlp",
   "version": "0.1.28",
   "license": "MIT",
   "exports": {
@@ -15,7 +15,7 @@
   "publish": {
     "include": [
       "template.env",
-      "git-dl.ts",
+      "git-dlp.ts",
       "src/**/*.ts",
       "index.ts",
       "errors.ts",

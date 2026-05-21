@@ -1,15 +1,20 @@
 # my helpers in Effect ecosystem
 
 - `AbsentProperty`
+- `allFast`
 - `BadExitCodeError`
 - `buildEntityParts`
 - `changeEncodedTypeToString`
 - `ensureReturningOneId`
 - `FiniteNonNegativeIntegerFromString`
 - `holdLatestValue`
+- `logObjectPretty`
+- `NonEmptyRecord`
 - `OptionalProperty`
+- `observableExec`
 - `ParseErrorSchema`
 - `passthroughErrorsWithTagsOrElseMapError`
+- `RecordFromToEntries`
 - `renameClass`
 - `simpleExec`
 - `Uint8ArrayStreamToString`

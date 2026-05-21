@@ -16,13 +16,13 @@ import * as Stream from 'effect/Stream'
 import pkg from './package.json' with { type: 'json' }
 import {
   destinationPathCLIOptionBackedByEnv,
-  downloadEntityFromRepo,
   gitRefCLIOptionBackedByEnv,
-  OctokitLayer,
   pathToEntityInRepoCLIOptionBackedByEnv,
   repoNameCLIOptionBackedByEnv,
   repoOwnerCLIOptionBackedByEnv,
-} from './src/index.ts'
+} from './src/commandLineParams.ts'
+import { downloadEntityFromRepo } from './src/downloadEntityFromRepo.ts'
+import { OctokitLayer } from './src/octokit.ts'
 import { buildTaggedErrorClassVerifyingCause } from './src/TaggedErrorVerifyingCause.ts'
 
 const appCommand = CliCommand.make(
@@ -214,21 +214,21 @@ describe('CLI', { concurrent: true }, () => {
 
   it.scoped(
     'Git Repo nikelborm/nikelborm fetched by our cli, should be the same as repo cloned by git itself',
-    ctx =>
-      Effect.gen(function* () {
-        const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
-          yield* fetchAndHashBothDirs({
-            gitRepoOwner: 'nikelborm',
-            gitRepoName: 'nikelborm',
-            gitRef: 'main',
-          })
+    Effect.fn(function* (ctx) {
+      const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
+        yield* fetchAndHashBothDirs({
+          gitRepoOwner: 'nikelborm',
+          gitRepoName: 'nikelborm',
+          gitRef: 'main',
+        })
 
-        ctx
-          .expect(
-            hashOfGitRepoFetchedUsingOurCLI,
-            `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
-          )
-          .toBe(hashOfOriginalGitRepo)
-      }).pipe(Effect.provide(MainLive)),
+      ctx
+        .expect(
+          hashOfGitRepoFetchedUsingOurCLI,
+          `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
+        )
+        .toBe(hashOfOriginalGitRepo)
+    }, Effect.provide(MainLive)),
+    30000,
   )
 })

@@ -32,7 +32,7 @@
     "@octokit/core": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "effect-errors": "catalog:",
-    "git-dl": "workspace:*",
+    "git-dlp": "workspace:*",
     "outdent": "catalog:",
     "yaml": "catalog:"
   },

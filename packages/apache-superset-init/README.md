@@ -91,6 +91,6 @@ export NODE_COMPILE_CACHE=~/.cache/nodejs-compile-cache
 
 1. Dynamically patch package (main package.json + entire source code) during
    release, so that JSR version of apache-superset-init will depend on JSR
-   version of @evadev/git-dl
+   version of @evadev/git-dlp
 2. Create a separate script for quick registering of a new database into a newly
    created Superset instance

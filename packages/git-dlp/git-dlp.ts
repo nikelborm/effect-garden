@@ -16,13 +16,13 @@ import * as Layer from 'effect/Layer'
 import pkg from './package.json' with { type: 'json' }
 import {
   destinationPathCLIOptionBackedByEnv,
-  downloadEntityFromRepo,
   gitRefCLIOptionBackedByEnv,
-  OctokitLayer,
   pathToEntityInRepoCLIOptionBackedByEnv,
   repoNameCLIOptionBackedByEnv,
   repoOwnerCLIOptionBackedByEnv,
-} from './src/index.ts'
+} from './src/commandLineParams.ts'
+import { downloadEntityFromRepo } from './src/downloadEntityFromRepo.ts'
+import { OctokitLayer } from './src/octokit.ts'
 
 const appCommand = CliCommand.make(
   pkg.name,
@@ -71,7 +71,5 @@ pipe(
     return Effect.fail(e)
   }),
   Effect.provide(AppLayer),
-  NodeRuntime.runMain({
-    disableErrorReporting: true,
-  }),
+  NodeRuntime.runMain({ disableErrorReporting: true }),
 )

@@ -2,7 +2,7 @@ import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
-} from 'git-dl'
+} from 'git-dlp'
 import { parse } from 'yaml'
 
 import * as CLICommand from '@effect/cli/Command'

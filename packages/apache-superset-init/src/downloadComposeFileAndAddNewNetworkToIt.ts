@@ -1,4 +1,4 @@
-import { downloadEntityFromRepo } from 'git-dl'
+import { downloadEntityFromRepo } from 'git-dlp'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'

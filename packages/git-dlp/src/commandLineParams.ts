@@ -175,7 +175,7 @@ export const repoOwnerCLIOptionBackedByEnv: CLIOptions.Options<string> =
  *
  * Examples:
  * 1. `superset`
- * 2. `git-dl`
+ * 2. `git-dlp`
  *
  * Can be passed in two ways:
  * 1. As CLI option `gdl --repoName superset`

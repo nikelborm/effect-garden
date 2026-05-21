@@ -1,6 +1,6 @@
 import { allFast } from '@evadev/effect-helpers'
 import type { Octokit } from '@octokit/core'
-import { downloadEntityFromRepo } from 'git-dl'
+import { downloadEntityFromRepo } from 'git-dlp'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'

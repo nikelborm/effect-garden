@@ -13,7 +13,7 @@
     "@evadev/effect-helpers": "workspace:*",
     "@evadev/effect-landscape": "workspace:*",
     "@evadev/effect-schema-i18n": "workspace:*",
-    "git-dl": "workspace:*",
+    "git-dlp": "workspace:*",
     "@evadev/github-extract-issues": "workspace:*",
     "@evadev/joiners": "workspace:*",
     "@evadev/playground": "workspace:*",

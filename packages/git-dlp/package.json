@@ -1,7 +1,7 @@
 {
-  "name": "git-dl",
+  "name": "git-dlp",
   "type": "module",
-  "version": "0.1.28",
+  "version": "0.2.1",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -37,7 +37,7 @@
     "tar-fs": "catalog:",
     "tsafe": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dl#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dlp#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -59,7 +59,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/git-dl"
+    "directory": "packages/git-dlp"
   },
   "scripts": {
     "build": "./scripts/build.sh",
@@ -68,7 +68,7 @@
     "docs": "./scripts/generate_docs.sh",
     "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
-    "start": "node --env-file=.env ./git-dl.ts",
+    "start": "node --env-file=.env ./git-dlp.ts",
     "test": "vitest --typecheck --watch",
     "test-jsr": "tspc && jsr publish --dry-run",
     "test-once": "vitest --run",
@@ -104,49 +104,36 @@
       "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./index": {
-      "types": "./dist-types/index.d.ts",
-      "default": "./dist/index.js"
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./index.js": {
-      "types": "./dist-types/index.d.ts",
-      "default": "./dist/index.js"
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./errors": {
-      "types": "./dist-types/errors.d.ts",
-      "default": "./dist/errors.js"
-    },
-    "./errors.js": {
-      "types": "./dist-types/errors.d.ts",
-      "default": "./dist/errors.js"
-    },
-    "./cli": {
-      "types": "./dist-types/cli.d.ts",
-      "default": "./dist/cli.js"
-    },
-    "./cli.js": {
-      "types": "./dist-types/cli.d.ts",
-      "default": "./dist/cli.js"
-    },
+    "./internal/*": null,
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "bin": {
-    "gdl": "dist/git-dl.js",
-    "git-dl": "dist/git-dl.js"
+    "gdl": "dist/git-dlp.js",
+    "git-dlp": "dist/git-dlp.js"
   },
   "files": [
     "dist",
+    "dist-types",
+    "index.ts",
+    "cli.ts",
+    "errors.ts",
+    "template.env",
     "src",
     "!dist/minified",
     "!**/*.tsbuildinfo",
     "!**/*.spec.*",
-    "!**/scratchpad.*",
-    "template.env",
-    "cli.ts",
-    "errors.ts",
-    "index.ts"
+    "!**/scratchpad.*"
   ]
 }
