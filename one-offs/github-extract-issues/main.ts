@@ -16,7 +16,7 @@ import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
-import { pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
@@ -144,28 +144,29 @@ const preferHighPriority = Order.mapInput(
 const renderIssuesWithCommentsToMd = (issuesWithComments: Issues): string =>
   issuesWithComments
     .filter(e => e.state === 'open')
-    .map(Struct.pick('title', 'comments', 'body', 'labels'))
     .map(
-      Struct.evolve({
-        comments: EArray.filterMap((comment: IssueComment) =>
-          Option.fromNullable(
-            comment.author_association === 'OWNER'
-              ? comment.body?.trim() || null
-              : null,
+      flow(
+        Struct.evolve({
+          comments: EArray.filterMap((comment: IssueComment) =>
+            Option.fromNullable(
+              comment.author_association === 'OWNER'
+                ? comment.body?.trim() || null
+                : null,
+            ),
           ),
-        ),
-        labels: EArray.filterMap((label: IssueLabel) =>
-          Option.fromNullable(
-            (typeof label === 'string' ? label : label.name)?.trim() || null,
+          labels: EArray.filterMap((label: IssueLabel) =>
+            Option.fromNullable(
+              (typeof label === 'string' ? label : label.name)?.trim() || null,
+            ),
           ),
-        ),
-      }),
+        }),
+        ({ body, comments, labels, title }) => ({
+          title,
+          body: [body?.trim(), ...comments].filter(Boolean),
+          isHighPriority: labels.includes('High priority'),
+        }),
+      ),
     )
-    .map(({ body, comments, labels, title }) => ({
-      title,
-      body: [body?.trim(), ...comments].filter(Boolean),
-      isHighPriority: labels.includes('High priority'),
-    }))
     .sort(preferLargerAmountOfBodyEntries)
     .sort(preferHighPriority)
     .map(
