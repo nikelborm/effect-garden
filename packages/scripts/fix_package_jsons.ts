@@ -58,6 +58,9 @@ export const RootPackageJsonFromStringSchema = Schema.parseJson(
       dependencies: deps.pipe(OptionalProperty),
       catalog: deps,
       devDependencies: AbsentProperty,
+      workspaces: Schema.NonEmptyArray(
+        Schema.TemplateLiteralParser(Schema.NonEmptyTrimmedString, '/*'),
+      ),
     },
     { key: Schema.String, value: Schema.Unknown },
   ).annotations({ title: 'RootPackageJson' }),
@@ -98,7 +101,9 @@ export const SubPackageJsonSchema = Schema.Struct(
     dependencies: deps.pipe(OptionalProperty),
     homepage: Schema.TemplateLiteralParser(
       httpsRepoLink,
-      `/tree/main/packages/`,
+      `/tree/main/`,
+      Schema.NonEmptyTrimmedString,
+      `/`,
       Schema.NonEmptyTrimmedString,
       `#readme`,
     ),
@@ -113,7 +118,8 @@ export const SubPackageJsonSchema = Schema.Struct(
       type: Schema.Literal('git'),
       url: Schema.Literal(gitSshUrl),
       directory: Schema.TemplateLiteralParser(
-        'packages/',
+        Schema.NonEmptyTrimmedString,
+        '/',
         Schema.NonEmptyTrimmedString,
       ),
     }),
@@ -162,36 +168,93 @@ export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
   Effect.flatMap(Schema.decode(RootPackageJsonFromStringSchema)),
   Effect.withSpan('rootPackageJson'),
+  Effect.cached,
+  Effect.flatten,
 )
 
-export const myMonorepoPackagesDirectoryNamesEffect =
-  FileSystem.FileSystem.pipe(
-    Effect.flatMap(fs => fs.readDirectory(packagesDirPath)),
-    Effect.flatMap(
-      Schema.decodeUnknown(Schema.NonEmptyArray(Schema.NonEmptyTrimmedString)),
-    ),
-    Effect.withSpan('myMonorepoPackagesDirectoryNames'),
-  )
+export const MyMonorepoPackagePathsSchema = Schema.Struct({
+  workspaceDirName: Schema.NonEmptyTrimmedString,
+  packageDirName: Schema.NonEmptyTrimmedString,
+  absoluteWorkspaceDirPath: Schema.NonEmptyTrimmedString,
+  absolutePackageDirPath: Schema.NonEmptyTrimmedString,
+}).pipe(Schema.NonEmptyArray)
+
+export type MyMonorepoPackagePaths =
+  (typeof MyMonorepoPackagePathsSchema)['Type']
+
+export type MyMonorepoPackagePathBundle = MyMonorepoPackagePaths[number]
+
+export const myMonorepoPackagePathsEffect = pipe(
+  Effect.all([FileSystem.FileSystem, Path.Path, rootPackageJsonEffect]),
+  Effect.flatMap(([fs, path, rootPackage]) =>
+    Effect.forEach(rootPackage.workspaces, ([workspaceDirName]) => {
+      const absoluteWorkspaceDirPath = path.join(
+        projectRootAbsolutePath,
+        workspaceDirName,
+      )
+
+      return Effect.map(
+        fs.readDirectory(absoluteWorkspaceDirPath),
+        EArray.map(packageDirName => ({
+          workspaceDirName,
+          packageDirName,
+          absoluteWorkspaceDirPath,
+          absolutePackageDirPath: path.join(
+            absoluteWorkspaceDirPath,
+            packageDirName,
+          ),
+        })),
+      )
+    }),
+  ),
+  Effect.map(EArray.flatten),
+  Effect.flatMap(Schema.decodeUnknown(MyMonorepoPackagePathsSchema)),
+  Effect.withSpan('myMonorepoPackagesDirectoryPaths'),
+  Effect.cached,
+  Effect.flatten,
+)
 
 export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
-  function* (directoryName: string) {
+  function* (pathes: MyMonorepoPackagePathBundle) {
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
 
-    yield* Effect.annotateCurrentSpan({ directoryName })
-
     const packageJsonPath = path.join(
-      packagesDirPath,
-      directoryName,
+      pathes.absolutePackageDirPath,
       'package.json',
     )
 
-    yield* Effect.annotateCurrentSpan({ packageJsonPath })
+    yield* Effect.annotateCurrentSpan({ ...pathes, packageJsonPath })
 
     const pkg = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
       Schema.decode(SubPackageJsonSchemaFromString),
     )
+
+    if (pkg.homepage[2] !== pathes.workspaceDirName) {
+      yield* Effect.annotateCurrentSpan({ homepageSegments: pkg.homepage })
+      return yield* Effect.dieMessage("Wrong workspace in package's homepage.")
+    }
+    if (pkg.homepage[4] !== pathes.packageDirName) {
+      yield* Effect.annotateCurrentSpan({ homepageSegments: pkg.homepage })
+      return yield* Effect.dieMessage("Wrong dir name in package's homepage.")
+    }
+    if (pkg.repository.directory[0] !== pathes.packageDirName) {
+      yield* Effect.annotateCurrentSpan({
+        repositoryDirectorySegments: pkg.repository.directory,
+      })
+      return yield* Effect.dieMessage(
+        "Wrong workspace in package's repository section.",
+      )
+    }
+    if (pkg.repository.directory[2] !== pathes.packageDirName) {
+      yield* Effect.annotateCurrentSpan({
+        repositoryDirectorySegments: pkg.repository.directory,
+      })
+      return yield* Effect.dieMessage(
+        "Wrong dir name in package's repository section.",
+      )
+    }
 
     return {
       pkg,
@@ -201,9 +264,8 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
           fs.writeFileString(packageJsonPath, encoded + '\n'),
         ),
       ),
+      ...pathes,
       packageJsonPath,
-      directoryName,
-      directoryPath: join(packagesDirPath, directoryName),
       allDependencies: {
         ...pkg.dependencies,
         ...pkg.devDependencies,
@@ -213,13 +275,12 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
   },
 )
 
-export const myMonorepoPackagesEffect =
-  myMonorepoPackagesDirectoryNamesEffect.pipe(
-    Effect.flatMap(
-      Effect.forEach(getMyMonorepoPackage, { concurrency: 'unbounded' }),
-    ),
-    Effect.withSpan('myMonorepoPackages'),
-  )
+export const myMonorepoPackagesEffect = myMonorepoPackagePathsEffect.pipe(
+  Effect.flatMap(
+    Effect.forEach(getMyMonorepoPackage, { concurrency: 'unbounded' }),
+  ),
+  Effect.withSpan('myMonorepoPackages'),
+)
 
 export const getPackagesInfoEffect = Effect.all({
   rootPackageJson: rootPackageJsonEffect,
@@ -302,14 +363,14 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     const fs = yield* FileSystem.FileSystem
     const dependencyNameToItsInstances = pipe(
       yield* myMonorepoPackagesEffect,
-      EArray.flatMap(({ allDependencies, pkg, directoryPath }) =>
+      EArray.flatMap(({ allDependencies, pkg, absolutePackageDirPath }) =>
         pipe(
           allDependencies,
           Record.map((dependencyVersion, dependencyName) => ({
             dependency: { name: dependencyName, version: dependencyVersion },
             pkg: {
               name: pkg.name,
-              directoryPath,
+              absolutePackageDirPath,
             },
           })),
           Record.values,
@@ -399,7 +460,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
           dependencyName,
         })),
       ),
-      EArray.groupBy(_ => _.pkg.directoryPath),
+      EArray.groupBy(_ => _.pkg.absolutePackageDirPath),
       Record.map(EArray.map(_ => _.dependencyName)),
     )
 
@@ -456,16 +517,17 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       }).pipe(Effect.withSpan('installDependenciesInRootAfterUpdatingCatalog'))
     }
 
-    for (const [cwd, dependencyNamesToInstall] of Record.toEntries(
-      tasksToInstallCatalogVersionsOfDeps,
-    ))
+    for (const [
+      absolutePackageDirPath,
+      dependencyNamesToInstall,
+    ] of Record.toEntries(tasksToInstallCatalogVersionsOfDeps))
       yield* observableExec({
         cmd: [
           'bun',
           'add',
           ...dependencyNamesToInstall.map(name => name + '@catalog:'),
         ],
-        cwd,
+        cwd: absolutePackageDirPath,
         badExitCodeErrorMessage:
           'Failed to install added to catalog bun deps into specific package',
       })
@@ -506,7 +568,7 @@ const ensureNoPackagesWithSameName = myMonorepoPackagesEffect.pipe(
       EArray.groupBy(_ => _.pkg.name),
       Record.filterMap(packages =>
         packages.length > 1
-          ? Option.some(packages.map(_ => _.directoryPath))
+          ? Option.some(packages.map(_ => _.absolutePackageDirPath))
           : Option.none(),
       ),
     )
@@ -538,7 +600,7 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
     Effect.fn('ensureTsconfigDepsInPackage')(function* (pkg) {
       yield* Effect.annotateCurrentSpan({
         name: pkg.pkg.name,
-        directoryPath: pkg.directoryPath,
+        absolutePackageDirPath: pkg.absolutePackageDirPath,
       })
 
       const devDeps = pkg.pkg.devDependencies ?? {}
@@ -560,7 +622,7 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
 
       yield* observableExec({
         cmd: ['bun', 'add', '--dev', ...toInstall],
-        cwd: pkg.directoryPath,
+        cwd: pkg.absolutePackageDirPath,
         badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.pkg.name}`,
       })
     }),
@@ -586,7 +648,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
     Effect.fn('moveEffectDepsInPackage')(function* (_) {
       yield* Effect.annotateCurrentSpan({
         name: _.pkg.name,
-        directoryPath: _.directoryPath,
+        absolutePackageDirPath: _.absolutePackageDirPath,
       })
 
       const effectDepsExtractedFromProdDeps = Record.filter(
@@ -691,7 +753,7 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
     Effect.fn('fixNonWorkspaceDepsOfPackage')(function* (_) {
       yield* Effect.annotateCurrentSpan({
         name: _.pkg.name,
-        directoryPath: _.directoryPath,
+        absolutePackageDirPath: _.absolutePackageDirPath,
       })
 
       for (const depType of [
@@ -713,7 +775,7 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
                 : []),
             ...toFix.map(name => `${name}@workspace:*`),
           ],
-          cwd: _.directoryPath,
+          cwd: _.absolutePackageDirPath,
           badExitCodeErrorMessage: `Failed to fix workspace ${depType} in ${_.pkg.name}`,
         })
       }
@@ -724,20 +786,20 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
 
 const ensureVscodeSettingsInPackage = Effect.fn(
   'ensureVscodeSettingsInPackage',
-)(function* (directoryName: string) {
+)(function* (paths: MyMonorepoPackagePathBundle) {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
 
-  const vscodeDir = path.join(packagesDirPath, directoryName, '.vscode')
+  const vscodeDir = path.join(paths.absolutePackageDirPath, '.vscode')
   const settingsPath = path.join(vscodeDir, 'settings.json')
-  yield* Effect.annotateCurrentSpan({ directoryName, vscodeDir, settingsPath })
+  yield* Effect.annotateCurrentSpan({ settingsPath })
 
-  const settingsExist = yield* fs.exists(settingsPath)
-  yield* Effect.annotateCurrentSpan({ settingsExist })
+  const settingsExisted = yield* fs.exists(settingsPath)
+  yield* Effect.annotateCurrentSpan({ settingsExisted })
 
   let currentSettings: Record<string, unknown> = {}
 
-  if (settingsExist) {
+  if (settingsExisted) {
     const content = yield* fs.readFileString(settingsPath)
     currentSettings = JSON.parse(content) as Record<string, unknown>
   } else {
@@ -760,7 +822,7 @@ const ensureVscodeSettingsInPackage = Effect.fn(
 })
 
 const ensureVscodeSettingsExistInAllPackages =
-  myMonorepoPackagesDirectoryNamesEffect.pipe(
+  myMonorepoPackagePathsEffect.pipe(
     Effect.flatMap(
       Effect.forEach(ensureVscodeSettingsInPackage, {
         concurrency: 'unbounded',
@@ -863,7 +925,7 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
               : []),
           usage.catalogDepVersion,
         ],
-        cwd: usage.pkg.directoryPath,
+        cwd: usage.pkg.absolutePackageDirPath,
         badExitCodeErrorMessage:
           'Failed to install dependency into specific package',
       })
@@ -893,6 +955,7 @@ const program = Effect.all([
   ensureCatalogHasNoUnusedOrUsedOnceEntries,
   sortPackageJsonEffect,
 ]).pipe(
+  Effect.repeatN(2),
   Effect.scoped,
   Effect.provide(BunContext.layer),
   Effect.withSpan(import.meta.file),
