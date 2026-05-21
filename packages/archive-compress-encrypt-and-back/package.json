@@ -1,7 +1,7 @@
 {
   "name": "@evadev/ace",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Archive, compress, encrypt and back",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -60,14 +60,28 @@
     "provenance": false
   },
   "exports": {
-    "types": "./dist-types/index.d.ts",
-    "default": "./dist/index.js"
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "bin": {
-    "ace": "dist/index.js"
+    "archive-compress-encrypt-and-back": "dist/ace.js",
+    "ace": "dist/ace.js"
   },
   "files": [
     "dist",

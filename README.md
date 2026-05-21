@@ -27,16 +27,16 @@ vars. Install it.
 
    The ones I'm confident to be working:
 
-   1. [bliss-audio-ts](./packages/bliss-audio-ts)
-   2. [effect-web-midi](./packages/effect-web-midi)
+   1. [bliss-audio-ts](./packages/bliss-audio-ts) (published) (waiting 8 days to republish)
+   2. [effect-web-midi](./packages/effect-web-midi) (waiting 24 hours)
    3. [joiners](./packages/joiners)
-   4. [effect-btrfs](./packages/effect-btrfs)
-   5. [gitdl](./packages/gitdl)
-   6. [effect-zstd](./packages/effect-zstd)
-   7. [effect-helpers](./packages/effect-helpers)
-   8. [apache-superset-init](./packages/apache-superset-init)
-   9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back)
-   10. [tsconfig](./packages/tsconfig)
+   4. [effect-btrfs](./packages/effect-btrfs) (waiting 24 hours)
+   5. [gitdl](./packages/gitdl) (published)
+   6. [effect-zstd](./packages/effect-zstd) (waiting 24 hours)
+   7. [effect-helpers](./packages/effect-helpers) (published)
+   8. [apache-superset-init](./packages/apache-superset-init) (published)
+   9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back) (published)
+   10. [tsconfig](./packages/tsconfig) (published)
    11. [ts-key-not-enum](./packages/ts-key-not-enum)
 
    The ones I less confident to be working about:

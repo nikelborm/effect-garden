@@ -104,17 +104,19 @@
   },
   "exports": {
     ".": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
     },
-    "./index": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./index.js": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
+    "./internal/*": null,
     "./package.json": "./package.json"
   },
   "main": "./dist/src/index.js",
@@ -122,10 +124,12 @@
   "types": "./dist-types/src/index.d.ts",
   "bin": {
     "apache-superset-init": "dist/apache-superset-init.js",
+    "asi": "dist/apache-superset-init.js",
     "asqi": "dist/apache-superset-init.js"
   },
   "files": [
     "dist",
+    "dist-types",
     "src",
     "!dist/minified",
     "!**/*.tsbuildinfo",
