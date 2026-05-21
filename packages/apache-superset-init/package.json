@@ -119,9 +119,9 @@
     "./internal/*": null,
     "./package.json": "./package.json"
   },
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist-types/src/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
   "bin": {
     "apache-superset-init": "dist/apache-superset-init.js",
     "asi": "dist/apache-superset-init.js",

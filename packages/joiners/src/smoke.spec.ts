@@ -56,10 +56,10 @@ test("whole thing doesn't crash", () => {
     left,
     right,
     '111',
-    getSpreadObjectMerger('{ ...A, ...B }'),
+    getSpreadObjectMerger('{ ...A, ...B }', true),
     tuple => tuple[0].v === tuple[1].v,
   )) {
-    console.log(currentMergedTuple);
+    // console.log(currentMergedTuple);
     // A1 | {
     //   brand: typeof brandB;
     //   id: number;

@@ -29,7 +29,7 @@ vars. Install it.
 
    1. [bliss-audio-ts](./packages/bliss-audio-ts) (published) (waiting 8 days to republish)
    2. [effect-web-midi](./packages/effect-web-midi) (waiting 24 hours)
-   3. [joiners](./packages/joiners)
+   3. [joiners](./packages/joiners) (published)
    4. [effect-btrfs](./packages/effect-btrfs) (waiting 24 hours)
    5. [gitdl](./packages/gitdl) (published)
    6. [effect-zstd](./packages/effect-zstd) (waiting 24 hours)
@@ -37,11 +37,11 @@ vars. Install it.
    8. [apache-superset-init](./packages/apache-superset-init) (published)
    9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back) (published)
    10. [tsconfig](./packages/tsconfig) (published)
-   11. [ts-key-not-enum](./packages/ts-key-not-enum)
+   11. [ts-key-not-enum](./packages/ts-key-not-enum) (waiting 24 hours)
 
    The ones I less confident to be working about:
 
-   1. [backend-config](./packages/backend-config)
+   1. [backend-config](./packages/backend-config) (published)
    2. [effect-command-executors](./packages/effect-command-executors)
    3. [effect-drizzle-helpers](./packages/effect-drizzle-helpers) (recommend checking out)
    4. [effect-npm-api](./packages/effect-npm-api)
@@ -49,10 +49,9 @@ vars. Install it.
    6. [effect-web-audio](./packages/effect-web-audio)
    7. [effect-web-mediacapture-streams](./packages/effect-web-mediacapture-streams)
    8. [next-midi-demo](./packages/next-midi-demo) (recommend checking out)
-   9. [scripts](./packages/scripts)
-   10. [trellisform-database](./packages/trellisform-database)
-   11. [ts-better-tuple](./packages/ts-better-tuple)
-   12. [vscode-json-schemas-offline](./packages/vscode-json-schemas-offline)
+   9. [trellisform-database](./packages/trellisform-database)
+   10. [ts-better-tuple](./packages/ts-better-tuple)
+   11. [vscode-json-schemas-offline](./packages/vscode-json-schemas-offline)
 
 4. `scripts` - a single package with all the random scripts I ever used. The one
    I use often is `fix_package_jsons.ts` or `cleanup.ts`. All of the scripts

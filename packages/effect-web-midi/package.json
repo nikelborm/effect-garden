@@ -1,7 +1,7 @@
 {
   "name": "effect-web-midi",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Effect WEB MIDI API wrapper",
   "devDependencies": {
     "@effect/language-service": "catalog:",

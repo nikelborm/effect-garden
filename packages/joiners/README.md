@@ -94,7 +94,7 @@ npx jsr add @evadev/joiners
    3. Paste the access token as password value
 
 3. Install the package by executing:
-
+   <!-- TODO: actually verify that. Shouldn't it be @nikelborm/joiners? -->
    ```bash
    npm i @evadev/joiners
    ```

@@ -1,7 +1,7 @@
 {
-  "name": "@evadev/joiners",
+  "name": "joiners",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Join 2 or more iterables as if it's SQL joins but with the level of type-safety you didn't know you need",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -104,29 +104,32 @@
   },
   "exports": {
     ".": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
     },
-    "./index": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./index.js": {
-      "types": "./dist-types/src/index.d.ts",
-      "default": "./dist/src/index.js"
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
+    "./internal/*": null,
     "./package.json": "./package.json"
   },
-  "main": "./dist/src/index.js",
-  "module": "./dist/src/index.js",
-  "types": "./dist-types/src/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
   "files": [
     "dist",
+    "dist-types",
     "src",
+    "index.ts",
     "!dist/minified",
     "!**/*.tsbuildinfo",
     "!**/*.spec.*",
-    "!**/scratchpad.*",
-    ".github/FUNDING.yml"
+    "!**/scratchpad.*"
   ]
 }

@@ -10,8 +10,9 @@
 
 // import type { Merge as MagicGeneric } from 'type-fest';
 import type { At as GetNthCharacter } from 'ts-toolbelt/out/String/At.d.ts'
-import type { BBA, ForbiddenLiteralUnion, VNA, NVA } from './types.ts'
+import type { BBA, ForbiddenLiteralUnion, VNA, NVA, VVA } from './types.ts'
 import type { PreserveUndefinedOnlyIfWasExplicit } from './PreserveUndefinedOnlyIfWasExplicit.ts'
+import { isEmpty } from './helpers.ts'
 
 function doesAHavePriority(
   mergeStrategy: '{ ...B, ...A }' | '{ ...A, ...B }',
@@ -26,15 +27,22 @@ function doesAHavePriority(
 }
 
 export const getSpreadObjectMerger =
-  <const MergeStrategy extends '{ ...B, ...A }' | '{ ...A, ...B }'>(
+  <const MergeStrategy extends '{ ...B, ...A }' | '{ ...A, ...B }', const TreatEmptySlotAsEmptyObject extends boolean|undefined = undefined>(
     mergeStrategy: MergeStrategy,
+    treatEmptySlotAsEmptyObject?: TreatEmptySlotAsEmptyObject
   ) =>
-  <const T extends BBA<Object, Object>>(tuple: T) => {
+  <const T extends [TreatEmptySlotAsEmptyObject] extends [true] ? BBA<Record<string, unknown>, Record<string, unknown>> : VVA<Record<string, unknown>, Record<string, unknown>>>(tuple: T) => {
     const AHasPriority = doesAHavePriority(mergeStrategy)
     type TupleIndex = 0 | 1
     const castToObject = (index: TupleIndex) => {
+      if (isEmpty(tuple[index])){
+        if(treatEmptySlotAsEmptyObject) return {}
+        else
+          throw new Error('getSpreadObjectMerger is not configured to cast empty slots to empty objects')
+      }
       if (typeof tuple[index] !== 'object' || tuple[index] === null)
         throw new Error('getSpreadObjectMerger handles objects exclusively')
+
       return tuple[index]
     }
 

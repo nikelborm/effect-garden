@@ -238,12 +238,8 @@ export const Hyper: Hyper = 'Hyper'
  * The `Meta` key. Allows issuing special command inputs. This is the `Windows`
  * logo key, or the `Command` or `⌘` key on Mac keyboards.
  *
- * In Firefox, the `Windows` key is reported as `"OS"` instead of as `"Meta"`.
- * This will be changed in Firefox per [Firefox bug
- * 1232918](https://bugzil.la/1232918). Until that's fixed, these keys are
- * returned as `"OS"` by Firefox: `VK_LWIN` (0x5B) and `VK_RWIN` (0x5C) on
- * Windows, and `GDK_KEY_Super_L` (0xFFEB), `GDK_KEY_Super_R` (0xFFEC),
- * `GDK_KEY_Hyper_L` (0xFFED), and `GDK_KEY_Hyper_R` (0xFFEE) on Linux.
+ * Firefox 118 and later correctly report the `Windows` key as `"Meta"` (earlier
+ * versions reported the key as `"OS"`).
  *
  * Windows virtual key code: `VK_LWIN` (0x5B) `VK_RWIN` (0x5C)
  *
@@ -263,12 +259,8 @@ export type Meta = 'Meta'
  * The `Meta` key. Allows issuing special command inputs. This is the `Windows`
  * logo key, or the `Command` or `⌘` key on Mac keyboards.
  *
- * In Firefox, the `Windows` key is reported as `"OS"` instead of as `"Meta"`.
- * This will be changed in Firefox per [Firefox bug
- * 1232918](https://bugzil.la/1232918). Until that's fixed, these keys are
- * returned as `"OS"` by Firefox: `VK_LWIN` (0x5B) and `VK_RWIN` (0x5C) on
- * Windows, and `GDK_KEY_Super_L` (0xFFEB), `GDK_KEY_Super_R` (0xFFEC),
- * `GDK_KEY_Hyper_L` (0xFFED), and `GDK_KEY_Hyper_R` (0xFFEE) on Linux.
+ * Firefox 118 and later correctly report the `Windows` key as `"Meta"` (earlier
+ * versions reported the key as `"OS"`).
  *
  * Windows virtual key code: `VK_LWIN` (0x5B) `VK_RWIN` (0x5C)
  *

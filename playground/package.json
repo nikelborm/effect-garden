@@ -47,7 +47,7 @@
     "@evadev/effect-drizzle-helpers": "workspace:^",
     "@evadev/effect-helpers": "workspace:^",
     "@evadev/effect-schema-i18n": "workspace:^",
-    "@evadev/joiners": "workspace:^",
+    "joiners": "workspace:^",
     "@evadev/openapi-gen": "catalog:",
     "@evadev/scripts": "workspace:^",
     "@evadev/tsconfig": "workspace:^",

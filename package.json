@@ -15,7 +15,7 @@
     "@evadev/effect-schema-i18n": "workspace:^",
     "gitdl": "workspace:^",
     "@evadev/github-extract-issues": "workspace:^",
-    "@evadev/joiners": "workspace:^",
+    "joiners": "workspace:^",
     "@evadev/playground": "workspace:^",
     "@evadev/scripts": "workspace:^",
     "@evadev/ts-better-tuple": "workspace:^",
