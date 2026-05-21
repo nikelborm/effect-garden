@@ -22,7 +22,7 @@ docker
 educational-testings
 gh-page/bundled_deps
 gh-page/coverage
-git-dlp*.tgz
+gitdl*.tgz
 joiners-*.tgz
 node_modules
 out
@@ -40,5 +40,5 @@ certificates/
 fetch-github-folder_issues_data.json
 packages/ts-key-not-enum/report.json
 packages/ts-key-not-enum/mdast.json
-packages/git-dlp/gh-page/bundled_deps
+packages/gitdl/gh-page/bundled_deps
 temp-store

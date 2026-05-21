@@ -54,6 +54,7 @@ Competitors: (my God, I feel sooo dumb right now)
 2. https://www.npmjs.com/package/dlgit
 3. https://www.npmjs.com/package/gdl
 4. https://www.npmjs.com/package/dgit
+5. https://www.npmjs.com/package/gitd
 
 Maybe use [asciicinema](https://asciinema.org/) to demo usage of the CLI?
 
@@ -311,7 +312,7 @@ curl -sL https://github.com/nikelborm/fetch-github-folder/releases/download/0.1.
 ```
 
 ```bash
-curl -sL git.new/git-dlp.js | node - --repoOwner apache --repoName superset
+curl -sL git.new/gitdl.js | node - --repoOwner apache --repoName superset
 ```
 
 # Reconsider license

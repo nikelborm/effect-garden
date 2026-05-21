@@ -6,7 +6,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@stryker-mutator/api": "catalog:",
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/instrumenter": "catalog:",

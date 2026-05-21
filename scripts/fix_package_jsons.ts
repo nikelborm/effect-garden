@@ -408,7 +408,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       set.difference(new Set([value]))
 
     const withoutCatalog = withoutSetValue('catalog:')
-    const withoutWorkspace = withoutSetValue('workspace:*')
+    const withoutWorkspace = withoutSetValue('workspace:^')
     const rootPackageJson = yield* rootPackageJsonEffect
 
     const badDeps = Record.filterMap(
@@ -568,8 +568,8 @@ const ensureAllMonorepoPackagesAreRootDeps = Effect.gen(function* () {
   const currentDeps = rootPackageJson.dependencies ?? {}
 
   const toInstall = myMonorepoPackages
-    .filter(({ pkg }) => currentDeps[pkg.name] !== 'workspace:*')
-    .map(({ pkg }) => `${pkg.name}@workspace:*`)
+    .filter(({ pkg }) => currentDeps[pkg.name] !== 'workspace:^')
+    .map(({ pkg }) => `${pkg.name}@workspace:^`)
 
   if (!toInstall.length) return
 
@@ -632,8 +632,8 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
 
       const toInstall: string[] = []
 
-      if (devDeps['@evadev/tsconfig'] !== 'workspace:*')
-        toInstall.push('@evadev/tsconfig@workspace:*')
+      if (devDeps['@evadev/tsconfig'] !== 'workspace:^')
+        toInstall.push('@evadev/tsconfig@workspace:^')
 
       for (const [dep, version] of tsconfigDirectDeps)
         if (!pkg.allDependencies[dep]) toInstall.push(`${dep}@${version}`)
@@ -766,7 +766,7 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
 
   const fixable = flow(
     Record.filterMap((version: string, name: string) =>
-      workspacePackageNames.has(name) && version !== 'workspace:*'
+      workspacePackageNames.has(name) && version !== 'workspace:^'
         ? Option.some(version)
         : Option.none(),
     ),
@@ -798,7 +798,7 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
               : depType === 'peerDependencies'
                 ? ['--peer']
                 : []),
-            ...toFix.map(name => `${name}@workspace:*`),
+            ...toFix.map(name => `${name}@workspace:^`),
           ],
           cwd: _.absolutePackageDirPath,
           badExitCodeErrorMessage: `Failed to fix workspace ${depType} in ${_.pkg.name}`,

@@ -5,7 +5,7 @@
   "description": "Write drizzle table declarations in functional style, and make reusable table parts easily",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

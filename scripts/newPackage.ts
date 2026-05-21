@@ -64,7 +64,7 @@ const packageJson = (config: { name: string; description: string }) =>
     // TODO: Ask for package name and folder name separately
     homepage: `${httpsRepoLink}/tree/main/packages/${config.name}#readme`,
     devDependencies: {
-      '@evadev/tsconfig': 'workspace:*',
+      '@evadev/tsconfig': 'workspace:^',
       '@effect/language-service': 'catalog:',
       'ts-namespace-import': 'catalog:',
       'ts-patch': 'catalog:',
@@ -204,7 +204,7 @@ const program = Effect.gen(function* () {
     fs.writeFileString(path, content),
   )
 
-  yield* Command.make('bun', 'add', config.name + '@workspace:*').pipe(
+  yield* Command.make('bun', 'add', config.name + '@workspace:^').pipe(
     Command.workingDirectory(projectRootAbsolutePath),
     Command.stream,
     Stream.concat(

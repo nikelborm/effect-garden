@@ -1,10 +1,10 @@
-import { downloadEntityFromRepo } from 'git-dlp'
+import { downloadEntityFromRepo } from 'gitdl'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
 
-import { repo } from './repo.js'
+import { repo } from './repo.ts'
 
 // TODO: appends file just plainly like this because, the YAML is not guaranteed
 // to be valid, for example in cases where keys of objects are derived with env

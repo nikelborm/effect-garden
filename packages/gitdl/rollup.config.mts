@@ -6,7 +6,7 @@ import type { RollupOptions } from 'rollup'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 export default {
-  input: 'dist/git-dlp.js',
+  input: 'dist/gitdl.js',
   output: {
     dir: 'dist/minified',
     format: 'es',

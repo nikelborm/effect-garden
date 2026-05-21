@@ -71,4 +71,4 @@ await passthroughSpawn(
 
 await passthroughSpawn('bun', 'turbo', 'boundaries')
 
-// await passthroughSpawn('bun', 'run', 'build')
+await passthroughSpawn('bun', 'run', 'build')

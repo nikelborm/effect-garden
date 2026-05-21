@@ -5,7 +5,7 @@
   "description": "Script to extract issues with comments from repo",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

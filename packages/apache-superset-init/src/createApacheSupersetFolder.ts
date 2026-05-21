@@ -1,17 +1,17 @@
 import { allFast } from '@evadev/effect-helpers'
 import type { Octokit } from '@octokit/core'
-import { downloadEntityFromRepo } from 'git-dlp'
+import { downloadEntityFromRepo } from 'gitdl'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 
-import { createPipRequirementsConfig } from './createPipRequirementsConfig.js'
-import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndAddNewNetworkToIt.js'
-import { repo } from './repo.js'
-import { updateEnvFile } from './updateEnvFile.js'
-import { updateJwtSecretInSupersetWebsocketConfig } from './updateJwtSecretInSupersetWebsocketConfig.js'
+import { createPipRequirementsConfig } from './createPipRequirementsConfig.ts'
+import { downloadComposeFileAndAddNewNetworkToIt } from './downloadComposeFileAndAddNewNetworkToIt.ts'
+import { repo } from './repo.ts'
+import { updateEnvFile } from './updateEnvFile.ts'
+import { updateJwtSecretInSupersetWebsocketConfig } from './updateJwtSecretInSupersetWebsocketConfig.ts'
 
 export const createApacheSupersetFolder: (config: {
   gitRef: string

@@ -5,7 +5,7 @@
   "description": "Effect WEB Audio API wrapper",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -14,7 +14,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "effect-web-mediacapture-streams": "workspace:*"
+    "effect-web-mediacapture-streams": "workspace:^"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio#readme",
   "bugs": {

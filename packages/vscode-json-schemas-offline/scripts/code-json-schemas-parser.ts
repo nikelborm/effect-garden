@@ -29,7 +29,7 @@ const FineURLFromString = Schema.URL.pipe(
 
 declare const Bun: any
 
-// TODO: Maybe it's time to shine for my git-dlp?
+// TODO: Maybe it's time to shine for my gitdl?
 
 const parseJsonOrYaml = Schema.transformOrFail(
   Schema.String.annotations({

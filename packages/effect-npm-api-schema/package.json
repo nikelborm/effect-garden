@@ -5,7 +5,7 @@
   "description": "Effect schemas of objects returned by NPM API",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

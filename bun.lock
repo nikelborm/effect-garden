@@ -6,49 +6,49 @@
       "name": "@evadev/effect-garden",
       "dependencies": {
         "@biomejs/biome": "catalog:",
-        "@evadev/ace": "workspace:*",
-        "@evadev/backend-config": "workspace:*",
-        "@evadev/effect-drizzle-helpers": "workspace:*",
-        "@evadev/effect-helpers": "workspace:*",
-        "@evadev/effect-landscape": "workspace:*",
-        "@evadev/effect-schema-i18n": "workspace:*",
-        "@evadev/github-extract-issues": "workspace:*",
-        "@evadev/joiners": "workspace:*",
-        "@evadev/playground": "workspace:*",
-        "@evadev/scripts": "workspace:*",
-        "@evadev/ts-better-tuple": "workspace:*",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/ace": "workspace:^",
+        "@evadev/backend-config": "workspace:^",
+        "@evadev/effect-drizzle-helpers": "workspace:^",
+        "@evadev/effect-helpers": "workspace:^",
+        "@evadev/effect-landscape": "workspace:^",
+        "@evadev/effect-schema-i18n": "workspace:^",
+        "@evadev/github-extract-issues": "workspace:^",
+        "@evadev/joiners": "workspace:^",
+        "@evadev/playground": "workspace:^",
+        "@evadev/scripts": "workspace:^",
+        "@evadev/ts-better-tuple": "workspace:^",
+        "@evadev/tsconfig": "workspace:^",
         "@linaria/postcss-linaria": "^7.0.0",
         "@linaria/stylelint-config-standard-linaria": "^7.0.0",
-        "@trellisform/database": "workspace:*",
-        "apache-superset-init": "workspace:*",
+        "@trellisform/database": "workspace:^",
+        "apache-superset-init": "workspace:^",
         "biome-plugin-drizzle": "^0.1.0",
-        "bliss-audio-ts": "workspace:*",
-        "btrfs-partition-restoration": "workspace:*",
+        "bliss-audio-ts": "workspace:^",
+        "btrfs-partition-restoration": "workspace:^",
         "chokidar-cli": "^3.0.0",
         "cloc": "^2.6.0-cloc",
-        "effect-btrfs": "workspace:*",
-        "effect-command-executors": "workspace:*",
-        "effect-npm-api": "workspace:*",
-        "effect-npm-api-schema": "workspace:*",
-        "effect-opfs": "workspace:*",
-        "effect-schema-writer": "workspace:*",
-        "effect-web-audio": "workspace:*",
-        "effect-web-audio-generation-experiment": "workspace:*",
-        "effect-web-mediacapture-streams": "workspace:*",
-        "effect-web-midi": "workspace:*",
-        "effect-zstd": "workspace:*",
-        "git-dlp": "workspace:*",
-        "interview-monarchs-task": "workspace:*",
-        "next-midi-demo": "workspace:*",
+        "effect-btrfs": "workspace:^",
+        "effect-command-executors": "workspace:^",
+        "effect-npm-api": "workspace:^",
+        "effect-npm-api-schema": "workspace:^",
+        "effect-opfs": "workspace:^",
+        "effect-schema-writer": "workspace:^",
+        "effect-web-audio": "workspace:^",
+        "effect-web-audio-generation-experiment": "workspace:^",
+        "effect-web-mediacapture-streams": "workspace:^",
+        "effect-web-midi": "workspace:^",
+        "effect-zstd": "workspace:^",
+        "gitdl": "workspace:^",
+        "interview-monarchs-task": "workspace:^",
+        "next-midi-demo": "workspace:^",
         "postcss-styled-syntax": "^0.7.1",
         "stylelint": "^17.12.0",
         "stylelint-config-standard": "^40.0.0",
         "stylelint-config-styled-components": "^0.1.1",
-        "ts-key-not-enum": "workspace:*",
+        "ts-key-not-enum": "workspace:^",
         "turbo": "^2.9.14",
-        "vscode-json-schemas-offline": "workspace:*",
-        "yt-music-export": "workspace:*",
+        "vscode-json-schemas-offline": "workspace:^",
+        "yt-music-export": "workspace:^",
       },
     },
     "ideas/effect-landscape": {
@@ -56,7 +56,7 @@
       "version": "0.0.1",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -67,7 +67,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -81,7 +81,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -95,7 +95,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -110,11 +110,11 @@
       "version": "0.1.0",
       "dependencies": {
         "@webref/idl": "catalog:",
-        "effect-web-audio": "workspace:*",
+        "effect-web-audio": "workspace:^",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -128,13 +128,13 @@
       "name": "btrfs-partition-restoration",
       "version": "0.1.0",
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
-        "effect-btrfs": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
+        "effect-btrfs": "workspace:^",
         "level": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -157,7 +157,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -178,7 +178,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -196,7 +196,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -214,17 +214,17 @@
         "asqi": "dist/apache-superset-init.js",
       },
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
         "@octokit/core": "catalog:",
         "@total-typescript/ts-reset": "catalog:",
         "effect-errors": "catalog:",
-        "git-dlp": "workspace:*",
+        "gitdl": "workspace:^",
         "outdent": "catalog:",
         "yaml": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@rollup/plugin-commonjs": "catalog:",
         "@rollup/plugin-json": "catalog:",
         "@rollup/plugin-node-resolve": "catalog:",
@@ -258,7 +258,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -276,7 +276,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -292,7 +292,7 @@
       "devDependencies": {
         "@biomejs/biome": "catalog:",
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@stryker-mutator/api": "catalog:",
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/instrumenter": "catalog:",
@@ -311,11 +311,11 @@
       "name": "effect-btrfs",
       "version": "0.1.1",
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -329,11 +329,11 @@
       "name": "effect-command-executors",
       "version": "0.1.0",
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -359,7 +359,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -371,10 +371,10 @@
     },
     "packages/effect-helpers": {
       "name": "@evadev/effect-helpers",
-      "version": "0.1.2",
+      "version": "0.1.4",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -392,7 +392,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/openapi-gen": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -407,7 +407,7 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -420,11 +420,11 @@
       "name": "effect-web-audio",
       "version": "0.1.0",
       "dependencies": {
-        "effect-web-mediacapture-streams": "workspace:*",
+        "effect-web-mediacapture-streams": "workspace:^",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -438,7 +438,7 @@
       "version": "0.2.0",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -452,7 +452,7 @@
       "version": "0.2.1",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -466,7 +466,7 @@
       "version": "0.1.4",
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -477,15 +477,21 @@
         "effect": "catalog:",
       },
     },
-    "packages/git-dlp": {
-      "name": "git-dlp",
-      "version": "0.2.0",
+    "packages/gitdl": {
+      "name": "gitdl",
+      "version": "0.2.4",
       "bin": {
-        "gdl": "dist/git-dlp.js",
-        "git-dlp": "dist/git-dlp.js",
+        "dgit": "dist/gitdl.js",
+        "dlgit": "dist/gitdl.js",
+        "gdl": "dist/gitdl.js",
+        "git-dl": "dist/gitdl.js",
+        "dl-git": "dist/gitdl.js",
+        "gitdl": "dist/gitdl.js",
+        "gitd": "dist/gitdl.js",
+        "git-dlp": "dist/gitdl.js",
       },
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
         "@octokit/core": "catalog:",
         "@octokit/request-error": "catalog:",
         "@octokit/types": "catalog:",
@@ -499,7 +505,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@effect/vitest": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@rollup/plugin-commonjs": "catalog:",
         "@rollup/plugin-json": "catalog:",
         "@rollup/plugin-node-resolve": "catalog:",
@@ -528,7 +534,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@stryker-mutator/vitest-runner": "catalog:",
         "@total-typescript/ts-reset": "catalog:",
         "@vitest/coverage-v8": "catalog:",
@@ -549,24 +555,24 @@
         "@base-ui/react": "catalog:",
         "@effect-atom/atom": "catalog:",
         "@effect-atom/atom-react": "catalog:",
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
         "@fp-ts/optic": "catalog:",
         "@serwist/next": "catalog:",
         "@wyw-in-js/babel-preset": "catalog:",
-        "effect-web-audio": "workspace:*",
-        "effect-web-midi": "workspace:*",
+        "effect-web-audio": "workspace:^",
+        "effect-web-midi": "workspace:^",
         "next": "catalog:",
         "next-yak": "catalog:",
         "postcss-styled-syntax": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
         "serwist": "catalog:",
-        "ts-key-not-enum": "workspace:*",
+        "ts-key-not-enum": "workspace:^",
       },
       "devDependencies": {
         "@biomejs/biome": "catalog:",
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
@@ -586,14 +592,14 @@
       "name": "@trellisform/database",
       "version": "0.1.0",
       "dependencies": {
-        "@evadev/effect-drizzle-helpers": "workspace:*",
+        "@evadev/effect-drizzle-helpers": "workspace:^",
         "drizzle-kit": "catalog:",
         "drizzle-orm": "catalog:",
         "pg": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -621,7 +627,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "ts-patch": "catalog:",
       },
     },
@@ -632,7 +638,7 @@
         "@effect/language-service": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@microsoft/tsdoc": "catalog:",
         "@types/bun": "catalog:",
         "@types/unist": "catalog:",
@@ -664,7 +670,7 @@
         "@effect/language-service": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-node": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "@types/vscode": "catalog:",
         "@vscode/vsce": "catalog:",
@@ -720,14 +726,14 @@
         "@effect/typeclass": "^0.40.0",
         "@effect/vitest": "catalog:",
         "@effect/workflow": "^0.18.1",
-        "@evadev/backend-config": "workspace:*",
-        "@evadev/effect-drizzle-helpers": "workspace:*",
-        "@evadev/effect-helpers": "workspace:*",
-        "@evadev/effect-schema-i18n": "workspace:*",
-        "@evadev/joiners": "workspace:*",
+        "@evadev/backend-config": "workspace:^",
+        "@evadev/effect-drizzle-helpers": "workspace:^",
+        "@evadev/effect-helpers": "workspace:^",
+        "@evadev/effect-schema-i18n": "workspace:^",
+        "@evadev/joiners": "workspace:^",
         "@evadev/openapi-gen": "catalog:",
-        "@evadev/scripts": "workspace:*",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/scripts": "workspace:^",
+        "@evadev/tsconfig": "workspace:^",
         "@fp-ts/optic": "catalog:",
         "@julusian/midi": "^3.6.1",
         "@microsoft/tsdoc": "catalog:",
@@ -745,7 +751,7 @@
         "@stryker-mutator/instrumenter": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",
         "@total-typescript/ts-reset": "catalog:",
-        "@trellisform/database": "workspace:*",
+        "@trellisform/database": "workspace:^",
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "@types/pg": "catalog:",
@@ -758,7 +764,7 @@
         "@vscode/vsce": "catalog:",
         "@webref/idl": "catalog:",
         "@wyw-in-js/babel-preset": "catalog:",
-        "apache-superset-init": "workspace:*",
+        "apache-superset-init": "workspace:^",
         "babel-plugin-react-compiler": "catalog:",
         "change-case": "catalog:",
         "csv-parse": "catalog:",
@@ -766,16 +772,16 @@
         "drizzle-kit": "catalog:",
         "drizzle-orm": "catalog:",
         "effect": "catalog:",
-        "effect-btrfs": "workspace:*",
+        "effect-btrfs": "workspace:^",
         "effect-errors": "catalog:",
         "effect-mdx": "catalog:",
         "effect-octokit-layer": "catalog:",
-        "effect-opfs": "workspace:*",
-        "effect-web-audio": "workspace:*",
-        "effect-web-mediacapture-streams": "workspace:*",
-        "effect-web-midi": "workspace:*",
+        "effect-opfs": "workspace:^",
+        "effect-web-audio": "workspace:^",
+        "effect-web-mediacapture-streams": "workspace:^",
+        "effect-web-midi": "workspace:^",
         "esbuild": "catalog:",
-        "git-dlp": "workspace:*",
+        "gitdl": "workspace:^",
         "googleapis": "catalog:",
         "level": "catalog:",
         "music-metadata": "catalog:",
@@ -796,7 +802,7 @@
         "sort-package-json": "catalog:",
         "tar-fs": "catalog:",
         "tinybench": "^6.0.2",
-        "ts-key-not-enum": "workspace:*",
+        "ts-key-not-enum": "workspace:^",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "ts-pattern": "catalog:",
@@ -817,7 +823,7 @@
       "name": "@evadev/scripts",
       "version": "0.1.0",
       "dependencies": {
-        "@evadev/effect-helpers": "workspace:*",
+        "@evadev/effect-helpers": "workspace:^",
         "dotenv": "catalog:",
         "drizzle-kit": "catalog:",
         "effect-errors": "catalog:",
@@ -825,7 +831,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
-        "@evadev/tsconfig": "workspace:*",
+        "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -943,7 +949,7 @@
 
     "@aws-crypto/util": ["@aws-crypto/util@5.2.0", "", { "dependencies": { "@aws-sdk/types": "^3.222.0", "@smithy/util-utf8": "^2.0.0", "tslib": "^2.6.2" } }, "sha512-4RkU9EsI6ZpBve5fseQlGNUWKMa1RLPQ1dnjnQoe07ldfIzcsGb5hC5W0Dm7u423KWzawlrpbjXBrXCEv9zazQ=="],
 
-    "@aws-sdk/types": ["@aws-sdk/types@3.973.8", "", { "dependencies": { "@smithy/types": "^4.14.1", "tslib": "^2.6.2" } }, "sha512-gjlAdtHMbtR9X5iIhVUvbVcy55KnznpC6bkDUWW9z915bi0ckdUr5cjf16Kp6xq0bP5HBD2xzgbL9F9Quv5vUw=="],
+    "@aws-sdk/types": ["@aws-sdk/types@3.973.9", "", { "dependencies": { "@smithy/types": "^4.14.2", "tslib": "^2.6.2" } }, "sha512-kuBfgQVdcz5Bmapc4A13YbpVw/pXkesfhetcFYwbntqas8sF41OHyd4o28+/TG2ZQdHBsv90Lsu5y6oitvYCdg=="],
 
     "@azu/format-text": ["@azu/format-text@1.0.2", "", {}, "sha512-Swi4N7Edy1Eqq82GxgEECXSSLyn6GOb5htRFPzBDdUkECGXtlf12ynO5oJSpWKPwCaUssOu7NfhDcCWpIC6Ywg=="],
 
@@ -2393,9 +2399,9 @@
 
     "get-tsconfig": ["get-tsconfig@4.14.0", "", { "dependencies": { "resolve-pkg-maps": "^1.0.0" } }, "sha512-yTb+8DXzDREzgvYmh6s9vHsSVCHeC0G3PI5bEXNBHtmshPnO+S5O7qgLEOn0I5QvMy6kpZN8K1NKGyilLb93wA=="],
 
-    "git-dlp": ["git-dlp@workspace:packages/git-dlp"],
-
     "git-hooks-list": ["git-hooks-list@4.2.1", "", {}, "sha512-WNvqJjOxxs/8ZP9+DWdwWJ7cDsd60NHf39XnD82pDVrKO5q7xfPqpkK6hwEAmBa/ZSEE4IOoR75EzbbIuwGlMw=="],
+
+    "gitdl": ["gitdl@workspace:packages/gitdl"],
 
     "github-from-package": ["github-from-package@0.0.0", "", {}, "sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw=="],
 
@@ -3637,6 +3643,8 @@
 
     "@linaria/stylelint-config-standard-linaria/stylelint-config-standard": ["stylelint-config-standard@28.0.0", "", { "dependencies": { "stylelint-config-recommended": "^9.0.0" }, "peerDependencies": { "stylelint": "^14.11.0" } }, "sha512-q/StuowDdDmFCravzGHAwgS9pjX0bdOQUEBBDIkIWsQuYGgYz/xsO8CM6eepmIQ1fc5bKdDVimlJZ6MoOUcJ5Q=="],
 
+    "@mdx-js/mdx/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
     "@mdx-js/mdx/estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
 
     "@octokit/request/content-type": ["content-type@2.0.0", "", {}, "sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ=="],
@@ -3648,6 +3656,8 @@
     "@react-native/dev-middleware/open": ["open@7.4.2", "", { "dependencies": { "is-docker": "^2.0.0", "is-wsl": "^2.1.1" } }, "sha512-MVHddDVweXZF3awtlAS+6pgKLlm/JgxZ90+/NBurBoQctVOOB/zDdVjcyPzQ+0laDGbsWgrRkflI65sQeOgT9Q=="],
 
     "@react-native/dev-middleware/ws": ["ws@7.5.10", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": "^5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ=="],
+
+    "@rollup/pluginutils/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "@secretlint/formatter/chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
 
@@ -3672,6 +3682,8 @@
     "@textlint/linter-formatter/pluralize": ["pluralize@2.0.0", "", {}, "sha512-TqNZzQCD4S42De9IfnnBvILN7HAW7riLqsCyp8lgjXeysyPlX5HhqKAcJHHHb9XskE4/a+7VGC9zzx8Ls0jOAw=="],
 
     "@textlint/linter-formatter/string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
+
+    "@types/estree-jsx/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "@typespec/ts-http-runtime/https-proxy-agent": ["https-proxy-agent@7.0.6", "", { "dependencies": { "agent-base": "^7.1.2", "debug": "4" } }, "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw=="],
 
@@ -3729,7 +3741,11 @@
 
     "drizzle-kit/esbuild": ["esbuild@0.25.12", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.25.12", "@esbuild/android-arm": "0.25.12", "@esbuild/android-arm64": "0.25.12", "@esbuild/android-x64": "0.25.12", "@esbuild/darwin-arm64": "0.25.12", "@esbuild/darwin-x64": "0.25.12", "@esbuild/freebsd-arm64": "0.25.12", "@esbuild/freebsd-x64": "0.25.12", "@esbuild/linux-arm": "0.25.12", "@esbuild/linux-arm64": "0.25.12", "@esbuild/linux-ia32": "0.25.12", "@esbuild/linux-loong64": "0.25.12", "@esbuild/linux-mips64el": "0.25.12", "@esbuild/linux-ppc64": "0.25.12", "@esbuild/linux-riscv64": "0.25.12", "@esbuild/linux-s390x": "0.25.12", "@esbuild/linux-x64": "0.25.12", "@esbuild/netbsd-arm64": "0.25.12", "@esbuild/netbsd-x64": "0.25.12", "@esbuild/openbsd-arm64": "0.25.12", "@esbuild/openbsd-x64": "0.25.12", "@esbuild/openharmony-arm64": "0.25.12", "@esbuild/sunos-x64": "0.25.12", "@esbuild/win32-arm64": "0.25.12", "@esbuild/win32-ia32": "0.25.12", "@esbuild/win32-x64": "0.25.12" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="],
 
+    "estree-util-attach-comments/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
     "estree-util-build-jsx/estree-walker": ["estree-walker@3.0.3", "", { "dependencies": { "@types/estree": "^1.0.0" } }, "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g=="],
+
+    "estree-util-scope/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "finalhandler/debug": ["debug@2.6.9", "", { "dependencies": { "ms": "2.0.0" } }, "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="],
 
@@ -3741,11 +3757,17 @@
 
     "global-modules/global-prefix": ["global-prefix@3.0.0", "", { "dependencies": { "ini": "^1.3.5", "kind-of": "^6.0.2", "which": "^1.3.1" } }, "sha512-awConJSVCHVGND6x3tmMaKcQvwXLhjdkmomy2W+Goaui8YPgYgXJZewhg3fWC+DlfqqQuWg8AwqjGTD2nAPVWg=="],
 
+    "googleapis-common/qs": ["qs@6.15.2", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw=="],
+
     "gray-matter/js-yaml": ["js-yaml@3.14.2", "", { "dependencies": { "argparse": "^1.0.7", "esprima": "^4.0.0" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg=="],
 
     "happy-dom/entities": ["entities@7.0.1", "", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
 
     "happy-dom/whatwg-mimetype": ["whatwg-mimetype@3.0.0", "", {}, "sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q=="],
+
+    "hast-util-to-estree/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "hast-util-to-jsx-runtime/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "htmlparser2/entities": ["entities@7.0.1", "", {}, "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA=="],
 
@@ -3754,6 +3776,8 @@
     "http-proxy-agent/agent-base": ["agent-base@7.1.4", "", {}, "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="],
 
     "import-fresh/resolve-from": ["resolve-from@4.0.0", "", {}, "sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g=="],
+
+    "is-reference/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "istanbul-lib-report/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
@@ -3792,6 +3816,16 @@
     "metro-source-map/source-map": ["source-map@0.5.7", "", {}, "sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ=="],
 
     "metro-symbolicate/source-map": ["source-map@0.5.7", "", {}, "sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ=="],
+
+    "micromark-extension-mdx-expression/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "micromark-extension-mdx-jsx/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "micromark-extension-mdxjs-esm/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "micromark-factory-mdx-expression/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "micromark-util-events-to-acorn/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "micromatch/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
 
@@ -3846,6 +3880,14 @@
     "read-pkg-up/type-fest": ["type-fest@0.8.1", "", {}, "sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA=="],
 
     "readdirp/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
+
+    "recma-build-jsx/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "recma-parse/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "recma-stringify/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "rehype-recma/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "rimraf/glob": ["glob@7.2.3", "", { "dependencies": { "fs.realpath": "^1.0.0", "inflight": "^1.0.4", "inherits": "2", "minimatch": "^3.1.1", "once": "^1.3.0", "path-is-absolute": "^1.0.0" } }, "sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q=="],
 
@@ -4021,9 +4063,13 @@
 
     "@typespec/ts-http-runtime/https-proxy-agent/agent-base": ["agent-base@7.1.4", "", {}, "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="],
 
+    "@vitest/mocker/estree-walker/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
     "@vscode/vsce/glob/minimatch": ["minimatch@10.2.5", "", { "dependencies": { "brace-expansion": "^5.0.5" } }, "sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg=="],
 
     "@vscode/vsce/minimatch/brace-expansion": ["brace-expansion@1.1.14", "", { "dependencies": { "balanced-match": "^1.0.0", "concat-map": "0.0.1" } }, "sha512-MWPGfDxnyzKU7rNOW9SP/c50vi3xrmrua/+6hfPbCS2ABNWfx24vPidzvC7krjU/RTo235sV776ymlsMtGKj8g=="],
+
+    "@vscode/vsce/typed-rest-client/qs": ["qs@6.15.2", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw=="],
 
     "@wyw-in-js/shared/find-up/locate-path": ["locate-path@6.0.0", "", { "dependencies": { "p-locate": "^5.0.0" } }, "sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw=="],
 
@@ -4034,6 +4080,10 @@
     "@wyw-in-js/transform/minimatch/brace-expansion": ["brace-expansion@2.1.0", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-TN1kCZAgdgweJhWWpgKYrQaMNHcDULHkWwQIspdtjV4Y5aurRdZpjAqn6yX3FPqTA9ngHCc4hJxMAMgGfve85w=="],
 
     "accepts/mime-types/mime-db": ["mime-db@1.54.0", "", {}, "sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ=="],
+
+    "ast-v8-to-istanbul/estree-walker/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
+
+    "azure-devops-node-api/typed-rest-client/qs": ["qs@6.15.2", "", { "dependencies": { "side-channel": "^1.1.0" } }, "sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw=="],
 
     "chalk/supports-color/has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
@@ -4102,6 +4152,8 @@
     "drizzle-kit/esbuild/@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.25.12", "", { "os": "win32", "cpu": "ia32" }, "sha512-HkqnmmBoCbCwxUKKNPBixiWDGCpQGVsrQfJoVGYLPT41XWF8lHuE5N6WhVia2n4o5QK5M4tYr21827fNhi4byQ=="],
 
     "drizzle-kit/esbuild/@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
+
+    "estree-util-build-jsx/estree-walker/@types/estree": ["@types/estree@1.0.9", "", {}, "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="],
 
     "finalhandler/debug/ms": ["ms@2.0.0", "", {}, "sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A=="],
 

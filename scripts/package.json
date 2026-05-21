@@ -5,7 +5,7 @@
   "description": "A bunch of scripts to automate things and maintain the monorepo",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -18,7 +18,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@evadev/effect-helpers": "workspace:*",
+    "@evadev/effect-helpers": "workspace:^",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "effect-errors": "catalog:",

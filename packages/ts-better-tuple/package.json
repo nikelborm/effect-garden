@@ -5,7 +5,7 @@
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "ts-patch": "catalog:"
   },
   "dependencies": {

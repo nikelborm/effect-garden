@@ -6,7 +6,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -25,19 +25,19 @@
     "@base-ui/react": "catalog:",
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
-    "@evadev/effect-helpers": "workspace:*",
+    "@evadev/effect-helpers": "workspace:^",
     "@fp-ts/optic": "catalog:",
     "@serwist/next": "catalog:",
     "@wyw-in-js/babel-preset": "catalog:",
-    "effect-web-audio": "workspace:*",
-    "effect-web-midi": "workspace:*",
+    "effect-web-audio": "workspace:^",
+    "effect-web-midi": "workspace:^",
     "next": "catalog:",
     "next-yak": "catalog:",
     "postcss-styled-syntax": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "serwist": "catalog:",
-    "ts-key-not-enum": "workspace:*"
+    "ts-key-not-enum": "workspace:^"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/next-midi-demo#readme",
   "bugs": {

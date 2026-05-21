@@ -31,7 +31,7 @@ vars. Install it.
    2. [effect-web-midi](./packages/effect-web-midi)
    3. [joiners](./packages/joiners)
    4. [effect-btrfs](./packages/effect-btrfs)
-   5. [git-dlp](./packages/git-dlp)
+   5. [gitdl](./packages/gitdl)
    6. [effect-zstd](./packages/effect-zstd)
    7. [effect-helpers](./packages/effect-helpers)
    8. [apache-superset-init](./packages/apache-superset-init)

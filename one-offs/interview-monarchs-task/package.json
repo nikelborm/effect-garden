@@ -5,7 +5,7 @@
   "description": "I've been friends with one girl. She turned out to be a piece of shit. We're no longer friends. This repo is the result of my attempt to help her pass the interview and get a job, when I was thinking she's an adequate human being and were willing to do anything for her.",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

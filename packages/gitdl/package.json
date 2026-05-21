@@ -1,12 +1,12 @@
 {
-  "name": "git-dlp",
+  "name": "gitdl",
   "type": "module",
-  "version": "0.2.1",
+  "version": "0.2.5",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@rollup/plugin-commonjs": "catalog:",
     "@rollup/plugin-json": "catalog:",
     "@rollup/plugin-node-resolve": "catalog:",
@@ -26,7 +26,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@evadev/effect-helpers": "workspace:*",
+    "@evadev/effect-helpers": "workspace:^",
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
     "@octokit/types": "catalog:",
@@ -37,7 +37,7 @@
     "tar-fs": "catalog:",
     "tsafe": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/git-dlp#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/gitdl#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -59,7 +59,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/git-dlp"
+    "directory": "packages/gitdl"
   },
   "scripts": {
     "build": "./scripts/build.sh",
@@ -68,7 +68,7 @@
     "docs": "./scripts/generate_docs.sh",
     "print-important-ts-files": "find . -type f -name '*.ts' |grep -vE '^./(node_modules|tmp|dist|(vite\\.config|.*\\.spec|scratchpad)\\.ts)'",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
-    "start": "node --env-file=.env ./git-dlp.ts",
+    "start": "node --env-file=.env ./gitdl.ts",
     "test": "vitest --typecheck --watch",
     "test-jsr": "tspc && jsr publish --dry-run",
     "test-once": "vitest --run",
@@ -120,8 +120,14 @@
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "bin": {
-    "gdl": "dist/git-dlp.js",
-    "git-dlp": "dist/git-dlp.js"
+    "dgit": "dist/gitdl.js",
+    "dl-git": "dist/gitdl.js",
+    "dlgit": "dist/gitdl.js",
+    "gdl": "dist/gitdl.js",
+    "git-dl": "dist/gitdl.js",
+    "git-dlp": "dist/gitdl.js",
+    "gitd": "dist/gitdl.js",
+    "gitdl": "dist/gitdl.js"
   },
   "files": [
     "dist",

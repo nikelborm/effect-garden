@@ -5,7 +5,7 @@ import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
-} from 'git-dlp'
+} from 'gitdl'
 
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as CLICommand from '@effect/cli/Command'
@@ -20,7 +20,7 @@ import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 
 import pkg from './package.json' with { type: 'json' }
-import { createApacheSupersetFolder } from './src/createApacheSupersetFolder'
+import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
 
 const appCommand = CLICommand.make(
   pkg.name,

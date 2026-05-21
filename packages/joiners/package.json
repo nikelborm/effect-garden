@@ -5,7 +5,7 @@
   "description": "Join 2 or more iterables as if it's SQL joins but with the level of type-safety you didn't know you need",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@stryker-mutator/vitest-runner": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "@vitest/coverage-v8": "catalog:",

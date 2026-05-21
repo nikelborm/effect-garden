@@ -7,7 +7,7 @@
     "@effect/language-service": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@evadev/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:^",
     "@microsoft/tsdoc": "catalog:",
     "@types/bun": "catalog:",
     "@types/unist": "catalog:",
