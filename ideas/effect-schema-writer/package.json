@@ -14,7 +14,7 @@
     "@effect/ai-google": "catalog:",
     "effect": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-schema-writer#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/ideas/effect-schema-writer#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -22,7 +22,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/effect-schema-writer"
+    "directory": "ideas/effect-schema-writer"
   },
   "scripts": {
     "build": "tspc",

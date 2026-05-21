@@ -10,7 +10,7 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-landscape#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/ideas/effect-landscape#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -18,7 +18,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/effect-landscape"
+    "directory": "ideas/effect-landscape"
   },
   "author": {
     "name": "nikelborm",

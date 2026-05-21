@@ -27,7 +27,7 @@ import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
 import {
-  playgroundPackageDirPath,
+  playgroundDirPath,
   projectRootAbsolutePath,
   rootPackageJsonPath,
 } from './lib/paths.ts'
@@ -57,7 +57,10 @@ export const RootPackageJsonFromStringSchema = Schema.parseJson(
       catalog: deps,
       devDependencies: AbsentProperty,
       workspaces: Schema.NonEmptyArray(
-        Schema.TemplateLiteralParser(Schema.NonEmptyTrimmedString, '/*'),
+        Schema.Union(
+          Schema.TemplateLiteralParser(Schema.NonEmptyTrimmedString, '/*'),
+          Schema.NonEmptyTrimmedString,
+        ),
       ),
     },
     { key: Schema.String, value: Schema.Unknown },
@@ -98,10 +101,7 @@ export const SubPackageJsonSchema = Schema.Struct(
     catalog: AbsentProperty,
     dependencies: deps.pipe(OptionalProperty),
     homepage: Schema.TemplateLiteralParser(
-      httpsRepoLink,
-      `/tree/main/`,
-      Schema.NonEmptyTrimmedString,
-      `/`,
+      `${httpsRepoLink}/tree/main/`,
       Schema.NonEmptyTrimmedString,
       `#readme`,
     ),
@@ -115,11 +115,7 @@ export const SubPackageJsonSchema = Schema.Struct(
     repository: Schema.Struct({
       type: Schema.Literal('git'),
       url: Schema.Literal(gitSshUrl),
-      directory: Schema.TemplateLiteralParser(
-        Schema.NonEmptyTrimmedString,
-        '/',
-        Schema.NonEmptyTrimmedString,
-      ),
+      directory: Schema.NonEmptyTrimmedString,
     }),
     scripts: NonEmptyRecord(
       Schema.NonEmptyTrimmedString,
@@ -171,11 +167,22 @@ export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
 )
 
 export const MyMonorepoPackagePathsSchema = Schema.Struct({
-  workspaceDirName: Schema.NonEmptyTrimmedString,
   packageDirName: Schema.NonEmptyTrimmedString,
-  absoluteWorkspaceDirPath: Schema.NonEmptyTrimmedString,
   absolutePackageDirPath: Schema.NonEmptyTrimmedString,
-}).pipe(Schema.NonEmptyArray)
+}).pipe(
+  schema =>
+    Schema.Union(
+      Schema.extend(
+        schema,
+        Schema.Struct({
+          workspaceDirName: Schema.NonEmptyTrimmedString,
+          absoluteWorkspaceDirPath: Schema.NonEmptyTrimmedString,
+        }),
+      ),
+      schema,
+    ),
+  Schema.NonEmptyArray,
+)
 
 export type MyMonorepoPackagePaths =
   (typeof MyMonorepoPackagePathsSchema)['Type']
@@ -185,7 +192,16 @@ export type MyMonorepoPackagePathBundle = MyMonorepoPackagePaths[number]
 export const myMonorepoPackagePathsEffect = pipe(
   Effect.all([FileSystem.FileSystem, Path.Path, rootPackageJsonEffect]),
   Effect.flatMap(([fs, path, rootPackage]) =>
-    Effect.forEach(rootPackage.workspaces, ([workspaceDirName]) => {
+    Effect.forEach(rootPackage.workspaces, pattern => {
+      if (typeof pattern === 'string')
+        return Effect.succeed([
+          {
+            packageDirName: pattern,
+            absolutePackageDirPath: path.join(projectRootAbsolutePath, pattern),
+          },
+        ])
+
+      const [workspaceDirName] = pattern
       const absoluteWorkspaceDirPath = path.join(
         projectRootAbsolutePath,
         workspaceDirName,
@@ -215,14 +231,13 @@ export const myMonorepoPackagePathsEffect = pipe(
 export class WrongHardcodedPathInPackageJson extends Schema.TaggedError<WrongHardcodedPathInPackageJson>()(
   'WrongHardcodedPathInPackageJson',
   {
-    what: Schema.NonEmptyTrimmedString,
     where: Schema.NonEmptyTrimmedString,
     expected: Schema.Unknown,
     actual: Schema.Unknown,
   },
 ) {
   override get message(): string {
-    return `Wrong ${this.what} in package's ${this.where}. Expected ${this.expected}, actual ${this.actual}`
+    return `Wrong path in package's ${this.where}. Expected ${this.expected}, actual ${this.actual}`
   }
 }
 
@@ -244,43 +259,27 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
     )
 
     yield* Effect.annotateCurrentSpan({
-      homepageSegments:
-        pkg.homepage.slice(0, -1).join('') + pkg.homepage.at(-1),
-      repositoryDirectorySegments: path.join(...pkg.repository.directory),
+      homepageSegments: pkg.homepage.join(''),
+      repositoryDirectorySegments: pkg.repository.directory,
     })
 
-    const validate = (
-      ...args: ConstructorParameters<typeof WrongHardcodedPathInPackageJson>
-    ) =>
-      args[0].actual === args[0].expected
-        ? Effect.void
-        : new WrongHardcodedPathInPackageJson(args[0])
+    const packagePathRelativeFromRoot =
+      ('workspaceDirName' in pathes ? pathes.workspaceDirName + '/' : '') +
+      pathes.packageDirName
 
-    yield* validate({
-      what: 'workspace',
-      where: 'homepage',
-      expected: pathes.workspaceDirName,
-      actual: pkg.homepage[2],
-    })
-    yield* validate({
-      what: 'package dir name',
-      where: 'homepage',
-      expected: pathes.packageDirName,
-      actual: pkg.homepage[4],
-    })
+    if (pkg.homepage[1] !== packagePathRelativeFromRoot)
+      return yield* new WrongHardcodedPathInPackageJson({
+        where: 'homepage',
+        expected: packagePathRelativeFromRoot,
+        actual: pkg.homepage[1],
+      })
 
-    yield* validate({
-      what: 'workspace',
-      where: 'repository section',
-      expected: pathes.workspaceDirName,
-      actual: pkg.repository.directory[0],
-    })
-    yield* validate({
-      what: 'package dir name',
-      where: 'repository section',
-      expected: pathes.packageDirName,
-      actual: pkg.repository.directory[2],
-    })
+    if (pkg.repository.directory !== packagePathRelativeFromRoot)
+      return yield* new WrongHardcodedPathInPackageJson({
+        where: 'repository section',
+        expected: packagePathRelativeFromRoot,
+        actual: pkg.repository.directory,
+      })
 
     return {
       pkg,
@@ -753,7 +752,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
 
   yield* observableExec({
     cmd: ['bun', 'add', '--dev', ...depsToInstall],
-    cwd: playgroundPackageDirPath,
+    cwd: playgroundDirPath,
     badExitCodeErrorMessage: 'Failed to install dependencies in playground',
   })
 }).pipe(Effect.withSpan('addAllDepsToPlayground'))

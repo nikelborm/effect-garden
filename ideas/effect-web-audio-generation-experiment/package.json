@@ -18,7 +18,7 @@
     "@webref/idl": "catalog:",
     "effect-web-audio": "workspace:*"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio-generation-experiment#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/ideas/effect-web-audio-generation-experiment#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -26,7 +26,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/effect-web-audio-generation-experiment"
+    "directory": "ideas/effect-web-audio-generation-experiment"
   },
   "scripts": {
     "build": "tspc",
