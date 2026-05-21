@@ -5,7 +5,7 @@ import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { generateRandomPassword } from './generateRandomPassword.ts'
+import { generateRandomPassword } from './generateRandomPassword.js'
 
 export const updateJwtSecretInSupersetWebsocketConfig = Effect.fn(
   'updateJwtSecretInSupersetWebsocketConfig',

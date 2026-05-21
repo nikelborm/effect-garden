@@ -1,5 +1,5 @@
 {
-  "name": "@evadev/git-dl",
+  "name": "git-dl",
   "type": "module",
   "version": "0.1.28",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",

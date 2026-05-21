@@ -6,7 +6,11 @@ import {
 
 export default defineConfig({
   test: {
-    exclude: [...defaultExclude, 'tmp/**'],
+    exclude: [
+      ...defaultExclude,
+      '**/{.github,.stryker-tmp,.vscode,dist,gh-page,node_modules,reports,scripts,tmp}/**',
+      '**/*{helper,types,tstyche}.spec[.][jt]s',
+    ],
     coverage: {
       enabled: true,
       provider: 'v8',

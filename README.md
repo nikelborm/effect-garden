@@ -34,7 +34,7 @@ vars. Install it.
    5. [git-dl](./packages/git-dl)
    6. [effect-zstd](./packages/effect-zstd)
    7. [effect-helpers](./packages/effect-helpers)
-   8. [apache-superset-quick-init](./packages/apache-superset-quick-init)
+   8. [apache-superset-init](./packages/apache-superset-init)
    9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back)
    10. [tsconfig](./packages/tsconfig)
    11. [ts-key-not-enum](./packages/ts-key-not-enum)

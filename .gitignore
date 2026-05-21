@@ -5,7 +5,7 @@ _
 .vscode/settings.json
 .next
 next-env.d.ts
-apache-superset-quick-init*.tgz
+apache-superset-init*.tgz
 backend_secrets.py
 backend-nestjs
 better_auth_secret

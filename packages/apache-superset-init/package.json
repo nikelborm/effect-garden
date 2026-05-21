@@ -1,7 +1,7 @@
 {
-  "name": "@evadev/apache-superset-quick-init",
+  "name": "apache-superset-init",
   "type": "module",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Quickly download files needed to run Apache Superset deployment in docker and preconfigure them for production",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -29,14 +29,14 @@
   },
   "dependencies": {
     "@evadev/effect-helpers": "workspace:*",
-    "@evadev/git-dl": "workspace:*",
     "@octokit/core": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "effect-errors": "catalog:",
+    "git-dl": "workspace:*",
     "outdent": "catalog:",
     "yaml": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/apache-superset-quick-init#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/apache-superset-init#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -63,7 +63,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/apache-superset-quick-init"
+    "directory": "packages/apache-superset-init"
   },
   "scripts": {
     "build": "./scripts/build.sh",
@@ -71,7 +71,7 @@
     "doc": "./scripts/generate_docs.sh",
     "docs": "./scripts/generate_docs.sh",
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
-    "start": "node --env-file=.env ./apache-superset-quick-init.ts",
+    "start": "node --env-file=.env ./apache-superset-init.ts",
     "test": "vitest --watch",
     "test-jsr": "tspc && jsr publish --dry-run",
     "test-once": "vitest --run",
@@ -121,8 +121,8 @@
   "module": "./dist/src/index.js",
   "types": "./dist-types/src/index.d.ts",
   "bin": {
-    "apache-superset-quick-init": "dist/apache-superset-quick-init.js",
-    "asqi": "dist/apache-superset-quick-init.js"
+    "apache-superset-init": "dist/apache-superset-init.js",
+    "asqi": "dist/apache-superset-init.js"
   },
   "files": [
     "dist",

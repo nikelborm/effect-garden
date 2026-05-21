@@ -4,7 +4,7 @@ import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
 
-import { generateRandomPassword } from './generateRandomPassword.ts'
+import { generateRandomPassword } from './generateRandomPassword.js'
 
 export const updateEnvFile = Effect.fn('updateEnvFile')(function* (
   basePath: string,

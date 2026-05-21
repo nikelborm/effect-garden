@@ -60,6 +60,8 @@ try {
 
 await cleanTree(projectRootAbsolutePath)
 
+// TODO: should also add pwd, otherwise it calls install it in the current
+// directory, instead of root
 await passthroughSpawn(
   'bun',
   'install',

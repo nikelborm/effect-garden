@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-  "name": "@evadev/apache-superset-quick-init",
+  "name": "@evadev/apache-superset-init",
   "version": "0.1.5",
   "license": "MIT",
   "exports": {
@@ -11,7 +11,7 @@
   "publish": {
     "include": [
       "template.env",
-      "apache-superset-quick-init.ts",
+      "apache-superset-init.ts",
       "src/**/*.ts",
       "README.md",
       "LICENSE"

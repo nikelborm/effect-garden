@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { prettyPrint } from 'effect-errors'
 import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
-} from '@evadev/git-dl'
-import { prettyPrint } from 'effect-errors'
+} from 'git-dl'
 
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as CLICommand from '@effect/cli/Command'
@@ -20,7 +20,7 @@ import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 
 import pkg from './package.json' with { type: 'json' }
-import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
+import { createApacheSupersetFolder } from './src/createApacheSupersetFolder'
 
 const appCommand = CLICommand.make(
   pkg.name,

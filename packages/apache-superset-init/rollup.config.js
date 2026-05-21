@@ -5,7 +5,7 @@ import terser from '@rollup/plugin-terser'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 export default {
-  input: 'dist/apache-superset-quick-init.js',
+  input: 'dist/apache-superset-init.js',
   output: {
     dir: 'dist/minified',
     format: 'es',
