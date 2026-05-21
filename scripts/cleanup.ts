@@ -62,13 +62,13 @@ await cleanTree(projectRootAbsolutePath)
 
 // TODO: should also add pwd, otherwise it calls install it in the current
 // directory, instead of root
-await passthroughSpawn(
-  'bun',
-  'install',
-  // '--prefer-offline',
-  // '--frozen-lockfile',
-)
+// await passthroughSpawn(
+//   'bun',
+//   'install',
+//   // '--prefer-offline',
+//   // '--frozen-lockfile',
+// )
 
-await passthroughSpawn('bun', 'turbo', 'boundaries')
+// await passthroughSpawn('bun', 'turbo', 'boundaries')
 
-await passthroughSpawn('bun', 'run', 'build')
+// await passthroughSpawn('bun', 'run', 'build')
