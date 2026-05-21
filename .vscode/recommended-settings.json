@@ -1,7 +1,9 @@
 {
   "json.schemas": [
     {
-      "fileMatch": ["*.tsconfig.json"],
+      "fileMatch": [
+        "*.tsconfig.json"
+      ],
       "url": "https://json.schemastore.org/tsconfig"
     }
   ],
@@ -22,7 +24,6 @@
     "TMIDI",
     "trellisform",
     "tspc",
-    "valltest",
     "VNAs",
     "Voidify",
     "yandexgpt",

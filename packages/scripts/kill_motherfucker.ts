@@ -84,8 +84,7 @@ Effect.gen(function* () {
       console.log(`│  Threads: ${threads}`)
       console.log(`│  VmRSS:   ${vmRss}`)
       console.log(`│  Command: ${args.join(' ')}`)
-      console.log(`│  Env (${envVars.length} vars):`)
-      for (const v of envVars) console.log(`│    ${v}`)
+      console.log(`│  Env (${envVars.length} vars)`)
       console.log('└' + '─'.repeat(59))
     }
 
