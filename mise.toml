@@ -16,6 +16,6 @@ COMPOSE_DOCKER_CLI_BUILD = 1
 [env.'_']
 path = [
   './node_modules/.bin',
-  './packages/scripts'
+  './scripts'
 ]
-source = "./packages/scripts/setup_sh_vars.sh"
+source = "./scripts/setup_sh_vars.sh"

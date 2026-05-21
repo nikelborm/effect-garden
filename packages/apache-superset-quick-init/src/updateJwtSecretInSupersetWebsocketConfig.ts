@@ -10,19 +10,17 @@ import { generateRandomPassword } from './generateRandomPassword.ts'
 export const updateJwtSecretInSupersetWebsocketConfig = Effect.fn(
   'updateJwtSecretInSupersetWebsocketConfig',
 )(function* (basePath: string) {
-  const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
+  const [fs, path] = yield* allFast([FileSystem.FileSystem, Path.Path])
 
-  const supersetWebsocketConfigPath = path.join(
-    basePath,
-    'docker',
-    'superset-websocket',
-    'config.json',
-  )
+  const websocketDirPath = path.join(basePath, 'docker', 'superset-websocket')
+
+  const exampleFilePath = path.join(websocketDirPath, 'config.example.json')
 
   const { configFileParsed, jwtSecret } = yield* allFast({
-    configFileParsed: fs
-      .readFileString(supersetWebsocketConfigPath, 'utf8')
-      .pipe(Effect.flatMap(decodeSupersetWebsocketConfig)),
+    configFileParsed: Effect.flatMap(
+      fs.readFileString(exampleFilePath, 'utf8'),
+      decodeSupersetWebsocketConfig,
+    ),
     jwtSecret: generateRandomPassword,
   })
 
@@ -31,9 +29,9 @@ export const updateJwtSecretInSupersetWebsocketConfig = Effect.fn(
     jwtSecret,
   })
 
-  yield* fs.writeFileString(supersetWebsocketConfigPath, config, {
-    mode: 0o600,
-  })
+  const websocketConfigPath = path.join(websocketDirPath, 'config.json')
+
+  yield* fs.writeFileString(websocketConfigPath, config, { mode: 0o600 })
 })
 
 const SupersetWebsocketConfigSchema = Schema.parseJson(

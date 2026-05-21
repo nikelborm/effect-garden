@@ -5,6 +5,7 @@ import { readdir, rm, stat } from 'node:fs/promises'
 import { basename, join } from 'node:path'
 
 import { passthroughSpawn } from './lib/passthroughSpawn.ts'
+import { projectRootAbsolutePath, scriptsPackageDirPath } from './lib/paths.ts'
 
 // TODO: add options to enable/disable node_modules, .lock and turbo stuff
 // dynamically, and don't forget about changing --frozen-lockfile below
@@ -41,25 +42,23 @@ const cleanTree = async (dirPath: string): Promise<void> => {
   )
 }
 
-const rootDir = join(import.meta.dirname, '..', '..')
+console.log('Project root dir: ', projectRootAbsolutePath)
 
-console.log('Project root dir: ', rootDir)
-
-if (rootDir === '/')
+if (projectRootAbsolutePath === '/')
   throw new Error(
     "WTF??? The script assumes it's deleting files from a project root folder, but somehow we reached FS root.",
   )
 
-if (!existsSync(join(rootDir, '.git')))
+if (!existsSync(join(projectRootAbsolutePath, '.git')))
   throw new Error(
     "WTF??? The script assumes it's deleting files from a project root folder, but there's no .git folder in it.",
   )
 
 try {
-  await import(join(import.meta.dirname, './stop_dev_compose.ts'))
+  await import(join(scriptsPackageDirPath, './stop_dev_compose.ts'))
 } catch (_) {}
 
-await cleanTree(rootDir)
+await cleanTree(projectRootAbsolutePath)
 
 await passthroughSpawn(
   'bun',
@@ -70,4 +69,4 @@ await passthroughSpawn(
 
 await passthroughSpawn('bun', 'turbo', 'boundaries')
 
-await passthroughSpawn('bun', 'run', 'build')
+// await passthroughSpawn('bun', 'run', 'build')

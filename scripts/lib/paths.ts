@@ -1,9 +1,11 @@
 import { join, relative } from 'node:path'
 
 export const scriptsPackageDirPath = join(import.meta.dirname, '..')
-export const packagesDirPath = join(scriptsPackageDirPath, '..')
-export const projectRootAbsolutePath = join(packagesDirPath, '..')
+
+export const projectRootAbsolutePath = join(scriptsPackageDirPath, '..')
+export const packagesDirPath = join(projectRootAbsolutePath, 'packages')
 export const oneOffsDirPath = join(projectRootAbsolutePath, 'one-offs')
+export const playgroundDirPath = join(projectRootAbsolutePath, 'playground')
 
 export const makeRelativeAgainstProjectRoot = (path: string) =>
   relative(projectRootAbsolutePath, path)
@@ -16,9 +18,8 @@ export const dockerizePath = (path: string) =>
 export const projectTurboDirPath = join(projectRootAbsolutePath, '.turbo')
 
 export const projectTurboCacheDirPath = join(projectTurboDirPath, 'cache')
-export const playgroundPackageDirPath = join(oneOffsDirPath, 'playground')
 
-// TODO: these pathes should not be hardcoded as databases, migrations,
+// TODO: these paths should not be hardcoded as databases, migrations,
 // deployment and docker files can all appear more than once for different
 // subbprojects
 export const envDirAbsolutePath = join(projectRootAbsolutePath, 'env')

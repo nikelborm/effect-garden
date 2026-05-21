@@ -135,7 +135,7 @@
     "ytmusic-api": "catalog:",
     "zod": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/playground#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/playground#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -143,7 +143,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "one-offs/playground"
+    "directory": "playground"
   },
   "author": {
     "name": "nikelborm",

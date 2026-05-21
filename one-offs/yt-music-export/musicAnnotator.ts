@@ -19,7 +19,7 @@ const content = JSON.parse(
 )
 
 const file = File.createFromPath(
-  path.join('/nikel_big_downloads/yt-music/', tracksBase[0]!.filename),
+  path.join('/big_media/yt-music/', tracksBase[0]!.filename),
 )
 console.log(file.properties)
 file.tag
