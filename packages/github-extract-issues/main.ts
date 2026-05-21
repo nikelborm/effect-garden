@@ -28,7 +28,7 @@ import * as Struct from 'effect/Struct'
 // everything, and who waits for newline
 
 class MarkdownStdoutPrinter extends Context.Tag(
-  '@nikelborm/github-extract-issues/index/MarkdownStdoutPrinter',
+  '@evadev/github-extract-issues/index/MarkdownStdoutPrinter',
 )<MarkdownStdoutPrinter, (mdContent: string) => Effect.Effect<void>>() {
   static layerFromCmdToPipeMdThrough = (
     ...command: EArray.NonEmptyArray<string>

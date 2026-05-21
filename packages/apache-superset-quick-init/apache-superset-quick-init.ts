@@ -4,7 +4,7 @@ import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
-} from '@nikelborm/git-dl'
+} from '@evadev/git-dl'
 import { prettyPrint } from 'effect-errors'
 
 import * as CliConfig from '@effect/cli/CliConfig'

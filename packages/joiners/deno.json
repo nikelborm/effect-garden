@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-  "name": "@nikelborm/joiners",
+  "name": "@evadev/joiners",
   "version": "0.1.0",
   "license": "MIT",
   "exports": {

@@ -1,11 +1,17 @@
 {
-  "extends": "@nikelborm/tsconfig",
+  "extends": "@evadev/tsconfig",
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
+    "types": [
+      "bun"
+    ],
     "rootDir": "./"
   },
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "ace"
+  ],
   "exclude": [
     ".github",
     ".stryker-tmp",

@@ -1,11 +1,11 @@
 {
-  "name": "@nikelborm/apache-superset-quick-init",
+  "name": "@evadev/apache-superset-quick-init",
   "type": "module",
   "version": "0.1.5",
   "description": "Quickly download files needed to run Apache Superset deployment in docker and preconfigure them for production",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -28,8 +28,8 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@nikelborm/effect-helpers": "workspace:*",
-    "@nikelborm/git-dl": "workspace:*",
+    "@evadev/effect-helpers": "workspace:*",
+    "@evadev/git-dl": "workspace:*",
     "@octokit/core": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "effect-errors": "catalog:",

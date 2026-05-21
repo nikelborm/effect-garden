@@ -56,7 +56,7 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
     //   );
     // }
 
-    // The piece of code below, which I (@nikelborm) wrote, I believe will
+    // The piece of code below, which I (@evadev) wrote, I believe will
     // generate more hash-stable package.json files. But if it will trigger
     // --frozen-lockfile of bun, I'm open to change it back to commented piece
     // above. Before changing it back, don't forget to just try `bun install` in

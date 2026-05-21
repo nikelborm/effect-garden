@@ -1,4 +1,4 @@
-import { allFast } from '@nikelborm/effect-helpers'
+import { allFast } from '@evadev/effect-helpers'
 
 import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'

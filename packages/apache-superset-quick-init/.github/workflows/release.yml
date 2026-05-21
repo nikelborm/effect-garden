@@ -73,7 +73,7 @@ jobs:
         run: npx jsr publish
 
       - name: "Prepare package.json for publishing to GitHub's NPM registry"
-        run: jq '.name = "@nikelborm/" + .name' package.json > _ && mv _ package.json
+        run: jq '.name = "@evadev/" + .name' package.json > _ && mv _ package.json
 
       - name: "Publish to GitHub's NPM registry"
         run: |

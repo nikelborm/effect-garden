@@ -1,4 +1,4 @@
-import { allFast } from '@nikelborm/effect-helpers'
+import { allFast } from '@evadev/effect-helpers'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'
@@ -43,5 +43,9 @@ const SupersetWebsocketConfigSchema = Schema.parseJson(
   }),
 )
 
-const decodeSupersetWebsocketConfig = Schema.decode(SupersetWebsocketConfigSchema)
-const encodeSupersetWebsocketConfig = Schema.encode(SupersetWebsocketConfigSchema)
+const decodeSupersetWebsocketConfig = Schema.decode(
+  SupersetWebsocketConfigSchema,
+)
+const encodeSupersetWebsocketConfig = Schema.encode(
+  SupersetWebsocketConfigSchema,
+)

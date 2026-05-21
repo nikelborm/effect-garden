@@ -169,7 +169,7 @@ set -eux
 
 # node ./node_modules/@better-auth/cli/dist/index.mjs migrate -y
 
-turbo run build --filter=\!@nikelborm/frontend --filter=\!@nikelborm/backend --only --continue=always --color
+turbo run build --filter=\!@evadev/frontend --filter=\!@evadev/backend --only --continue=always --color
 
 
 

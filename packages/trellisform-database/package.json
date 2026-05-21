@@ -5,7 +5,7 @@
   "description": "Now it's just a showcase of effect-drizzle-helpers's capabilities. Previously were a promising startup",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -18,7 +18,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@nikelborm/effect-drizzle-helpers": "workspace:*",
+    "@evadev/effect-drizzle-helpers": "workspace:*",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:"

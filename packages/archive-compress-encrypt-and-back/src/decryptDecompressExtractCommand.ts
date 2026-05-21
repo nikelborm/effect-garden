@@ -8,7 +8,6 @@ import * as FileSystem from '@effect/platform/FileSystem'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 
-import { GPG_RECIPIENT } from './gpgRecipientConfig.ts'
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
 
 // TODO: add brands reflecting these are files/directories, they exist/dont,
@@ -83,15 +82,7 @@ export const decryptDecompressExtractCommand = CliCommand.make(
 
     // NOTE: `zstd --decompress` replaced by tar's `--zstd` flag
     const aceUndoCommand = PlatformCommand.pipeTo(
-      PlatformCommand.make(
-        'gpg',
-        '--decrypt',
-        '--recipient',
-        yield* GPG_RECIPIENT,
-        '--output',
-        '-',
-        sourceFilePath,
-      ),
+      PlatformCommand.make('gpg', '--decrypt', '--output', '-', sourceFilePath),
       PlatformCommand.make(
         'tar',
         '--zstd',

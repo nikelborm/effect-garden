@@ -1,7 +1,4 @@
-import {
-  BadExitCodeError,
-  ParseErrorSchema
-} from '@nikelborm/effect-helpers'
+import { BadExitCodeError, ParseErrorSchema } from '@evadev/effect-helpers'
 
 import { PlatformError } from '@effect/platform/Error'
 import * as Schema from 'effect/Schema'

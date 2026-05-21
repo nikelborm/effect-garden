@@ -64,7 +64,7 @@ const packageJson = (config: { name: string; description: string }) =>
     // TODO: Ask for package name and folder name separately
     homepage: `${httpsRepoLink}/tree/main/packages/${config.name}#readme`,
     devDependencies: {
-      '@nikelborm/tsconfig': 'workspace:*',
+      '@evadev/tsconfig': 'workspace:*',
       '@effect/language-service': 'catalog:',
       'ts-namespace-import': 'catalog:',
       'ts-patch': 'catalog:',
@@ -104,7 +104,7 @@ const packageJson = (config: { name: string; description: string }) =>
   }) as const satisfies SubPackageJson
 
 const tsconfigJson = {
-  extends: '@nikelborm/tsconfig',
+  extends: '@evadev/tsconfig',
   compilerOptions: {
     declarationDir: './dist-types',
     outDir: './dist',

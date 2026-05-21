@@ -1,11 +1,11 @@
 {
-  "name": "@nikelborm/ts-better-tuple",
+  "name": "@evadev/ts-better-tuple",
   "type": "module",
   "version": "0.1.0",
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "ts-patch": "catalog:"
   },
   "dependencies": {

@@ -7,7 +7,7 @@
     "@effect/language-service": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "@types/vscode": "catalog:",
     "@vscode/vsce": "catalog:",

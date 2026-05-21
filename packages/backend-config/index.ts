@@ -57,9 +57,10 @@ const allowedEnvTypeLiterals = [
 
 const EnvTypeConfig = Config.literal(...allowedEnvTypeLiterals)
 
-export class EnvType extends Effect.Tag(
-  '@nikelborm/backend-config/index/EnvType',
-)<EnvType, 'development' | 'production'>() {
+export class EnvType extends Effect.Tag('@evadev/backend-config/index/EnvType')<
+  EnvType,
+  'development' | 'production'
+>() {
   static Live = EnvTypeConfig('NODE_ENV').pipe(
     ifConfigAbsentFallbackTo(EnvTypeConfig('ENV')),
     Effect.map(v =>
@@ -73,7 +74,7 @@ export class EnvType extends Effect.Tag(
 ////////////////////////////////////////////////////////////////////////////////
 
 export class BackendPort extends Effect.Tag(
-  '@nikelborm/backend-config/index/BackendPort',
+  '@evadev/backend-config/index/BackendPort',
 )<BackendPort, number>() {
   static Live = Config.port('BACKEND_PORT').pipe(
     ifConfigAbsentFallbackTo(Config.port('PORT')),
@@ -86,7 +87,7 @@ export class BackendPort extends Effect.Tag(
 ////////////////////////////////////////////////////////////////////////////////
 
 export class BackendExternallyAvailableAtURL extends Context.Tag(
-  '@nikelborm/backend-config/index/BackendExternallyAvailableAtURL',
+  '@evadev/backend-config/index/BackendExternallyAvailableAtURL',
 )<BackendExternallyAvailableAtURL, URL>() {
   static Live = pipe(
     Config.url('EXTERNALLY_AVAILABLE_AT_URL'),
@@ -109,7 +110,7 @@ export class BackendExternallyAvailableAtURL extends Context.Tag(
 ////////////////////////////////////////////////////////////////////////////////
 
 export class OpenTelemetryProcessingURL extends Context.Tag(
-  '@nikelborm/backend-config/index/OpenTelemetryProcessingURL',
+  '@evadev/backend-config/index/OpenTelemetryProcessingURL',
 )<OpenTelemetryProcessingURL, Option.Option<URL>>() {
   static Live = Config.url('OTLP_URL').pipe(
     Config.option,
@@ -123,7 +124,7 @@ export class OpenTelemetryProcessingURL extends Context.Tag(
 ////////////////////////////////////////////////////////////////////////////////
 
 export class BetterAuthSecret extends Effect.Service<BetterAuthSecret>()(
-  '@nikelborm/backend-config/index/BetterAuthSecret',
+  '@evadev/backend-config/index/BetterAuthSecret',
   {
     dependencies: [EnvType.Live],
     effect: Effect.gen(function* () {
@@ -156,7 +157,7 @@ const ConfigStringWithMinLength2 = (name: string) =>
   Schema.Config(name, Schema.String.pipe(Schema.minLength(2)))
 
 export class DbConfig extends Effect.Service<DbConfig>()(
-  '@nikelborm/backend-config/index/DbConfig',
+  '@evadev/backend-config/index/DbConfig',
   {
     effect: Config.all({
       host: ConfigStringWithMinLength2('DATABASE_HOST'),

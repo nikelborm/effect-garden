@@ -5,9 +5,9 @@
 [![NPM downloads](https://img.shields.io/npm/dm/joiners.svg?style=flat)](https://npmjs.org/package/joiners)
 [![NPM Last Update](https://img.shields.io/npm/last-update/joiners)](https://npmjs.org/package/joiners)
 [![package.json Dependents count](https://badgen.net/npm/dependents/joiners)](https://www.npmjs.com/package/joiners?activeTab=dependents)
-[![JSR package version](https://jsr.io/badges/@nikelborm/joiners)](https://jsr.io/@nikelborm/joiners)
-[![JSR package Score](https://jsr.io/badges/@nikelborm/joiners/score)](https://jsr.io/@nikelborm/joiners)
-[![JSR package owner](https://jsr.io/badges/@nikelborm)](https://jsr.io/@nikelborm)
+[![JSR package version](https://jsr.io/badges/@evadev/joiners)](https://jsr.io/@evadev/joiners)
+[![JSR package Score](https://jsr.io/badges/@evadev/joiners/score)](https://jsr.io/@evadev/joiners)
+[![JSR package owner](https://jsr.io/badges/@evadev)](https://jsr.io/@evadev)
 [![GitHub commits per month](https://img.shields.io/github/commit-activity/m/nikelborm/joiners)](https://github.com/nikelborm/joiners/pulse)
 [![GitHub Total commits Count](https://img.shields.io/github/commit-activity/t/nikelborm/joiners)](https://github.com/nikelborm/joiners/graphs/commit-activity)
 [![NPM License](https://img.shields.io/npm/l/joiners)](https://github.com/nikelborm/joiners?tab=MIT-1-ov-file)
@@ -65,12 +65,12 @@ npm i joiners
 <details>
 <summary>
 
-### Install package from [JSR](https://jsr.io/@nikelborm/joiners)
+### Install package from [JSR](https://jsr.io/@evadev/joiners)
 
 </summary>
 
 ```bash
-npx jsr add @nikelborm/joiners
+npx jsr add @evadev/joiners
 ```
 
 </details>
@@ -87,7 +87,7 @@ npx jsr add @nikelborm/joiners
    1. Run the following command (Info about `--auth-type=legacy` [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token)):
 
       ```bash
-      npm login --scope=@nikelborm --auth-type=legacy --registry=https://npm.pkg.github.com
+      npm login --scope=@evadev --auth-type=legacy --registry=https://npm.pkg.github.com
       ```
 
    2. Enter your username when asked
@@ -96,7 +96,7 @@ npx jsr add @nikelborm/joiners
 3. Install the package by executing:
 
    ```bash
-   npm i @nikelborm/joiners
+   npm i @evadev/joiners
    ```
 
 </details>
@@ -122,7 +122,7 @@ npm i https://github.com/nikelborm/joiners/releases/latest/download/joiners.tgz
 
 ```ts
 import { join, joinOnVennDiagramParts, getSpreadObjectMerger } from 'joiners';
-// or '@nikelborm/joiners' for non-default installation methods
+// or '@evadev/joiners' for non-default installation methods
 
 const brandA = Symbol('A');
 const brandB = Symbol('B');

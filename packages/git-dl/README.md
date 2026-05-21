@@ -5,9 +5,9 @@
 [![NPM downloads](https://img.shields.io/npm/dm/git-dl.svg?style=flat)](https://npmjs.org/package/git-dl)
 [![NPM Last Update](https://img.shields.io/npm/last-update/git-dl)](https://npmjs.org/package/git-dl)
 [![package.json Dependents count](https://badgen.net/npm/dependents/git-dl)](https://www.npmjs.com/package/git-dl?activeTab=dependents)
-[![JSR package version](https://jsr.io/badges/@nikelborm/git-dl)](https://jsr.io/@nikelborm/git-dl)
-[![JSR package Score](https://jsr.io/badges/@nikelborm/git-dl/score)](https://jsr.io/@nikelborm/git-dl)
-[![JSR package owner](https://jsr.io/badges/@nikelborm)](https://jsr.io/@nikelborm)
+[![JSR package version](https://jsr.io/badges/@evadev/git-dl)](https://jsr.io/@evadev/git-dl)
+[![JSR package Score](https://jsr.io/badges/@evadev/git-dl/score)](https://jsr.io/@evadev/git-dl)
+[![JSR package owner](https://jsr.io/badges/@evadev)](https://jsr.io/@evadev)
 [![GitHub commits per month](https://img.shields.io/github/commit-activity/m/nikelborm/git-dl)](https://github.com/nikelborm/git-dl/pulse)
 [![GitHub Total commits Count](https://img.shields.io/github/commit-activity/t/nikelborm/git-dl)](https://github.com/nikelborm/git-dl/graphs/commit-activity)
 [![NPM License](https://img.shields.io/npm/l/git-dl)](https://github.com/nikelborm/git-dl?tab=MIT-1-ov-file)
@@ -73,7 +73,7 @@ npm i git-dl
 <details>
 <summary>
 
-### Install package with only functions from [JSR](https://jsr.io/@nikelborm/git-dl)
+### Install package with only functions from [JSR](https://jsr.io/@evadev/git-dl)
 
 </summary>
 
@@ -82,7 +82,7 @@ only script library with functions that will allow you to fetch github folder
 from other scripts.
 
 ```bash
-npx jsr add @nikelborm/git-dl
+npx jsr add @evadev/git-dl
 ```
 
 </details>
@@ -98,7 +98,7 @@ npx jsr add @nikelborm/git-dl
    1. Run the following command (Info about `--auth-type=legacy` [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-with-a-personal-access-token)):
 
       ```bash
-      npm login --scope=@nikelborm --auth-type=legacy --registry=https://npm.pkg.github.com
+      npm login --scope=@evadev --auth-type=legacy --registry=https://npm.pkg.github.com
       ```
 
    2. Enter your username when asked
@@ -107,7 +107,7 @@ npx jsr add @nikelborm/git-dl
 3. Install the package by executing:
 
    ```bash
-   npm i @nikelborm/git-dl
+   npm i @evadev/git-dl
    ```
 
 </details>
@@ -185,7 +185,7 @@ import {
   repoOwnerCLIOptionBackedByEnv,
   // etc...
 } from 'git-dl';
-// or '@nikelborm/git-dl' for non-default installation methods
+// or '@evadev/git-dl' for non-default installation methods
 ```
 
 ### Execution of CLI installed with NPM

@@ -8,7 +8,7 @@ import {
   NonEmptyRecord,
   OptionalProperty,
   observableExec,
-} from '@nikelborm/effect-helpers'
+} from '@evadev/effect-helpers'
 import { prettyPrint } from 'effect-errors'
 import sortPackageJson from 'sort-package-json'
 
@@ -522,7 +522,7 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const tsconfigPkg = myMonorepoPackages.find(
-    pkg => pkg.pkg.name === '@nikelborm/tsconfig',
+    pkg => pkg.pkg.name === '@evadev/tsconfig',
   )
 
   if (!tsconfigPkg) return
@@ -530,7 +530,7 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
   const tsconfigDirectDeps = Object.entries(tsconfigPkg.pkg.dependencies ?? {})
 
   const otherPackages = myMonorepoPackages.filter(
-    pkg => pkg.pkg.name !== '@nikelborm/tsconfig',
+    pkg => pkg.pkg.name !== '@evadev/tsconfig',
   )
 
   yield* Effect.forEach(
@@ -545,8 +545,8 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
 
       const toInstall: string[] = []
 
-      if (devDeps['@nikelborm/tsconfig'] !== 'workspace:*')
-        toInstall.push('@nikelborm/tsconfig@workspace:*')
+      if (devDeps['@evadev/tsconfig'] !== 'workspace:*')
+        toInstall.push('@evadev/tsconfig@workspace:*')
 
       for (const [dep, version] of tsconfigDirectDeps)
         if (!pkg.allDependencies[dep]) toInstall.push(`${dep}@${version}`)
@@ -574,7 +574,7 @@ const shouldBePeerDep = (name: string) =>
 
 const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
   const packagesToModify = (yield* myMonorepoPackagesEffect)
-    .filter(pkg => pkg.pkg.name !== '@nikelborm/tsconfig')
+    .filter(pkg => pkg.pkg.name !== '@evadev/tsconfig')
     .filter(pkg =>
       Object.keys(pkg.pkg.dependencies ?? {}).some(shouldBePeerDep),
     )
@@ -648,7 +648,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   )
 
   const playground = myMonorepoPackages.find(
-    pkg => pkg.pkg.name === '@nikelborm/playground',
+    pkg => pkg.pkg.name === '@evadev/playground',
   )
   if (!playground) return yield* Effect.dieMessage('absurd')
 

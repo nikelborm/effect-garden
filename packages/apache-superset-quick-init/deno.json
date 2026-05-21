@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json",
-  "name": "@nikelborm/apache-superset-quick-init",
+  "name": "@evadev/apache-superset-quick-init",
   "version": "0.1.5",
   "license": "MIT",
   "exports": {

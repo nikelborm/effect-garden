@@ -1,11 +1,11 @@
 {
-  "name": "@nikelborm/github-extract-issues",
+  "name": "@evadev/github-extract-issues",
   "type": "module",
   "version": "0.1.0",
   "description": "Script to extract issues with comments from repo",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

@@ -1,4 +1,4 @@
-import { OptionalProperty } from '@nikelborm/effect-helpers'
+import { OptionalProperty } from '@evadev/effect-helpers'
 
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'

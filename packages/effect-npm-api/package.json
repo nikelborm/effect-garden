@@ -5,8 +5,8 @@
   "description": "Effect HTTP API declarations for NPM Registry",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/openapi-gen": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/openapi-gen": "catalog:",
+    "@evadev/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

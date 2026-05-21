@@ -1,6 +1,6 @@
 import { text } from 'node:stream/consumers'
 
-import { allFast } from '@nikelborm/effect-helpers'
+import { allFast } from '@evadev/effect-helpers'
 import type { Octokit } from '@octokit/core'
 import { RequestError } from '@octokit/request-error'
 import { assert, typeGuard } from 'tsafe'
@@ -75,7 +75,9 @@ const testValidityOfErrorThrownByEffect =
     effectToTest: EffectToTest,
   ) =>
     effectToTest.pipe(
-      Effect.asVoid as <E, R>(self: Effect.Effect<any, E, R>) => Effect.Effect<void, E, R>,
+      Effect.asVoid as <E, R>(
+        self: Effect.Effect<any, E, R>,
+      ) => Effect.Effect<void, E, R>,
       Effect.either,
       Effect.flatMap(res => {
         if (Either.isRight(res))
@@ -133,45 +135,49 @@ const expectError = <const ExpectedErrorClass extends ErrorExpectedToBeThrown>({
   gitRef?: string | undefined
   pathToEntityInRepo: string
 }) =>
-  Vitest.it.effect(`Should throw ${ExpectedErrorClass.name} when ${when}`, ctx =>
-    Effect.gen(function* () {
-      const validateErrorOf = <T extends keyof typeof effectsToTestForErrors>(
-        chosenEffectName: T,
-      ) => {
-        const inputConfig = {
-          repo,
-          gitRef,
-          pathToEntityInRepo,
+  Vitest.it.effect(
+    `Should throw ${ExpectedErrorClass.name} when ${when}`,
+    ctx =>
+      Effect.gen(function* () {
+        const validateErrorOf = <T extends keyof typeof effectsToTestForErrors>(
+          chosenEffectName: T,
+        ) => {
+          const inputConfig = {
+            repo,
+            gitRef,
+            pathToEntityInRepo,
+          }
+          const newKey = `ExpectedFailureOf${chosenEffectName}` as const
+          const newVal = effectsToTestForErrors[chosenEffectName].pipe(
+            testValidityOfErrorThrownByEffect(
+              ctx,
+              ExpectedErrorClass,
+              `${chosenEffectName} (${JSON.stringify(inputConfig)})`,
+            ),
+            provideInputConfig(inputConfig),
+            Effect.provide(OctokitLayer({ auth: authToken })),
+          )
+          return { [newKey]: newVal } as {
+            [k in typeof newKey]: typeof newVal
+          }
         }
-        const newKey = `ExpectedFailureOf${chosenEffectName}` as const
-        const newVal = effectsToTestForErrors[chosenEffectName].pipe(
-          testValidityOfErrorThrownByEffect(
-            ctx,
-            ExpectedErrorClass,
-            `${chosenEffectName} (${JSON.stringify(inputConfig)})`,
-          ),
-          provideInputConfig(inputConfig),
-          Effect.provide(OctokitLayer({ auth: authToken })),
-        )
-        return { [newKey]: newVal } as {
-          [k in typeof newKey]: typeof newVal
-        }
-      }
 
-      const {
-        ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
-        ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI,
-      } = yield* allFast({
-        ...validateErrorOf('RawStreamOfRepoPathContentsFromGitHubAPI'),
-        ...validateErrorOf('UnparsedMetaInfoAboutPathContentsFromGitHubAPI'),
-      })
-
-      ctx
-        .expect(ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI)
-        .toStrictEqual(
+        const {
           ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
-        )
-    }),
+          ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI,
+        } = yield* allFast({
+          ...validateErrorOf('RawStreamOfRepoPathContentsFromGitHubAPI'),
+          ...validateErrorOf('UnparsedMetaInfoAboutPathContentsFromGitHubAPI'),
+        })
+
+        ctx
+          .expect(
+            ExpectedFailureOfUnparsedMetaInfoAboutPathContentsFromGitHubAPI,
+          )
+          .toStrictEqual(
+            ExpectedFailureOfRawStreamOfRepoPathContentsFromGitHubAPI,
+          )
+      }),
   )
 
 const expectNotFail = (

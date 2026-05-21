@@ -1,4 +1,4 @@
-import { FiniteNonNegativeInteger, simpleExec } from '@nikelborm/effect-helpers'
+import { FiniteNonNegativeInteger, simpleExec } from '@evadev/effect-helpers'
 import { Btrfs } from 'effect-btrfs'
 
 import * as Prompt from '@effect/cli/Prompt'

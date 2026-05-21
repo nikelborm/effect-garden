@@ -34,7 +34,7 @@ Useful:
 3. [All JSDoc tokens](https://jsdoc.app/)
 4. [Supported JSDoc tags by Deno](https://docs.deno.com/runtime/reference/cli/doc/#supported-jsdoc-tags)
 
-Fix the fact that in JSR it renders as shit (example: [GitHubApiThingNotExistsOrYouDontHaveAccessError](https://jsr.io/@nikelborm/fetch-github-folder/doc/~/GitHubApiThingNotExistsOrYouDontHaveAccessError))
+Fix the fact that in JSR it renders as shit (example: [GitHubApiThingNotExistsOrYouDontHaveAccessError](https://jsr.io/@evadev/fetch-github-folder/doc/~/GitHubApiThingNotExistsOrYouDontHaveAccessError))
 
 Maybe cover this during fixing https://github.com/nikelborm/fetch-github-folder/issues/41
 

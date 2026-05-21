@@ -5,7 +5,7 @@
   "description": "Tooling to work with btrfs with Effect",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -15,7 +15,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@nikelborm/effect-helpers": "workspace:*"
+    "@evadev/effect-helpers": "workspace:*"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-btrfs#readme",
   "bugs": {

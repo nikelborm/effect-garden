@@ -1,5 +1,5 @@
 {
-  "extends": "@nikelborm/tsconfig",
+  "extends": "@evadev/tsconfig",
   "compilerOptions": {
     "noEmit": true,
     "outDir": "./dist",
@@ -7,7 +7,9 @@
     "noUncheckedSideEffectImports": false,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "plugins": [

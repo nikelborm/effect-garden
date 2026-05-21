@@ -5,9 +5,9 @@
 [![NPM downloads](https://img.shields.io/npm/dm/apache-superset-quick-init.svg?style=flat)](https://npmjs.org/package/apache-superset-quick-init)
 [![NPM Last Update](https://img.shields.io/npm/last-update/apache-superset-quick-init)](https://npmjs.org/package/apache-superset-quick-init)
 [![package.json Dependents count](https://badgen.net/npm/dependents/apache-superset-quick-init)](https://www.npmjs.com/package/apache-superset-quick-init?activeTab=dependents)
-[![JSR package version](https://jsr.io/badges/@nikelborm/apache-superset-quick-init)](https://jsr.io/@nikelborm/apache-superset-quick-init)
-[![JSR package Score](https://jsr.io/badges/@nikelborm/apache-superset-quick-init/score)](https://jsr.io/@nikelborm/apache-superset-quick-init)
-[![JSR package owner](https://jsr.io/badges/@nikelborm)](https://jsr.io/@nikelborm)
+[![JSR package version](https://jsr.io/badges/@evadev/apache-superset-quick-init)](https://jsr.io/@evadev/apache-superset-quick-init)
+[![JSR package Score](https://jsr.io/badges/@evadev/apache-superset-quick-init/score)](https://jsr.io/@evadev/apache-superset-quick-init)
+[![JSR package owner](https://jsr.io/badges/@evadev)](https://jsr.io/@evadev)
 [![GitHub commits per month](https://img.shields.io/github/commit-activity/m/nikelborm/apache-superset-quick-init)](https://github.com/nikelborm/apache-superset-quick-init/pulse)
 [![GitHub Total commits Count](https://img.shields.io/github/commit-activity/t/nikelborm/apache-superset-quick-init)](https://github.com/nikelborm/apache-superset-quick-init/graphs/commit-activity)
 [![NPM License](https://img.shields.io/npm/l/apache-superset-quick-init)](https://github.com/nikelborm/apache-superset-quick-init?tab=MIT-1-ov-file)
@@ -90,6 +90,6 @@ export NODE_COMPILE_CACHE=~/.cache/nodejs-compile-cache
 ## TODO
 
 1. Dynamically patch package.json during release, so that JSR version of
-   apache-superset-quick-init will depend on JSR version of @nikelborm/git-dl
+   apache-superset-quick-init will depend on JSR version of @evadev/git-dl
 2. Create a separate script for quick registering of a new database into a newly
    created Superset instance

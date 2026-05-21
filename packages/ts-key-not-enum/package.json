@@ -8,7 +8,7 @@
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@microsoft/tsdoc": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "@types/unist": "catalog:",
     "effect": "catalog:",

@@ -1,4 +1,4 @@
-import { downloadEntityFromRepo } from '@nikelborm/git-dl'
+import { downloadEntityFromRepo } from '@evadev/git-dl'
 
 import * as FileSystem from '@effect/platform/FileSystem'
 import * as Path from '@effect/platform/Path'

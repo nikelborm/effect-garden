@@ -1,11 +1,11 @@
 {
-  "name": "@nikelborm/effect-drizzle-helpers",
+  "name": "@evadev/effect-drizzle-helpers",
   "type": "module",
   "version": "0.0.1",
   "description": "Write drizzle table declarations in functional style, and make reusable table parts easily",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

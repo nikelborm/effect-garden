@@ -1,11 +1,11 @@
 {
-  "name": "@nikelborm/effect-landscape",
+  "name": "@evadev/effect-landscape",
   "type": "module",
   "version": "0.0.1",
   "description": "Overview analytics of the whole effect ecosystem",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

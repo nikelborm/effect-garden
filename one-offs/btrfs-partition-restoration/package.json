@@ -5,7 +5,7 @@
   "description": "I fucked a few very important files and still trying to recover stuff from them. 😭😭",
   "devDependencies": {
     "@effect/language-service": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:"
@@ -18,7 +18,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
-    "@nikelborm/effect-helpers": "workspace:*",
+    "@evadev/effect-helpers": "workspace:*",
     "effect-btrfs": "workspace:*",
     "level": "catalog:"
   },

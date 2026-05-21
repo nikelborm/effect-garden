@@ -5,7 +5,7 @@ import {
   BadExitCodeError,
   FiniteNonNegativeIntegerFromString,
   simpleExec,
-} from '@nikelborm/effect-helpers'
+} from '@evadev/effect-helpers'
 
 import * as Command from '@effect/platform/Command'
 import * as Effect from 'effect/Effect'

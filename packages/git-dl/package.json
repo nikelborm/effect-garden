@@ -1,12 +1,12 @@
 {
-  "name": "@nikelborm/git-dl",
+  "name": "@evadev/git-dl",
   "type": "module",
   "version": "0.1.28",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
-    "@nikelborm/tsconfig": "workspace:*",
+    "@evadev/tsconfig": "workspace:*",
     "@rollup/plugin-commonjs": "catalog:",
     "@rollup/plugin-json": "catalog:",
     "@rollup/plugin-node-resolve": "catalog:",

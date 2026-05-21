@@ -1,5 +1,5 @@
 {
-  "extends": "@nikelborm/tsconfig",
+  "extends": "@evadev/tsconfig",
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
