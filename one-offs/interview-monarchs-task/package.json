@@ -13,7 +13,7 @@
   "dependencies": {
     "ts-toolbelt": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/interview-monarchs-task#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/interview-monarchs-task#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -21,7 +21,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/bliss-audio-ts"
+    "directory": "one-offs/interview-monarchs-task"
   },
   "author": {
     "name": "nikelborm",

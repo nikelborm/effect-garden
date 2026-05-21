@@ -22,7 +22,7 @@ export const observableExec = Effect.fn('observableExec')(function* ({
         |
       `),
   )
-  yield* Effect.annotateCurrentSpan({ cmd, cwd })
+  yield* Effect.annotateCurrentSpan({ cmd: cmd.join(' '), cwd })
 
   const executor = yield* CommandExecutor.CommandExecutor
   const process = yield* executor.start(
@@ -39,10 +39,10 @@ export const observableExec = Effect.fn('observableExec')(function* ({
 
   const error = new BadExitCodeError({
     exitCode,
+    message: badExitCodeErrorMessage,
     stderr: 'look in the console',
     stdout: 'look in the console',
   })
-  error.message = badExitCodeErrorMessage
 
   return yield* error
 })

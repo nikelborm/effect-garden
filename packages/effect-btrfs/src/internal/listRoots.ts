@@ -47,7 +47,12 @@ export const listRoots = Effect.fn('effect-btrfs/Btrfs/listRoots')(
     )
 
     if (exitCode !== 0)
-      return yield* new BadExitCodeError({ exitCode, stderr, stdout })
+      return yield* new BadExitCodeError({
+        exitCode,
+        stderr,
+        stdout,
+        message: 'Failed to list btrfs roots',
+      })
 
     const parsedRoots = yield* decodeListedRootItems(
       stdout

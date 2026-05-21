@@ -43,10 +43,6 @@
     "@effect/typeclass": "^0.40.0",
     "@effect/vitest": "catalog:",
     "@effect/workflow": "^0.18.1",
-    "@fp-ts/optic": "catalog:",
-    "@julusian/midi": "^3.6.1",
-    "@microsoft/tsdoc": "catalog:",
-    "@nevware21/ts-utils": "catalog:",
     "@evadev/apache-superset-quick-init": "workspace:*",
     "@evadev/backend-config": "workspace:*",
     "@evadev/effect-drizzle-helpers": "workspace:*",
@@ -57,6 +53,10 @@
     "@evadev/openapi-gen": "catalog:",
     "@evadev/scripts": "workspace:*",
     "@evadev/tsconfig": "workspace:*",
+    "@fp-ts/optic": "catalog:",
+    "@julusian/midi": "^3.6.1",
+    "@microsoft/tsdoc": "catalog:",
+    "@nevware21/ts-utils": "catalog:",
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
     "@octokit/types": "catalog:",
@@ -118,7 +118,7 @@
     "serwist": "catalog:",
     "sort-package-json": "catalog:",
     "tar-fs": "catalog:",
-    "tinybench": "catalog:",
+    "tinybench": "^6.0.2",
     "ts-key-not-enum": "workspace:*",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -135,7 +135,7 @@
     "ytmusic-api": "catalog:",
     "zod": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/playground#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/playground#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -143,7 +143,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/playground"
+    "directory": "one-offs/playground"
   },
   "author": {
     "name": "nikelborm",

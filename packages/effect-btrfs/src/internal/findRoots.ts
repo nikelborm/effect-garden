@@ -54,7 +54,12 @@ export const findRoots = Effect.fn('effect-btrfs/Btrfs/findRoots')(
     )
 
     if (exitCode !== 0)
-      return yield* new BadExitCodeError({ exitCode, stderr, stdout })
+      return yield* new BadExitCodeError({
+        exitCode,
+        stderr,
+        stdout,
+        message: 'Failed to find btrfs roots',
+      })
 
     const parsedRoots = yield* decodeFoundRoots(
       stdout

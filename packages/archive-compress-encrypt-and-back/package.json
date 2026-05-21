@@ -54,9 +54,6 @@
     }
   ],
   "license": "MIT",
-  "bin": {
-    "ace": "dist/index.js"
-  },
   "private": false,
   "publishConfig": {
     "access": "public",
@@ -69,6 +66,9 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
+  "bin": {
+    "ace": "dist/index.js"
+  },
   "files": [
     "dist",
     "dist-types",

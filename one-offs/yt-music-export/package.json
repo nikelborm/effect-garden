@@ -21,7 +21,7 @@
     "node-taglib-sharp": "catalog:",
     "ytmusic-api": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/yt-music-export#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/yt-music-export#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -29,7 +29,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/yt-music-export"
+    "directory": "one-offs/yt-music-export"
   },
   "scripts": {
     "build": "tspc",

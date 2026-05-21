@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 
 import { console } from 'node:inspector'
-import { join } from 'node:path'
 
 import {
   AbsentProperty,
@@ -28,7 +27,6 @@ import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
 import {
-  packagesDirPath,
   playgroundPackageDirPath,
   projectRootAbsolutePath,
   rootPackageJsonPath,
@@ -168,8 +166,8 @@ export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
   Effect.flatMap(Schema.decode(RootPackageJsonFromStringSchema)),
   Effect.withSpan('rootPackageJson'),
-  Effect.cached,
-  Effect.flatten,
+  // do not cache them! They change over time, especially because you execute
+  // the program twice
 )
 
 export const MyMonorepoPackagePathsSchema = Schema.Struct({
@@ -210,9 +208,23 @@ export const myMonorepoPackagePathsEffect = pipe(
   Effect.map(EArray.flatten),
   Effect.flatMap(Schema.decodeUnknown(MyMonorepoPackagePathsSchema)),
   Effect.withSpan('myMonorepoPackagesDirectoryPaths'),
-  Effect.cached,
-  Effect.flatten,
+  // do not cache them! They change over time, especially because you execute
+  // the program twice
 )
+
+export class WrongHardcodedPathInPackageJson extends Schema.TaggedError<WrongHardcodedPathInPackageJson>()(
+  'WrongHardcodedPathInPackageJson',
+  {
+    what: Schema.NonEmptyTrimmedString,
+    where: Schema.NonEmptyTrimmedString,
+    expected: Schema.Unknown,
+    actual: Schema.Unknown,
+  },
+) {
+  override get message(): string {
+    return `Wrong ${this.what} in package's ${this.where}. Expected ${this.expected}, actual ${this.actual}`
+  }
+}
 
 export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
   function* (pathes: MyMonorepoPackagePathBundle) {
@@ -231,30 +243,44 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
       Schema.decode(SubPackageJsonSchemaFromString),
     )
 
-    if (pkg.homepage[2] !== pathes.workspaceDirName) {
-      yield* Effect.annotateCurrentSpan({ homepageSegments: pkg.homepage })
-      return yield* Effect.dieMessage("Wrong workspace in package's homepage.")
-    }
-    if (pkg.homepage[4] !== pathes.packageDirName) {
-      yield* Effect.annotateCurrentSpan({ homepageSegments: pkg.homepage })
-      return yield* Effect.dieMessage("Wrong dir name in package's homepage.")
-    }
-    if (pkg.repository.directory[0] !== pathes.packageDirName) {
-      yield* Effect.annotateCurrentSpan({
-        repositoryDirectorySegments: pkg.repository.directory,
-      })
-      return yield* Effect.dieMessage(
-        "Wrong workspace in package's repository section.",
-      )
-    }
-    if (pkg.repository.directory[2] !== pathes.packageDirName) {
-      yield* Effect.annotateCurrentSpan({
-        repositoryDirectorySegments: pkg.repository.directory,
-      })
-      return yield* Effect.dieMessage(
-        "Wrong dir name in package's repository section.",
-      )
-    }
+    yield* Effect.annotateCurrentSpan({
+      homepageSegments:
+        pkg.homepage.slice(0, -1).join('') + pkg.homepage.at(-1),
+      repositoryDirectorySegments: path.join(...pkg.repository.directory),
+    })
+
+    const validate = (
+      ...args: ConstructorParameters<typeof WrongHardcodedPathInPackageJson>
+    ) =>
+      args[0].actual === args[0].expected
+        ? Effect.void
+        : new WrongHardcodedPathInPackageJson(args[0])
+
+    yield* validate({
+      what: 'workspace',
+      where: 'homepage',
+      expected: pathes.workspaceDirName,
+      actual: pkg.homepage[2],
+    })
+    yield* validate({
+      what: 'package dir name',
+      where: 'homepage',
+      expected: pathes.packageDirName,
+      actual: pkg.homepage[4],
+    })
+
+    yield* validate({
+      what: 'workspace',
+      where: 'repository section',
+      expected: pathes.workspaceDirName,
+      actual: pkg.repository.directory[0],
+    })
+    yield* validate({
+      what: 'package dir name',
+      where: 'repository section',
+      expected: pathes.packageDirName,
+      actual: pkg.repository.directory[2],
+    })
 
     return {
       pkg,
@@ -854,21 +880,20 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
   const catalogPackageNameToUsage = new Map<
     string,
     | { type: 'never' }
-    | {
+    | ({
         type: 'once'
-        pkg: (typeof myMonorepoPackages)[number]
         depType: (typeof depTypes)[number]
         catalogDepVersion: string
-      }
+      } & (typeof myMonorepoPackages)[number])
     | { type: 'multiple' }
   >(Object.keys(catalog).map(name => [name, { type: 'never' }]))
 
   catalogLoop: for (const [depName, catalogDepVersion] of Object.entries(
     catalog,
   )) {
-    pkgLoop: for (const pkg of myMonorepoPackages) {
+    pkgLoop: for (const { pkg, ...rest } of myMonorepoPackages) {
       for (const depType of depTypes) {
-        const localDepVersion = pkg.pkg[depType]?.[depName]
+        const localDepVersion = pkg[depType]?.[depName]
         if (localDepVersion === undefined) continue
         if (localDepVersion !== 'catalog:')
           return yield* Effect.dieMessage(
@@ -877,7 +902,7 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
                 depName,
                 catalogDepVersion,
                 depType,
-                installedInto: pkg.pkg.name,
+                installedInto: pkg.name,
               }),
           )
 
@@ -892,6 +917,7 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
             type: 'once',
             depType,
             pkg,
+            ...rest,
             catalogDepVersion,
           })
           continue pkgLoop
@@ -923,9 +949,9 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
             : usage.depType === 'peerDependencies'
               ? ['--peer']
               : []),
-          usage.catalogDepVersion,
+          depName + '@' + usage.catalogDepVersion,
         ],
-        cwd: usage.pkg.absolutePackageDirPath,
+        cwd: usage.absolutePackageDirPath,
         badExitCodeErrorMessage:
           'Failed to install dependency into specific package',
       })

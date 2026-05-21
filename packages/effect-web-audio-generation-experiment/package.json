@@ -1,5 +1,5 @@
 {
-  "name": "effect-web-audio-generate",
+  "name": "effect-web-audio-generation-experiment",
   "type": "module",
   "version": "0.1.0",
   "description": "Generates missing Effect wrappers for Web Audio API using @webref/idl",
@@ -18,7 +18,7 @@
     "@webref/idl": "catalog:",
     "effect-web-audio": "workspace:*"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio-generate#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-web-audio-generation-experiment#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"

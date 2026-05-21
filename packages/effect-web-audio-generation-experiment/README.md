@@ -1,4 +1,4 @@
-# effect-web-audio-generate
+# effect-web-audio-generation-experiment
 
 Generates missing Effect wrappers for Web Audio API using @webref/idl.
 
@@ -63,7 +63,7 @@ The generated wrappers integrate with the existing `effect-web-audio` package:
 
 ```typescript
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
-import * as EAudioBufferSourceNode from 'effect-web-audio-generate/EAudioBufferSourceNode'
+import * as EAudioBufferSourceNode from 'effect-web-audio-generation-experiment/EAudioBufferSourceNode'
 
 const program = Effect.gen(function* () {
   const audioContext = yield* EAudioContext.EAudioContext
