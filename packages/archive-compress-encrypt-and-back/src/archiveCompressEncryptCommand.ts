@@ -14,8 +14,8 @@ import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.t
 
 const sourceDirPathArg = pipe(
   Args.directory({ name: 'source directory', exists: 'yes' }),
-  Args.withDescription('The source directory to be archived'),
   withResolvedToAbsolutePathArg,
+  Args.withDescription('The source directory to be archived'),
   Args.mapEffect(
     Effect.fn('Source dir arg remap')(function* (sourceDirPath) {
       yield* Effect.annotateCurrentSpan({ sourceDirPath })
@@ -30,10 +30,10 @@ const sourceDirPathArg = pipe(
 )
 
 const destFilePathArg = Args.path({ name: 'destination file' }).pipe(
+  withResolvedToAbsolutePathArg,
   Args.withDescription(
     'Destination of the new compressed encrypted archive file',
   ),
-  withResolvedToAbsolutePathArg,
   Args.mapEffect(
     Effect.fn('Destination file arg remap')(function* (destFilePath) {
       yield* Effect.annotateCurrentSpan({ destFilePath })

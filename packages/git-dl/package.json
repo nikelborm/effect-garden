@@ -26,11 +26,12 @@
     "effect": "catalog:"
   },
   "dependencies": {
-    "@total-typescript/ts-reset": "catalog:",
-    "@types/tar-fs": "catalog:",
+    "@evadev/effect-helpers": "workspace:*",
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
     "@octokit/types": "catalog:",
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/tar-fs": "catalog:",
     "effect-errors": "catalog:",
     "outdent": "catalog:",
     "tar-fs": "catalog:",
