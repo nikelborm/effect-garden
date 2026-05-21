@@ -9,20 +9,14 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "es2022",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./",
-    "types": [
-      "bun"
-    ],
+    "types": ["bun"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": [
-    "*.ts"
-  ]
+  "include": ["*.ts"]
 }

@@ -1,41 +1,35 @@
-type Merge<T> = { [P in keyof T]: T[P] } & {};
+type Merge<T> = { [P in keyof T]: T[P] } & {}
 
-type RemapEnumArrToObject<T extends Array<string> | Array<number>> =
-  T extends [
-    infer U extends T[number],
-    ...infer Rest extends Array<string> | Array<number>
-  ]
-    ? { [k in U] : U } & RemapEnumArrToObject<Rest>
-    : {};
+type RemapEnumArrToObject<T extends Array<string> | Array<number>> = T extends [
+  infer U extends T[number],
+  ...infer Rest extends Array<string> | Array<number>,
+]
+  ? { [k in U]: U } & RemapEnumArrToObject<Rest>
+  : {}
 
-const secureObject = (o: Record<string|number|symbol, any>) => {
-  Object.seal(o);
-  Object.freeze(o);
-  Object.preventExtensions(o);
+const secureObject = (o: Record<string | number | symbol, any>) => {
+  Object.seal(o)
+  Object.freeze(o)
+  Object.preventExtensions(o)
 }
 
-const ENUM = <
-  const T extends Array<string> | Array<number>
->(arr: T):Merge<Readonly<RemapEnumArrToObject<T>>> => {
-  const map = Object.fromEntries(arr.map( e => [e, e] ));
-  secureObject(map);
-  return map;
-};
-
-
-
-
-
+const ENUM = <const T extends Array<string> | Array<number>>(
+  arr: T,
+): Merge<Readonly<RemapEnumArrToObject<T>>> => {
+  const map = Object.fromEntries(arr.map(e => [e, e]))
+  secureObject(map)
+  return map
+}
 
 const MONARCHS = {
-  'NIKOLAY_1': 'Николай 1',
-  'ALEXEI_MICHAILOVICH': 'Алексей Михайлович',
-  'EKATERINA_VELIKAYA': 'Екатерина Великая',
-  'PETR_1': 'Пётр 1',
-  'MICHAI_FEDOROVICH': 'Михаил Фёдорович',
-} as const;
+  NIKOLAY_1: 'Николай 1',
+  ALEXEI_MICHAILOVICH: 'Алексей Михайлович',
+  EKATERINA_VELIKAYA: 'Екатерина Великая',
+  PETR_1: 'Пётр 1',
+  MICHAI_FEDOROVICH: 'Михаил Фёдорович',
+} as const
 
-type IMonarchs = keyof typeof MONARCHS;
+type IMonarchs = keyof typeof MONARCHS
 
 console.log(MONARCHS)
 
@@ -50,7 +44,7 @@ const baseRules = new Set([
   'AND [Rest]', // ???
   'NOT [T]', // ???
   '[T] XOR [U]', // ???
-]);
+])
 
 const possibleRules = new Set([
   'token of type [T] to the left of token of type [U]', // requires minimum 2 spatial slots
@@ -80,37 +74,36 @@ const possibleRules = new Set([
   'there are at most [N] tokens in any single spatial slot',
   'there are at least [N] tokens in any single spatial slot',
   'there are exactly [N] tokens in any single spatial slot',
-] as const);
+] as const)
 
 const remapTokens = {
   'token [T] to the left of token [U]': {
-    searchesFor: [
-      'there is token [T]',
-      'there are exactly [N] spatial slots',
-    ],
+    searchesFor: ['there is token [T]', 'there are exactly [N] spatial slots'],
     results(T: string, U: string, N: number) {
       const condition = {
         type: 'OR [Rest]',
-        args: { Rest: [] as any[] }
-      };
+        args: { Rest: [] as any[] },
+      }
       for (let i = 0; i < N - 1; i++) {
         for (let j = i + 1; j < N; j++) {
           condition.args.Rest.push({
             type: 'AND [Rest]',
             args: {
-              Rest: [{
-                type: 'token [T] is in slot with index [N]',
-                args: { T: T, N: i,}
-              }, {
-                type: 'token [T] is in slot with index [N]',
-                args: { T: U, N: j,}
-              }]
-            }
+              Rest: [
+                {
+                  type: 'token [T] is in slot with index [N]',
+                  args: { T: T, N: i },
+                },
+                {
+                  type: 'token [T] is in slot with index [N]',
+                  args: { T: U, N: j },
+                },
+              ],
+            },
           })
-
         }
       }
-      return condition;
+      return condition
     },
   },
   'token of type [T] to the left of token [U]': {
@@ -126,11 +119,11 @@ const remapTokens = {
         args: {
           Rest: tokensOptionsOfTypeT.map(T => ({
             type: 'token [T] to the left of token [U]',
-            args: { T, U }
-          }))
-        }
-      };
-    }
+            args: { T, U },
+          })),
+        },
+      }
+    },
   },
   'token [T] to the left of token of type [U]': {
     searchesFor: [
@@ -145,11 +138,11 @@ const remapTokens = {
         args: {
           Rest: tokensOptionsOfTypeU.map(U => ({
             type: 'token [T] to the left of token [U]',
-            args: { T, U }
-          }))
-        }
-      };
-    }
+            args: { T, U },
+          })),
+        },
+      }
+    },
   },
   'token of type [T] to the left of token of type [U]': {
     searchesFor: [
@@ -166,18 +159,18 @@ const remapTokens = {
             .flatMap(T => tokensOptionsOfTypeU.map(U => ({ T, U })))
             .map(args => ({
               type: 'token [T] to the left of token [U]',
-              args
-            }))
-        }
-      };
-    }
+              args,
+            })),
+        },
+      }
+    },
   },
 
   'token [T] to the right of token [U]': {
     results(T: string, U: string) {
       return {
         type: 'token [T] to the left of token [U]',
-        args: { T: U, U: T }
+        args: { T: U, U: T },
       }
     },
   },
@@ -185,7 +178,7 @@ const remapTokens = {
     results(T: string, U: string) {
       return {
         type: 'token [T] to the left of token of type [U]',
-        args: { T: U, U: T }
+        args: { T: U, U: T },
       }
     },
   },
@@ -193,7 +186,7 @@ const remapTokens = {
     results(T: string, U: string) {
       return {
         type: 'token of type [T] to the left of token [U]',
-        args: { T: U, U: T }
+        args: { T: U, U: T },
       }
     },
   },
@@ -201,7 +194,7 @@ const remapTokens = {
     results(T: string, U: string) {
       return {
         type: 'token of type [T] to the left of token of type [U]',
-        args: { T: U, U: T }
+        args: { T: U, U: T },
       }
     },
   },
@@ -215,9 +208,9 @@ const remapTokens = {
             'token of type [T] to the left of token of type [U]',
             'token of type [T] to the right of token of type [U]',
           ].map(type => ({ type, args: { T, U } })),
-        }
-      };
-    }
+        },
+      }
+    },
   },
   'token [T] must have a neighbour token of type [U]': {
     results(T: string, U: string) {
@@ -228,9 +221,9 @@ const remapTokens = {
             'token [T] to the left of token of type [U]',
             'token [T] to the right of token of type [U]',
           ].map(type => ({ type, args: { T, U } })),
-        }
-      };
-    }
+        },
+      }
+    },
   },
   'token of type [T] must have a neighbour token [U]': {
     results(T: string, U: string) {
@@ -241,9 +234,9 @@ const remapTokens = {
             'token of type [T] to the left of token [U]',
             'token of type [T] to the right of token [U]',
           ].map(type => ({ type, args: { T, U } })),
-        }
-      };
-    }
+        },
+      }
+    },
   },
   'token [T] must have a neighbour token [U]': {
     results(T: string, U: string) {
@@ -254,9 +247,9 @@ const remapTokens = {
             'token [T] to the left of token [U]',
             'token [T] to the right of token [U]',
           ].map(type => ({ type, args: { T, U } })),
-        }
-      };
-    }
+        },
+      }
+    },
   },
 }
 
@@ -281,16 +274,12 @@ const remapTokens = {
 // some rulesets are AND combination of few rulesets. some rulesets are OR combination of few rulesets.
 // AND rulesets are more restrictive than each of the individual rules. OR rulesets are more allowing than each of the individual rules
 
-
 // MONARCHS_ENGLISH.MICHAI_FEDOROVICH
-
-
 
 // 'Nibiru': 'Нибиру',
 // 'Kottedzh': 'Коттедж',
 // 'Kolomenskij': 'Коломенский',
 // 'Putevoj': 'Путевой',
-
 
 // для начала чтобы не делать комбинаторный взрыв, нужно занимать как можно меньше места, если возможно
 // как этого добиться? сначала применять операции, чья комбинаторная сложность не супер велика -- добавления соседа

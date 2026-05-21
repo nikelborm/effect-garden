@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+
 import { LoopTransitionElementWithScheduledCleanupSchema } from './common.ts'
 
 export const LoopLoopSilenceTransitionSchema = Schema.Struct({
@@ -9,4 +10,6 @@ export const LoopLoopSilenceTransitionSchema = Schema.Struct({
     LoopTransitionElementWithScheduledCleanupSchema,
   ),
 })
-export type LoopLoopSilenceTransition = Schema.Schema.Type<typeof LoopLoopSilenceTransitionSchema>
+export type LoopLoopSilenceTransition = Schema.Schema.Type<
+  typeof LoopLoopSilenceTransitionSchema
+>

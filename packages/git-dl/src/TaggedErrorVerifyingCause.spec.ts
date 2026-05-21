@@ -13,48 +13,50 @@ import {
 } from './TaggedErrorVerifyingCause.ts'
 
 Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
-  Vitest.it('Should have expected fields from both contexts: dynamic and static ', ctx => {
-    const dynamicContext = {
-      actual: 12,
-      expected: 13,
-      gitLFSInfo: Either.right({
-        oidSha256: 'iosdvhksjsl',
-        size: 14,
-        version: 'lakdvfhjaljskhk',
-      }),
-    } as const
+  Vitest.it(
+    'Should have expected fields from both contexts: dynamic and static ',
+    ctx => {
+      const dynamicContext = {
+        actual: 12,
+        expected: 13,
+        gitLFSInfo: Either.right({
+          oidSha256: 'iosdvhksjsl',
+          size: 14,
+          version: 'lakdvfhjaljskhk',
+        }),
+      } as const
 
-    const error = new InconsistentExpectedAndRealContentSizeError(
-      dynamicContext,
-    )
+      const error = new InconsistentExpectedAndRealContentSizeError(
+        dynamicContext,
+      )
 
-    ctx
-      .expect(error)
-      .toBeInstanceOf(InconsistentExpectedAndRealContentSizeError)
+      ctx
+        .expect(error)
+        .toBeInstanceOf(InconsistentExpectedAndRealContentSizeError)
 
-    const extractedNeedFields = (({
-      actual,
-      _tag,
-      name,
-      message,
-      expected,
-      gitLFSInfo,
-      comment,
-    }) => ({
-      actual,
-      _tag,
-      name,
-      message,
-      expected,
-      gitLFSInfo,
-      comment,
-    }))(error)
+      const extractedNeedFields = (({
+        actual,
+        _tag,
+        name,
+        message,
+        expected,
+        gitLFSInfo,
+        comment,
+      }) => ({
+        actual,
+        _tag,
+        name,
+        message,
+        expected,
+        gitLFSInfo,
+        comment,
+      }))(error)
 
-    ctx.expect(extractedNeedFields).toEqual({
-      _tag: 'InconsistentExpectedAndRealContentSizeError',
-      name: 'InconsistentExpectedAndRealContentSizeError',
-      message: 'Got file with size 12 bytes while expecting 13 bytes',
-      comment: outdent({ newline: ' ' })`
+      ctx.expect(extractedNeedFields).toEqual({
+        _tag: 'InconsistentExpectedAndRealContentSizeError',
+        name: 'InconsistentExpectedAndRealContentSizeError',
+        message: 'Got file with size 12 bytes while expecting 13 bytes',
+        comment: outdent({ newline: ' ' })`
         If we weren't successful in parsing it as git LFS object
         announcement using RegExp and Effect.Schema, we just do a basic size
         consistency check. The check implements the second marker of it
@@ -64,32 +66,36 @@ Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
         regexp fucked up, or GitHub API did. If it doesn't throw, it means
         there's no reason to assume it's a Git LFS object.
       `,
-      ...dynamicContext,
-    })
-  })
+        ...dynamicContext,
+      })
+    },
+  )
 
-  Vitest.it('Should throw when incorrect cause provided during constructor call', ctx => {
-    try {
-      const error = new FailedToParseGitLFSInfoError(
-        new Error('bad error') as ParseResult.ParseError,
-        {
-          partOfContentThatCouldBeGitLFSInfo:
-            'Part of content that could be git lfs info',
-        },
-      )
-      throw new Error(
-        "new FailedToParseGitLFSInfoError(...) should throw, but didn't",
-        { cause: error },
-      )
-    } catch (error) {
-      ctx.expect(error).toBeInstanceOf(Error)
-      ctx
-        .expect((error as Error).message)
-        .toBe(
-          'Provided cause of incorrect type to "FailedToParseGitLFSInfoError" class. Expected cause class: "ParseError"',
+  Vitest.it(
+    'Should throw when incorrect cause provided during constructor call',
+    ctx => {
+      try {
+        const error = new FailedToParseGitLFSInfoError(
+          new Error('bad error') as ParseResult.ParseError,
+          {
+            partOfContentThatCouldBeGitLFSInfo:
+              'Part of content that could be git lfs info',
+          },
         )
-    }
-  })
+        throw new Error(
+          "new FailedToParseGitLFSInfoError(...) should throw, but didn't",
+          { cause: error },
+        )
+      } catch (error) {
+        ctx.expect(error).toBeInstanceOf(Error)
+        ctx
+          .expect((error as Error).message)
+          .toBe(
+            'Provided cause of incorrect type to "FailedToParseGitLFSInfoError" class. Expected cause class: "ParseError"',
+          )
+      }
+    },
+  )
 
   Vitest.it('Should not try to call message string', ctx => {
     const causeOriginal = new ParseResult.ParseError({
@@ -125,62 +131,66 @@ Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
     })
   })
 
-  Vitest.it('Should pass cause and full context when message renderer is called and ExpectedCauseClass is provided', ctx => {
-    class CustomCauseErrorClass extends Error {
-      constructor(message: string) {
-        super(message)
-        this.name = this.constructor.name
+  Vitest.it(
+    'Should pass cause and full context when message renderer is called and ExpectedCauseClass is provided',
+    ctx => {
+      class CustomCauseErrorClass extends Error {
+        constructor(message: string) {
+          super(message)
+          this.name = this.constructor.name
+        }
       }
-    }
 
-    class CustomTaggedError extends buildTaggedErrorClassVerifyingCause<{
-      dynamicContextField1: string
-    }>()(
-      'CustomTaggedError',
-      (cause, fullContext) =>
-        [
-          cause.name,
-          cause.message,
-          fullContext.dynamicContextField1,
-          fullContext.staticContextField2,
-        ].join(','),
-      CustomCauseErrorClass,
-      {
+      class CustomTaggedError extends buildTaggedErrorClassVerifyingCause<{
+        dynamicContextField1: string
+      }>()(
+        'CustomTaggedError',
+        (cause, fullContext) =>
+          [
+            cause.name,
+            cause.message,
+            fullContext.dynamicContextField1,
+            fullContext.staticContextField2,
+          ].join(','),
+        CustomCauseErrorClass,
+        {
+          staticContextField2: 123,
+        },
+      ) {}
+
+      const causeOriginal = new CustomCauseErrorClass('test message')
+
+      const error = new CustomTaggedError(causeOriginal, {
+        dynamicContextField1: 'Dynamic context field1',
+      })
+
+      const extractedNeedFields = (({
+        _tag,
+        name,
+        message,
+        cause,
+        staticContextField2,
+        dynamicContextField1,
+      }) => ({
+        _tag,
+        name,
+        message,
+        cause,
+        staticContextField2,
+        dynamicContextField1,
+      }))(error)
+
+      ctx.expect(extractedNeedFields).toEqual({
+        _tag: 'CustomTaggedError',
+        name: 'CustomTaggedError',
+        message:
+          'CustomCauseErrorClass,test message,Dynamic context field1,123',
+        cause: causeOriginal,
+        dynamicContextField1: 'Dynamic context field1',
         staticContextField2: 123,
-      },
-    ) {}
-
-    const causeOriginal = new CustomCauseErrorClass('test message')
-
-    const error = new CustomTaggedError(causeOriginal, {
-      dynamicContextField1: 'Dynamic context field1',
-    })
-
-    const extractedNeedFields = (({
-      _tag,
-      name,
-      message,
-      cause,
-      staticContextField2,
-      dynamicContextField1,
-    }) => ({
-      _tag,
-      name,
-      message,
-      cause,
-      staticContextField2,
-      dynamicContextField1,
-    }))(error)
-
-    ctx.expect(extractedNeedFields).toEqual({
-      _tag: 'CustomTaggedError',
-      name: 'CustomTaggedError',
-      message: 'CustomCauseErrorClass,test message,Dynamic context field1,123',
-      cause: causeOriginal,
-      dynamicContextField1: 'Dynamic context field1',
-      staticContextField2: 123,
-    })
-  })
+      })
+    },
+  )
 })
 
 assert<Equals<GetValueByKey<{}, 'StaticContext', 'default'>, 'default'>>

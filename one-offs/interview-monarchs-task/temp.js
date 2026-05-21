@@ -1,6 +1,6 @@
-let table1 = [1, 2, 2, 3, 3]
+const table1 = [1, 2, 2, 3, 3]
 
-let table2 = [3, 3, 4, 4, 5]
+const table2 = [3, 3, 4, 4, 5]
 
 // [
 //   [ 1, 3 ],    [ 1, 3 ],    [ 1, 4 ],
@@ -16,10 +16,10 @@ let table2 = [3, 3, 4, 4, 5]
 //   [ null, 3 ], [ null, 3 ], [ null, 4 ],
 //   [ null, 4 ], [ null, 5 ]
 // ]
-let output = [
-...table1.flatMap(e1 => table2.map(e2 => [e1, e2])),
-...table1.map(e1 => [e1, null]),
-...table2.map(e2 => [null, e2])
+const output = [
+  ...table1.flatMap(e1 => table2.map(e2 => [e1, e2])),
+  ...table1.map(e1 => [e1, null]),
+  ...table2.map(e2 => [null, e2]),
 ]
 
 output.length

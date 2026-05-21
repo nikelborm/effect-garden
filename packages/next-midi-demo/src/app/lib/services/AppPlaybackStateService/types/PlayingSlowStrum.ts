@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+
 import { SlowStrumTransitionQueueElementSchema } from './common.ts'
 
 export const PlayingSlowStrumSchema = Schema.Struct({

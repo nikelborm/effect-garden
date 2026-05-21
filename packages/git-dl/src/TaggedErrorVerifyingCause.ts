@@ -112,15 +112,16 @@ type IsExpectedCauseClassManuallySpecified<
   Config extends ConfigTemplate,
   IfTrue,
   IfFalse,
-> = GetValueByKey<
-  Config,
-  'ExpectedCauseClass',
-  WideErrorConstructor | undefined
-> extends infer ExpectedCauseClass
-  ? [ExpectedCauseClass] extends [WideErrorConstructor]
-    ? IfTrue
-    : IfFalse
-  : never
+> =
+  GetValueByKey<
+    Config,
+    'ExpectedCauseClass',
+    WideErrorConstructor | undefined
+  > extends infer ExpectedCauseClass
+    ? [ExpectedCauseClass] extends [WideErrorConstructor]
+      ? IfTrue
+      : IfFalse
+    : never
 
 type GetCauseInstance<Config extends ConfigTemplate> = InstanceType<
   Exclude<Config['ExpectedCauseClass'], undefined>

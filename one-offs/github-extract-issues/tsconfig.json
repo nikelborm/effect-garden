@@ -4,13 +4,9 @@
     "declarationDir": "./dist-types",
     "outDir": "./dist",
     "rootDir": "./",
-    "types": [
-      "bun"
-    ]
+    "types": ["bun"]
   },
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
   "exclude": [
     ".github",
     ".stryker-tmp",

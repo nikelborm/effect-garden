@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+
 import {
   LoopTransitionQueueElementSchema,
   SlowStrumTransitionQueueElementSchema,
@@ -12,4 +13,6 @@ export const SlowStrumLoopTransitionSchema = Schema.Struct({
     LoopTransitionQueueElementSchema,
   ),
 })
-export type SlowStrumLoopTransition = Schema.Schema.Type<typeof SlowStrumLoopTransitionSchema>
+export type SlowStrumLoopTransition = Schema.Schema.Type<
+  typeof SlowStrumLoopTransitionSchema
+>

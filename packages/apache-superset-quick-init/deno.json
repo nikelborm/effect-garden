@@ -16,9 +16,6 @@
       "README.md",
       "LICENSE"
     ],
-    "exclude": [
-      "**/*.spec.*",
-      "scratchpad.*"
-    ]
+    "exclude": ["**/*.spec.*", "scratchpad.*"]
   }
 }

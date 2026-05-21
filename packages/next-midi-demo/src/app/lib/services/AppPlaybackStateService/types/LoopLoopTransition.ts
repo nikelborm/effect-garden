@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+
 import {
   LoopTransitionElementWithScheduledCleanupSchema,
   LoopTransitionQueueElementSchema,
@@ -12,4 +13,6 @@ export const LoopLoopTransitionSchema = Schema.Struct({
     LoopTransitionQueueElementSchema,
   ),
 })
-export type LoopLoopTransition = Schema.Schema.Type<typeof LoopLoopTransitionSchema>
+export type LoopLoopTransition = Schema.Schema.Type<
+  typeof LoopLoopTransitionSchema
+>

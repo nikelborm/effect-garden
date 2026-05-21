@@ -1,8 +1,6 @@
 {
   "parser": "typescript",
-  "plugins": [
-    "prettier-plugin-jsdoc"
-  ],
+  "plugins": ["prettier-plugin-jsdoc"],
   "printWidth": 80,
   "jsdocPrintWidth": 80,
   "jsdocDescriptionWithDot": true,

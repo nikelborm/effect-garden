@@ -5,9 +5,7 @@
     "outDir": "./dist",
     "rootDir": "./"
   },
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
   "exclude": [
     ".github",
     ".stryker-tmp",

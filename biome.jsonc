@@ -16,9 +16,7 @@
       "!packages/next-midi-demo/public/sw.js"
     ]
   },
-  "plugins": [
-    "./node_modules/biome-plugin-drizzle/dist/drizzle.grit"
-  ],
+  "plugins": ["./node_modules/biome-plugin-drizzle/dist/drizzle.grit"],
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -93,10 +91,7 @@
           "level": "on",
           "options": {
             "groups": [
-              [
-                ":BUN:",
-                ":NODE:"
-              ],
+              [":BUN:", ":NODE:"],
               ":BLANK_LINE:",
               [
                 ":PACKAGE:",
@@ -107,12 +102,7 @@
                 "!@effect-atom/**"
               ],
               ":BLANK_LINE:",
-              [
-                "effect",
-                "effect/**",
-                "@effect/**",
-                "@effect-atom/**"
-              ],
+              ["effect", "effect/**", "@effect/**", "@effect-atom/**"],
               ":BLANK_LINE:",
               ":URL:",
               ":BLANK_LINE:",
