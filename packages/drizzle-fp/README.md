@@ -1,6 +1,7 @@
 # Drizzle FP
 
-Write drizzle table declarations in functional style, and make reusable table parts easily
+Write drizzle table declarations in functional style, and make reusable table
+parts easily
 
 ## TODO
 
@@ -9,3 +10,4 @@ Write drizzle table declarations in functional style, and make reusable table pa
 - add special ensure operator, that will work purely on type-level to ensure
   presence of some fields or properties. maybe make it accepts the effect
   schema, or just some generic type
+- reference examples
