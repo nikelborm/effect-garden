@@ -1,4 +1,6 @@
 import { strSnakeCase } from '@nevware21/ts-utils'
+import type { Table } from 'drizzle-orm'
+import { getColumnTable, getTableName } from 'drizzle-orm'
 import { foreignKey } from 'drizzle-orm/pg-core'
 
 import { addExtraConfig } from './addExtraConfig.ts'
@@ -19,9 +21,9 @@ export const addFk =
       )
 
       const foreignColumn = getColumnOfForeignTable()
-      const foreignTableName = (foreignColumn as any).table[
-        Symbol.for('drizzle:Name')
-      ] as string
+      const foreignTableName = getTableName(
+        getColumnTable<Table>(foreignColumn),
+      )
       const foreignColumnNamesSnakeCasedCloseToSQL = foreignColumn.name
 
       const isForeignColumnNameAPrimitiveId =
