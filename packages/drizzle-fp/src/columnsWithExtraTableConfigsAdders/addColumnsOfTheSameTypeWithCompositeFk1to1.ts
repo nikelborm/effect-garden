@@ -1,4 +1,4 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder, AnyPgTable } from 'drizzle-orm/pg-core'
 
 import type { FunctionExtendingColumnsMap } from '../columnsAdders/index.ts'
 import { addColumnsOfTheSameTypeWithCompositeFk } from './addColumnsOfTheSameTypeWithCompositeFk.ts'
@@ -10,7 +10,7 @@ export const addColumnsOfTheSameTypeWithCompositeFk1to1 = <
     ...(keyof TTable)[],
   ],
   TTable extends AnyPgTable,
-  ColumnBuilder extends PgColumnBuilderBase,
+  ColumnBuilder extends AnyPgColumnBuilder,
 >(
   getForeignTable: () => TTable,
   buildColumn: () => ColumnBuilder,

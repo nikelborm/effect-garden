@@ -1,4 +1,4 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder, AnyPgTable } from 'drizzle-orm/pg-core'
 
 import { flow } from 'effect/Function'
 
@@ -55,6 +55,6 @@ export const addColumnsWithCompositeFk = <
 }
 
 type BatchColumnAdderValueOfRecord<TTable> = {
-  currentColumnBuilder: PgColumnBuilderBase
+  currentColumnBuilder: AnyPgColumnBuilder
   foreignColumnName: keyof NoInfer<TTable>
 }

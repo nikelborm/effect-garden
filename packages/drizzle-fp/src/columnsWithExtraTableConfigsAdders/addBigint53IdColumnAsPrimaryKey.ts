@@ -1,6 +1,8 @@
-import type { IsIdentity, NotNull } from 'drizzle-orm'
-import type { PgBigInt53BuilderInitial } from 'drizzle-orm/pg-core'
-import { bigint } from 'drizzle-orm/pg-core'
+import {
+  bigint,
+  type HasIdentity,
+  type PgBigInt53Builder,
+} from 'drizzle-orm/pg-core'
 
 import { pipe } from 'effect/Function'
 
@@ -15,7 +17,7 @@ export const addBigint53IdColumnAsPrimaryKey = <
   args: TableFuncArgs<TTableName, TColumnsMap>,
 ): TableFuncArgs<
   TTableName,
-  TColumnsMap & { id: PgBigint53GeneratedAlwaysAsIdentity<TTableName> }
+  TColumnsMap & { id: PgBigint53GeneratedAlwaysAsIdentity }
 > =>
   pipe(
     addColumn('id', () =>
@@ -26,5 +28,7 @@ export const addBigint53IdColumnAsPrimaryKey = <
     addPrimaryKey('id'),
   )
 
-type PgBigint53GeneratedAlwaysAsIdentity<TTableName extends string> =
-  IsIdentity<NotNull<PgBigInt53BuilderInitial<`${TTableName}_id`>>, 'always'>
+type PgBigint53GeneratedAlwaysAsIdentity = HasIdentity<
+  PgBigInt53Builder,
+  'always'
+>

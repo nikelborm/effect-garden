@@ -1,5 +1,4 @@
-import type { NotNull } from 'drizzle-orm'
-import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder, SetNotNull } from 'drizzle-orm/pg-core'
 
 import type { AllowOnlyNonEmptyObjectsWithActualKeys } from './AllowOnlyValidColumnMaps.ts'
 import { addColumns } from './addColumns.ts'
@@ -31,11 +30,11 @@ type BuiltRequiredColumnsAdder<TAdditionalColumnsMap> =
   FunctionExtendingColumnsMap<MakeColumnsInMapNotNull<TAdditionalColumnsMap>>
 
 type MakeColumnsInMapNotNull<TColumnsMap> = {
-  [ColumnName in keyof TColumnsMap]: TColumnsMap[ColumnName] extends PgColumnBuilderBase
-    ? NotNull<TColumnsMap[ColumnName]>
+  [ColumnName in keyof TColumnsMap]: TColumnsMap[ColumnName] extends AnyPgColumnBuilder
+    ? SetNotNull<TColumnsMap[ColumnName]>
     : never
 }
 
-export type ColumnBuilderWithNotNullMethod = PgColumnBuilderBase & {
-  notNull: () => NotNull<PgColumnBuilderBase>
+export type ColumnBuilderWithNotNullMethod = AnyPgColumnBuilder & {
+  notNull: () => SetNotNull<AnyPgColumnBuilder>
 }

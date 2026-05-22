@@ -1,4 +1,4 @@
-import type { AnyPgTable, PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder, AnyPgTable } from 'drizzle-orm/pg-core'
 
 import type {
   AllowOnlyNonEmptyObjectsWithActualKeys,
@@ -11,7 +11,7 @@ export const addColumnsOfTheSameTypeWithCompositeFk = <
     ? AllowOnlyNonEmptyObjectsWithActualKeys<U, keyof NoInfer<TTable>>
     : never,
   TTable extends AnyPgTable,
-  ColumnBuilder extends PgColumnBuilderBase,
+  ColumnBuilder extends AnyPgColumnBuilder,
 >(
   getForeignTable: () => TTable,
   buildColumn: () => ColumnBuilder,

@@ -1,4 +1,4 @@
-import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder } from 'drizzle-orm/pg-core'
 
 import { flow } from 'effect/Function'
 
@@ -13,7 +13,7 @@ import {
 
 export const addColumnWithFk = <
   const NameOfColumnInCurrentTable extends string,
-  ColumnBuilder extends PgColumnBuilderBase,
+  ColumnBuilder extends AnyPgColumnBuilder,
 >(
   nameOfColumnInCurrentTable: NameOfColumnInCurrentTable,
   buildColumn: () => ColumnBuilder,

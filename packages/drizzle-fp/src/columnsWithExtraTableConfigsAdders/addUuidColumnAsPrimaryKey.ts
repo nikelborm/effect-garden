@@ -1,5 +1,4 @@
-import type { NotNull } from 'drizzle-orm'
-import { type PgUUIDBuilderInitial, uuid } from 'drizzle-orm/pg-core'
+import { type PgUUIDBuilder, type SetNotNull, uuid } from 'drizzle-orm/pg-core'
 
 import { pipe } from 'effect/Function'
 
@@ -12,7 +11,7 @@ export const addUuidColumnAsPrimaryKey = <
   TColumnsMap extends GeneralColumnMap,
 >(
   args: TableFuncArgs<TTableName, TColumnsMap>,
-): TableFuncArgs<TTableName, TColumnsMap & { id: PgUUID<TTableName> }> =>
+): TableFuncArgs<TTableName, TColumnsMap & { id: PgUUID }> =>
   pipe(
     addColumns(() => ({
       id: uuid(`${args[0]}_uuid`).notNull(),
@@ -20,6 +19,4 @@ export const addUuidColumnAsPrimaryKey = <
     addPrimaryKey('id'),
   )
 
-export type PgUUID<TTableName extends string> = NotNull<
-  PgUUIDBuilderInitial<`${TTableName}_uuid`>
->
+export type PgUUID = SetNotNull<PgUUIDBuilder>

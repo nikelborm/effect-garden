@@ -1,11 +1,11 @@
-import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder } from 'drizzle-orm/pg-core'
 
 import { addColumns } from './addColumns.ts'
 import type { FunctionExtendingColumnsMap } from './FunctionExtendingColumnsMap.ts'
 
 export const addColumn = <
   const NameOfColumnInCurrentTable extends string,
-  ColumnBuilder extends PgColumnBuilderBase,
+  ColumnBuilder extends AnyPgColumnBuilder,
 >(
   nameOfColumnInCurrentTable: NameOfColumnInCurrentTable,
   buildColumn: () => ColumnBuilder,

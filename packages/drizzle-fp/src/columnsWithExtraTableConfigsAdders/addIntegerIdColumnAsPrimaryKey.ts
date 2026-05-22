@@ -1,5 +1,8 @@
-import type { IsIdentity, NotNull } from 'drizzle-orm'
-import { integer, type PgIntegerBuilderInitial } from 'drizzle-orm/pg-core'
+import {
+  type HasIdentity,
+  integer,
+  type PgIntegerBuilder,
+} from 'drizzle-orm/pg-core'
 
 import { pipe } from 'effect/Function'
 
@@ -14,7 +17,7 @@ export const addIntegerIdColumnAsPrimaryKey = <
   args: TableFuncArgs<TTableName, TColumnsMap>,
 ): TableFuncArgs<
   TTableName,
-  TColumnsMap & { id: PgIntegerGeneratedAlwaysAsIdentity<TTableName> }
+  TColumnsMap & { id: PgIntegerGeneratedAlwaysAsIdentity }
 > =>
   pipe(
     addColumns(() => ({
@@ -23,5 +26,7 @@ export const addIntegerIdColumnAsPrimaryKey = <
     addPrimaryKey('id'),
   )
 
-export type PgIntegerGeneratedAlwaysAsIdentity<TTableName extends string> =
-  IsIdentity<NotNull<PgIntegerBuilderInitial<`${TTableName}_id`>>, 'always'>
+export type PgIntegerGeneratedAlwaysAsIdentity = HasIdentity<
+  PgIntegerBuilder,
+  'always'
+>
