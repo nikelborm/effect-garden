@@ -1,5 +1,6 @@
-import { HttpApiEndpoint, HttpApiGroup } from '@effect/platform'
-import { Schema } from 'effect'
+import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint'
+import * as HttpApiGroup from '@effect/platform/HttpApiGroup'
+import * as Schema from 'effect/Schema'
 
 export const GetCurrentHealthEndpoint = HttpApiEndpoint.get(
   'Get current health',

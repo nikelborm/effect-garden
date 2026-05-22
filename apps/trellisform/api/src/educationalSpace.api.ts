@@ -7,8 +7,10 @@ import {
   EducationalSpaceSchema,
 } from '@trellisform/model'
 
-import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from '@effect/platform'
-import { Schema } from 'effect'
+import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint'
+import * as HttpApiGroup from '@effect/platform/HttpApiGroup'
+import * as HttpApiSchema from '@effect/platform/HttpApiSchema'
+import * as Schema from 'effect/Schema'
 
 const withOpenApiAnnotations = _withOpenApiAnnotations('@trellisform/api')
 
