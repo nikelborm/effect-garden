@@ -1,7 +1,62 @@
 {
   "name": "@trellisform/api",
   "type": "module",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Reusable Effect HTTP API declarations of Trellis Form.",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "@evadev/effect-helpers": "workspace:^",
+    "@trellisform/model": "workspace:^",
+    "ts-patch": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform/api#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "apps/trellisform/api"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "exports": {
     ".": {
       "types": "./dist-types/index.d.ts",
@@ -35,20 +90,6 @@
       "types": "./dist-types/src/testVariantAttempt.api.d.ts",
       "default": "./dist/src/testVariantAttempt.api.js"
     }
-  },
-  "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
-  },
-  "devDependencies": {
-    "@evadev/tsconfig": "workspace:^"
-  },
-  "dependencies": {
-    "@effect/platform": "catalog:",
-    "@evadev/effect-helpers": "workspace:^",
-    "@trellisform/model": "workspace:^",
-    "effect": "catalog:",
-    "ts-patch": "^4.0.1"
   },
   "trustedDependencies": [
     "@parcel/watcher"

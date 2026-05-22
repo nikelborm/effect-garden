@@ -1,21 +1,60 @@
 {
   "name": "@trellisform/database-effect-schema",
   "type": "module",
-  "private": true,
-  "exports": {
-    "types": "./dist-types/index.d.ts",
-    "default": "./dist/index.js"
+  "version": "0.1.0",
+  "description": "Schemas of TrellisForm entities inferred from the database",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@handfish/drizzle-effect": "catalog:",
+    "@trellisform/database": "workspace:^",
+    "ts-patch": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform/database-effect-schema#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "apps/trellisform/database-effect-schema"
   },
   "scripts": {
     "build": "tspc",
     "dev": "tspc --watch"
   },
-  "devDependencies": {
-    "@evadev/tsconfig": "workspace:^"
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
   },
-  "dependencies": {
-    "@handfish/drizzle-effect": "^0.0.17",
-    "@trellisform/database": "workspace:^",
-    "ts-patch": "^4.0.1"
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
   }
 }

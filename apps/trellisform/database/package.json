@@ -8,7 +8,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
-    "ts-patch": "^4.0.1",
+    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
