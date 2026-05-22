@@ -84,10 +84,13 @@
     "archive-compress-encrypt-and-back": "dist/ace.js"
   },
   "files": [
-    "dist",
     "dist-types",
-    "src",
+    "dist",
     "index.ts",
-    "package.json"
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
   ]
 }

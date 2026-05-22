@@ -1,0 +1,2105 @@
+{
+  "id": "6ef8bff5-24d4-4a48-857f-b4ceb7225570",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.abstract_answer_option": {
+      "name": "abstract_answer_option",
+      "schema": "",
+      "columns": {
+        "abstract_answer_option_id": {
+          "name": "abstract_answer_option_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "abstract_answer_option_abstract_answer_option_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "text_of_selectable_answer": {
+          "name": "text_of_selectable_answer",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abstract_question_id": {
+          "name": "abstract_question_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_abstract_answer_option_abstract_question_id": {
+          "name": "FK_abstract_answer_option_abstract_question_id",
+          "tableFrom": "abstract_answer_option",
+          "tableTo": "abstract_question",
+          "columnsFrom": ["abstract_question_id"],
+          "columnsTo": ["abstract_question_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_abstract_answer_option_created_by_user_id_user": {
+          "name": "FK_abstract_answer_option_created_by_user_id_user",
+          "tableFrom": "abstract_answer_option",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_abstract_answer_option": {
+          "name": "PK_abstract_answer_option",
+          "columns": ["abstract_answer_option_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_abstract_answer_option_order": {
+          "name": "UQ_abstract_answer_option_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_AbstractAnswerOptionAbstractQuestionIdAbstractAnswerOptionId": {
+          "name": "UQ_AbstractAnswerOptionAbstractQuestionIdAbstractAnswerOptionId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_question_id", "abstract_answer_option_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.abstract_question": {
+      "name": "abstract_question",
+      "schema": "",
+      "columns": {
+        "abstract_question_id": {
+          "name": "abstract_question_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "abstract_question_abstract_question_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abstract_test_stage_id": {
+          "name": "abstract_test_stage_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_additional_free_field_answer_enabled": {
+          "name": "is_additional_free_field_answer_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "answer_choice_type": {
+          "name": "answer_choice_type",
+          "type": "abstract_question_answer_choice_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'selectOne'"
+        },
+        "data_type_of_free_field_answers": {
+          "name": "data_type_of_free_field_answers",
+          "type": "abstract_question_data_type_of_answers_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_abstract_question_abstract_test_stage_id": {
+          "name": "FK_abstract_question_abstract_test_stage_id",
+          "tableFrom": "abstract_question",
+          "tableTo": "abstract_test_stage",
+          "columnsFrom": ["abstract_test_stage_id"],
+          "columnsTo": ["abstract_test_stage_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_abstract_question_created_by_user_id_user": {
+          "name": "FK_abstract_question_created_by_user_id_user",
+          "tableFrom": "abstract_question",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_abstract_question": {
+          "name": "PK_abstract_question",
+          "columns": ["abstract_question_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_abstract_question_order": {
+          "name": "UQ_abstract_question_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_AbstractQuestionAbstractTestStageIdAbstractQuestionId": {
+          "name": "UQ_AbstractQuestionAbstractTestStageIdAbstractQuestionId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_stage_id", "abstract_question_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.abstract_test": {
+      "name": "abstract_test",
+      "schema": "",
+      "columns": {
+        "abstract_test_id": {
+          "name": "abstract_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "abstract_test_abstract_test_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "goal": {
+          "name": "goal",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_ready_to_launch": {
+          "name": "is_ready_to_launch",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_public_worldwide": {
+          "name": "is_public_worldwide",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_abstract_test_created_by_user_id_user": {
+          "name": "FK_abstract_test_created_by_user_id_user",
+          "tableFrom": "abstract_test",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_abstract_test": {
+          "name": "PK_abstract_test",
+          "columns": ["abstract_test_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.abstract_test_stage": {
+      "name": "abstract_test_stage",
+      "schema": "",
+      "columns": {
+        "abstract_test_stage_id": {
+          "name": "abstract_test_stage_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "abstract_test_stage_abstract_test_stage_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abstract_test_variant_id": {
+          "name": "abstract_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_abstract_test_stage_abstract_test_variant_id": {
+          "name": "FK_abstract_test_stage_abstract_test_variant_id",
+          "tableFrom": "abstract_test_stage",
+          "tableTo": "abstract_test_variant",
+          "columnsFrom": ["abstract_test_variant_id"],
+          "columnsTo": ["abstract_test_variant_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_abstract_test_stage_created_by_user_id_user": {
+          "name": "FK_abstract_test_stage_created_by_user_id_user",
+          "tableFrom": "abstract_test_stage",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_abstract_test_stage": {
+          "name": "PK_abstract_test_stage",
+          "columns": ["abstract_test_stage_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_abstract_test_stage_order": {
+          "name": "UQ_abstract_test_stage_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_AbstractTestStageAbstractTestVariantIdAbstractTestStageId": {
+          "name": "UQ_AbstractTestStageAbstractTestVariantIdAbstractTestStageId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_variant_id", "abstract_test_stage_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.abstract_test_variant": {
+      "name": "abstract_test_variant",
+      "schema": "",
+      "columns": {
+        "abstract_test_variant_id": {
+          "name": "abstract_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "abstract_test_variant_abstract_test_variant_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_artificially_generated": {
+          "name": "is_artificially_generated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_ready_to_launch": {
+          "name": "is_ready_to_launch",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "is_public_worldwide": {
+          "name": "is_public_worldwide",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "abstract_test_id": {
+          "name": "abstract_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_abstract_test_variant_abstract_test_id": {
+          "name": "FK_abstract_test_variant_abstract_test_id",
+          "tableFrom": "abstract_test_variant",
+          "tableTo": "abstract_test",
+          "columnsFrom": ["abstract_test_id"],
+          "columnsTo": ["abstract_test_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_abstract_test_variant_created_by_user_id_user": {
+          "name": "FK_abstract_test_variant_created_by_user_id_user",
+          "tableFrom": "abstract_test_variant",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_abstract_test_variant": {
+          "name": "PK_abstract_test_variant",
+          "columns": ["abstract_test_variant_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_AbstractTestVariantAbstractTestIdAbstractTestVariantId": {
+          "name": "UQ_AbstractTestVariantAbstractTestIdAbstractTestVariantId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_id", "abstract_test_variant_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_user_id_user_user_uuid_for_better_auth_fk": {
+          "name": "account_user_id_user_user_uuid_for_better_auth_fk",
+          "tableFrom": "account",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["user_uuid_for_better_auth"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.answer_option_instance": {
+      "name": "answer_option_instance",
+      "schema": "",
+      "columns": {
+        "answer_option_instance_id": {
+          "name": "answer_option_instance_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "answer_option_instance_answer_option_instance_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "abstract_question_id": {
+          "name": "abstract_question_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "question_instance_id": {
+          "name": "question_instance_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "abstract_answer_option_id": {
+          "name": "abstract_answer_option_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_selected": {
+          "name": "is_selected",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_AnswerOptionInstanceAbstractQuestionIdQuestionIIdQIAQIdQIId": {
+          "name": "FK_AnswerOptionInstanceAbstractQuestionIdQuestionIIdQIAQIdQIId",
+          "tableFrom": "answer_option_instance",
+          "tableTo": "question_instance",
+          "columnsFrom": ["abstract_question_id", "question_instance_id"],
+          "columnsTo": ["abstract_question_id", "question_instance_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_AnswerOptionIAQIdAAnswerOptionIdAAnswerOptionAQIdAAnswerOId": {
+          "name": "FK_AnswerOptionIAQIdAAnswerOptionIdAAnswerOptionAQIdAAnswerOId",
+          "tableFrom": "answer_option_instance",
+          "tableTo": "abstract_answer_option",
+          "columnsFrom": ["abstract_question_id", "abstract_answer_option_id"],
+          "columnsTo": ["abstract_question_id", "abstract_answer_option_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_answer_option_instance": {
+          "name": "PK_answer_option_instance",
+          "columns": ["answer_option_instance_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_answer_option_instance_order": {
+          "name": "UQ_answer_option_instance_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_AnswerOptionInstanceAbstractAnswerOptionIdAnswerOptionIId": {
+          "name": "UQ_AnswerOptionInstanceAbstractAnswerOptionIdAnswerOptionIId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_answer_option_id", "answer_option_instance_id"]
+        },
+        "UQ_AnswerOptionInstanceQuestionInstanceIdAbstractAnswerOptionId": {
+          "name": "UQ_AnswerOptionInstanceQuestionInstanceIdAbstractAnswerOptionId",
+          "nullsNotDistinct": false,
+          "columns": ["question_instance_id", "abstract_answer_option_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.available_for_launch_test": {
+      "name": "available_for_launch_test",
+      "schema": "",
+      "columns": {
+        "abstract_test_id": {
+          "name": "abstract_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "educational_space_id": {
+          "name": "educational_space_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_available_for_launch_test_abstract_test_id": {
+          "name": "FK_available_for_launch_test_abstract_test_id",
+          "tableFrom": "available_for_launch_test",
+          "tableTo": "abstract_test",
+          "columnsFrom": ["abstract_test_id"],
+          "columnsTo": ["abstract_test_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_available_for_launch_test_educational_space_id": {
+          "name": "FK_available_for_launch_test_educational_space_id",
+          "tableFrom": "available_for_launch_test",
+          "tableTo": "educational_space",
+          "columnsFrom": ["educational_space_id"],
+          "columnsTo": ["educational_space_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_available_for_launch_test": {
+          "name": "PK_available_for_launch_test",
+          "columns": ["abstract_test_id", "educational_space_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.educational_space": {
+      "name": "educational_space",
+      "schema": "",
+      "columns": {
+        "educational_space_id": {
+          "name": "educational_space_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "educational_space_educational_space_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_educational_space_created_by_user_id_user": {
+          "name": "FK_educational_space_created_by_user_id_user",
+          "tableFrom": "educational_space",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_educational_space": {
+          "name": "PK_educational_space",
+          "columns": ["educational_space_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.educational_space_access_scope": {
+      "name": "educational_space_access_scope",
+      "schema": "",
+      "columns": {
+        "type": {
+          "name": "type",
+          "type": "educational_space_access_scope_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_educational_space_access_scope_user_group_id": {
+          "name": "FK_educational_space_access_scope_user_group_id",
+          "tableFrom": "educational_space_access_scope",
+          "tableTo": "user_group",
+          "columnsFrom": ["user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_educational_space_access_scope": {
+          "name": "PK_educational_space_access_scope",
+          "columns": ["user_group_id", "type"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.launched_test": {
+      "name": "launched_test",
+      "schema": "",
+      "columns": {
+        "launched_test_id": {
+          "name": "launched_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "launched_test_launched_test_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "opening_date": {
+          "name": "opening_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closing_date": {
+          "name": "closing_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maximum_attempt_duration_in_minutes": {
+          "name": "maximum_attempt_duration_in_minutes",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "maximum_amount_of_attempts": {
+          "name": "maximum_amount_of_attempts",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "should_reorder_stages_for_each_student": {
+          "name": "should_reorder_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "should_reorder_questions_in_stages_for_each_student": {
+          "name": "should_reorder_questions_in_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "should_reorder_answers_in_stages_for_each_student": {
+          "name": "should_reorder_answers_in_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abstract_test_id": {
+          "name": "abstract_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "educational_space_id": {
+          "name": "educational_space_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "launched_by_user_id": {
+          "name": "launched_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_launched_test_abstract_test_id": {
+          "name": "FK_launched_test_abstract_test_id",
+          "tableFrom": "launched_test",
+          "tableTo": "abstract_test",
+          "columnsFrom": ["abstract_test_id"],
+          "columnsTo": ["abstract_test_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_launched_test_educational_space_id": {
+          "name": "FK_launched_test_educational_space_id",
+          "tableFrom": "launched_test",
+          "tableTo": "educational_space",
+          "columnsFrom": ["educational_space_id"],
+          "columnsTo": ["educational_space_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_launched_test_launched_by_user_id_user": {
+          "name": "FK_launched_test_launched_by_user_id_user",
+          "tableFrom": "launched_test",
+          "tableTo": "user",
+          "columnsFrom": ["launched_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_launched_test": {
+          "name": "PK_launched_test",
+          "columns": ["launched_test_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_launched_test_abstract_test_id_launched_test_id": {
+          "name": "UQ_launched_test_abstract_test_id_launched_test_id",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_id", "launched_test_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.launched_test_access_scope": {
+      "name": "launched_test_access_scope",
+      "schema": "",
+      "columns": {
+        "type": {
+          "name": "type",
+          "type": "launched_test_access_scope_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "launched_test_id": {
+          "name": "launched_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_launched_test_access_scope_user_group_id": {
+          "name": "FK_launched_test_access_scope_user_group_id",
+          "tableFrom": "launched_test_access_scope",
+          "tableTo": "user_group",
+          "columnsFrom": ["user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_launched_test_access_scope_launched_test_id": {
+          "name": "FK_launched_test_access_scope_launched_test_id",
+          "tableFrom": "launched_test_access_scope",
+          "tableTo": "launched_test",
+          "columnsFrom": ["launched_test_id"],
+          "columnsTo": ["launched_test_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_launched_test_access_scope": {
+          "name": "PK_launched_test_access_scope",
+          "columns": ["user_group_id", "launched_test_id", "type"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.launched_test_variant": {
+      "name": "launched_test_variant",
+      "schema": "",
+      "columns": {
+        "launched_test_variant_id": {
+          "name": "launched_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "launched_test_variant_launched_test_variant_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "abstract_test_id": {
+          "name": "abstract_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "abstract_test_variant_id": {
+          "name": "abstract_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "launched_test_id": {
+          "name": "launched_test_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "should_reorder_stages_for_each_student": {
+          "name": "should_reorder_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "should_reorder_questions_in_stages_for_each_student": {
+          "name": "should_reorder_questions_in_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "should_reorder_answers_in_stages_for_each_student": {
+          "name": "should_reorder_answers_in_stages_for_each_student",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_LTestVariantATestIdATestVariantIdATestVariantATestIdATestVId": {
+          "name": "FK_LTestVariantATestIdATestVariantIdATestVariantATestIdATestVId",
+          "tableFrom": "launched_test_variant",
+          "tableTo": "abstract_test_variant",
+          "columnsFrom": ["abstract_test_id", "abstract_test_variant_id"],
+          "columnsTo": ["abstract_test_id", "abstract_test_variant_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_LaunchedTestVariantAbstractTestIdLTestIdLTestATestIdLTestId": {
+          "name": "FK_LaunchedTestVariantAbstractTestIdLTestIdLTestATestIdLTestId",
+          "tableFrom": "launched_test_variant",
+          "tableTo": "launched_test",
+          "columnsFrom": ["abstract_test_id", "launched_test_id"],
+          "columnsTo": ["abstract_test_id", "launched_test_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_launched_test_variant": {
+          "name": "PK_launched_test_variant",
+          "columns": ["launched_test_variant_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_LaunchedTestVariantAbstractTestVariantIdLTestVariantId": {
+          "name": "UQ_LaunchedTestVariantAbstractTestVariantIdLTestVariantId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_variant_id", "launched_test_variant_id"]
+        },
+        "UQ_LaunchedTestVariantLaunchedTestIdAbstractTestVariantId": {
+          "name": "UQ_LaunchedTestVariantLaunchedTestIdAbstractTestVariantId",
+          "nullsNotDistinct": false,
+          "columns": ["launched_test_id", "abstract_test_variant_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.launched_test_variant_access_scope": {
+      "name": "launched_test_variant_access_scope",
+      "schema": "",
+      "columns": {
+        "type": {
+          "name": "type",
+          "type": "launched_test_variant_access_scope_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "launched_test_variant_id": {
+          "name": "launched_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_launched_test_variant_access_scope_user_group_id": {
+          "name": "FK_launched_test_variant_access_scope_user_group_id",
+          "tableFrom": "launched_test_variant_access_scope",
+          "tableTo": "user_group",
+          "columnsFrom": ["user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_launched_test_variant_access_scope_launched_test_variant_id": {
+          "name": "FK_launched_test_variant_access_scope_launched_test_variant_id",
+          "tableFrom": "launched_test_variant_access_scope",
+          "tableTo": "launched_test_variant",
+          "columnsFrom": ["launched_test_variant_id"],
+          "columnsTo": ["launched_test_variant_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_launched_test_variant_access_scope": {
+          "name": "PK_launched_test_variant_access_scope",
+          "columns": ["user_group_id", "launched_test_variant_id", "type"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.question_instance": {
+      "name": "question_instance",
+      "schema": "",
+      "columns": {
+        "question_instance_id": {
+          "name": "question_instance_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "question_instance_question_instance_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "abstract_test_stage_id": {
+          "name": "abstract_test_stage_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "test_stage_instance_id": {
+          "name": "test_stage_instance_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "abstract_question_id": {
+          "name": "abstract_question_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "free_field_answer": {
+          "name": "free_field_answer",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_QIATestStageIdTestStageIIdTestStageIATestStageIdTestStageIId": {
+          "name": "FK_QIATestStageIdTestStageIIdTestStageIATestStageIdTestStageIId",
+          "tableFrom": "question_instance",
+          "tableTo": "test_stage_instance",
+          "columnsFrom": ["abstract_test_stage_id", "test_stage_instance_id"],
+          "columnsTo": ["abstract_test_stage_id", "test_stage_instance_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_QuestionInstanceAbstractTestStageIdAQIdAQATestStageIdAQId": {
+          "name": "FK_QuestionInstanceAbstractTestStageIdAQIdAQATestStageIdAQId",
+          "tableFrom": "question_instance",
+          "tableTo": "abstract_question",
+          "columnsFrom": ["abstract_test_stage_id", "abstract_question_id"],
+          "columnsTo": ["abstract_test_stage_id", "abstract_question_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_question_instance": {
+          "name": "PK_question_instance",
+          "columns": ["question_instance_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_question_instance_order": {
+          "name": "UQ_question_instance_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_question_instance_abstract_question_id_question_instance_id": {
+          "name": "UQ_question_instance_abstract_question_id_question_instance_id",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_question_id", "question_instance_id"]
+        },
+        "UQ_QuestionInstanceTestStageInstanceIdAbstractQuestionId": {
+          "name": "UQ_QuestionInstanceTestStageInstanceIdAbstractQuestionId",
+          "nullsNotDistinct": false,
+          "columns": ["test_stage_instance_id", "abstract_question_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.session": {
+      "name": "session",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "session_user_id_user_user_uuid_for_better_auth_fk": {
+          "name": "session_user_id_user_user_uuid_for_better_auth_fk",
+          "tableFrom": "session",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["user_uuid_for_better_auth"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "session_token_unique": {
+          "name": "session_token_unique",
+          "nullsNotDistinct": false,
+          "columns": ["token"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.single_correct_abstract_answer_option": {
+      "name": "single_correct_abstract_answer_option",
+      "schema": "",
+      "columns": {
+        "abstract_question_id": {
+          "name": "abstract_question_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "abstract_answer_option_id": {
+          "name": "abstract_answer_option_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "score_contribution": {
+          "name": "score_contribution",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_SingleCAAnswerOptionAQIdAAnswerOptionIdAAnswerOAQIdAAOId": {
+          "name": "FK_SingleCAAnswerOptionAQIdAAnswerOptionIdAAnswerOAQIdAAOId",
+          "tableFrom": "single_correct_abstract_answer_option",
+          "tableTo": "abstract_answer_option",
+          "columnsFrom": ["abstract_question_id", "abstract_answer_option_id"],
+          "columnsTo": ["abstract_question_id", "abstract_answer_option_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_single_correct_abstract_answer_option": {
+          "name": "PK_single_correct_abstract_answer_option",
+          "columns": ["abstract_question_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test_stage_instance": {
+      "name": "test_stage_instance",
+      "schema": "",
+      "columns": {
+        "test_stage_instance_id": {
+          "name": "test_stage_instance_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "test_stage_instance_test_stage_instance_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "abstract_test_variant_id": {
+          "name": "abstract_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "test_variant_attempt_id": {
+          "name": "test_variant_attempt_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "abstract_test_stage_id": {
+          "name": "abstract_test_stage_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "serial",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_TestStageIATestVariantIdTestVariantAIdTestVAATestVIdTestVAId": {
+          "name": "FK_TestStageIATestVariantIdTestVariantAIdTestVAATestVIdTestVAId",
+          "tableFrom": "test_stage_instance",
+          "tableTo": "test_variant_attempt",
+          "columnsFrom": [
+            "abstract_test_variant_id",
+            "test_variant_attempt_id"
+          ],
+          "columnsTo": ["abstract_test_variant_id", "test_variant_attempt_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_TestStageIATestVIdATestStageIdATestStageATestVIdATestStageId": {
+          "name": "FK_TestStageIATestVIdATestStageIdATestStageATestVIdATestStageId",
+          "tableFrom": "test_stage_instance",
+          "tableTo": "abstract_test_stage",
+          "columnsFrom": ["abstract_test_variant_id", "abstract_test_stage_id"],
+          "columnsTo": ["abstract_test_variant_id", "abstract_test_stage_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_test_stage_instance": {
+          "name": "PK_test_stage_instance",
+          "columns": ["test_stage_instance_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_test_stage_instance_order": {
+          "name": "UQ_test_stage_instance_order",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        },
+        "UQ_TestStageInstanceAbstractTestStageIdTestStageInstanceId": {
+          "name": "UQ_TestStageInstanceAbstractTestStageIdTestStageInstanceId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_stage_id", "test_stage_instance_id"]
+        },
+        "UQ_TestStageInstanceTestVariantAttemptIdAbstractTestStageId": {
+          "name": "UQ_TestStageInstanceTestVariantAttemptIdAbstractTestStageId",
+          "nullsNotDistinct": false,
+          "columns": ["test_variant_attempt_id", "abstract_test_stage_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.test_variant_attempt": {
+      "name": "test_variant_attempt",
+      "schema": "",
+      "columns": {
+        "test_variant_attempt_id": {
+          "name": "test_variant_attempt_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "test_variant_attempt_test_variant_attempt_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "abstract_test_variant_id": {
+          "name": "abstract_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "launched_test_variant_id": {
+          "name": "launched_test_variant_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at_date": {
+          "name": "finished_at_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_saved_at_date": {
+          "name": "last_saved_at_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "test_attempt_status_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_TestVariantAttemptATestVIdLTestVIdLTestVATestVIdLTestVId": {
+          "name": "FK_TestVariantAttemptATestVIdLTestVIdLTestVATestVIdLTestVId",
+          "tableFrom": "test_variant_attempt",
+          "tableTo": "launched_test_variant",
+          "columnsFrom": [
+            "abstract_test_variant_id",
+            "launched_test_variant_id"
+          ],
+          "columnsTo": ["abstract_test_variant_id", "launched_test_variant_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_test_variant_attempt_user_id": {
+          "name": "FK_test_variant_attempt_user_id",
+          "tableFrom": "test_variant_attempt",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_test_variant_attempt": {
+          "name": "PK_test_variant_attempt",
+          "columns": ["test_variant_attempt_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_TestVariantAttemptAbstractTestVariantIdTestVariantAttemptId": {
+          "name": "UQ_TestVariantAttemptAbstractTestVariantIdTestVariantAttemptId",
+          "nullsNotDistinct": false,
+          "columns": ["abstract_test_variant_id", "test_variant_attempt_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "user_user_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_uuid_for_better_auth": {
+          "name": "user_uuid_for_better_auth",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "how_to_address_me": {
+          "name": "how_to_address_me",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_email_verified": {
+          "name": "is_email_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "can_create_educational_spaces": {
+          "name": "can_create_educational_spaces",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "PK_user": {
+          "name": "PK_user",
+          "columns": ["user_id"]
+        }
+      },
+      "uniqueConstraints": {
+        "UQ_user_email": {
+          "name": "UQ_user_email",
+          "nullsNotDistinct": false,
+          "columns": ["email"]
+        },
+        "UQ_user_user_uuid_for_better_auth": {
+          "name": "UQ_user_user_uuid_for_better_auth",
+          "nullsNotDistinct": false,
+          "columns": ["user_uuid_for_better_auth"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_group": {
+      "name": "user_group",
+      "schema": "",
+      "columns": {
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "user_group_user_group_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "educational_space_id": {
+          "name": "educational_space_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by_user_id": {
+          "name": "created_by_user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_user_group_educational_space_id": {
+          "name": "FK_user_group_educational_space_id",
+          "tableFrom": "user_group",
+          "tableTo": "educational_space",
+          "columnsFrom": ["educational_space_id"],
+          "columnsTo": ["educational_space_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_user_group_created_by_user_id_user": {
+          "name": "FK_user_group_created_by_user_id_user",
+          "tableFrom": "user_group",
+          "tableTo": "user",
+          "columnsFrom": ["created_by_user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_user_group": {
+          "name": "PK_user_group",
+          "columns": ["user_group_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_group_management_access_scope": {
+      "name": "user_group_management_access_scope",
+      "schema": "",
+      "columns": {
+        "type": {
+          "name": "type",
+          "type": "user_group_management_access_scope_type_enum",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "leader_user_group_id": {
+          "name": "leader_user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subordinate_user_group_id": {
+          "name": "subordinate_user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_UserGroupManagementAccessScopeLeaderUserGroupIdUserGroup": {
+          "name": "FK_UserGroupManagementAccessScopeLeaderUserGroupIdUserGroup",
+          "tableFrom": "user_group_management_access_scope",
+          "tableTo": "user_group",
+          "columnsFrom": ["leader_user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_UserGroupManagementAccessScopeSUserGroupIdUserGroup": {
+          "name": "FK_UserGroupManagementAccessScopeSUserGroupIdUserGroup",
+          "tableFrom": "user_group_management_access_scope",
+          "tableTo": "user_group",
+          "columnsFrom": ["subordinate_user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_user_group_management_access_scope": {
+          "name": "PK_user_group_management_access_scope",
+          "columns": [
+            "leader_user_group_id",
+            "subordinate_user_group_id",
+            "type"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_to_user_group": {
+      "name": "user_to_user_group",
+      "schema": "",
+      "columns": {
+        "user_group_id": {
+          "name": "user_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "FK_user_to_user_group_user_group_id": {
+          "name": "FK_user_to_user_group_user_group_id",
+          "tableFrom": "user_to_user_group",
+          "tableTo": "user_group",
+          "columnsFrom": ["user_group_id"],
+          "columnsTo": ["user_group_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "FK_user_to_user_group_user_id": {
+          "name": "FK_user_to_user_group_user_id",
+          "tableFrom": "user_to_user_group",
+          "tableTo": "user",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["user_id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "PK_user_to_user_group": {
+          "name": "PK_user_to_user_group",
+          "columns": ["user_group_id", "user_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.abstract_question_answer_choice_type_enum": {
+      "name": "abstract_question_answer_choice_type_enum",
+      "schema": "public",
+      "values": ["selectOne", "selectMany", "noSelect"]
+    },
+    "public.abstract_question_data_type_of_answers_enum": {
+      "name": "abstract_question_data_type_of_answers_enum",
+      "schema": "public",
+      "values": ["string", "integer", "decimal", "date"]
+    },
+    "public.educational_space_access_scope_type_enum": {
+      "name": "educational_space_access_scope_type_enum",
+      "schema": "public",
+      "values": [
+        "addOwnAbstractTestsIntoEducationalSpaceCatalog",
+        "viewLaunchedTests",
+        "modifyLaunchedTests",
+        "viewUserGroups",
+        "modifyUserGroups",
+        "modifySpaceInfo",
+        "modifyAccessScopesInSpace",
+        "deleteOwnSpace"
+      ]
+    },
+    "public.launched_test_access_scope_type_enum": {
+      "name": "launched_test_access_scope_type_enum",
+      "schema": "public",
+      "values": ["viewAnalytics", "viewUsersFinishedTest", "makeTestAttempts"]
+    },
+    "public.launched_test_variant_access_scope_type_enum": {
+      "name": "launched_test_variant_access_scope_type_enum",
+      "schema": "public",
+      "values": ["viewAnalytics", "viewUsersFinishedTest", "makeTestAttempts"]
+    },
+    "public.test_analytics_module_support_enum": {
+      "name": "test_analytics_module_support_enum",
+      "schema": "public",
+      "values": [
+        "analyticsOfUserAttempt",
+        "analyticsOfAllAttemptsOfLaunchedTest"
+      ]
+    },
+    "public.test_attempt_status_enum": {
+      "name": "test_attempt_status_enum",
+      "schema": "public",
+      "values": ["draft", "finishedAttempt"]
+    },
+    "public.user_group_management_access_scope_type_enum": {
+      "name": "user_group_management_access_scope_type_enum",
+      "schema": "public",
+      "values": [
+        "inviteUsers",
+        "removeUsers",
+        "viewUsers",
+        "launchTest",
+        "assignAliasesOfUsersFromSubordinateGroups"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

@@ -1,5 +1,0 @@
-export * from './src/columnsAdders/index.ts'
-export * from './src/columnsWithExtraTableConfigsAdders/index.ts'
-export * from './src/extraTableConfigsAdders/index.ts'
-export * from './src/finalizePgTable.ts'
-export * from './src/initPgTable.ts'

@@ -1,4 +1,6 @@
-# Drizzle effect helpers
+# Drizzle FP
+
+Write drizzle table declarations in functional style, and make reusable table parts easily
 
 ## TODO
 

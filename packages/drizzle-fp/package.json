@@ -1,8 +1,8 @@
 {
-  "name": "@trellisform/database",
+  "name": "drizzle-fp",
   "type": "module",
-  "version": "0.1.0",
-  "description": "Now it's just a showcase of effect-drizzle-helpers's capabilities. Previously were a promising startup",
+  "version": "0.1.1",
+  "description": "Write drizzle table declarations in functional style, and make reusable table parts easily",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
@@ -12,18 +12,15 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/sql": "catalog:",
-    "@effect/sql-drizzle": "catalog:",
-    "@effect/sql-pg": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
-    "@evadev/effect-drizzle-helpers": "workspace:^",
-    "drizzle-kit": "catalog:",
+    "@nevware21/ts-utils": "catalog:",
     "drizzle-orm": "catalog:",
-    "pg": "catalog:"
+    "pg": "catalog:",
+    "type-fest": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/trellisform-database#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/drizzle-fp#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -31,7 +28,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/trellisform-database"
+    "directory": "packages/drizzle-fp"
   },
   "scripts": {
     "build": "tspc",
@@ -67,21 +64,29 @@
       "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./relations": {
-      "types": "./dist-types/src/relations.d.ts",
-      "default": "./dist/src/relations.js"
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./relations.ts": {
-      "types": "./dist-types/src/relations.d.ts",
-      "default": "./dist/src/relations.js"
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
     },
-    "./schema": {
-      "types": "./dist-types/src/schema.d.ts",
-      "default": "./dist/src/schema.js"
-    },
-    "./schema.ts": {
-      "types": "./dist-types/src/schema.d.ts",
-      "default": "./dist/src/schema.js"
-    }
-  }
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "files": [
+    "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ]
 }

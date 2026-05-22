@@ -69,10 +69,13 @@
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "files": [
-    "dist",
     "dist-types",
-    "src",
+    "dist",
     "index.ts",
-    "package.json"
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
   ]
 }

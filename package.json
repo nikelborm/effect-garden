@@ -9,7 +9,7 @@
     "@evadev/ace": "workspace:^",
     "apache-superset-init": "workspace:^",
     "@evadev/backend-config": "workspace:^",
-    "@evadev/effect-drizzle-helpers": "workspace:^",
+    "drizzle-fp": "workspace:^",
     "@evadev/effect-helpers": "workspace:^",
     "@evadev/effect-landscape": "workspace:^",
     "@evadev/effect-schema-i18n": "workspace:^",
@@ -143,6 +143,7 @@
   },
   "workspaces": [
     "ideas/*",
+    "apps/*",
     "one-offs/*",
     "packages/*",
     "playground",

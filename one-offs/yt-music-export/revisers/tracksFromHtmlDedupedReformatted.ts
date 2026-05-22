@@ -10,7 +10,7 @@ import { HtmlTracksSchema } from '../schemas/HtmlTracksSchema.ts'
 const reformatted = pipe(
   await readFile('./rawData/tracksFromHtmlDeduped.json', 'utf-8'),
   e => JSON.parse(e) as any[],
-  Schema.decodeUnknownSync(HtmlTracksSchema),
+  Schema.decodeUnknownSync(HtmlTracksSchema) as any,
   EArray.map(({ videoId, ...rest }) => [videoId, rest] as const),
   Record.fromEntries,
 )

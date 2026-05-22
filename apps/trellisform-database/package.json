@@ -1,8 +1,8 @@
 {
-  "name": "@evadev/effect-drizzle-helpers",
+  "name": "@trellisform/database",
   "type": "module",
-  "version": "0.0.1",
-  "description": "Write drizzle table declarations in functional style, and make reusable table parts easily",
+  "version": "0.1.0",
+  "description": "Now it's just a showcase of drizzle-fp's capabilities. Previously were a promising startup",
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
@@ -12,15 +12,18 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
+    "@effect/sql": "catalog:",
+    "@effect/sql-drizzle": "catalog:",
+    "@effect/sql-pg": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
-    "@nevware21/ts-utils": "catalog:",
+    "drizzle-fp": "workspace:^",
+    "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
-    "pg": "catalog:",
-    "type-fest": "catalog:"
+    "pg": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-drizzle-helpers#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform-database#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -28,7 +31,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/effect-drizzle-helpers"
+    "directory": "apps/trellisform-database"
   },
   "scripts": {
     "build": "tspc",
@@ -60,14 +63,25 @@
     "provenance": false
   },
   "exports": {
-    "types": "./dist-types/index.d.ts",
-    "default": "./dist/index.js"
-  },
-  "files": [
-    "dist",
-    "dist-types",
-    "src",
-    "index.ts",
-    "package.json"
-  ]
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./relations": {
+      "types": "./dist-types/src/relations.d.ts",
+      "default": "./dist/src/relations.js"
+    },
+    "./relations.ts": {
+      "types": "./dist-types/src/relations.d.ts",
+      "default": "./dist/src/relations.js"
+    },
+    "./schema": {
+      "types": "./dist-types/src/schema.d.ts",
+      "default": "./dist/src/schema.js"
+    },
+    "./schema.ts": {
+      "types": "./dist-types/src/schema.d.ts",
+      "default": "./dist/src/schema.js"
+    }
+  }
 }

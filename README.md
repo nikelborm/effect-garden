@@ -43,7 +43,7 @@ vars. Install it.
 
    1. [backend-config](./packages/backend-config) (published)
    2. [effect-command-executors](./packages/effect-command-executors)
-   3. [effect-drizzle-helpers](./packages/effect-drizzle-helpers) (recommend checking out)
+   3. [drizzle-fp](./packages/drizzle-fp) (recommend checking out)
    4. [effect-npm-api](./packages/effect-npm-api)
    5. [effect-npm-api-schema](./packages/effect-npm-api-schema)
    6. [effect-web-audio](./packages/effect-web-audio)

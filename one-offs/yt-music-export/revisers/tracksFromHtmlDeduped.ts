@@ -32,9 +32,9 @@ const deduped = pipe(
     ...rest,
   })),
   Schema.decodeUnknownSync(HtmlTracksSchema),
-  HashSet.fromIterable,
+  HashSet.fromIterable as any,
   HashSet.toValues,
-  EArray.groupBy(e => e.videoId),
+  EArray.groupBy((e: any) => e.videoId),
   Record.map(e => e.filter(a => a.coverUrl !== shitImage)[0] ?? e[0]),
   Record.map(e => ({
     ...e,

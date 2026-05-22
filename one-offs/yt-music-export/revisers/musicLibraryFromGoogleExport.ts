@@ -36,7 +36,7 @@ const parsed = pipe(
     videoId,
     artists: Record.values(artists).filter(Boolean),
   })),
-  Schema.decodeUnknownSync(TracksFromGoogleExportSchema),
+  Schema.decodeUnknownSync(TracksFromGoogleExportSchema) as any,
   EArray.map(({ videoId, ...rest }) => [videoId, rest] as const),
   Record.fromEntries,
 )

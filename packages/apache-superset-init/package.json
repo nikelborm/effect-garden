@@ -128,12 +128,13 @@
     "asqi": "dist/apache-superset-init.js"
   },
   "files": [
-    "dist",
     "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
     "src",
-    "!dist/minified",
-    "!**/*.tsbuildinfo",
     "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
     "!**/scratchpad.*",
     "template.env"
   ]
