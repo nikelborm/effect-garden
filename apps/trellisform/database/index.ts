@@ -28,5 +28,5 @@ export class DrizzleDB extends Effect.Service<DrizzleDB>()('DrizzleDB', {
     PgRemoteDatabase<schemaWithRelations>,
     never,
     SqlClient.SqlClient
-  >,
+  >, // TODO: is this assertion actually needed?
 }) {}

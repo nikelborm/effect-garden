@@ -185,22 +185,20 @@ export const session = pgTable('session', t => ({
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
 }))
-
-export const verificationsTable = pgTable('verifications', t => ({
-  id: t.text().primaryKey(),
-  identifier: t.text().notNull(),
-  value: t.text().notNull(),
-  expiresAt: t.timestamp().notNull(),
-  createdAt: t.timestamp(),
-  updatedAt: t.timestamp(),
-}))
-
-export const jwksTable = pgTable('jwks', t => ({
-  id: t.text().primaryKey(),
-  publicKey: t.text().notNull(),
-  privateKey: t.text().notNull(),
-  createdAt: t.timestamp().notNull(),
-}))
+// export const verificationsTable = pgTable('verifications', t => ({
+//   id: t.text().primaryKey(),
+//   identifier: t.text().notNull(),
+//   value: t.text().notNull(),
+//   expiresAt: t.timestamp().notNull(),
+//   createdAt: t.timestamp(),
+//   updatedAt: t.timestamp(),
+// }));
+// export const jwksTable = pgTable('jwks', t => ({
+//   id: t.text().primaryKey(),
+//   publicKey: t.text().notNull(),
+//   privateKey: t.text().notNull(),
+//   createdAt: t.timestamp().notNull(),
+// }));
 
 // export const { userIdentity } = pipe(
 //   initPgTable('user_identity'),
