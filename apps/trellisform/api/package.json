@@ -1,0 +1,55 @@
+{
+  "name": "@trellisform/api",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./auth.ts": {
+      "types": "./dist-types/src/auth.api.d.ts",
+      "default": "./dist/src/auth.api.js"
+    },
+    "./abstractQuestion.ts": {
+      "types": "./dist-types/src/abstractQuestion.api.d.ts",
+      "default": "./dist/src/abstractQuestion.api.js"
+    },
+    "./abstractAnswerOption.ts": {
+      "types": "./dist-types/src/abstractAnswerOption.api.d.ts",
+      "default": "./dist/src/abstractAnswerOption.api.js"
+    },
+    "./abstractTest.ts": {
+      "types": "./dist-types/src/abstractTest.api.d.ts",
+      "default": "./dist/src/abstractTest.api.js"
+    },
+    "./abstractTestVariant.ts": {
+      "types": "./dist-types/src/abstractTestVariant.api.d.ts",
+      "default": "./dist/src/abstractTestVariant.api.js"
+    },
+    "./educationalSpace.ts": {
+      "types": "./dist-types/src/educationalSpace.api.d.ts",
+      "default": "./dist/src/educationalSpace.api.js"
+    },
+    "./testVariantAttempt.ts": {
+      "types": "./dist-types/src/testVariantAttempt.api.d.ts",
+      "default": "./dist/src/testVariantAttempt.api.js"
+    }
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "devDependencies": {
+    "@evadev/tsconfig": "workspace:^"
+  },
+  "dependencies": {
+    "@effect/platform": "catalog:",
+    "effect": "catalog:",
+    "@trellisform/model": "workspace:^",
+    "@evadev/effect-helpers": "workspace:^"
+  },
+  "trustedDependencies": [
+    "@parcel/watcher"
+  ]
+}

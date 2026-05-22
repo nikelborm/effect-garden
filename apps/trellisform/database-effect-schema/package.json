@@ -1,0 +1,20 @@
+{
+  "name": "@trellisform/database-effect-schema",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "devDependencies": {
+    "@evadev/tsconfig": "workspace:^"
+  },
+  "dependencies": {
+    "@trellisform/database": "workspace:^",
+    "@handfish/drizzle-effect": "^0.0.17"
+  }
+}

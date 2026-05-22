@@ -180,6 +180,7 @@ Procfile          text
 *.gz              binary
 *.jar             binary
 *.rar             binary
+sw.js             binary
 *.tar             binary
 *.zip             binary
 # Fonts

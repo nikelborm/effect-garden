@@ -735,7 +735,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   )
 
   const playground = myMonorepoPackages.find(
-    pkg => pkg.pkg.name === '@evadev/playground',
+    pkg => pkg.pkg.name === 'playground',
   )
   if (!playground) return yield* Effect.dieMessage('absurd')
 

@@ -1,5 +1,5 @@
 {
-  "name": "@evadev/playground",
+  "name": "playground",
   "type": "module",
   "version": "0.1.0",
   "description": "A bunch of hidden scripts for exploration. This package aggregates all of the dependencies from the monorepo",

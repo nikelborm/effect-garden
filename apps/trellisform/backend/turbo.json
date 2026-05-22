@@ -1,0 +1,27 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "passThroughEnv": [
+        "TZ",
+        "NODE_ENV",
+        "ENV",
+        "PORT",
+        "BACKEND_PORT",
+        "EXTERNALLY_AVAILABLE_AT_URL",
+        "EXTERNAL_PROXIED_PORT",
+        "OTLP_URL",
+        "BETTER_AUTH_SECRET",
+        "DATABASE_HOST",
+        "DATABASE_PORT",
+        "DATABASE_USERNAME",
+        "DATABASE_PASSWORD",
+        "DATABASE_NAME"
+      ]
+    },
+    "build": {
+      "inputs": ["src/**/*.ts", "package.json", "tsconfig.json"],
+      "outputs": ["dist-types/**", "dist/**"]
+    }
+  }
+}

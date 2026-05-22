@@ -1,0 +1,20 @@
+{
+  "name": "@trellisform/model",
+  "type": "module",
+  "private": false,
+  "exports": {
+    "types": "./dist-types/index.d.ts",
+    "default": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tspc",
+    "dev": "tspc --watch"
+  },
+  "devDependencies": {
+    "@evadev/tsconfig": "workspace:^"
+  },
+  "dependencies": {
+    "effect": "catalog:",
+    "@evadev/effect-helpers": "workspace:^"
+  }
+}

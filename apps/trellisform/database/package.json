@@ -23,7 +23,7 @@
     "drizzle-orm": "catalog:",
     "pg": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform-database#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform/database#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -31,7 +31,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "apps/trellisform-database"
+    "directory": "apps/trellisform/database"
   },
   "scripts": {
     "build": "tspc",
