@@ -25,35 +25,42 @@ vars. Install it.
 3. `packages` - the ones worth at least something. Some of them are even
    installable. Some are even usable.
 
-   The ones I'm confident to be working:
+   The ones I'm confident to be working. At the top are the ones I'm most proud of:
 
-   1. [bliss-audio-ts](./packages/bliss-audio-ts) (published) (waiting 8 days to republish)
-   2. [effect-web-midi](./packages/effect-web-midi) (waiting 24 hours)
+   1. [effect-web-midi](./packages/effect-web-midi) (waiting 24 hours)
+   2. [drizzle-fp](./packages/drizzle-fp) (published)
    3. [joiners](./packages/joiners) (published)
-   4. [effect-btrfs](./packages/effect-btrfs) (waiting 24 hours)
+   4. [bliss-audio-ts](./packages/bliss-audio-ts) (published) (waiting 8 days to
+      republish)
    5. [gitdl](./packages/gitdl) (published)
    6. [effect-zstd](./packages/effect-zstd) (waiting 24 hours)
-   7. [effect-helpers](./packages/effect-helpers) (published)
+   7. [ts-key-not-enum](./packages/ts-key-not-enum) (waiting 24 hours)
    8. [apache-superset-init](./packages/apache-superset-init) (published)
-   9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back) (published)
-   10. [tsconfig](./packages/tsconfig) (published)
-   11. [ts-key-not-enum](./packages/ts-key-not-enum) (waiting 24 hours)
+   9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back)
+      (published)
+   10. [effect-btrfs](./packages/effect-btrfs) (waiting 24 hours)
+   11. [tsconfig](./packages/tsconfig) (published)
+   12. [backend-config](./packages/backend-config) (published)
+   13. [effect-helpers](./packages/effect-helpers) (published)
 
    The ones I less confident to be working about:
 
-   1. [backend-config](./packages/backend-config) (published)
-   2. [effect-command-executors](./packages/effect-command-executors)
-   3. [drizzle-fp](./packages/drizzle-fp) (recommend checking out)
-   4. [effect-npm-api](./packages/effect-npm-api)
-   5. [effect-npm-api-schema](./packages/effect-npm-api-schema)
-   6. [effect-web-audio](./packages/effect-web-audio)
-   7. [effect-web-mediacapture-streams](./packages/effect-web-mediacapture-streams)
-   8. [next-midi-demo](./packages/next-midi-demo) (recommend checking out)
-   9. [trellisform-database](./packages/trellisform-database)
-   10. [ts-better-tuple](./packages/ts-better-tuple)
-   11. [vscode-json-schemas-offline](./packages/vscode-json-schemas-offline)
+   1. [effect-web-audio](./packages/effect-web-audio)
+   2. [effect-web-mediacapture-streams](./packages/effect-web-mediacapture-streams)
+   3. [ts-better-tuple](./packages/ts-better-tuple)
+   4. [vscode-json-schemas-offline](./packages/vscode-json-schemas-offline)
+   5. [effect-command-executors](./packages/effect-command-executors)
+   6. [effect-npm-api](./packages/effect-npm-api)
+   7. [effect-npm-api-schema](./packages/effect-npm-api-schema)
 
 4. `scripts` - a single package with all the random scripts I ever used. The one
    I use often is `fix_package_jsons.ts` or `cleanup.ts`. All of the scripts
    from there are automatically added to the `PATH` by mise so they are callable
    wherever in the monorepo you'd be.
+5. `apps` - end-user apps. Some of them are good demos of how to use other
+   packages.
+
+   1. [trellisform-database](./apps/trellisform-database) (recommend checking
+      out - demo of `drizzle-fp`)
+   2. [next-midi-demo](./packages/next-midi-demo) (recommend checking out - demo
+      of `effect-web-midi` and other audio stuff with effect)
