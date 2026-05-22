@@ -10,10 +10,10 @@
     "@evadev/tsconfig": "workspace:^"
   },
   "dependencies": {
-    "@effect/platform-bun": "catalog:",
     "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
     "@effect/sql": "catalog:",
-    "effect": "catalog:",
+    "@evadev/backend-config": "workspace:^",
     "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.218.0",
@@ -22,14 +22,15 @@
     "@opentelemetry/sdk-trace-web": "^2.0.1",
     "@opentelemetry/semantic-conventions": "^1.34.0",
     "@trellisform/api": "workspace:^",
-    "@trellisform/model": "workspace:^",
     "@trellisform/backend-better-auth-service": "workspace:^",
-    "@evadev/backend-config": "workspace:^",
     "@trellisform/database": "workspace:^",
     "@trellisform/database-effect-schema": "workspace:^",
+    "@trellisform/model": "workspace:^",
     "better-auth": "^1.3.18",
     "drizzle-orm": "^0.45.2",
+    "effect": "catalog:",
     "pg": "^8.16.2",
+    "ts-patch": "^4.0.1",
     "tsafe": "^1.8.10",
     "type-fest": "^5.0.1"
   }

@@ -45,9 +45,10 @@
   },
   "dependencies": {
     "@effect/platform": "catalog:",
-    "effect": "catalog:",
+    "@evadev/effect-helpers": "workspace:^",
     "@trellisform/model": "workspace:^",
-    "@evadev/effect-helpers": "workspace:^"
+    "effect": "catalog:",
+    "ts-patch": "^4.0.1"
   },
   "trustedDependencies": [
     "@parcel/watcher"

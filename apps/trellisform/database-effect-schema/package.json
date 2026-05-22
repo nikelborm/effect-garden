@@ -14,7 +14,8 @@
     "@evadev/tsconfig": "workspace:^"
   },
   "dependencies": {
+    "@handfish/drizzle-effect": "^0.0.17",
     "@trellisform/database": "workspace:^",
-    "@handfish/drizzle-effect": "^0.0.17"
+    "ts-patch": "^4.0.1"
   }
 }

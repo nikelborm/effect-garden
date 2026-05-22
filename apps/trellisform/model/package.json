@@ -14,7 +14,8 @@
     "@evadev/tsconfig": "workspace:^"
   },
   "dependencies": {
+    "@evadev/effect-helpers": "workspace:^",
     "effect": "catalog:",
-    "@evadev/effect-helpers": "workspace:^"
+    "ts-patch": "^4.0.1"
   }
 }
