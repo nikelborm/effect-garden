@@ -1,422 +1,451 @@
-import { relations } from 'drizzle-orm/relations'
+import { defineRelations } from 'drizzle-orm/relations'
 
-import {
-  abstractAnswerOption,
-  abstractQuestion,
-  abstractTest,
-  abstractTestStage,
-  abstractTestVariant,
-  answerOptionInstance,
-  availableForLaunchTest,
-  educationalSpace,
-  educationalSpaceAccessScope,
-  launchedTest,
-  launchedTestAccessScope,
-  launchedTestVariant,
-  launchedTestVariantAccessScope,
-  questionInstance,
-  singleCorrectAbstractAnswerOption,
-  testStageInstance,
-  testVariantAttempt,
-  user,
-  userGroup,
-  userGroupManagementAccessScope,
-  userToUserGroup,
-} from './schema.ts'
+import * as schema from './schema.ts'
 
-export const userRelations = relations(user, ({ many }) => ({
-  createdAbstractTests: many(abstractTest),
-  createdAbstractTestVariants: many(abstractTestVariant),
-  createdAbstractTestStages: many(abstractTestStage),
-  createdAbstractTestQuestions: many(abstractQuestion),
-  createdAbstractAnswerOptions: many(abstractAnswerOption),
+export const relationalSchema = defineRelations(schema, r => ({
+  user: {
+    createdAbstractTests: r.many.abstractTest({
+      from: r.user.fastId,
+      to: r.abstractTest.createdByUserId,
+    }),
+    createdAbstractTestVariants: r.many.abstractTestVariant({
+      from: r.user.fastId,
+      to: r.abstractTestVariant.createdByUserId,
+    }),
+    createdAbstractTestStages: r.many.abstractTestStage({
+      from: r.user.fastId,
+      to: r.abstractTestStage.createdByUserId,
+    }),
+    createdAbstractTestQuestions: r.many.abstractQuestion({
+      from: r.user.fastId,
+      to: r.abstractQuestion.createdByUserId,
+    }),
+    createdAbstractAnswerOptions: r.many.abstractAnswerOption({
+      from: r.user.fastId,
+      to: r.abstractAnswerOption.createdByUserId,
+    }),
+    launchedTests: r.many.launchedTest({
+      from: r.user.fastId,
+      to: r.launchedTest.launchedByUserId,
+    }),
+    attemptedTestVariants: r.many.testVariantAttempt({
+      from: r.user.fastId,
+      to: r.testVariantAttempt.userId,
+    }),
+    createdEducationalSpaces: r.many.educationalSpace({
+      from: r.user.fastId,
+      to: r.educationalSpace.createdByUserId,
+    }),
+    createdUserGroups: r.many.userGroup({
+      from: r.user.fastId,
+      to: r.userGroup.createdByUserId,
+    }),
+    isInUserGroupsM2M: r.many.userToUserGroup({
+      from: r.user.fastId,
+      to: r.userToUserGroup.userId,
+    }),
+  },
 
-  launchedTests: many(launchedTest),
+  abstractTest: {
+    createdBy: r.one.user({
+      from: r.abstractTest.createdByUserId,
+      to: r.user.fastId,
+    }),
+    abstractTestVariants: r.many.abstractTestVariant({
+      from: r.abstractTest.id,
+      to: r.abstractTestVariant.abstractTestId,
+    }),
+    availableForLaunchInEducationalSpacesM2M: r.many.availableForLaunchTest({
+      from: r.abstractTest.id,
+      to: r.availableForLaunchTest.abstractTestId,
+    }),
+    launchedTests: r.many.launchedTest({
+      from: r.abstractTest.id,
+      to: r.launchedTest.abstractTestId,
+    }),
+    launchedTestVariants: r.many.launchedTestVariant({
+      from: r.abstractTest.id,
+      to: r.launchedTestVariant.abstractTestId,
+    }),
+  },
 
-  attemptedTestVariants: many(testVariantAttempt),
+  abstractTestVariant: {
+    createdBy: r.one.user({
+      from: r.abstractTestVariant.createdByUserId,
+      to: r.user.fastId,
+    }),
+    abstractTest: r.one.abstractTest({
+      from: r.abstractTestVariant.abstractTestId,
+      to: r.abstractTest.id,
+    }),
+    stages: r.many.abstractTestStage({
+      from: r.abstractTestVariant.id,
+      to: r.abstractTestStage.abstractTestVariantId,
+    }),
+    launchedTestVariants: r.many.launchedTestVariant({
+      from: r.abstractTestVariant.id,
+      to: r.launchedTestVariant.abstractTestVariantId,
+    }),
+    testVariantAttempts: r.many.testVariantAttempt({
+      from: r.abstractTestVariant.id,
+      to: r.testVariantAttempt.abstractTestVariantId,
+    }),
+    testStageInstances: r.many.testStageInstance({
+      from: r.abstractTestVariant.id,
+      to: r.testStageInstance.abstractTestVariantId,
+    }),
+  },
 
-  createdEducationalSpaces: many(educationalSpace),
-  createdUserGroups: many(userGroup),
-  isInUserGroupsM2M: many(userToUserGroup),
+  abstractTestStage: {
+    createdBy: r.one.user({
+      from: r.abstractTestStage.createdByUserId,
+      to: r.user.fastId,
+    }),
+    abstractTestVariant: r.one.abstractTestVariant({
+      from: r.abstractTestStage.abstractTestVariantId,
+      to: r.abstractTestVariant.id,
+    }),
+    questions: r.many.abstractQuestion({
+      from: r.abstractTestStage.id,
+      to: r.abstractQuestion.abstractTestStageId,
+    }),
+    instances: r.many.testStageInstance({
+      from: r.abstractTestStage.id,
+      to: r.testStageInstance.abstractTestStageId,
+    }),
+    questionInstances: r.many.questionInstance({
+      from: r.abstractTestStage.id,
+      to: r.questionInstance.abstractTestStageId,
+    }),
+  },
+
+  abstractQuestion: {
+    createdBy: r.one.user({
+      from: r.abstractQuestion.createdByUserId,
+      to: r.user.fastId,
+    }),
+    abstractTestStage: r.one.abstractTestStage({
+      from: r.abstractQuestion.abstractTestStageId,
+      to: r.abstractTestStage.id,
+    }),
+    correctAnswerOption: r.one.singleCorrectAbstractAnswerOption({
+      from: r.abstractQuestion.id,
+      to: r.singleCorrectAbstractAnswerOption.abstractQuestionId,
+    }),
+    answerOptions: r.many.abstractAnswerOption({
+      from: r.abstractQuestion.id,
+      to: r.abstractAnswerOption.abstractQuestionId,
+    }),
+    instances: r.many.questionInstance({
+      from: r.abstractQuestion.id,
+      to: r.questionInstance.abstractQuestionId,
+    }),
+    answerOptionInstances: r.many.answerOptionInstance({
+      from: r.abstractQuestion.id,
+      to: r.answerOptionInstance.abstractQuestionId,
+    }),
+  },
+
+  abstractAnswerOption: {
+    createdBy: r.one.user({
+      from: r.abstractAnswerOption.createdByUserId,
+      to: r.user.fastId,
+    }),
+    abstractQuestion: r.one.abstractQuestion({
+      from: r.abstractAnswerOption.abstractQuestionId,
+      to: r.abstractQuestion.id,
+    }),
+    correctResultOfQuestion: r.one.singleCorrectAbstractAnswerOption({
+      from: r.abstractAnswerOption.id,
+      to: r.singleCorrectAbstractAnswerOption.abstractAnswerOptionId,
+    }),
+    instances: r.many.answerOptionInstance({
+      from: r.abstractAnswerOption.id,
+      to: r.answerOptionInstance.abstractAnswerOptionId,
+    }),
+  },
+
+  singleCorrectAbstractAnswerOption: {
+    abstractQuestion: r.one.abstractQuestion({
+      from: r.singleCorrectAbstractAnswerOption.abstractQuestionId,
+      to: r.abstractQuestion.id,
+    }),
+    abstractAnswerOption: r.one.abstractAnswerOption({
+      from: [
+        r.singleCorrectAbstractAnswerOption.abstractQuestionId,
+        r.singleCorrectAbstractAnswerOption.abstractAnswerOptionId,
+      ],
+      to: [
+        r.abstractAnswerOption.abstractQuestionId,
+        r.abstractAnswerOption.id,
+      ],
+    }),
+  },
+
+  availableForLaunchTest: {
+    abstractTest: r.one.abstractTest({
+      from: r.availableForLaunchTest.abstractTestId,
+      to: r.abstractTest.id,
+    }),
+    educationalSpace: r.one.educationalSpace({
+      from: r.availableForLaunchTest.educationalSpaceId,
+      to: r.educationalSpace.id,
+    }),
+  },
+
+  launchedTest: {
+    abstractTest: r.one.abstractTest({
+      from: r.launchedTest.abstractTestId,
+      to: r.abstractTest.id,
+    }),
+    educationalSpace: r.one.educationalSpace({
+      from: r.launchedTest.educationalSpaceId,
+      to: r.educationalSpace.id,
+    }),
+    launchedBy: r.one.user({
+      from: r.launchedTest.launchedByUserId,
+      to: r.user.fastId,
+    }),
+    launchedVariants: r.many.launchedTestVariant({
+      from: r.launchedTest.id,
+      to: r.launchedTestVariant.launchedTestId,
+    }),
+    accessScopes: r.many.launchedTestAccessScope({
+      from: r.launchedTest.id,
+      to: r.launchedTestAccessScope.launchedTestId,
+    }),
+  },
+
+  launchedTestVariant: {
+    abstractTest: r.one.abstractTest({
+      from: r.launchedTestVariant.abstractTestId,
+      to: r.abstractTest.id,
+    }),
+    abstractTestVariant: r.one.abstractTestVariant({
+      from: [
+        r.launchedTestVariant.abstractTestId,
+        r.launchedTestVariant.abstractTestVariantId,
+      ],
+      to: [r.abstractTestVariant.abstractTestId, r.abstractTestVariant.id],
+    }),
+    launchedTest: r.one.launchedTest({
+      from: [
+        r.launchedTestVariant.abstractTestId,
+        r.launchedTestVariant.launchedTestId,
+      ],
+      to: [r.launchedTest.abstractTestId, r.launchedTest.id],
+    }),
+    attempts: r.many.testVariantAttempt({
+      from: r.launchedTestVariant.id,
+      to: r.testVariantAttempt.launchedTestVariantId,
+    }),
+    accessScopes: r.many.launchedTestVariantAccessScope({
+      from: r.launchedTestVariant.id,
+      to: r.launchedTestVariantAccessScope.launchedTestVariantId,
+    }),
+  },
+
+  testVariantAttempt: {
+    user: r.one.user({
+      from: r.testVariantAttempt.userId,
+      to: r.user.fastId,
+    }),
+    abstractTestVariant: r.one.abstractTestVariant({
+      from: r.testVariantAttempt.abstractTestVariantId,
+      to: r.abstractTestVariant.id,
+    }),
+    launchedTestVariant: r.one.launchedTestVariant({
+      from: [
+        r.testVariantAttempt.abstractTestVariantId,
+        r.testVariantAttempt.launchedTestVariantId,
+      ],
+      to: [
+        r.launchedTestVariant.abstractTestVariantId,
+        r.launchedTestVariant.id,
+      ],
+    }),
+    testStageInstances: r.many.testStageInstance({
+      from: r.testVariantAttempt.id,
+      to: r.testStageInstance.testVariantAttemptId,
+    }),
+  },
+
+  testStageInstance: {
+    abstractTestVariant: r.one.abstractTestVariant({
+      from: r.testStageInstance.abstractTestVariantId,
+      to: r.abstractTestVariant.id,
+    }),
+    testVariantAttempt: r.one.testVariantAttempt({
+      from: [
+        r.testStageInstance.abstractTestVariantId,
+        r.testStageInstance.testVariantAttemptId,
+      ],
+      to: [r.testVariantAttempt.abstractTestVariantId, r.testVariantAttempt.id],
+    }),
+    abstractTestStage: r.one.abstractTestStage({
+      from: [
+        r.testStageInstance.abstractTestVariantId,
+        r.testStageInstance.abstractTestStageId,
+      ],
+      to: [r.abstractTestStage.abstractTestVariantId, r.abstractTestStage.id],
+    }),
+    questionInstances: r.many.questionInstance({
+      from: r.testStageInstance.id,
+      to: r.questionInstance.testStageInstanceId,
+    }),
+  },
+
+  questionInstance: {
+    abstractTestStage: r.one.abstractTestStage({
+      from: r.questionInstance.abstractTestStageId,
+      to: r.abstractTestStage.id,
+    }),
+    abstractQuestion: r.one.abstractQuestion({
+      from: [
+        r.questionInstance.abstractTestStageId,
+        r.questionInstance.abstractQuestionId,
+      ],
+      to: [r.abstractQuestion.abstractTestStageId, r.abstractQuestion.id],
+    }),
+    testStageInstance: r.one.testStageInstance({
+      from: [
+        r.questionInstance.abstractTestStageId,
+        r.questionInstance.testStageInstanceId,
+      ],
+      to: [r.testStageInstance.abstractTestStageId, r.testStageInstance.id],
+    }),
+    answerOptionInstances: r.many.answerOptionInstance({
+      from: r.questionInstance.id,
+      to: r.answerOptionInstance.questionInstanceId,
+    }),
+  },
+
+  answerOptionInstance: {
+    abstractQuestion: r.one.abstractQuestion({
+      from: r.answerOptionInstance.abstractQuestionId,
+      to: r.abstractQuestion.id,
+    }),
+    questionInstance: r.one.questionInstance({
+      from: [
+        r.answerOptionInstance.abstractQuestionId,
+        r.answerOptionInstance.questionInstanceId,
+      ],
+      to: [r.questionInstance.abstractQuestionId, r.questionInstance.id],
+    }),
+    abstractAnswerOption: r.one.abstractAnswerOption({
+      from: [
+        r.answerOptionInstance.abstractQuestionId,
+        r.answerOptionInstance.abstractAnswerOptionId,
+      ],
+      to: [
+        r.abstractAnswerOption.abstractQuestionId,
+        r.abstractAnswerOption.id,
+      ],
+    }),
+  },
+
+  educationalSpace: {
+    createdBy: r.one.user({
+      from: r.educationalSpace.createdByUserId,
+      to: r.user.fastId,
+    }),
+    availableForLaunchTestsM2M: r.many.availableForLaunchTest({
+      from: r.educationalSpace.id,
+      to: r.availableForLaunchTest.educationalSpaceId,
+    }),
+    launchedTests: r.many.launchedTest({
+      from: r.educationalSpace.id,
+      to: r.launchedTest.educationalSpaceId,
+    }),
+    userGroups: r.many.userGroup({
+      from: r.educationalSpace.id,
+      to: r.userGroup.educationalSpaceId,
+    }),
+  },
+
+  userGroup: {
+    educationalSpace: r.one.educationalSpace({
+      from: r.userGroup.educationalSpaceId,
+      to: r.educationalSpace.id,
+    }),
+    createdBy: r.one.user({
+      from: r.userGroup.createdByUserId,
+      to: r.user.fastId,
+    }),
+    educationalSpaceAccessScopes: r.many.educationalSpaceAccessScope({
+      from: r.userGroup.id,
+      to: r.educationalSpaceAccessScope.userGroupId,
+    }),
+    launchedTestAccessScopes: r.many.launchedTestAccessScope({
+      from: r.userGroup.id,
+      to: r.launchedTestAccessScope.userGroupId,
+    }),
+    launchedTestVariantAccessScopes: r.many.launchedTestVariantAccessScope({
+      from: r.userGroup.id,
+      to: r.launchedTestVariantAccessScope.userGroupId,
+    }),
+    leaderInAccessScopes: r.many.userGroupManagementAccessScope({
+      from: r.userGroup.id,
+      to: r.userGroupManagementAccessScope.leaderUserGroupId,
+    }),
+    subordinateInAccessScopes: r.many.userGroupManagementAccessScope({
+      from: r.userGroup.id,
+      to: r.userGroupManagementAccessScope.subordinateUserGroupId,
+    }),
+    usersM2M: r.many.userToUserGroup({
+      from: r.userGroup.id,
+      to: r.userToUserGroup.userGroupId,
+    }),
+  },
+
+  educationalSpaceAccessScope: {
+    userGroup: r.one.userGroup({
+      from: r.educationalSpaceAccessScope.userGroupId,
+      to: r.userGroup.id,
+    }),
+  },
+
+  launchedTestAccessScope: {
+    userGroup: r.one.userGroup({
+      from: r.launchedTestAccessScope.userGroupId,
+      to: r.userGroup.id,
+    }),
+    launchedTest: r.one.launchedTest({
+      from: r.launchedTestAccessScope.launchedTestId,
+      to: r.launchedTest.id,
+    }),
+  },
+
+  launchedTestVariantAccessScope: {
+    userGroup: r.one.userGroup({
+      from: r.launchedTestVariantAccessScope.userGroupId,
+      to: r.userGroup.id,
+    }),
+    launchedTestVariant: r.one.launchedTestVariant({
+      from: r.launchedTestVariantAccessScope.launchedTestVariantId,
+      to: r.launchedTestVariant.id,
+    }),
+  },
+
+  userGroupManagementAccessScope: {
+    leader: r.one.userGroup({
+      from: r.userGroupManagementAccessScope.leaderUserGroupId,
+      to: r.userGroup.id,
+    }),
+    subordinate: r.one.userGroup({
+      from: r.userGroupManagementAccessScope.subordinateUserGroupId,
+      to: r.userGroup.id,
+    }),
+  },
+
+  userToUserGroup: {
+    user: r.one.user({
+      from: r.userToUserGroup.userId,
+      to: r.user.fastId,
+    }),
+    userGroup: r.one.userGroup({
+      from: r.userToUserGroup.userGroupId,
+      to: r.userGroup.id,
+    }),
+  },
 }))
-
-export const abstractTestRelations = relations(
-  abstractTest,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [abstractTest.createdByUserId],
-      references: [user.id],
-    }),
-
-    abstractTestVariants: many(abstractTestVariant),
-    availableForLaunchInEducationalSpacesM2M: many(availableForLaunchTest),
-    launchedTests: many(launchedTest),
-    launchedTestVariants: many(launchedTestVariant),
-    // analyticsModulesM2M: many(testAnalyticsModuleToAbstractTest),
-  }),
-)
-
-export const abstractTestVariantRelations = relations(
-  abstractTestVariant,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [abstractTestVariant.createdByUserId],
-      references: [user.id],
-    }),
-    abstractTest: one(abstractTest, {
-      fields: [abstractTestVariant.abstractTestId],
-      references: [abstractTest.id],
-    }),
-
-    stages: many(abstractTestStage),
-    launchedTestVariants: many(launchedTestVariant),
-    testVariantAttempts: many(testVariantAttempt),
-    testStageInstances: many(testStageInstance),
-  }),
-)
-
-export const abstractTestStageRelations = relations(
-  abstractTestStage,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [abstractTestStage.createdByUserId],
-      references: [user.id],
-    }),
-    abstractTestVariant: one(abstractTestVariant, {
-      fields: [abstractTestStage.abstractTestVariantId],
-      references: [abstractTestVariant.id],
-    }),
-
-    questions: many(abstractQuestion),
-    instances: many(testStageInstance),
-    questionInstances: many(questionInstance),
-  }),
-)
-
-export const abstractQuestionRelations = relations(
-  abstractQuestion,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [abstractQuestion.createdByUserId],
-      references: [user.id],
-    }),
-    abstractTestStage: one(abstractTestStage, {
-      fields: [abstractQuestion.abstractTestStageId],
-      references: [abstractTestStage.id],
-    }),
-
-    correctAnswerOption: one(singleCorrectAbstractAnswerOption),
-    answerOptions: many(abstractAnswerOption),
-    instances: many(questionInstance),
-    answerOptionInstances: many(answerOptionInstance),
-  }),
-)
-
-export const abstractAnswerOptionRelations = relations(
-  abstractAnswerOption,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [abstractAnswerOption.createdByUserId],
-      references: [user.id],
-    }),
-    abstractQuestion: one(abstractQuestion, {
-      fields: [abstractAnswerOption.abstractQuestionId],
-      references: [abstractQuestion.id],
-    }),
-
-    correctResultOfQuestion: one(singleCorrectAbstractAnswerOption),
-    instances: many(answerOptionInstance),
-    // contributionsM2M: many(answerOptionIntoTagContribution),
-  }),
-)
-
-export const singleCorrectAbstractAnswerOptionRelations = relations(
-  singleCorrectAbstractAnswerOption,
-  ({ one }) => ({
-    abstractQuestion: one(abstractQuestion, {
-      fields: [singleCorrectAbstractAnswerOption.abstractQuestionId],
-      references: [abstractQuestion.id],
-    }),
-    abstractAnswerOption: one(abstractAnswerOption, {
-      fields: [singleCorrectAbstractAnswerOption.abstractAnswerOptionId],
-      references: [abstractAnswerOption.id],
-    }),
-  }),
-)
-
-export const availableForLaunchTestRelations = relations(
-  availableForLaunchTest,
-  ({ one }) => ({
-    abstractTest: one(abstractTest, {
-      fields: [availableForLaunchTest.abstractTestId],
-      references: [abstractTest.id],
-    }),
-    educationalSpace: one(educationalSpace, {
-      fields: [availableForLaunchTest.educationalSpaceId],
-      references: [educationalSpace.id],
-    }),
-  }),
-)
-
-export const launchedTestRelations = relations(
-  launchedTest,
-  ({ one, many }) => ({
-    abstractTest: one(abstractTest, {
-      fields: [launchedTest.abstractTestId],
-      references: [abstractTest.id],
-    }),
-    educationalSpace: one(educationalSpace, {
-      fields: [launchedTest.educationalSpaceId],
-      references: [educationalSpace.id],
-    }),
-    launchedBy: one(user, {
-      fields: [launchedTest.launchedByUserId],
-      references: [user.id],
-    }),
-
-    launchedVariants: many(launchedTestVariant),
-    accessScopes: many(launchedTestAccessScope),
-  }),
-)
-
-export const launchedTestVariantRelations = relations(
-  launchedTestVariant,
-  ({ one, many }) => ({
-    abstractTest: one(abstractTest, {
-      fields: [launchedTestVariant.abstractTestId],
-      references: [abstractTest.id],
-    }),
-    abstractTestVariant: one(abstractTestVariant, {
-      fields: [launchedTestVariant.abstractTestVariantId],
-      references: [abstractTestVariant.id],
-    }),
-    launchedTest: one(launchedTest, {
-      fields: [launchedTestVariant.launchedTestId],
-      references: [launchedTest.id],
-    }),
-
-    attempts: many(testVariantAttempt),
-    accessScopes: many(launchedTestVariantAccessScope),
-  }),
-)
-
-export const testVariantAttemptRelations = relations(
-  testVariantAttempt,
-  ({ one, many }) => ({
-    user: one(user, {
-      fields: [testVariantAttempt.userId],
-      references: [user.id],
-    }),
-    abstractTestVariant: one(abstractTestVariant, {
-      fields: [testVariantAttempt.abstractTestVariantId],
-      references: [abstractTestVariant.id],
-    }),
-    launchedTestVariant: one(launchedTestVariant, {
-      fields: [testVariantAttempt.launchedTestVariantId],
-      references: [launchedTestVariant.id],
-    }),
-
-    testStageInstances: many(testStageInstance),
-  }),
-)
-
-export const testStageInstanceRelations = relations(
-  testStageInstance,
-  ({ many, one }) => ({
-    abstractTestVariant: one(abstractTestVariant, {
-      fields: [testStageInstance.abstractTestVariantId],
-      references: [abstractTestVariant.id],
-    }),
-    testVariantAttempt: one(testVariantAttempt, {
-      fields: [testStageInstance.testVariantAttemptId],
-      references: [testVariantAttempt.id],
-    }),
-    abstractTestStage: one(abstractTestStage, {
-      fields: [testStageInstance.abstractTestStageId],
-      references: [abstractTestStage.id],
-    }),
-
-    questionInstances: many(questionInstance),
-  }),
-)
-
-export const questionInstanceRelations = relations(
-  questionInstance,
-  ({ one, many }) => ({
-    abstractTestStage: one(abstractTestStage, {
-      fields: [questionInstance.abstractTestStageId],
-      references: [abstractTestStage.id],
-    }),
-    abstractQuestion: one(abstractQuestion, {
-      fields: [questionInstance.abstractQuestionId],
-      references: [abstractQuestion.id],
-    }),
-    testStageInstance: one(testStageInstance, {
-      fields: [questionInstance.testStageInstanceId],
-      references: [testStageInstance.id],
-    }),
-
-    answerOptionInstances: many(answerOptionInstance),
-  }),
-)
-
-export const answerOptionInstanceRelations = relations(
-  answerOptionInstance,
-  ({ one }) => ({
-    abstractQuestion: one(abstractQuestion, {
-      fields: [answerOptionInstance.abstractQuestionId],
-      references: [abstractQuestion.id],
-    }),
-    questionInstance: one(questionInstance, {
-      fields: [answerOptionInstance.questionInstanceId],
-      references: [questionInstance.id],
-    }),
-    abstractAnswerOption: one(abstractAnswerOption, {
-      fields: [answerOptionInstance.abstractAnswerOptionId],
-      references: [abstractAnswerOption.id],
-    }),
-  }),
-)
-
-export const educationalSpaceRelations = relations(
-  educationalSpace,
-  ({ one, many }) => ({
-    createdBy: one(user, {
-      fields: [educationalSpace.createdByUserId],
-      references: [user.id],
-    }),
-
-    availableForLaunchTestsM2M: many(availableForLaunchTest),
-    launchedTests: many(launchedTest),
-    userGroups: many(userGroup),
-  }),
-)
-
-export const userGroupRelations = relations(userGroup, ({ one, many }) => ({
-  educationalSpace: one(educationalSpace, {
-    fields: [userGroup.educationalSpaceId],
-    references: [educationalSpace.id],
-  }),
-  createdBy: one(user, {
-    fields: [userGroup.createdByUserId],
-    references: [user.id],
-  }),
-
-  educationalSpaceAccessScopes: many(educationalSpaceAccessScope),
-  launchedTestAccessScopes: many(launchedTestAccessScope),
-  launchedTestVariantAccessScopes: many(launchedTestVariantAccessScope),
-  leaderInAccessScopes: many(userGroupManagementAccessScope, {
-    relationName: 'leader',
-  }),
-  subordinateInAccessScopes: many(userGroupManagementAccessScope, {
-    relationName: 'subordinate',
-  }),
-  usersM2M: many(userToUserGroup),
-}))
-
-export const educationalSpaceAccessScopeRelations = relations(
-  educationalSpaceAccessScope,
-  ({ one }) => ({
-    userGroup: one(userGroup, {
-      fields: [educationalSpaceAccessScope.userGroupId],
-      references: [userGroup.id],
-    }),
-  }),
-)
-
-export const launchedTestAccessScopeRelations = relations(
-  launchedTestAccessScope,
-  ({ one }) => ({
-    userGroup: one(userGroup, {
-      fields: [launchedTestAccessScope.userGroupId],
-      references: [userGroup.id],
-    }),
-    launchedTest: one(launchedTest, {
-      fields: [launchedTestAccessScope.launchedTestId],
-      references: [launchedTest.id],
-    }),
-  }),
-)
-
-export const launchedTestVariantAccessScopeRelations = relations(
-  launchedTestVariantAccessScope,
-  ({ one }) => ({
-    userGroup: one(userGroup, {
-      fields: [launchedTestVariantAccessScope.userGroupId],
-      references: [userGroup.id],
-    }),
-    launchedTestVariant: one(launchedTestVariant, {
-      fields: [launchedTestVariantAccessScope.launchedTestVariantId],
-      references: [launchedTestVariant.id],
-    }),
-  }),
-)
-
-export const userGroupManagementAccessScopeRelations = relations(
-  userGroupManagementAccessScope,
-  ({ one }) => ({
-    leader: one(userGroup, {
-      fields: [userGroupManagementAccessScope.leaderUserGroupId],
-      references: [userGroup.id],
-      relationName: 'leader',
-    }),
-    subordinate: one(userGroup, {
-      fields: [userGroupManagementAccessScope.subordinateUserGroupId],
-      references: [userGroup.id],
-      relationName: 'subordinate',
-    }),
-  }),
-)
-
-export const userToUserGroupRelations = relations(
-  userToUserGroup,
-  ({ one }) => ({
-    user: one(user, {
-      fields: [userToUserGroup.userId],
-      references: [user.id],
-    }),
-    userGroup: one(userGroup, {
-      fields: [userToUserGroup.userGroupId],
-      references: [userGroup.id],
-    }),
-  }),
-)
-
-// export const tagRelations = relations(tag, ({ many }) => ({
-//   contributionsM2M: many(answerOptionIntoTagContribution),
-// }));
-
-// export const testAnalyticsModuleRelations = relations(
-//   testAnalyticsModule,
-//   ({ many }) => ({
-//     abstractTestsM2M: many(testAnalyticsModuleToAbstractTest),
-//   })
-// );
-
-// export const answerOptionIntoTagContributionRelations = relations(
-//   answerOptionIntoTagContribution,
-//   ({ one }) => ({
-//     abstractAnswerOption: one(abstractAnswerOption, {
-//       fields: [answerOptionIntoTagContribution.abstractAnswerOptionId],
-//       references: [abstractAnswerOption.id],
-//     }),
-//     tag: one(tag, {
-//       fields: [answerOptionIntoTagContribution.tagId],
-//       references: [tag.id],
-//     }),
-//   })
-// );
-
-// export const testAnalyticsModuleToAbstractTestRelations = relations(
-//   testAnalyticsModuleToAbstractTest,
-//   ({ one }) => ({
-//     testAnalyticsModule: one(testAnalyticsModule, {
-//       fields: [testAnalyticsModuleToAbstractTest.testAnalyticsModuleId],
-//       references: [testAnalyticsModule.id],
-//     }),
-//     abstractTest: one(abstractTest, {
-//       fields: [testAnalyticsModuleToAbstractTest.abstractTestId],
-//       references: [abstractTest.id],
-//     }),
-//   })
-// );

@@ -1,4 +1,4 @@
-import type { NotNull } from 'drizzle-orm'
+import type { SetNotNull } from 'drizzle-orm/pg-core'
 
 import {
   addRequiredColumns,
@@ -13,7 +13,7 @@ export const addRequiredColumn = <
   nameOfColumnInCurrentTable: NameOfColumnInCurrentTable,
   buildColumn: () => ColumnBuilder,
 ): FunctionExtendingColumnsMap<{
-  [Key in NameOfColumnInCurrentTable]: NotNull<ColumnBuilder>
+  [Key in NameOfColumnInCurrentTable]: SetNotNull<ColumnBuilder>
 }> =>
   addRequiredColumns(
     () => ({ [nameOfColumnInCurrentTable]: buildColumn() }) as any,

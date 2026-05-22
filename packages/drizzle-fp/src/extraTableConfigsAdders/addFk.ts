@@ -19,7 +19,7 @@ export const addFk =
       )
 
       const foreignColumn = getColumnOfForeignTable()
-      const foreignTableName = (foreignColumn.table as any)[
+      const foreignTableName = (foreignColumn as any).table[
         Symbol.for('drizzle:Name')
       ] as string
       const foreignColumnNamesSnakeCasedCloseToSQL = foreignColumn.name

@@ -1,4 +1,4 @@
-import type { PgColumnBuilderBase } from 'drizzle-orm/pg-core'
+import type { AnyPgColumnBuilder } from 'drizzle-orm/pg-core'
 
 const ErrorMessageBrand = Symbol()
 
@@ -8,7 +8,7 @@ export type ErrMsg<Message extends string, Context = any> = {
   context: Context
 }
 
-export type ColumnMap<Keys extends string> = Record<Keys, PgColumnBuilderBase>
+export type ColumnMap<Keys extends string> = Record<Keys, AnyPgColumnBuilder>
 export type GeneralColumnMap = ColumnMap<string>
 
 // TODO: make all validation sound with runtime execution
@@ -66,4 +66,4 @@ type ForbidNonStringKeys<ValueToValidate> = keyof ValueToValidate extends
   : ValueToValidate
 
 export type AllowOnlyValidColumnMaps<T> =
-  AllowOnlyNonEmptyObjectsWithActualKeys<T, PgColumnBuilderBase>
+  AllowOnlyNonEmptyObjectsWithActualKeys<T, AnyPgColumnBuilder>
