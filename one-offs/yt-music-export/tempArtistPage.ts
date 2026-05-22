@@ -30,7 +30,7 @@ const findDupes = <TIn, TOut extends string>(
   for (const tin of arr) map[getKey(tin)] = [...(map[getKey(tin)] ?? []), tin]
 
   for (const tout in map)
-    if (map[tout]!.length > 1)
+    if (map[tout]?.length > 1)
       console.log(
         `duplicate times ${map[tout].length} value ${tout} in `,
         map[tout],

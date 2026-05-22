@@ -53,7 +53,7 @@ async function generateEffectWrappers() {
   console.log(`Generated index.ts with ${generatedWrappers.length} exports`)
 }
 
-function generateWrapper(name: string, ast: any): GeneratedWrapper | null {
+function generateWrapper(_name: string, ast: any): GeneratedWrapper | null {
   if (ast.type !== 'interface') {
     return null
   }

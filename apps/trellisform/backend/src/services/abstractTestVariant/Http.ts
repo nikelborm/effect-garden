@@ -1,14 +1,9 @@
 import { API } from '@trellisform/api'
 import { UserWithSession } from '@trellisform/api/auth.ts'
-import {
-  abstractQuestion,
-  abstractTest,
-  abstractTestStage,
-  abstractTestVariant,
-} from '@trellisform/database/schema'
+import { abstractTestStage } from '@trellisform/database/schema'
 
 import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
-import { Console, Effect, Struct } from 'effect'
+import { Console, Effect } from 'effect'
 
 import { Database } from '../infrastructure/Database.ts'
 

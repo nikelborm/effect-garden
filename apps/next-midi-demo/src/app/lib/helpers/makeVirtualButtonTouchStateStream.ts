@@ -163,7 +163,7 @@ type IsNonDistributableUnion<A> = [A] extends [infer U]
   : never
 
 const isElementWithDataset = (k: unknown): k is ElementWithDataset =>
-  k instanceof Element && 'dataset' in k && k['dataset'] instanceof DOMStringMap
+  k instanceof Element && 'dataset' in k && k.dataset instanceof DOMStringMap
 
 // pointermove verified by:
 // import * as Data from 'effect/Data'

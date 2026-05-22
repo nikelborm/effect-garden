@@ -25,7 +25,7 @@ export const API = HttpApi.make('api')
   .add(AuthApiGroup.prefix('/auth'))
   .prefix('/api')
 
-const HttpApiRoutes = HttpLayerRouter.addHttpApi(API, {
+const _HttpApiRoutes = HttpLayerRouter.addHttpApi(API, {
   // openapiPath: '/docs/openapi.json',
 }).pipe(
   // Provide the api handlers layer

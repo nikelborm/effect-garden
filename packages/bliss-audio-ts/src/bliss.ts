@@ -352,8 +352,8 @@ export function decodeSong(raw: RawSongResult): Song {
     ...('cue_info' in raw
       ? {
           cueInfo: {
-            cuePath: raw.cue_info!.cue_path,
-            audioFilePath: raw.cue_info!.audio_file_path,
+            cuePath: raw.cue_info?.cue_path,
+            audioFilePath: raw.cue_info?.audio_file_path,
           },
         }
       : {}),
@@ -523,8 +523,8 @@ function decodeSongFromMeta(raw: RawSongMeta, features: Float32Array): Song {
     ...('cue_info' in raw
       ? {
           cueInfo: {
-            cuePath: raw.cue_info!.cue_path,
-            audioFilePath: raw.cue_info!.audio_file_path,
+            cuePath: raw.cue_info?.cue_path,
+            audioFilePath: raw.cue_info?.audio_file_path,
           },
         }
       : {}),

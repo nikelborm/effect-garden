@@ -18,14 +18,12 @@ import {
   isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
-  isPlayStopButtonPressableAtom,
   isStrengthButtonCurrentlyPlayingAtom,
   isStrengthButtonPressableAtom,
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
   strengthButtonDownloadPercentAtom,
-  switchPlayPauseFnAtom,
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
@@ -349,7 +347,7 @@ const DebugButton = styled.pre`
   height: 100%;
 `
 
-const NeumorphicButton = styled(BaseButton)<{
+const _NeumorphicButton = styled(BaseButton)<{
   $isExternallyActive?: boolean | undefined
   'data-button-id': number
 }>`

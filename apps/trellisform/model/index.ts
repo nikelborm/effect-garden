@@ -15,7 +15,7 @@ const addOptionalDescription = withNewStructFields({
   description: Schema.String.pipe(OptionalProperty),
 })
 
-const addRequiredNameWithOptionalDescription = EFunction.flow(
+const _addRequiredNameWithOptionalDescription = EFunction.flow(
   addRequiredName,
   addOptionalDescription,
 )
