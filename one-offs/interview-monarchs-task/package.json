@@ -42,7 +42,11 @@
       "url": "https://github.com/nikelborm"
     }
   ],
-  "license": "UNLICENSED",
-  "private": true,
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
   "main": "index.js"
 }
