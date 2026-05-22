@@ -1,10 +1,7 @@
 import { readFile } from 'node:fs/promises'
 
-import * as EArray from 'effect/Array'
-import { flow, pipe } from 'effect/Function'
-import * as HashSet from 'effect/HashSet'
+import { pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 
@@ -32,7 +29,7 @@ export const ReducedMetadataValueSchema = Schema.Struct({
   }),
 })
 
-const interestingCandidates = new Set([
+const _interestingCandidates = new Set([
   'Christian_music',
   'Motorsport',
   'Pet',

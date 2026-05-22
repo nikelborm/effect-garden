@@ -20,7 +20,6 @@ import postgres from 'postgres'
 // import { createServer } from 'node:http';
 import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
 import { Unauthorized } from '@effect/platform/HttpApiError'
-import * as HttpApiSecurity from '@effect/platform/HttpApiSecurity'
 import * as HttpServerRequest from '@effect/platform/HttpServerRequest'
 import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
 import * as BunHttpServerRequest from '@effect/platform-bun/BunHttpServerRequest'
@@ -183,7 +182,7 @@ export class BetterAuth extends Effect.Service<BetterAuth>()(
         databaseHooks: {
           user: {
             create: {
-              before: async (user, context) => {
+              before: async (user, _context) => {
                 return {
                   data: {
                     ...user,
@@ -197,10 +196,10 @@ export class BetterAuth extends Effect.Service<BetterAuth>()(
               // },
             },
             update: {
-              before: async (user, context) => {
+              before: async (user, _context) => {
                 return { data: user }
               },
-              after: async (user, context) => {},
+              after: async (_user, _context) => {},
             },
           },
         },

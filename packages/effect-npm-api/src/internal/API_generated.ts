@@ -1174,7 +1174,7 @@ export const make = (
   ) => Effect.Effect<any, any> = options.transformClient
     ? f => request =>
         Effect.flatMap(
-          Effect.flatMap(options.transformClient!(httpClient), client =>
+          Effect.flatMap(options.transformClient?.(httpClient), client =>
             client.execute(request),
           ),
           f,
@@ -1238,12 +1238,12 @@ export const make = (
     'GET/-/v1/search': options =>
       HttpClientRequest.get(`/-/v1/search`).pipe(
         HttpClientRequest.setUrlParams({
-          text: options?.['text'] as any,
-          size: options?.['size'] as any,
-          from: options?.['from'] as any,
-          quality: options?.['quality'] as any,
-          popularity: options?.['popularity'] as any,
-          maintenance: options?.['maintenance'] as any,
+          text: options?.text as any,
+          size: options?.size as any,
+          from: options?.from as any,
+          quality: options?.quality as any,
+          popularity: options?.popularity as any,
+          maintenance: options?.maintenance as any,
         }),
         withResponse(
           HttpClientResponse.matchStatus({
@@ -1382,9 +1382,9 @@ export const make = (
     'GET/-/npm/v1/hooks': options =>
       HttpClientRequest.get(`/-/npm/v1/hooks`).pipe(
         HttpClientRequest.setUrlParams({
-          package: options?.['package'] as any,
-          limit: options?.['limit'] as any,
-          offset: options?.['offset'] as any,
+          package: options?.package as any,
+          limit: options?.limit as any,
+          offset: options?.offset as any,
         }),
         withResponse(
           HttpClientResponse.matchStatus({

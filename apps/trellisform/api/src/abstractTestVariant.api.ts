@@ -3,8 +3,6 @@ import {
   withNewStructTag,
 } from '@evadev/effect-helpers'
 import {
-  AbstractAnswerOptionIdFromNumberSchema,
-  AbstractQuestionIdFromNumberSchema,
   AbstractTestStageSchema,
   AbstractTestVariantIdFromStringSchema,
   TestVariantAttemptSchema,

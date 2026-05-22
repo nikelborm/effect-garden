@@ -1,11 +1,11 @@
 // biome-ignore-all format: true
 
+import { equal } from 'node:assert';
 import test from 'node:test';
-import { equal } from 'assert';
 
 import type { List } from "ts-toolbelt"
 
-function logObjectNicely(item: any): void {
+function _logObjectNicely(item: any): void {
   console.dir(item, {
     colors: true,
     compact: false,

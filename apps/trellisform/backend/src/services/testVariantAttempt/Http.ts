@@ -16,7 +16,7 @@ export const TestVariantAttemptHttpGroupLive = HttpApiBuilder.group(
       Effect.fn('Get my test variant attempts')(function* ({}) {
         yield* Effect.sleep('2 seconds')
 
-        const asd = yield* db.query.abstractAnswerOption.findFirst()
+        const _asd = yield* db.query.abstractAnswerOption.findFirst()
         return yield* HttpServerResponse.text('ok')
       }),
     )

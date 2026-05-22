@@ -1,7 +1,5 @@
 import { match, P } from 'ts-pattern'
 
-import * as EString from 'effect/String'
-
 export const MDN_URL_BASE = 'https://developer.mozilla.org'
 
 export const MDN_URL = `${MDN_URL_BASE}/en-US/docs/Web/API/KeyboardEvent/key/Key_Values`

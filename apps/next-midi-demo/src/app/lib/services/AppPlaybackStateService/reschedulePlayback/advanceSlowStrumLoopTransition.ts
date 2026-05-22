@@ -25,7 +25,7 @@ export const advanceSlowStrumLoopTransition = Effect.fn(
 )(function* (
   oldState: SlowStrumLoopTransition,
   asset: AssetPointer,
-  deps: ReschedulePlaybackDeps,
+  _deps: ReschedulePlaybackDeps,
 ) {
   const audioContext = yield* EAudioContext.EAudioContext
   const [slowStrum, queuedLoop] = oldState.transitionQueue

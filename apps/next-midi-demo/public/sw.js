@@ -110,7 +110,7 @@
     }
     if (b.has(e)) return b.get(e)
     const t = (e => {
-      if ('function' == typeof e)
+      if ('function' === typeof e)
         return (
           r ||
           (r = [
@@ -192,7 +192,8 @@
     N = ['put', 'add', 'delete', 'clear'],
     C = new Map()
   function T(e, t) {
-    if (!(e instanceof IDBDatabase && !(t in e) && 'string' == typeof t)) return
+    if (!(e instanceof IDBDatabase && !(t in e) && 'string' === typeof t))
+      return
     if (C.get(t)) return C.get(t)
     const a = t.replace(/FromIndex$/, ''),
       s = t !== a,
@@ -536,7 +537,7 @@
         if ('sync' in self.registration && !this._forceSyncFallback)
           try {
             await self.registration.sync.register(`${H}:${this._name}`)
-          } catch (e) {}
+          } catch (_e) {}
       }
       _addSyncListener() {
         'sync' in self.registration && !this._forceSyncFallback
@@ -580,7 +581,7 @@
       200 === e.status || 0 === e.status ? e : null,
   }
   function X(e) {
-    return 'string' == typeof e ? new Request(e) : e
+    return 'string' === typeof e ? new Request(e) : e
   }
   var Y = class {
       event
@@ -726,7 +727,7 @@
       }
       *iterateCallbacks(e) {
         for (const t of this._strategy.plugins)
-          if ('function' == typeof t[e]) {
+          if ('function' === typeof t[e]) {
             const a = this._pluginStateMap.get(t),
               s = s => {
                 const r = { ...s, state: a }
@@ -754,7 +755,7 @@
           try {
             const e = await this.event.preloadResponse
             if (e) return e
-          } catch (e) {
+          } catch (_e) {
             return
           }
       }
@@ -794,7 +795,8 @@
       handleAll(e) {
         e instanceof FetchEvent && (e = { event: e, request: e.request })
         const t = e.event,
-          a = 'string' == typeof e.request ? new Request(e.request) : e.request,
+          a =
+            'string' === typeof e.request ? new Request(e.request) : e.request,
           s = new Y(
             this,
             e.url
@@ -935,7 +937,7 @@
         return s
       }
     }
-  const ea = e => (e && 'object' == typeof e ? e : { handle: e })
+  const ea = e => (e && 'object' === typeof e ? e : { handle: e })
   var es = class {
       handler
       match
@@ -1053,7 +1055,7 @@
     }
   const ec = e => {
     if (!e) throw new l('add-to-cache-list-unexpected-type', { entry: e })
-    if ('string' == typeof e) {
+    if ('string' === typeof e) {
       const t = new URL(e, location.href)
       return { cacheKey: t.href, url: t.href }
     }
@@ -1312,7 +1314,7 @@
                     const s = a.parameterOverrides[t]
                     e.set(t, s)
                   }
-                'function' == typeof a.hitFilter && a.hitFilter.call(null, e),
+                'function' === typeof a.hitFilter && a.hitFilter.call(null, e),
                   await fetch(
                     new Request(n.origin + n.pathname, {
                       body: e.toString(),
@@ -1368,7 +1370,7 @@
     }
     async handlerDidError(e) {
       for (const t of this._fallbackUrls)
-        if ('string' == typeof t) {
+        if ('string' === typeof t) {
           const e = await this._serwist.matchPrecache(t)
           if (void 0 !== e) return e
         } else if (t.matcher(e)) {
@@ -1427,7 +1429,7 @@
         ),
         o
       )
-    } catch (e) {
+    } catch (_e) {
       return new Response('', {
         status: 416,
         statusText: 'Range Not Satisfiable',
@@ -1615,7 +1617,7 @@
               for (const e of Object.keys(n))
                 (e => {
                   const a = t[e]
-                  'string' == typeof a && (n[e] = a)
+                  'string' === typeof a && (n[e] = a)
                 })(e)
             })({ prefix: i }),
           a
@@ -1628,7 +1630,7 @@
           w.cleanupOutdatedCaches &&
             (e => {
               self.addEventListener('activate', t => {
-                t.waitUntil(p(c(e)).then(e => {}))
+                t.waitUntil(p(c(e)).then(_e => {}))
               })
             })(f.cacheName),
           this.registerRoute(new ev(this, g)),
@@ -1640,7 +1642,7 @@
               }),
             ),
           void 0 !== h &&
-            ('boolean' == typeof h
+            ('boolean' === typeof h
               ? h && ew({ serwist: this })
               : ew({ ...h, serwist: this })),
           void 0 !== l)
@@ -1673,11 +1675,11 @@
       addToPrecacheList(e) {
         const t = []
         for (const a of e) {
-          'string' == typeof a
+          'string' === typeof a
             ? t.push(a)
             : a && !a.integrity && void 0 === a.revision && t.push(a.url)
           const { cacheKey: e, url: s } = ec(a),
-            r = 'string' != typeof a && a.revision ? 'reload' : 'default'
+            r = 'string' !== typeof a && a.revision ? 'reload' : 'default'
           if (
             this._urlsToCacheKeys.has(s) &&
             this._urlsToCacheKeys.get(s) !== e
@@ -1686,7 +1688,7 @@
               firstEntry: this._urlsToCacheKeys.get(s),
               secondEntry: e,
             })
-          if ('string' != typeof a && a.integrity) {
+          if ('string' !== typeof a && a.integrity) {
             if (
               this._cacheKeysToIntegrities.has(e) &&
               this._cacheKeysToIntegrities.get(e) !== a.integrity
@@ -1765,7 +1767,7 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`)
                 let a
                 return (
                   (a =
-                    'string' == typeof t ? new Request(t) : new Request(...t)),
+                    'string' === typeof t ? new Request(t) : new Request(...t)),
                   this.handleRequest({ request: a, event: e })
                 )
               }),
@@ -1782,12 +1784,12 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`)
       }
       registerCapture(e, t, a) {
         const s = ((e, t, a) => {
-          if ('string' == typeof e) {
+          if ('string' === typeof e) {
             const s = new URL(e, location.href)
             return new es(({ url: e }) => e.href === s.href, t, a)
           }
           if (e instanceof RegExp) return new ei(e, t, a)
-          if ('function' == typeof e) return new es(e, t, a)
+          if ('function' === typeof e) return new es(e, t, a)
           if (e instanceof es) return e
           throw new l('unsupported-route-type', {
             moduleName: 'serwist',
@@ -1901,7 +1903,7 @@ This is generally NOT safe. Learn more at https://bit.ly/wb-precache`)
               (Array.isArray((n = i)) && 0 === n.length) ||
               (i.constructor === Object && 0 === Object.keys(i).length)
                 ? (n = void 0)
-                : 'boolean' == typeof i && (n = void 0),
+                : 'boolean' === typeof i && (n = void 0),
               { route: r, params: n }
             )
         }

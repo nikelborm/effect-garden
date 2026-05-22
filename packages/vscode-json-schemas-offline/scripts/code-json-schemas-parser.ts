@@ -60,9 +60,7 @@ const parseJsonOrYaml = Schema.transformOrFail(
     encode: (decoded, _, ast) =>
       EFunction.pipe(
         Either.try(() =>
-          (decoded.from === 'json' ? JSON : Bun.YAML)['stringify'](
-            decoded.result,
-          ),
+          (decoded.from === 'json' ? JSON : Bun.YAML).stringify(decoded.result),
         ),
         Either.mapLeft(
           error => new ParseResult.Type(ast, decoded, getErrorMessage(error)),

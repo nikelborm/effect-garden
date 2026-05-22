@@ -379,8 +379,7 @@ await Effect.gen(function* () {
           .map(([k, v]) => {
             ;[...v.matchAll(indexRegexp)]
               .map(
-                e =>
-                  node.additions[parseInt(e?.groups?.['index'] ?? '', 10) - 1],
+                e => node.additions[parseInt(e?.groups?.index ?? '', 10) - 1],
               )
               .forEach(v => currAdditions.add(v))
 

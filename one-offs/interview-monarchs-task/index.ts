@@ -13,7 +13,7 @@ const secureObject = (o: Record<string | number | symbol, any>) => {
   Object.preventExtensions(o)
 }
 
-const ENUM = <const T extends Array<string> | Array<number>>(
+const _ENUM = <const T extends Array<string> | Array<number>>(
   arr: T,
 ): Merge<Readonly<RemapEnumArrToObject<T>>> => {
   const map = Object.fromEntries(arr.map(e => [e, e]))
@@ -33,7 +33,7 @@ type IMonarchs = keyof typeof MONARCHS
 
 console.log(MONARCHS)
 
-const baseRules = new Set([
+const _baseRules = new Set([
   'there is token type [T]',
   'there is token [T]', // meaning that it must be placed somewhere
   'token [T] is of type [U]',
@@ -46,7 +46,7 @@ const baseRules = new Set([
   '[T] XOR [U]', // ???
 ])
 
-const possibleRules = new Set([
+const _possibleRules = new Set([
   'token of type [T] to the left of token of type [U]', // requires minimum 2 spatial slots
   'token [T] to the left of token of type [U]', // T ..(0,∞).. U
   'token of type [T] to the left of token [U]',
@@ -76,7 +76,7 @@ const possibleRules = new Set([
   'there are exactly [N] tokens in any single spatial slot',
 ] as const)
 
-const remapTokens = {
+const _remapTokens = {
   'token [T] to the left of token [U]': {
     searchesFor: ['there is token [T]', 'there are exactly [N] spatial slots'],
     results(T: string, U: string, N: number) {

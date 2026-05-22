@@ -693,9 +693,9 @@ describe('closestSongs', () => {
 
   test('order snapshot (paths)', () => {
     const sorted = closestSongs(songPiano, [songPiano, songMono, songStereo])
-    expect(sorted[0]!.path.endsWith('piano.flac')).toBe(true)
-    expect(sorted[1]!.path.endsWith('s32_stereo_44_1_kHz.flac')).toBe(true)
-    expect(sorted[2]!.path.endsWith('s16_mono_22_5kHz.flac')).toBe(true)
+    expect(sorted[0]?.path.endsWith('piano.flac')).toBe(true)
+    expect(sorted[1]?.path.endsWith('s32_stereo_44_1_kHz.flac')).toBe(true)
+    expect(sorted[2]?.path.endsWith('s16_mono_22_5kHz.flac')).toBe(true)
   })
 })
 
@@ -739,9 +739,9 @@ describe('songToSong', () => {
 
   test('path order snapshot', () => {
     const result = songToSong([songPiano], [songMono, songStereo, songNoTags])
-    expect(result[0]!.path.endsWith('s32_stereo_44_1_kHz.flac')).toBe(true)
-    expect(result[1]!.path.endsWith('s16_mono_22_5kHz.flac')).toBe(true)
-    expect(result[2]!.path.endsWith('no_tags.flac')).toBe(true)
+    expect(result[0]?.path.endsWith('s32_stereo_44_1_kHz.flac')).toBe(true)
+    expect(result[1]?.path.endsWith('s16_mono_22_5kHz.flac')).toBe(true)
+    expect(result[2]?.path.endsWith('no_tags.flac')).toBe(true)
   })
 })
 

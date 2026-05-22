@@ -89,7 +89,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const playbackPublicInfoChangesStream = Stream.map(
+      const _playbackPublicInfoChangesStream = Stream.map(
         stateRef.changes,
         state =>
           state._tag === 'NotPlaying'

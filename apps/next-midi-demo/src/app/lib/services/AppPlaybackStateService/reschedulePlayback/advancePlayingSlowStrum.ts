@@ -23,7 +23,7 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
   function* (
     oldState: PlayingSlowStrum,
     asset: AssetPointer,
-    deps: ReschedulePlaybackDeps,
+    _deps: ReschedulePlaybackDeps,
   ) {
     const audioContext = yield* EAudioContext.EAudioContext
     const [current] = oldState.transitionQueue
