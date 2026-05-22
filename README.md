@@ -62,5 +62,6 @@ vars. Install it.
 
    1. [trellisform-database](./apps/trellisform-database) (recommend checking
       out - demo of `drizzle-fp`)
-   2. [next-midi-demo](./packages/next-midi-demo) (recommend checking out - demo
-      of `effect-web-midi` and other audio stuff with effect)
+   2. [next-midi-demo](./apps/next-midi-demo) (recommend checking out - demo of
+      `effect-web-midi` and other audio stuff with effect. the juiciest part is
+      [src/app/lib/services](./apps/next-midi-demo/src/app/lib/services))
