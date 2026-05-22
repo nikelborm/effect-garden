@@ -39,7 +39,7 @@
     "serwist": "catalog:",
     "ts-key-not-enum": "workspace:^"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/next-midi-demo#readme",
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/next-midi-demo#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
@@ -47,7 +47,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/next-midi-demo"
+    "directory": "apps/next-midi-demo"
   },
   "scripts": {
     "build": "next build --webpack",
