@@ -1,20 +1,22 @@
-import { HttpApiBuilder, HttpServerResponse } from '@effect/platform';
-import { Console, Effect, Struct } from 'effect';
-import { API } from '@trellisform/api';
-import { Database } from '../infrastructure/Database.ts';
-import { UserWithSession } from '@trellisform/api/auth.ts';
+import { API } from '@trellisform/api'
+import { UserWithSession } from '@trellisform/api/auth.ts'
 import {
   abstractQuestion,
   abstractTest,
   abstractTestStage,
   abstractTestVariant,
-} from '@trellisform/database/schema';
+} from '@trellisform/database/schema'
+
+import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
+import { Console, Effect, Struct } from 'effect'
+
+import { Database } from '../infrastructure/Database.ts'
 
 export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
   API,
   'Abstract test variant',
   Effect.fn(function* (handlers) {
-    const db = yield* Database;
+    const db = yield* Database
     return handlers
 
       .handle(
@@ -24,22 +26,24 @@ export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
         }) {
           const {
             user: { id: userId },
-          } = yield* UserWithSession;
+          } = yield* UserWithSession
 
-          yield* db.insert(abstractTestVariant).values({
-            ...Struct.omit(payload, '_tag'),
-            createdByUserId: userId,
-          });
+          // yield* db.insert(abstractTestVariant).values({
+          //   ...Struct.omit(payload, '_tag'),
+          //   createdByUserId: userId,
+          // })
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
       )
       .handle(
         'Create test variant with AI',
-        Effect.fn('Create test variant with AI handler')(function* ({}) {
-          yield* Effect.sleep('2 seconds');
+        Effect.fn('Create test variant with AI handler')(function* ({
+          request,
+        }) {
+          yield* Effect.sleep('2 seconds')
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
       )
       .handle(
@@ -47,16 +51,16 @@ export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
         Effect.fn('Get test variant handler')(function* ({
           path: { abstractTestVariantId },
         }) {
-          const asd = yield* UserWithSession;
-          yield* Console.log(asd);
+          const asd = yield* UserWithSession
+          yield* Console.log(asd)
 
           yield* Effect.annotateCurrentSpan(
             'abstract test variant id',
             abstractTestVariantId,
-          );
-          yield* Effect.sleep('2 seconds');
+          )
+          yield* Effect.sleep('2 seconds')
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
       )
       .handle(
@@ -66,12 +70,12 @@ export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
         }) {
           const {
             user: { id: userId },
-          } = yield* UserWithSession;
+          } = yield* UserWithSession
 
           yield* Effect.annotateCurrentSpan(
             'abstract test variant id',
             abstractTestVariantId,
-          );
+          )
 
           yield* db
             .insert(abstractTestStage)
@@ -80,9 +84,9 @@ export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
               abstractTestVariantId,
               name: 'Default',
             })
-            .pipe(Effect.orDie);
+            .pipe(Effect.orDie)
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
       )
       .handle(
@@ -90,17 +94,17 @@ export const AbstractTestVariantHttpGroupLive = HttpApiBuilder.group(
         Effect.fn('Create test variant attempt handler')(function* ({
           path: { abstractTestVariantId },
         }) {
-          const asd = yield* UserWithSession;
-          yield* Console.log(asd);
+          const asd = yield* UserWithSession
+          yield* Console.log(asd)
 
           yield* Effect.annotateCurrentSpan(
             'abstract test variant id',
             abstractTestVariantId,
-          );
-          yield* Effect.sleep('2 seconds');
+          )
+          yield* Effect.sleep('2 seconds')
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
-      );
+      )
   }),
-);
+)

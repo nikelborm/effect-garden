@@ -29,6 +29,7 @@ import { Effect, flow, Layer, Logger, Option, pipe } from 'effect'
 import { AbstractAnswerOptionHttpGroupLive } from './services/abstractAnswerOption/Http.ts'
 import { AbstractQuestionHttpGroupLive } from './services/abstractQuestion/Http.ts'
 import { AbstractTestHttpGroupLive } from './services/abstractTest/Http.ts'
+import { AbstractTestVariantHttpGroupLive } from './services/abstractTestVariant/Http.ts'
 import { EducationalSpaceHttpGroupLive } from './services/educationalSpace/Http.ts'
 import { Database } from './services/infrastructure/Database.ts'
 import { TracingLive } from './services/infrastructure/Tracing.ts'
@@ -38,6 +39,8 @@ const HttpApiGroupsLive = Layer.mergeAll(
   // HealthHttpGroupLive,
   AuthHttpGroupLive,
   AbstractQuestionHttpGroupLive,
+  AbstractTestVariantHttpGroupLive,
+  // AbstractTestStageHttpGroupLive,
   AbstractTestHttpGroupLive,
   EducationalSpaceHttpGroupLive,
   TestVariantAttemptHttpGroupLive,

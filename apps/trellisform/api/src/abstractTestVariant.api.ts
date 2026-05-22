@@ -24,6 +24,7 @@ export const CreateAbstractTestVariantManuallyEndpoint = HttpApiEndpoint.post(
   'Create test variant manually',
   '/manual',
 )
+  .setPayload(Schema.Any)
   .addSuccess(Schema.Any)
   .addError(Schema.Any)
 

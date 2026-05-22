@@ -1,17 +1,22 @@
-import { HttpApiBuilder, HttpServerResponse } from '@effect/platform';
-import { API } from '@trellisform/api';
-import { abstractAnswerOption, abstractQuestion } from '@trellisform/database/schema';
-import { eq } from 'drizzle-orm';
-import { Effect } from 'effect';
-import { Database } from '../infrastructure/Database.ts';
-import { UserWithSession } from '@trellisform/api/auth.ts';
-import { ensureReturningOneId } from '@evadev/effect-helpers';
+import { ensureReturningOneId } from '@evadev/effect-helpers'
+import { API } from '@trellisform/api'
+import { UserWithSession } from '@trellisform/api/auth.ts'
+import {
+  abstractAnswerOption,
+  abstractQuestion,
+} from '@trellisform/database/schema'
+import { eq } from 'drizzle-orm'
+
+import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
+import { Effect } from 'effect'
+
+import { Database } from '../infrastructure/Database.ts'
 
 export const AbstractQuestionHttpGroupLive = HttpApiBuilder.group(
   API,
   'Abstract question',
   Effect.fn(function* (handlers) {
-    const db = yield* Database;
+    const db = yield* Database
     return handlers
       .handle(
         'Create abstract answer option',
@@ -20,7 +25,7 @@ export const AbstractQuestionHttpGroupLive = HttpApiBuilder.group(
         }) {
           const {
             user: { id: userId },
-          } = yield* UserWithSession;
+          } = yield* UserWithSession
 
           return yield* db
             .insert(abstractAnswerOption)
@@ -29,7 +34,7 @@ export const AbstractQuestionHttpGroupLive = HttpApiBuilder.group(
               abstractQuestionId,
             })
             .returning({ id: abstractAnswerOption.id })
-            .pipe(ensureReturningOneId('AbstractAnswerOption'), Effect.orDie);
+            .pipe(ensureReturningOneId('AbstractAnswerOption'), Effect.orDie)
         }),
       )
       .handle(
@@ -40,13 +45,13 @@ export const AbstractQuestionHttpGroupLive = HttpApiBuilder.group(
           yield* Effect.annotateCurrentSpan(
             'abstract question id',
             abstractQuestionId,
-          );
+          )
 
           yield* db
             .delete(abstractQuestion)
             .where(eq(abstractQuestion.id, abstractQuestionId))
-            .pipe(Effect.orDie);
+            .pipe(Effect.orDie)
         }),
-      );
+      )
   }),
-);
+)

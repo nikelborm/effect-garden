@@ -18,15 +18,17 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
 // import { createServer } from 'node:http';
-import {
-  HttpApiBuilder,
-  HttpApiSecurity,
-  HttpServerRequest,
-  HttpServerResponse,
-} from '@effect/platform'
+import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
 import { Unauthorized } from '@effect/platform/HttpApiError'
-import { BunHttpServerRequest } from '@effect/platform-bun'
-import { Context, Effect, Layer, Redacted, Runtime, Schema } from 'effect'
+import * as HttpApiSecurity from '@effect/platform/HttpApiSecurity'
+import * as HttpServerRequest from '@effect/platform/HttpServerRequest'
+import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
+import * as BunHttpServerRequest from '@effect/platform-bun/BunHttpServerRequest'
+import * as Context from 'effect/Context'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
+import * as Redacted from 'effect/Redacted'
+import * as Schema from 'effect/Schema'
 
 // Other implementations
 // https://github.com/search?type=code&q=%2F%5B%27%22%5Dbetter-auth%5B%27%22%5C%2F%5D%2F+AND+%2F%5B%27%22%5D%40%3Feffect%5B%27%22%5C%2F%5D%2F+AND+language%3ATypeScript

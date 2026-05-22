@@ -10,11 +10,17 @@
     "@evadev/tsconfig": "workspace:^"
   },
   "dependencies": {
+    "@effect/experimental": "^0.60.0",
+    "@effect/opentelemetry": "^0.63.0",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/sql": "catalog:",
+    "@effect/sql-drizzle": "^0.50.0",
+    "@effect/sql-pg": "^0.52.1",
     "@evadev/backend-config": "workspace:^",
+    "@evadev/effect-helpers": "workspace:*",
     "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.218.0",
     "@opentelemetry/sdk-trace-base": "^2.0.1",

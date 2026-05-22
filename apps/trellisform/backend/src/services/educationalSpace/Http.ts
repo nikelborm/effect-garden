@@ -1,6 +1,7 @@
-import { HttpApiBuilder, HttpServerResponse } from '@effect/platform';
-import { Effect } from 'effect';
-import { API } from '@trellisform/api';
+import { API } from '@trellisform/api'
+
+import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
+import { Effect } from 'effect'
 
 export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
   API,
@@ -10,9 +11,9 @@ export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
       .handle(
         'Create educational space',
         Effect.fn('Create educational space handler')(function* ({}) {
-          yield* Effect.sleep('2 seconds');
+          yield* Effect.sleep('2 seconds')
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
       )
       .handle(
@@ -20,10 +21,10 @@ export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
         Effect.fn(
           'Get educational spaces the authed user have the rights to launch tests in handler',
         )(function* ({}) {
-          yield* Effect.sleep('2 seconds');
+          yield* Effect.sleep('2 seconds')
 
-          return yield* HttpServerResponse.text('ok');
+          return yield* HttpServerResponse.text('ok')
         }),
-      );
+      )
   }),
-);
+)
