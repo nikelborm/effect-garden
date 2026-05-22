@@ -630,23 +630,32 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
 
       const devDeps = pkg.pkg.devDependencies ?? {}
 
-      const toInstall: string[] = []
+      const toInstall: { dep: string; version: string }[] = []
 
       if (devDeps['@evadev/tsconfig'] !== 'workspace:^')
-        toInstall.push('@evadev/tsconfig@workspace:^')
+        toInstall.push({ dep: '@evadev/tsconfig', version: 'workspace:^' })
 
       for (const [dep, version] of tsconfigDirectDeps)
-        if (!pkg.allDependencies[dep]) toInstall.push(`${dep}@${version}`)
+        if (!devDeps[dep]) toInstall.push({ dep, version })
 
       if (!toInstall.length) return
 
       yield* Console.log(
         `\nInstalling missing tsconfig deps into ${pkg.pkg.name}:`,
       )
-      yield* Console.log(toInstall.join(', '))
+      const installArgs = toInstall.map(
+        ({ dep, version }) => `${dep}@${version}`,
+      )
+      yield* Console.log(installArgs.join(', '))
 
+      // reinstall it manually so it actually moves them from one folder into another
       yield* observableExec({
-        cmd: ['bun', 'add', '--dev', ...toInstall],
+        cmd: ['bun', 'remove', ...toInstall.map(e => e.dep)],
+        cwd: pkg.absolutePackageDirPath,
+        badExitCodeErrorMessage: `Failed to remove tsconfig deps from ${pkg.pkg.name}`,
+      })
+      yield* observableExec({
+        cmd: ['bun', 'install', '-D', ...installArgs],
         cwd: pkg.absolutePackageDirPath,
         badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.pkg.name}`,
       })

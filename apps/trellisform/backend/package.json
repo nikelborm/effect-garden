@@ -8,6 +8,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
@@ -39,7 +40,6 @@
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:",
-    "ts-patch": "catalog:",
     "tsafe": "catalog:",
     "type-fest": "catalog:"
   },

@@ -7,12 +7,12 @@
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {
     "@handfish/drizzle-effect": "catalog:",
-    "@trellisform/database": "workspace:^",
-    "ts-patch": "catalog:"
+    "@trellisform/database": "workspace:^"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform/database-effect-schema#readme",
   "bugs": {

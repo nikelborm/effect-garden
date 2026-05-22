@@ -8,14 +8,14 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
-    "ts-patch": "catalog:"
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "effect": "catalog:",
-    "typescript": "catalog:"
+    "effect": "catalog:"
   },
   "dependencies": {
     "@evadev/effect-helpers": "workspace:^",

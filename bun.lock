@@ -103,12 +103,12 @@
       "dependencies": {
         "@evadev/effect-helpers": "workspace:^",
         "@trellisform/model": "workspace:^",
-        "ts-patch": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
         "typescript": "catalog:",
       },
       "peerDependencies": {
@@ -138,7 +138,6 @@
         "better-auth": "catalog:",
         "drizzle-orm": "catalog:",
         "pg": "catalog:",
-        "ts-patch": "catalog:",
         "tsafe": "catalog:",
         "type-fest": "catalog:",
       },
@@ -147,6 +146,7 @@
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
         "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
         "typescript": "catalog:",
       },
       "peerDependencies": {
@@ -172,7 +172,6 @@
         "next": "catalog:",
         "pg": "catalog:",
         "postgres": "catalog:",
-        "ts-patch": "catalog:",
       },
       "devDependencies": {
         "@better-auth/cli": "catalog:",
@@ -180,6 +179,7 @@
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
         "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
         "typescript": "catalog:",
       },
       "peerDependencies": {
@@ -218,12 +218,12 @@
       "dependencies": {
         "@handfish/drizzle-effect": "catalog:",
         "@trellisform/database": "workspace:^",
-        "ts-patch": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
         "typescript": "catalog:",
       },
     },
@@ -232,12 +232,12 @@
       "version": "0.1.0",
       "dependencies": {
         "@evadev/effect-helpers": "workspace:^",
-        "ts-patch": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
         "typescript": "catalog:",
       },
       "peerDependencies": {
@@ -333,13 +333,13 @@
         "@types/bun": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
+        "typescript": "catalog:",
       },
       "peerDependencies": {
         "@effect/cli": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
         "effect": "catalog:",
-        "typescript": "catalog:",
       },
     },
     "one-offs/github-extract-issues": {
@@ -765,17 +765,17 @@
       "dependencies": {
         "@total-typescript/ts-reset": "catalog:",
         "change-case": "catalog:",
-        "ts-namespace-import": "catalog:",
         "ts-toolbelt": "catalog:",
         "tsafe": "catalog:",
         "type-fest": "catalog:",
-        "typescript": "catalog:",
         "zod": "catalog:",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
+        "typescript": "catalog:",
       },
     },
     "packages/ts-key-not-enum": {

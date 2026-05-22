@@ -7,14 +7,14 @@
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
     "effect": "catalog:"
   },
   "dependencies": {
-    "@evadev/effect-helpers": "workspace:^",
-    "ts-patch": "catalog:"
+    "@evadev/effect-helpers": "workspace:^"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/trellisform/model#readme",
   "bugs": {
