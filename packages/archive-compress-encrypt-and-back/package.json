@@ -80,8 +80,8 @@
   "module": "./dist/index.js",
   "types": "./dist-types/index.d.ts",
   "bin": {
-    "archive-compress-encrypt-and-back": "dist/ace.js",
-    "ace": "dist/ace.js"
+    "ace": "dist/ace.js",
+    "archive-compress-encrypt-and-back": "dist/ace.js"
   },
   "files": [
     "dist",

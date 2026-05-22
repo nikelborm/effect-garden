@@ -1,6 +1,6 @@
-import { writeFileSync } from 'fs'
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
+import { writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WEB_AUDIO_IDL_NAME = 'webaudio'
@@ -81,7 +81,7 @@ export interface E${interfaceName}
     Inspectable.Inspectable {
   readonly [TypeId]: TypeId
   readonly _tag: "${interfaceName}"
-${readonlyProperties.map(p => `  readonly ${p}: unknown`).join('\n')}
+${readonlyProperties.map((p: any) => `  readonly ${p}: unknown`).join('\n')}
 }
 
 interface E${interfaceName}Impl extends E${interfaceName} {
@@ -111,7 +111,7 @@ const Proto = {
   },
 ${readonlyProperties
   .map(
-    p => `  get ${p}() {
+    (p: any) => `  get ${p}() {
     return assumeImpl(this)._${interfaceName.charAt(0).toLowerCase() + interfaceName.slice(1)}.${p.replace(/_/g, ',')}
   }`,
   )

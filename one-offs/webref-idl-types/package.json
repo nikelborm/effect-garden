@@ -1,0 +1,55 @@
+{
+  "name": "@types/webref__idl",
+  "type": "module",
+  "version": "1.0.1",
+  "description": "Type declarations for @webref/idl",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@types/webidl2": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/webref-idl-types#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "one-offs/webref-idl-types"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "types": "./index.d.ts",
+  "files": [
+    "package.json"
+  ]
+}
