@@ -17,6 +17,9 @@
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
   },
+  "scripts": {
+    "build": "tspc"
+  },
   "dependencies": {
     "@evadev/effect-helpers": "workspace:^",
     "dotenv": "catalog:",

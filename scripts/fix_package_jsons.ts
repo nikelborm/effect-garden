@@ -383,22 +383,63 @@ const ensureProdAndDevDependenciesHaveNoIntersections =
     Effect.withSpan('ensureProdAndDevDependenciesHaveNoIntersections'),
   )
 
+const reinstallDepsInCategory = Effect.fn('reinstallDepsInCategory')(
+  function* ({
+    deps,
+    depType,
+    cwd,
+    packageName,
+  }: {
+    deps: ReadonlyArray<{ dep: string; version: string }>
+    depType: 'dependencies' | 'devDependencies' | 'peerDependencies'
+    cwd: string
+    packageName: string
+  }) {
+    if (!deps.length) return
+
+    const flags =
+      depType === 'devDependencies'
+        ? ['--dev']
+        : depType === 'peerDependencies'
+          ? ['--peer']
+          : []
+
+    yield* observableExec({
+      cmd: ['bun', 'remove', ...deps.map(e => e.dep)],
+      cwd,
+      badExitCodeErrorMessage: `Failed to remove deps from ${packageName}`,
+    })
+    yield* observableExec({
+      cmd: [
+        'bun',
+        'add',
+        ...flags,
+        ...deps.map(({ dep, version }) => `${dep}@${version}`),
+      ],
+      cwd,
+      badExitCodeErrorMessage: `Failed to reinstall deps into ${packageName}`,
+    })
+  },
+)
+
 const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const dependencyNameToItsInstances = pipe(
       yield* myMonorepoPackagesEffect,
-      EArray.flatMap(({ allDependencies, pkg, absolutePackageDirPath }) =>
-        pipe(
-          allDependencies,
-          Record.map((dependencyVersion, dependencyName) => ({
-            dependency: { name: dependencyName, version: dependencyVersion },
-            pkg: {
-              name: pkg.name,
-              absolutePackageDirPath,
-            },
-          })),
-          Record.values,
+      EArray.flatMap(({ pkg, absolutePackageDirPath }) =>
+        (
+          ['dependencies', 'devDependencies', 'peerDependencies'] as const
+        ).flatMap(depType =>
+          pipe(
+            pkg[depType] ?? {},
+            Record.map((dependencyVersion, dependencyName) => ({
+              dependency: { name: dependencyName, version: dependencyVersion },
+              pkg: { name: pkg.name, absolutePackageDirPath },
+              depType,
+            })),
+            Record.values,
+          ),
         ),
       ),
       EArray.groupBy(_ => _.dependency.name),
@@ -444,7 +485,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
           versionPresentInCatalog,
           packagesInsideOfWhichCatalogDepsWillBeInstalled: dependencyInstances
             .filter(_ => _.dependency.version !== 'catalog:')
-            .map(_ => _.pkg),
+            .map(_ => ({ ..._.pkg, depType: _.depType })),
 
           uniqueVersions: uniqueVersions,
           wouldRequireChoosingVersionToPutIntoCatalog,
@@ -473,9 +514,6 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       })
     }
 
-    // TODO: ensure when installing catalog versions of deps it doesn't move
-    // them from peer/dev deps into prod deps
-
     const tasksToInstallCatalogVersionsOfDeps = pipe(
       badDeps,
       Record.toEntries,
@@ -485,8 +523,13 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
           dependencyName,
         })),
       ),
-      EArray.groupBy(_ => _.pkg.absolutePackageDirPath),
-      Record.map(EArray.map(_ => _.dependencyName)),
+      EArray.groupBy(_ => `${_.pkg.absolutePackageDirPath}||${_.pkg.depType}`),
+      Record.map(tasks => ({
+        absolutePackageDirPath: tasks[0].pkg.absolutePackageDirPath,
+        packageName: tasks[0].pkg.name,
+        depType: tasks[0].pkg.depType,
+        deps: tasks.map(t => ({ dep: t.dependencyName, version: 'catalog:' })),
+      })),
     )
 
     if (Record.size(tasksToInstallCatalogVersionsOfDeps)) {
@@ -495,7 +538,8 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       yield* Console.table(
         Record.map(
           tasksToInstallCatalogVersionsOfDeps,
-          dependencyNamesToInstall => dependencyNamesToInstall.join(', '),
+          ({ deps, depType }) =>
+            `[${depType}] ` + deps.map(d => d.dep).join(', '),
         ),
       )
     }
@@ -542,20 +586,10 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
       }).pipe(Effect.withSpan('installDependenciesInRootAfterUpdatingCatalog'))
     }
 
-    for (const [
-      absolutePackageDirPath,
-      dependencyNamesToInstall,
-    ] of Record.toEntries(tasksToInstallCatalogVersionsOfDeps))
-      yield* observableExec({
-        cmd: [
-          'bun',
-          'add',
-          ...dependencyNamesToInstall.map(name => name + '@catalog:'),
-        ],
-        cwd: absolutePackageDirPath,
-        badExitCodeErrorMessage:
-          'Failed to install added to catalog bun deps into specific package',
-      })
+    for (const { absolutePackageDirPath: cwd, ...rest } of Record.values(
+      tasksToInstallCatalogVersionsOfDeps,
+    ))
+      yield* reinstallDepsInCategory({ cwd, ...rest })
   }).pipe(
     Effect.withSpan(
       'ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized',
@@ -648,16 +682,11 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
       )
       yield* Console.log(installArgs.join(', '))
 
-      // reinstall it manually so it actually moves them from one folder into another
-      yield* observableExec({
-        cmd: ['bun', 'remove', ...toInstall.map(e => e.dep)],
+      yield* reinstallDepsInCategory({
+        deps: toInstall,
+        depType: 'devDependencies',
         cwd: pkg.absolutePackageDirPath,
-        badExitCodeErrorMessage: `Failed to remove tsconfig deps from ${pkg.pkg.name}`,
-      })
-      yield* observableExec({
-        cmd: ['bun', 'install', '-D', ...installArgs],
-        cwd: pkg.absolutePackageDirPath,
-        badExitCodeErrorMessage: `Failed to install tsconfig deps into ${pkg.pkg.name}`,
+        packageName: pkg.pkg.name,
       })
     }),
     { discard: true },
@@ -754,15 +783,14 @@ const addAllDepsToPlayground = Effect.gen(function* () {
     allDeps,
     Record.toEntries,
     EArray.filter(([name, version]) => existingDevDeps[name] !== version),
-    EArray.map(([name, version]) => name + '@' + version),
+    EArray.map(([name, version]) => ({ dep: name, version })),
   )
 
-  if (!depsToInstall.length) return
-
-  yield* observableExec({
-    cmd: ['bun', 'add', '--dev', ...depsToInstall],
+  yield* reinstallDepsInCategory({
+    deps: depsToInstall,
+    depType: 'devDependencies',
     cwd: playgroundDirPath,
-    badExitCodeErrorMessage: 'Failed to install dependencies in playground',
+    packageName: 'playground',
   })
 }).pipe(Effect.withSpan('addAllDepsToPlayground'))
 
@@ -948,20 +976,11 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
       delete newCatalog[depName]
     }
     if (usage.type === 'once')
-      yield* observableExec({
-        cmd: [
-          'bun',
-          'add',
-          ...(usage.depType === 'devDependencies'
-            ? ['--dev']
-            : usage.depType === 'peerDependencies'
-              ? ['--peer']
-              : []),
-          depName + '@' + usage.catalogDepVersion,
-        ],
+      yield* reinstallDepsInCategory({
+        deps: [{ dep: depName, version: usage.catalogDepVersion }],
+        depType: usage.depType,
         cwd: usage.absolutePackageDirPath,
-        badExitCodeErrorMessage:
-          'Failed to install dependency into specific package',
+        packageName: usage.pkg.name,
       })
   }
 

@@ -3,7 +3,10 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { generateDrizzleJson, generateMigration } from 'drizzle-kit/api'
+import {
+  generateDrizzleJson,
+  generateMigration,
+} from 'drizzle-kit/api-postgres'
 
 import { drizzleKitMigrateDev } from './lib/composeCommands.ts'
 import { ensureDevScriptRunnerIsReady } from './lib/ensureDevScriptRunnerIsReady.ts'
@@ -27,33 +30,31 @@ const closer = closePsql()
 
 await rm(migrationsDirPath, { force: true, recursive: true })
 
-const version = '7' as const
-const dialect = 'postgresql' as const
+const version = '8' as const
+const dialect = 'postgres' as const
 await mkdir(migrationsMetaDirPath, { recursive: true })
 
 const schema = await import(
   join(databasePackageDirPath, 'dist', 'src', 'schema.js')
 )
 
-const newSnapshot = generateDrizzleJson(schema, void 0, void 0, 'snake_case')
+const newSnapshot = await generateDrizzleJson(
+  schema,
+  void 0,
+  void 0,
+  'snake_case',
+)
 
+// TODO: this shit needs a complete rewrite after they updated the format of the
+// migrations folder
 const sqlQueries = await generateMigration(
   {
     version,
     dialect,
     id: '00000000-0000-0000-0000-000000000000',
-    prevId: '',
-    tables: {},
-    enums: {},
-    schemas: {},
-    policies: {},
-    roles: {},
-    sequences: {},
-    _meta: {
-      schemas: {},
-      tables: {},
-      columns: {},
-    },
+    prevIds: [],
+    ddl: [],
+    renames: [],
   },
   newSnapshot,
 )

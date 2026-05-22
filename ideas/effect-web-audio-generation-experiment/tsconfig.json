@@ -4,6 +4,7 @@
     "declarationDir": "./dist-types",
     "outDir": "./dist",
     "types": ["bun"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "rootDir": "./"
   },
   "include": ["src/**/*.ts", "*.ts"],

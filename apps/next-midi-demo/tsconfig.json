@@ -5,6 +5,7 @@
     "outDir": "./dist",
     "rootDir": "./",
     "noUncheckedSideEffectImports": false,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]

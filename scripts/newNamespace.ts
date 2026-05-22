@@ -11,7 +11,6 @@ import * as Effect from 'effect/Effect'
 import * as Either from 'effect/Either'
 
 import { myMonorepoPackagesEffect } from './fix_package_jsons.ts'
-import { packagesDirPath } from './lib/paths.ts'
 
 const emptyInternalTsNamespaceFile = `/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
@@ -37,11 +36,11 @@ export const listOfNamespacesPrompt = Prompt.list({
 
 export const createNamespaceRelatedFiles = Effect.fn(
   'createNamespaceRelatedFiles',
-)(function* (packageName: string, namespaces: string[]) {
+)(function* (absolutePackageDirPath: string, namespaces: string[]) {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
 
-  const srcDirPath = path.join(packagesDirPath, packageName, 'src')
+  const srcDirPath = path.join(absolutePackageDirPath, 'src')
 
   yield* fs.writeFileString(
     path.join(srcDirPath, 'index.ts'),
@@ -72,18 +71,18 @@ export const createNamespaceRelatedFiles = Effect.fn(
 const program = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
-  const { namespaces, packageName } = yield* Prompt.all({
-    packageName: Prompt.select({
+  const { namespaces, absolutePackageDirPath } = yield* Prompt.all({
+    absolutePackageDirPath: Prompt.select({
       message: `Choose a package:`,
       choices: myMonorepoPackages.map(pkg => ({
         title: pkg.pkg.name,
-        value: pkg.directoryPath,
+        value: pkg.absolutePackageDirPath,
       })),
     }),
     namespaces: listOfNamespacesPrompt,
   }).pipe(Prompt.run)
 
-  yield* createNamespaceRelatedFiles(packageName, namespaces)
+  yield* createNamespaceRelatedFiles(absolutePackageDirPath, namespaces)
 }).pipe(
   Effect.provide(BunContext.layer),
   Effect.withSpan(import.meta.file),
