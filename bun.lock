@@ -41,6 +41,7 @@
         "effect-web-audio-generation-experiment": "workspace:^",
         "effect-web-mediacapture-streams": "workspace:^",
         "effect-web-midi": "workspace:^",
+        "effect-ytmusic": "workspace:^",
         "effect-zstd": "workspace:^",
         "gitdl": "workspace:^",
         "interview-monarchs-task": "workspace:^",
@@ -672,6 +673,25 @@
         "effect": "catalog:",
       },
     },
+    "packages/effect-ytmusic": {
+      "name": "effect-ytmusic",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@effect/language-service": "catalog:",
+        "@effect/vitest": "catalog:",
+        "@evadev/tsconfig": "workspace:^",
+        "@types/bun": "catalog:",
+        "ts-namespace-import": "catalog:",
+        "ts-patch": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:",
+      },
+      "peerDependencies": {
+        "@effect/platform": "catalog:",
+        "@effect/platform-bun": "catalog:",
+        "effect": "catalog:",
+      },
+    },
     "packages/effect-zstd": {
       "name": "effect-zstd",
       "version": "0.1.5",
@@ -802,7 +822,7 @@
     },
     "packages/tsconfig": {
       "name": "@evadev/tsconfig",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "dependencies": {
         "@effect/language-service": "catalog:",
         "ts-namespace-import": "catalog:",
@@ -2554,6 +2574,8 @@
 
     "effect-web-midi": ["effect-web-midi@workspace:packages/effect-web-midi"],
 
+    "effect-ytmusic": ["effect-ytmusic@workspace:packages/effect-ytmusic"],
+
     "effect-zstd": ["effect-zstd@workspace:packages/effect-zstd"],
 
     "electron-to-chromium": ["electron-to-chromium@1.5.361", "", {}, "sha512-Q6Hts7N9FnJc5LeGRINFvLhCI9xZmNtTDe5ZbcVezQz7cU4a8Aua3GH1b8J2XY8Al9PF+OCwYqhgsOOheMdvkA=="],
@@ -4292,6 +4314,8 @@
 
     "vitest/tinybench": ["tinybench@2.9.0", "", {}, "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg=="],
 
+    "vscode-json-schemas-offline/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
     "wrap-ansi/ansi-styles": ["ansi-styles@3.2.1", "", { "dependencies": { "color-convert": "^1.9.0" } }, "sha512-VT0ZI6kZRdTh8YyJw3SMbYm/u+NqfsAxEpWO0Pf9sq8/e94WxxOpPKx9FR1FlyCtOVDNOQ+8ntlqFxiRc+r5qA=="],
 
     "wrap-ansi/string-width": ["string-width@3.1.0", "", { "dependencies": { "emoji-regex": "^7.0.1", "is-fullwidth-code-point": "^2.0.0", "strip-ansi": "^5.1.0" } }, "sha512-vafcv6KjVZKSgz06oM/H6GDBrAtz8vdhQakGjFIvNrHA6y3HCF1CInLy+QLq8dTJPQ1b+KDUqDFctkdRW44e1w=="],
@@ -4299,6 +4323,8 @@
     "wrap-ansi/strip-ansi": ["strip-ansi@5.2.0", "", { "dependencies": { "ansi-regex": "^4.1.0" } }, "sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA=="],
 
     "yargs/string-width": ["string-width@3.1.0", "", { "dependencies": { "emoji-regex": "^7.0.1", "is-fullwidth-code-point": "^2.0.0", "strip-ansi": "^5.1.0" } }, "sha512-vafcv6KjVZKSgz06oM/H6GDBrAtz8vdhQakGjFIvNrHA6y3HCF1CInLy+QLq8dTJPQ1b+KDUqDFctkdRW44e1w=="],
+
+    "yt-music-export/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "ytmusic-api/@biomejs/biome": ["@biomejs/biome@1.8.3", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "1.8.3", "@biomejs/cli-darwin-x64": "1.8.3", "@biomejs/cli-linux-arm64": "1.8.3", "@biomejs/cli-linux-arm64-musl": "1.8.3", "@biomejs/cli-linux-x64": "1.8.3", "@biomejs/cli-linux-x64-musl": "1.8.3", "@biomejs/cli-win32-arm64": "1.8.3", "@biomejs/cli-win32-x64": "1.8.3" }, "bin": { "biome": "bin/biome" } }, "sha512-/uUV3MV+vyAczO+vKrPdOW0Iaet7UnJMU4bNMinggGJTAnBPjCoLEYcyYtYHNnUNYlv4xZMH6hVIQCAozq8d5w=="],
 
@@ -4622,6 +4648,8 @@
 
     "terminal-link/supports-hyperlinks/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
+    "vscode-json-schemas-offline/ts-namespace-import/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+
     "wrap-ansi/ansi-styles/color-convert": ["color-convert@1.9.3", "", { "dependencies": { "color-name": "1.1.3" } }, "sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg=="],
 
     "wrap-ansi/string-width/emoji-regex": ["emoji-regex@7.0.3", "", {}, "sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA=="],
@@ -4635,6 +4663,8 @@
     "yargs/string-width/is-fullwidth-code-point": ["is-fullwidth-code-point@2.0.0", "", {}, "sha512-VHskAKYM8RfSFXwee5t5cbN5PZeq1Wrh6qd5bkyiXIf6UQcN6w/A0eXM9r6t8d+GYOh+o6ZhiEnb88LN/Y8m2w=="],
 
     "yargs/string-width/strip-ansi": ["strip-ansi@5.2.0", "", { "dependencies": { "ansi-regex": "^4.1.0" } }, "sha512-DuRs1gKbBqsMKIZlrffwlug8MHkcnpjs5VPmL1PAh+mA30U0DTotfDZ0d2UUsXpPmPmMMJ6W773MaA3J+lbiWA=="],
+
+    "yt-music-export/ts-namespace-import/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
     "ytmusic-api/@biomejs/biome/@biomejs/cli-darwin-arm64": ["@biomejs/cli-darwin-arm64@1.8.3", "", { "os": "darwin", "cpu": "arm64" }, "sha512-9DYOjclFpKrH/m1Oz75SSExR8VKvNSSsLnVIqdnKexj6NwmiMlKk94Wa1kZEdv6MCOHGHgyyoV57Cw8WzL5n3A=="],
 

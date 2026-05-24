@@ -1,0 +1,25 @@
+{
+  "extends": "@evadev/tsconfig",
+  "compilerOptions": {
+    "declarationDir": "./dist-types",
+    "outDir": "./dist",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "rootDir": "./"
+  },
+  "include": ["**/*.ts"],
+  "exclude": [
+    ".github",
+    ".stryker-tmp",
+    ".turbo",
+    ".vscode",
+    "build",
+    "dist-types",
+    "dist",
+    "gh-page",
+    "node_modules",
+    "out",
+    "reports",
+    "tmp",
+    "vite.config.ts"
+  ]
+}

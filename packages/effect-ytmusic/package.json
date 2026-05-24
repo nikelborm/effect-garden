@@ -1,23 +1,41 @@
 {
-  "name": "@evadev/tsconfig",
+  "name": "effect-ytmusic",
   "type": "module",
-  "version": "1.0.2",
-  "description": "My relatively strict tsconfig just how I like it",
-  "dependencies": {
+  "version": "0.1.0",
+  "description": "Effect client to interact with YouTube Music",
+  "devDependencies": {
     "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/tsconfig#readme",
+  "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-ytmusic#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
     "email": "evadev@duck.com"
   },
+  "keywords": [
+    "music",
+    "youtube",
+    "effect"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
-    "directory": "packages/tsconfig"
+    "directory": "packages/effect-ytmusic"
+  },
+  "scripts": {
+    "build": "tspc",
+    "test": "vitest run"
   },
   "author": {
     "name": "nikelborm",
@@ -45,10 +63,16 @@
     "provenance": false
   },
   "exports": {
-    "default": "./tsconfig.json"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist-types/index.d.ts"
+    }
   },
+  "main": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
   "files": [
-    "package.json",
-    "tsconfig.json"
+    "dist",
+    "dist-types",
+    "package.json"
   ]
 }
