@@ -100,7 +100,7 @@ const Proto = {
         ),
       },
       {
-        ...(options || {}),
+        ...options,
         depth: options.depth === null ? null : options.depth - 1,
       },
     )

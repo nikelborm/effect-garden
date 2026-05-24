@@ -4,9 +4,9 @@ export const tracksFromBigMediaFolder = (await readdir('/big_media/yt-music/'))
   .map(filename => ({
     filename,
 
-    ...(filename.match(
+    ...filename.match(
       /(?<audioTitle>.*) \[(?<youtubeId>[a-zA-Z-_\d]*)\]\.(?<extension>[\da-z]*)$/,
-    )?.groups ?? {}),
+    )?.groups,
   }))
   .filter(
     (

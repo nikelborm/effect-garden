@@ -2,7 +2,8 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base'
 
 import * as NodeSdk from '@effect/opentelemetry/NodeSdk'
-import { Effect, Layer } from 'effect'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 
 export const TracingLive = Layer.unwrapEffect(
   Effect.gen(function* () {

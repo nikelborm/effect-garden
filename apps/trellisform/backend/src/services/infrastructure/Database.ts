@@ -2,15 +2,17 @@ import { DbConfig } from '@evadev/backend-config'
 import { schemaWithRelations } from '@trellisform/database'
 
 import * as PgDrizzlePg from '@effect/sql-drizzle/Pg'
-import * as SqlPg from '@effect/sql-pg'
-import { Effect, Layer, String as Str } from 'effect'
+import * as PgClient from '@effect/sql-pg/PgClient'
+import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
+import * as EString from 'effect/String'
 
 export const SqlLive = Layer.unwrapEffect(
   DbConfig.use(({ db }) =>
-    SqlPg.PgClient.layer({
+    PgClient.layer({
       ...db,
-      transformQueryNames: Str.camelToSnake,
-      transformResultNames: Str.snakeToCamel,
+      transformQueryNames: EString.camelToSnake,
+      transformResultNames: EString.snakeToCamel,
     }),
   ),
 )

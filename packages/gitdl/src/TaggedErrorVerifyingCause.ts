@@ -41,8 +41,8 @@ export const buildTaggedErrorClassVerifyingCause =
 
         const customMessageRendererArgs = removeLastIfItIsEmptyObject(
           expectedCauseClass
-            ? [args[0], { ...(args[1] ?? {}), ...staticContext }]
-            : [{ ...(args[0] ?? {}), ...staticContext }],
+            ? [args[0], { ...args[1], ...staticContext }]
+            : [{ ...args[0], ...staticContext }],
         ) as MessageRendererArgs<Config>
 
         super({
@@ -52,7 +52,7 @@ export const buildTaggedErrorClassVerifyingCause =
             : customMessage,
           ...(!!expectedCauseClass && { cause: args[0] }),
           ...staticContext,
-          ...(args[+!!expectedCauseClass] ?? {}), // dynamic context
+          ...args[+!!expectedCauseClass], // dynamic context
         })
       }
     }

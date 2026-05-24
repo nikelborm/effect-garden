@@ -1,7 +1,8 @@
 import { API } from '@trellisform/api'
 
-import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
-import { Effect } from 'effect'
+import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
+import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
+import * as Effect from 'effect/Effect'
 
 import { Database } from '../infrastructure/Database.ts'
 

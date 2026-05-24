@@ -63,8 +63,8 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
     // repo root. If it won't fix the problem during container builds, swap
     // commented parts in this script
     filtered['dependencies'] = getObjectSortedByKeys({
-      ...(pkg.dependencies || {}),
-      ...(pkg.devDependencies || {}),
+      ...pkg.dependencies,
+      ...pkg.devDependencies,
     })
   }
 

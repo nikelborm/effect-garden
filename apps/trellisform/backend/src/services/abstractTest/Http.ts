@@ -2,8 +2,11 @@ import { API } from '@trellisform/api'
 import { UserWithSession } from '@trellisform/api/auth.ts'
 import { abstractTest } from '@trellisform/database/schema'
 
-import { HttpApiBuilder, HttpServerResponse } from '@effect/platform'
-import { Console, Effect, Struct } from 'effect'
+import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
+import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
+import * as Console from 'effect/Console'
+import * as Effect from 'effect/Effect'
+import * as Struct from 'effect/Struct'
 
 import { Database } from '../infrastructure/Database.ts'
 

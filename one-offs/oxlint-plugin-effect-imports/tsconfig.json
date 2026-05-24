@@ -1,0 +1,14 @@
+{
+  "extends": "@evadev/tsconfig",
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./dist",
+    "declarationDir": "./dist",
+    "types": []
+  },
+  "include": ["**/*.ts"],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
+}

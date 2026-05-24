@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/src/config/schema.json",
+  "jsPlugins": ["./one-offs/oxlint-plugin-effect-imports/dist/index.js"],
+  "rules": {
+    "effect-imports/named-to-namespace": "error"
+  },
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/dist-types/**",
+    "**/.next/**",
+    "**/build/**",
+    "**/.turbo/**"
+  ]
+}
