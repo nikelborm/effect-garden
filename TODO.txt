@@ -6,3 +6,4 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
 2. script to ensure README.md uppercase convention
 3. documentation on scripts
 4. integrate hot reload from [nounder/effect-start](https://github.com/nounder/effect-start)?
+5. integrate https://github.com/useairfoil/typescript-sdk/tree/main/packages/effect-vcr
