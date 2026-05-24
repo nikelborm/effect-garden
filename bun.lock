@@ -86,6 +86,7 @@
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "babel-plugin-react-compiler": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -108,6 +109,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -146,6 +148,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -179,6 +182,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -202,6 +206,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -223,6 +228,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -237,6 +243,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -251,6 +258,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -262,6 +270,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -276,6 +285,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -290,6 +300,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -310,6 +321,7 @@
         "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "@types/webref__idl": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "@webref/idl": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -332,6 +344,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -355,6 +368,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -375,6 +389,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -389,6 +404,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -407,6 +423,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -441,6 +458,7 @@
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/plugin-terser": "catalog:",
         "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "rollup": "catalog:",
         "rollup-plugin-visualizer": "catalog:",
@@ -471,6 +489,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -489,6 +508,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -509,6 +529,7 @@
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/instrumenter": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "numpy-ts": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
@@ -532,6 +553,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/pg": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -549,6 +571,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -567,6 +590,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -587,6 +611,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -605,6 +630,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/openapi-gen": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -620,6 +646,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -637,6 +664,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -651,6 +679,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -665,6 +694,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -698,6 +728,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -741,6 +772,7 @@
         "@rollup/plugin-json": "catalog:",
         "@rollup/plugin-node-resolve": "catalog:",
         "@rollup/plugin-terser": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "rollup": "catalog:",
         "rollup-plugin-visualizer": "catalog:",
@@ -768,6 +800,7 @@
         "@evadev/tsconfig": "workspace:^",
         "@stryker-mutator/vitest-runner": "catalog:",
         "@total-typescript/ts-reset": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "change-case": "catalog:",
         "ts-namespace-import": "catalog:",
@@ -793,6 +826,7 @@
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -809,6 +843,7 @@
         "@microsoft/tsdoc": "catalog:",
         "@types/bun": "catalog:",
         "@types/unist": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "effect": "catalog:",
         "effect-mdx": "catalog:",
         "prettier": "catalog:",
@@ -825,9 +860,8 @@
       "version": "1.0.2",
       "dependencies": {
         "@effect/language-service": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
-        "ts-patch": "catalog:",
-        "typescript": "catalog:",
       },
     },
     "packages/vscode-json-schemas-offline": {
@@ -840,6 +874,7 @@
         "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
         "@types/vscode": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "@vscode/vsce": "catalog:",
         "esbuild": "catalog:",
         "ts-namespace-import": "catalog:",
@@ -941,6 +976,7 @@
         "@types/vscode": "catalog:",
         "@types/webidl2": "catalog:",
         "@types/webref__idl": "workspace:^",
+        "@typescript/native-preview": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "@vscode/vsce": "catalog:",
         "@webref/idl": "catalog:",
@@ -1018,6 +1054,7 @@
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",
         "@types/bun": "catalog:",
+        "@typescript/native-preview": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -1092,6 +1129,7 @@
     "@types/unist": "^3.0.3",
     "@types/vscode": "^1.120.0",
     "@types/webidl2": "^24.4.4",
+    "@typescript/native-preview": "^7.0.0-dev.20260524.1",
     "@vitest/coverage-v8": "^4.1.7",
     "@vscode/vsce": "^3.0.0",
     "@webref/idl": "^3.78.0",
@@ -2165,6 +2203,22 @@
     "@types/yargs": ["@types/yargs@17.0.35", "", { "dependencies": { "@types/yargs-parser": "*" } }, "sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg=="],
 
     "@types/yargs-parser": ["@types/yargs-parser@21.0.3", "", {}, "sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ=="],
+
+    "@typescript/native-preview": ["@typescript/native-preview@7.0.0-dev.20260524.1", "", { "optionalDependencies": { "@typescript/native-preview-darwin-arm64": "7.0.0-dev.20260524.1", "@typescript/native-preview-darwin-x64": "7.0.0-dev.20260524.1", "@typescript/native-preview-linux-arm": "7.0.0-dev.20260524.1", "@typescript/native-preview-linux-arm64": "7.0.0-dev.20260524.1", "@typescript/native-preview-linux-x64": "7.0.0-dev.20260524.1", "@typescript/native-preview-win32-arm64": "7.0.0-dev.20260524.1", "@typescript/native-preview-win32-x64": "7.0.0-dev.20260524.1" }, "bin": { "tsgo": "bin/tsgo.js" } }, "sha512-L4YviXl4FVYt4V9vkUKRCZW1DcsUbLRaKC4gxsYmBJQqB262mtUo8eqjKqElgZNIpKwYEAAYsBDrVmNhy6ze2w=="],
+
+    "@typescript/native-preview-darwin-arm64": ["@typescript/native-preview-darwin-arm64@7.0.0-dev.20260524.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-dIaYmijy9/tdrxHTxlnfwzP+AC6iAycUYGChOowLR3bVSbKhz4DUJZGMaodzGCtBEWSRUwx0MK1Sa1zBpFbM5g=="],
+
+    "@typescript/native-preview-darwin-x64": ["@typescript/native-preview-darwin-x64@7.0.0-dev.20260524.1", "", { "os": "darwin", "cpu": "x64" }, "sha512-HjfPFOSQCymn5Iu07xoySqfK5lwXthEWN1vltO5SDaFYVRasK6P3DBRe4QL0AiSGr8tRfA3x7BdRPjPVu94Epg=="],
+
+    "@typescript/native-preview-linux-arm": ["@typescript/native-preview-linux-arm@7.0.0-dev.20260524.1", "", { "os": "linux", "cpu": "arm" }, "sha512-gXzD1BNpPUSAv12a9UvxLTX/+WdoC34skLw6hDLk1kv3VYbd5LecQzEIb7u+WHCsNuXVXffk79+BZP7IQNS1aw=="],
+
+    "@typescript/native-preview-linux-arm64": ["@typescript/native-preview-linux-arm64@7.0.0-dev.20260524.1", "", { "os": "linux", "cpu": "arm64" }, "sha512-dH+zYjBs2ajcIRMmb8YkapY7TXzU/yX6HITrXhuoDov+mun7nCNfiRRmRBeqbGxl5JM8mUugBl/yyyhFWjIWdQ=="],
+
+    "@typescript/native-preview-linux-x64": ["@typescript/native-preview-linux-x64@7.0.0-dev.20260524.1", "", { "os": "linux", "cpu": "x64" }, "sha512-Fr0A8RPBMXco9IIXel598hC25LE1A5wpB33mBhwimlIQe58MMCAeW+wDHXsmLmF2NiFVT1vr1tjMGmEMMdYdsg=="],
+
+    "@typescript/native-preview-win32-arm64": ["@typescript/native-preview-win32-arm64@7.0.0-dev.20260524.1", "", { "os": "win32", "cpu": "arm64" }, "sha512-AhFD6bct2RWeZxONLEvaKPlu+c+/TNejj7ntztHWREaq+lrjz8Qg3tXryah2K66EEmYY0TooapfWUWXWe8i+VQ=="],
+
+    "@typescript/native-preview-win32-x64": ["@typescript/native-preview-win32-x64@7.0.0-dev.20260524.1", "", { "os": "win32", "cpu": "x64" }, "sha512-3VE5kBH2y7vYpj83X9iqGbNR8gwnlQlTjzLKJBzuyfTJPZ9R/vM4txvpuTDRJo18JGzEq4FUjKg7yqpf9ajb2g=="],
 
     "@typespec/ts-http-runtime": ["@typespec/ts-http-runtime@0.3.5", "", { "dependencies": { "http-proxy-agent": "^7.0.0", "https-proxy-agent": "^7.0.0", "tslib": "^2.6.2" } }, "sha512-yURCknZhvywvQItHMMmFSo+fq5arCUIyz/CVk7jD89MSai7dkaX8ufjCWp3NttLojoTVbcE72ri+be/TnEbMHw=="],
 

@@ -154,7 +154,7 @@ updated list of keys found in MDN.
    [gvergnaud/ts-pattern](https://github.com/gvergnaud/ts-pattern)
 3. improve caching stages. And cache not only the first fetch, but also byte
    results of rendering functions. Parallelize validation and passing file
-   contents trough tspc, biome, prettier. Since many files do not depend on each
+   contents trough tsgo, biome, prettier. Since many files do not depend on each
    other, they can easily formatted and rendered in parallel.
 4. make a graph of functions like functions folding children, and functions that
    fold results of these functions, so that we folded child node, we have to

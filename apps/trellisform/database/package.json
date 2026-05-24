@@ -7,6 +7,7 @@
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -34,8 +35,8 @@
     "directory": "apps/trellisform/database"
   },
   "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch"
+    "build": "tsgo",
+    "dev": "tsgo --watch"
   },
   "author": {
     "name": "nikelborm",

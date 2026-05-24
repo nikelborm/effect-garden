@@ -91,6 +91,7 @@
     "@types/vscode": "catalog:",
     "@types/webidl2": "catalog:",
     "@types/webref__idl": "workspace:^",
+    "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "@vscode/vsce": "catalog:",
     "@webref/idl": "catalog:",

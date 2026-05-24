@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-command -v tspc >/dev/null 2>&1 || {
-  echo "tspc is required but not installed."
+command -v tsgo >/dev/null 2>&1 || {
+  echo "tsgo is required but not installed."
   exit 1
 }
 command -v rollup >/dev/null 2>&1 || {
@@ -16,7 +16,7 @@ command -v jq >/dev/null 2>&1 || {
 }
 
 rm -rf dist gh-page/bundled_deps
-tspc
+tsgo
 mkdir -p ./dist/minified
 rollup -c ./rollup.config.mts
 # TODO: ?

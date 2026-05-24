@@ -11,6 +11,7 @@
     "@microsoft/tsdoc": "catalog:",
     "@types/bun": "catalog:",
     "@types/unist": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "effect": "catalog:",
     "effect-mdx": "catalog:",
     "prettier": "catalog:",
@@ -43,7 +44,7 @@
     "directory": "packages/ts-key-not-enum"
   },
   "scripts": {
-    "build": "tspc",
+    "build": "tsgo",
     "dev": "clear; bun --watch ./scripts/scrapeMDNForKeyboardButtons.ts",
     "prepack": "bun ./scripts/scrapeMDNForKeyboardButtons.ts",
     "scrape": "bun ./scripts/scrapeMDNForKeyboardButtons.ts"

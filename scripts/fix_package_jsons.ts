@@ -253,6 +253,8 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
 
     yield* Effect.annotateCurrentSpan({ ...pathes, packageJsonPath })
 
+    if(!(yield* fs.exists(packageJsonPath))) return null
+
     const pkg = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
       Schema.decode(SubPackageJsonSchemaFromString),
@@ -304,6 +306,8 @@ export const myMonorepoPackagesEffect = myMonorepoPackagePathsEffect.pipe(
   Effect.flatMap(
     Effect.forEach(getMyMonorepoPackage, { concurrency: 'unbounded' }),
   ),
+  // to skip empty directories
+  Effect.map(pkgs => pkgs.filter(pkg => pkg !== null)),
   Effect.withSpan('myMonorepoPackages'),
 )
 

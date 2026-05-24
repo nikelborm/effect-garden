@@ -65,14 +65,14 @@ const fixGeneratedFolder = Effect.all([
   Effect.log('Started fixing everything with biome.'),
   Command.string(Command.make('biome', 'check', '--write', `src`, 'index.ts')),
   Effect.log('Finished fixing everything with biome.\n'),
-  Effect.log('Started compiling with tspc.'),
+  Effect.log('Started compiling with tsgo.'),
   Effect.flatMap(FileSystem.FileSystem, fs => {
     const rm = (p: string) => fs.remove(p, { force: true, recursive: true })
     return Effect.all([rm('dist'), rm('dist-types')])
   }),
-  // TODO: properly show tspc's error output. It's currently fails silently
-  Command.string(Command.make('bunx', 'tspc')),
-  Effect.log('Finished compiling with tspc.\n'),
+  // TODO: properly show tsgo's error output. It's currently fails silently
+  Command.string(Command.make('bunx', 'tsgo')),
+  Effect.log('Finished compiling with tsgo.\n'),
 ])
 
 const makeCacheError = (

@@ -159,7 +159,8 @@
     "@opentelemetry/semantic-conventions": "^1.34.0",
     "@handfish/drizzle-effect": "^0.0.17",
     "postgres": "^3.4.9",
-    "@better-auth/cli": "^1.3.18"
+    "@better-auth/cli": "^1.3.18",
+    "@typescript/native-preview": "^7.0.0-dev.20260524.1"
   },
   "workspaces": [
     "ideas/*",

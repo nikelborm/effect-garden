@@ -44,9 +44,9 @@ const packageJson = (config: { name: string; description: string }) =>
     description: config.description,
     license: 'MIT',
     scripts: {
-      build: 'tspc',
-      prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tspc',
-      dev: 'tspc --watch --preserveWatchOutput false',
+      build: 'tsgo',
+      prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tsgo',
+      dev: 'tsgo --watch --preserveWatchOutput false',
     },
     files: [
       'dist-types',

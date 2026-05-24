@@ -8,6 +8,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@stryker-mutator/vitest-runner": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "change-case": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -73,7 +74,7 @@
     "scratchpad": "node --use-strict ./scratchpad.ts",
     "test": "vitest --typecheck --watch",
     "test:mutate": "stryker run",
-    "test-jsr": "tspc && jsr publish --dry-run",
+    "test-jsr": "tsgo && jsr publish --dry-run",
     "test-once": "vitest --run",
     "watch-docs": "find src/ ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },

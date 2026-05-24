@@ -10,6 +10,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

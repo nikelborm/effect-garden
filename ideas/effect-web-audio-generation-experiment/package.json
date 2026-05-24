@@ -8,6 +8,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@types/webref__idl": "workspace:^",
+    "@typescript/native-preview": "catalog:",
     "@webref/idl": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -31,11 +32,11 @@
     "directory": "ideas/effect-web-audio-generation-experiment"
   },
   "scripts": {
-    "build": "tspc",
-    "dev": "tspc --watch",
+    "build": "tsgo",
+    "dev": "tsgo --watch",
     "generate": "bun scripts/generate.ts",
     "generate:watch": "bun --watch scripts/generate.ts",
-    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tspc"
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsgo"
   },
   "author": {
     "name": "nikelborm",

@@ -11,6 +11,7 @@
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/instrumenter": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "numpy-ts": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
