@@ -20,8 +20,8 @@ dist-types
 dist2
 docker
 educational-testings
-gh-page/bundled_deps
-gh-page/coverage
+**/gh-page/bundled_deps
+**/gh-page/coverage
 gitdl*.tgz
 joiners-*.tgz
 node_modules
@@ -34,6 +34,7 @@ superset
 temp.json
 tmp
 .swc/
+sw.js
 certificates/
 
 # temporarily

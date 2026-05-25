@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 }
 
-const makeResponse = (body?: BodyInit | null, status = 200) =>
+const makeResponse = (body?: Bun.BodyInit | null, status = 200) =>
   new Response(body, { status, headers: corsHeaders })
 
 const goaway = () => makeResponse('{ "go": "away" }')

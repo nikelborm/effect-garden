@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declarationDir": "./dist-types",
     "outDir": "./dist",
+    "lib": ["DOM"],
     "rootDir": "./"
   },
   "include": ["**/*.ts"],
