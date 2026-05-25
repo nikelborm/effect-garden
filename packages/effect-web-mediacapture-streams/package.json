@@ -1,7 +1,7 @@
 {
   "name": "effect-web-mediacapture-streams",
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Effect WEB Media Capture and Streams API wrapper",
   "devDependencies": {
     "@effect/language-service": "catalog:",

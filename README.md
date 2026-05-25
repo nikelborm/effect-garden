@@ -16,7 +16,7 @@ vars. Install it.
 
    The ones I'm confident to be working. At the top are the ones I'm most proud of:
 
-   1. [effect-web-midi](./packages/effect-web-midi) (waiting 24 hours) — Effect
+   1. [effect-web-midi](./packages/effect-web-midi) (published) — Effect
       wrapper for the Web MIDI API: typed streams of port state changes and MIDI
       messages, error-channel-annotated access requests, data-first and data-last
       APIs. Tested on Novation Launchpad X and KORG NanoPad.
@@ -31,10 +31,10 @@ vars. Install it.
       playlist building.
    5. [gitdl](./packages/gitdl) (published) — CLI + library to download any file
       or folder from any GitHub repo at any ref, without cloning the whole repo.
-   6. [effect-zstd](./packages/effect-zstd) (waiting 24 hours) — Zstd
+   6. [effect-zstd](./packages/effect-zstd) (published) — Zstd
       compress/decompress as an Effect service; exposes stream operators for
       streaming compression pipelines.
-   7. [ts-key-not-enum](./packages/ts-key-not-enum) (waiting 24 hours) —
+   7. [ts-key-not-enum](./packages/ts-key-not-enum) (published) —
       Type-safe constants for `KeyboardEvent.key` non-printable values
       (arrows, function keys, media keys, etc.), auto-generated from MDN. Avoids
       `const enum` so it works with `erasableSyntaxOnly`.
@@ -45,7 +45,7 @@ vars. Install it.
    9. [archive-compress-encrypt-and-back](./packages/archive-compress-encrypt-and-back)
       (published) — CLI (ACE) to archive, compress, and encrypt directories and
       restore them back; a TypeScript rewrite of a bash script.
-   10. [effect-btrfs](./packages/effect-btrfs) (waiting 24 hours) — Effect
+   10. [effect-btrfs](./packages/effect-btrfs) (published) — Effect
        wrapper around btrfs-progs CLI for Btrfs filesystem operations.
    11. [tsconfig](./packages/tsconfig) (published) — Strict, opinionated
        TypeScript base config used across the monorepo; enables
@@ -60,11 +60,11 @@ vars. Install it.
 
    The ones I less confident to be working about:
 
-   1. [effect-web-audio](./packages/effect-web-audio) — Effect wrapper for the
-      Web Audio API (W3C spec).
+   1. [effect-web-audio](./packages/effect-web-audio) (published) — Effect
+      wrapper for the Web Audio API (W3C spec).
    2. [effect-web-mediacapture-streams](./packages/effect-web-mediacapture-streams)
-      — Effect wrapper for the Media Capture and Streams API (`getUserMedia`,
-      `mediaDevices`).
+      (published) — Effect wrapper for the Media Capture and Streams API
+      (`getUserMedia`, `mediaDevices`).
    3. [ts-better-tuple](./packages/ts-better-tuple) — Type-safe tuple iteration
       that preserves literal index types through `.map()`, `.entries()`, and
       similar operations.

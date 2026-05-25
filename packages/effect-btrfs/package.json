@@ -1,7 +1,7 @@
 {
   "name": "effect-btrfs",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tooling to work with btrfs with Effect",
   "devDependencies": {
     "@effect/language-service": "catalog:",

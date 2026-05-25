@@ -1,7 +1,7 @@
 {
   "name": "@evadev/tsconfig",
   "type": "module",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "My relatively strict tsconfig just how I like it",
   "dependencies": {
     "@effect/language-service": "catalog:",
