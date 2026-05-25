@@ -1,7 +1,7 @@
 import type * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import type { SearchResult } from '../schema/home.ts'
+import type { SearchResult } from '../schema/SearchResult.ts'
 import { extractList } from '../utils/extract.ts'
 import * as AlbumParser from './AlbumParser.ts'
 import * as ArtistParser from './ArtistParser.ts'

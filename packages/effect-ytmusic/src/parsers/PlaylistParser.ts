@@ -1,8 +1,9 @@
 import type * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import type { ArtistBasic } from '../schema/common.ts'
-import { PlaylistDetailed, PlaylistFull } from '../schema/playlist.ts'
+import type { ArtistBasic } from '../schema/ArtistBasic.ts'
+import { PlaylistDetailed } from '../schema/PlaylistDetailed.ts'
+import { PlaylistFull } from '../schema/PlaylistFull.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extract, extractList, extractString } from '../utils/extract.ts'
 

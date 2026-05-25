@@ -1,8 +1,9 @@
 import type * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import type { ArtistBasic } from '../schema/common.ts'
-import { VideoDetailed, VideoFull } from '../schema/video.ts'
+import type { ArtistBasic } from '../schema/ArtistBasic.ts'
+import { VideoDetailed } from '../schema/VideoDetailed.ts'
+import { VideoFull } from '../schema/VideoFull.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extract, extractList, extractString } from '../utils/extract.ts'
 import { isArtist, isDuration, isTitle } from '../utils/filters.ts'

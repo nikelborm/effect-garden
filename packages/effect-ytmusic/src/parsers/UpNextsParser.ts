@@ -1,8 +1,7 @@
 import * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import type { UpNextsDetails } from '../schema/home.ts'
-import { UpNextsDetails as UpNextsDetailsSchema } from '../schema/home.ts'
+import { UpNextsDetails } from '../schema/UpNextsDetails.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extractList, extractString } from '../utils/extract.ts'
 import { parseDuration } from './Parser.ts'
@@ -26,7 +25,7 @@ export const parseItem = (
       ),
       thumbnails: extractList(item, 'thumbnail', 'thumbnails'),
     },
-    UpNextsDetailsSchema,
+    UpNextsDetails,
   )
 
 export const parse = (

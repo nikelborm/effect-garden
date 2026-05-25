@@ -1,8 +1,8 @@
 import * as Effect from 'effect/Effect'
 
-import type { AlbumId } from '../../brands.ts'
-import { constructRequest } from '../../client.ts'
-import * as AlbumParser from '../../parsers/AlbumParser.ts'
+import type { AlbumId } from '../brands.ts'
+import { constructRequest } from '../client.ts'
+import * as AlbumParser from '../parsers/AlbumParser.ts'
 
 export const getAlbum = Effect.fn('effect-ytmusic/getAlbum')(function* (
   albumId: AlbumId,

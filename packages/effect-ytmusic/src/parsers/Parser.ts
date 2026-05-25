@@ -2,8 +2,7 @@ import * as Either from 'effect/Either'
 
 import { PageType } from '../constants.ts'
 import type { ParseError } from '../errors.ts'
-import type { HomeSection } from '../schema/home.ts'
-import { HomeSection as HomeSectionSchema } from '../schema/home.ts'
+import { HomeSection } from '../schema/HomeSection.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extractList, extractString } from '../utils/extract.ts'
 import * as AlbumParser from './AlbumParser.ts'
@@ -73,5 +72,5 @@ export const parseHomeSection = (
     },
   )
 
-  return checkType('HomeSection', { title, contents }, HomeSectionSchema)
+  return checkType('HomeSection', { title, contents }, HomeSection)
 }

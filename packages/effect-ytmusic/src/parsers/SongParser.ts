@@ -1,12 +1,11 @@
 import type * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import type {
-  AlbumBasic,
-  ArtistBasic,
-  ThumbnailFull,
-} from '../schema/common.ts'
-import { SongDetailed, SongFull } from '../schema/song.ts'
+import type { AlbumBasic } from '../schema/AlbumBasic.ts'
+import type { ArtistBasic } from '../schema/ArtistBasic.ts'
+import { SongDetailed } from '../schema/SongDetailed.ts'
+import { SongFull } from '../schema/SongFull.ts'
+import type { ThumbnailFull } from '../schema/ThumbnailFull.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extractList, extractString } from '../utils/extract.ts'
 import { isAlbum, isArtist, isDuration, isTitle } from '../utils/filters.ts'
@@ -33,7 +32,7 @@ export const parse = (data: unknown): Either.Either<SongFull, ParseError> =>
 
 export const parseSearchResult = (
   item: unknown,
-): Either.Either<import('../schema/song').SongDetailed, ParseError> => {
+): Either.Either<SongDetailed, ParseError> => {
   const columns = extractList(item, 'flexColumns', 'runs')
   const title = columns[0]
   const artist = columns.find(isArtist) ?? columns[3]
@@ -66,7 +65,7 @@ export const parseSearchResult = (
 export const parseArtistSong = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<import('../schema/song').SongDetailed, ParseError> => {
+): Either.Either<SongDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns.find(isTitle)
   const album = columns.find(isAlbum)
@@ -95,7 +94,7 @@ export const parseArtistSong = (
 export const parseArtistTopSong = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<import('../schema/song').SongDetailed, ParseError> => {
+): Either.Either<SongDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns.find(isTitle)
   const album = columns.find(isAlbum)
@@ -125,7 +124,7 @@ export const parseAlbumSong = (
   artistBasic: ArtistBasic,
   albumBasic: AlbumBasic,
   thumbnails: ThumbnailFull[],
-): Either.Either<import('../schema/song').SongDetailed, ParseError> => {
+): Either.Either<SongDetailed, ParseError> => {
   const title = (extractList(item, 'flexColumns', 'runs') as unknown[]).find(
     isTitle,
   )
@@ -150,5 +149,4 @@ export const parseAlbumSong = (
 
 export const parseHomeSection = (
   item: unknown,
-): Either.Either<import('../schema/song').SongDetailed, ParseError> =>
-  parseSearchResult(item)
+): Either.Either<SongDetailed, ParseError> => parseSearchResult(item)

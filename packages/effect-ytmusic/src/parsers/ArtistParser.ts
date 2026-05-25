@@ -1,7 +1,8 @@
 import * as Either from 'effect/Either'
 
 import type { ParseError } from '../errors.ts'
-import { ArtistDetailed, ArtistFull } from '../schema/artist.ts'
+import { ArtistDetailed } from '../schema/ArtistDetailed.ts'
+import { ArtistFull } from '../schema/ArtistFull.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extractList, extractString } from '../utils/extract.ts'
 import * as AlbumParser from './AlbumParser.ts'
