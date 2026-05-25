@@ -7,7 +7,7 @@ import { ContinuationToken, type PlaylistId } from '../brands.ts'
 import { constructRequest } from '../client.ts'
 import * as PlaylistParser from '../parsers/PlaylistParser.ts'
 import * as VideoParser from '../parsers/VideoParser.ts'
-import { traverse, traverseList } from '../utils/traverse.ts'
+import { extract, extractList } from '../utils/extract.ts'
 
 const normalizePlaylistId = (playlistId: PlaylistId): string =>
   playlistId.startsWith('PL') ? `VL${playlistId}` : playlistId
@@ -43,7 +43,7 @@ export const getPlaylistVideos = (playlistId: PlaylistId) =>
             constructRequest('browse', {}, { continuation: token }),
         })
 
-        const items = traverseList(
+        const items = extractList(
           data,
           'musicPlaylistShelfRenderer',
           'musicResponsiveListItemRenderer',
@@ -52,7 +52,7 @@ export const getPlaylistVideos = (playlistId: PlaylistId) =>
         const allItems =
           items.length > 0
             ? items
-            : (traverseList(
+            : (extractList(
                 data,
                 'musicResponsiveListItemRenderer',
               ) as unknown[])
@@ -66,7 +66,7 @@ export const getPlaylistVideos = (playlistId: PlaylistId) =>
           (v): v is NonNullable<typeof v> => v !== null,
         )
 
-        const rawNext = traverse(data, 'continuation')
+        const rawNext = extract(data, 'continuation')
         const next =
           typeof rawNext === 'string'
             ? Option.some(Option.some(ContinuationToken(rawNext)))

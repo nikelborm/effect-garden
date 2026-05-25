@@ -4,7 +4,7 @@ import type { ParseError } from '../errors.ts'
 import { AlbumDetailed, AlbumFull } from '../schema/album.ts'
 import type { ArtistBasic } from '../schema/common.ts'
 import { checkType } from '../utils/checkType.ts'
-import { traverse, traverseList, traverseString } from '../utils/traverse.ts'
+import { extract, extractList, extractString } from '../utils/extract.ts'
 import * as SongParser from './SongParser.ts'
 
 const processYear = (year: string | undefined): number | null =>
@@ -16,19 +16,19 @@ export const parse = (
 ): Either.Either<AlbumFull, ParseError> => {
   const albumBasic = {
     albumId,
-    name: traverseString(data, 'tabs', 'title', 'text'),
+    name: extractString(data, 'tabs', 'title', 'text'),
   }
 
-  const artistData = traverse(data, 'tabs', 'straplineTextOne', 'runs')
+  const artistData = extract(data, 'tabs', 'straplineTextOne', 'runs')
   const artistBasic: ArtistBasic = {
-    artistId: traverseString(artistData, 'browseId') || null,
-    name: traverseString(artistData, 'text'),
+    artistId: extractString(artistData, 'browseId') || null,
+    name: extractString(artistData, 'text'),
   }
 
-  const thumbnails = traverseList(data, 'background', 'thumbnails')
+  const thumbnails = extractList(data, 'background', 'thumbnails')
 
   const songResults = (
-    traverseList(data, 'musicResponsiveListItemRenderer') as unknown[]
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
   ).map(item =>
     SongParser.parseAlbumSong(item, artistBasic, albumBasic, thumbnails),
   )
@@ -39,10 +39,10 @@ export const parse = (
     {
       type: 'ALBUM',
       ...albumBasic,
-      playlistId: traverseString(data, 'musicPlayButtonRenderer', 'playlistId'),
+      playlistId: extractString(data, 'musicPlayButtonRenderer', 'playlistId'),
       artist: artistBasic,
       year: processYear(
-        traverseList(data, 'tabs', 'subtitle', 'text').at(-1) as
+        extractList(data, 'tabs', 'subtitle', 'text').at(-1) as
           | string
           | undefined,
       ),
@@ -56,35 +56,33 @@ export const parse = (
 export const parseSearchResult = (
   item: unknown,
 ): Either.Either<AlbumDetailed, ParseError> => {
-  const columns = (
-    traverseList(item, 'flexColumns', 'runs') as unknown[]
-  ).flat()
+  const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
   const artist =
     columns.find((c: unknown) => {
-      const pageType = traverseString(c, 'pageType')
+      const pageType = extractString(c, 'pageType')
       return [
         'MUSIC_PAGE_TYPE_ARTIST',
         'MUSIC_PAGE_TYPE_USER_CHANNEL',
       ].includes(pageType)
     }) ?? columns[3]
   const playlistId =
-    traverseString(item, 'overlay', 'playlistId') ||
-    traverseString(item, 'thumbnailOverlay', 'playlistId')
+    extractString(item, 'overlay', 'playlistId') ||
+    extractString(item, 'thumbnailOverlay', 'playlistId')
 
   return checkType(
     'AlbumDetailed',
     {
       type: 'ALBUM',
-      albumId: traverseList(item, 'browseId').at(-1) as string,
+      albumId: extractList(item, 'browseId').at(-1) as string,
       playlistId,
       artist: {
-        name: traverseString(artist, 'text'),
-        artistId: traverseString(artist, 'browseId') || null,
+        name: extractString(artist, 'text'),
+        artistId: extractString(artist, 'browseId') || null,
       },
       year: processYear((columns.at(-1) as any)?.text as string | undefined),
-      name: traverseString(title, 'text'),
-      thumbnails: traverseList(item, 'thumbnails'),
+      name: extractString(title, 'text'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     AlbumDetailed,
   )
@@ -98,14 +96,14 @@ export const parseArtistAlbum = (
     'AlbumDetailed',
     {
       type: 'ALBUM',
-      albumId: traverseList(item, 'browseId').at(-1) as string,
-      playlistId: traverseString(item, 'thumbnailOverlay', 'playlistId'),
-      name: traverseString(item, 'title', 'text'),
+      albumId: extractList(item, 'browseId').at(-1) as string,
+      playlistId: extractString(item, 'thumbnailOverlay', 'playlistId'),
+      name: extractString(item, 'title', 'text'),
       artist: artistBasic,
       year: processYear(
-        traverseList(item, 'subtitle', 'text').at(-1) as string | undefined,
+        extractList(item, 'subtitle', 'text').at(-1) as string | undefined,
       ),
-      thumbnails: traverseList(item, 'thumbnails'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     AlbumDetailed,
   )
@@ -118,14 +116,14 @@ export const parseArtistTopAlbum = (
     'AlbumDetailed',
     {
       type: 'ALBUM',
-      albumId: traverseList(item, 'browseId').at(-1) as string,
-      playlistId: traverseString(item, 'musicPlayButtonRenderer', 'playlistId'),
-      name: traverseString(item, 'title', 'text'),
+      albumId: extractList(item, 'browseId').at(-1) as string,
+      playlistId: extractString(item, 'musicPlayButtonRenderer', 'playlistId'),
+      name: extractString(item, 'title', 'text'),
       artist: artistBasic,
       year: processYear(
-        traverseList(item, 'subtitle', 'text').at(-1) as string | undefined,
+        extractList(item, 'subtitle', 'text').at(-1) as string | undefined,
       ),
-      thumbnails: traverseList(item, 'thumbnails'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     AlbumDetailed,
   )
@@ -133,21 +131,21 @@ export const parseArtistTopAlbum = (
 export const parseHomeSection = (
   item: unknown,
 ): Either.Either<AlbumDetailed, ParseError> => {
-  const artist = (traverseList(item, 'subtitle', 'runs') as unknown[]).at(-1)
+  const artist = (extractList(item, 'subtitle', 'runs') as unknown[]).at(-1)
 
   return checkType(
     'AlbumDetailed',
     {
       type: 'ALBUM',
-      albumId: traverseString(item, 'title', 'browseId'),
-      playlistId: traverseString(item, 'thumbnailOverlay', 'playlistId'),
-      name: traverseString(item, 'title', 'text'),
+      albumId: extractString(item, 'title', 'browseId'),
+      playlistId: extractString(item, 'thumbnailOverlay', 'playlistId'),
+      name: extractString(item, 'title', 'text'),
       artist: {
-        name: traverseString(artist, 'text'),
-        artistId: traverseString(artist, 'browseId') || null,
+        name: extractString(artist, 'text'),
+        artistId: extractString(artist, 'browseId') || null,
       },
       year: null,
-      thumbnails: traverseList(item, 'thumbnails'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     AlbumDetailed,
   )

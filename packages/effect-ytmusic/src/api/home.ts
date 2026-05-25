@@ -8,7 +8,7 @@ import { ContinuationToken } from '../brands.ts'
 import { constructRequest } from '../client.ts'
 import { FE_MUSIC_HOME } from '../constants.ts'
 import * as Parser from '../parsers/Parser.ts'
-import { traverseList, traverseString } from '../utils/traverse.ts'
+import { extractList, extractString } from '../utils/extract.ts'
 
 export const getHomeSections = () =>
   Stream.paginateChunkEffect(
@@ -21,8 +21,8 @@ export const getHomeSections = () =>
       })
 
       const rawSections = Option.isNone(continuation)
-        ? (traverseList(data, 'sectionListRenderer', 'contents') as unknown[])
-        : (traverseList(
+        ? (extractList(data, 'sectionListRenderer', 'contents') as unknown[])
+        : (extractList(
             data,
             'sectionListContinuation',
             'contents',
@@ -37,7 +37,7 @@ export const getHomeSections = () =>
         Either.isRight(r) ? [r.right] : [],
       )
 
-      const nextToken = traverseString(data, 'continuation')
+      const nextToken = extractString(data, 'continuation')
       const next = nextToken
         ? Option.some(Option.some(ContinuationToken(nextToken)))
         : Option.none<Option.Option<ContinuationToken>>()

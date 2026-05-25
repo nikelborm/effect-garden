@@ -8,7 +8,7 @@ import * as PlaylistParser from '../parsers/PlaylistParser.ts'
 import * as SearchParser from '../parsers/SearchParser.ts'
 import * as SongParser from '../parsers/SongParser.ts'
 import * as VideoParser from '../parsers/VideoParser.ts'
-import { traverseList } from '../utils/traverse.ts'
+import { extractList } from '../utils/extract.ts'
 
 export const getSearchSuggestions = Effect.fn(
   'effect-ytmusic/getSearchSuggestions',
@@ -17,7 +17,7 @@ export const getSearchSuggestions = Effect.fn(
   const data = yield* constructRequest('music/get_search_suggestions', {
     input: query,
   })
-  return traverseList(data, 'query') as string[]
+  return extractList(data, 'query') as string[]
 })
 
 export const search = Effect.fn('effect-ytmusic/search')(function* (
@@ -27,7 +27,7 @@ export const search = Effect.fn('effect-ytmusic/search')(function* (
   const data = yield* constructRequest('search', { query, params: null })
 
   const results = (
-    traverseList(data, 'musicResponsiveListItemRenderer') as unknown[]
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
   ).flatMap(item => {
     const r = SearchParser.parse(item)
     if (!r || Either.isLeft(r)) return []
@@ -51,7 +51,7 @@ export const searchSongs = Effect.fn('effect-ytmusic/searchSongs')(function* (
   })
 
   const results = yield* Effect.forEach(
-    traverseList(data, 'musicResponsiveListItemRenderer') as unknown[],
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
     item => SongParser.parseSearchResult(item),
   )
   yield* Effect.annotateCurrentSpan(
@@ -71,7 +71,7 @@ export const searchVideos = Effect.fn('effect-ytmusic/searchVideos')(function* (
   })
 
   const results = yield* Effect.forEach(
-    traverseList(data, 'musicResponsiveListItemRenderer') as unknown[],
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
     item => VideoParser.parseSearchResult(item),
   )
   yield* Effect.annotateCurrentSpan(
@@ -90,7 +90,7 @@ export const searchArtists = Effect.fn('effect-ytmusic/searchArtists')(
     })
 
     const results = yield* Effect.forEach(
-      traverseList(data, 'musicResponsiveListItemRenderer') as unknown[],
+      extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
       item => ArtistParser.parseSearchResult(item),
     )
     yield* Effect.annotateCurrentSpan(
@@ -111,7 +111,7 @@ export const searchAlbums = Effect.fn('effect-ytmusic/searchAlbums')(function* (
   })
 
   const results = yield* Effect.forEach(
-    traverseList(data, 'musicResponsiveListItemRenderer') as unknown[],
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
     item => AlbumParser.parseSearchResult(item),
   )
   yield* Effect.annotateCurrentSpan(
@@ -130,7 +130,7 @@ export const searchPlaylists = Effect.fn('effect-ytmusic/searchPlaylists')(
     })
 
     const results = yield* Effect.forEach(
-      traverseList(data, 'musicResponsiveListItemRenderer') as unknown[],
+      extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
       item => PlaylistParser.parseSearchResult(item),
     )
     yield* Effect.annotateCurrentSpan(

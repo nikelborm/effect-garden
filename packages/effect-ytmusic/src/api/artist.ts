@@ -10,7 +10,7 @@ import { MissingBrowseTokenError } from '../errors.ts'
 import * as AlbumParser from '../parsers/AlbumParser.ts'
 import * as ArtistParser from '../parsers/ArtistParser.ts'
 import * as SongParser from '../parsers/SongParser.ts'
-import { traverse, traverseList, traverseString } from '../utils/traverse.ts'
+import { extract, extractList, extractString } from '../utils/extract.ts'
 
 export const getArtist = Effect.fn('effect-ytmusic/getArtist')(function* (
   artistId: ArtistId,
@@ -30,8 +30,8 @@ export const getArtistSongs = (artistId: ArtistId) =>
       const artistData = yield* constructRequest('browse', {
         browseId: artistId,
       })
-      const artistName = traverseString(artistData, 'header', 'title', 'text')
-      const browseToken = traverse(
+      const artistName = extractString(artistData, 'header', 'title', 'text')
+      const browseToken = extract(
         artistData,
         'musicShelfRenderer',
         'title',
@@ -60,7 +60,7 @@ export const getArtistSongs = (artistId: ArtistId) =>
                 constructRequest('browse', {}, { continuation: token }),
             })
 
-            const items = traverseList(
+            const items = extractList(
               data,
               'musicResponsiveListItemRenderer',
             ) as unknown[]
@@ -68,7 +68,7 @@ export const getArtistSongs = (artistId: ArtistId) =>
               SongParser.parseArtistSong(item, artistBasic),
             )
 
-            const rawNext = traverse(data, 'continuation')
+            const rawNext = extract(data, 'continuation')
             const next =
               typeof rawNext === 'string'
                 ? Option.some(Option.some(ContinuationToken(rawNext)))
@@ -91,20 +91,20 @@ export const getArtistAlbums = Effect.fn('effect-ytmusic/getArtistAlbums')(
 
     const artistData = yield* constructRequest('browse', { browseId: artistId })
     const artistAlbumsData = (
-      traverseList(artistData, 'musicCarouselShelfRenderer') as unknown[]
+      extractList(artistData, 'musicCarouselShelfRenderer') as unknown[]
     )[0]
-    const browseBody = traverse(
+    const browseBody = extract(
       artistAlbumsData,
       'moreContentButton',
       'browseEndpoint',
     ) as Record<string, unknown>
 
     const albumsData = yield* constructRequest('browse', browseBody)
-    const artistName = traverseString(albumsData, 'header', 'runs', 'text')
+    const artistName = extractString(albumsData, 'header', 'runs', 'text')
     const artistBasic = { artistId, name: artistName }
 
     const results = yield* Effect.forEach(
-      traverseList(albumsData, 'musicTwoRowItemRenderer') as unknown[],
+      extractList(albumsData, 'musicTwoRowItemRenderer') as unknown[],
       item => AlbumParser.parseArtistAlbum(item, artistBasic),
     )
 

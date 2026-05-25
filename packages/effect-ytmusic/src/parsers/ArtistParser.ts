@@ -3,7 +3,7 @@ import * as Either from 'effect/Either'
 import type { ParseError } from '../errors.ts'
 import { ArtistDetailed, ArtistFull } from '../schema/artist.ts'
 import { checkType } from '../utils/checkType.ts'
-import { traverseList, traverseString } from '../utils/traverse.ts'
+import { extractList, extractString } from '../utils/extract.ts'
 import * as AlbumParser from './AlbumParser.ts'
 import * as PlaylistParser from './PlaylistParser.ts'
 import * as SongParser from './SongParser.ts'
@@ -15,10 +15,10 @@ export const parse = (
 ): Either.Either<ArtistFull, ParseError> => {
   const artistBasic = {
     artistId,
-    name: traverseString(data, 'header', 'title', 'text'),
+    name: extractString(data, 'header', 'title', 'text'),
   }
 
-  const carousels = traverseList(data, 'musicCarouselShelfRenderer')
+  const carousels = extractList(data, 'musicCarouselShelfRenderer')
 
   const mapCarousel = <T>(
     index: number,
@@ -36,9 +36,9 @@ export const parse = (
     {
       type: 'ARTIST',
       ...artistBasic,
-      thumbnails: traverseList(data, 'header', 'thumbnails'),
+      thumbnails: extractList(data, 'header', 'thumbnails'),
       topSongs: (
-        traverseList(data, 'musicShelfRenderer', 'contents') as unknown[]
+        extractList(data, 'musicShelfRenderer', 'contents') as unknown[]
       ).flatMap(item => {
         const r = SongParser.parseArtistTopSong(item, artistBasic)
         return Either.isRight(r) ? [r.right] : []
@@ -64,18 +64,16 @@ export const parse = (
 export const parseSearchResult = (
   item: unknown,
 ): Either.Either<ArtistDetailed, ParseError> => {
-  const columns = (
-    traverseList(item, 'flexColumns', 'runs') as unknown[]
-  ).flat()
+  const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
 
   return checkType(
     'ArtistDetailed',
     {
       type: 'ARTIST',
-      artistId: traverseString(item, 'browseId'),
-      name: traverseString(title, 'text'),
-      thumbnails: traverseList(item, 'thumbnails'),
+      artistId: extractString(item, 'browseId'),
+      name: extractString(title, 'text'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     ArtistDetailed,
   )
@@ -88,9 +86,9 @@ export const parseSimilarArtists = (
     'ArtistDetailed',
     {
       type: 'ARTIST',
-      artistId: traverseString(item, 'browseId'),
-      name: traverseString(item, 'runs', 'text'),
-      thumbnails: traverseList(item, 'thumbnails'),
+      artistId: extractString(item, 'browseId'),
+      name: extractString(item, 'runs', 'text'),
+      thumbnails: extractList(item, 'thumbnails'),
     },
     ArtistDetailed,
   )

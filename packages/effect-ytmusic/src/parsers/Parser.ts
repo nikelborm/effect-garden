@@ -5,7 +5,7 @@ import type { ParseError } from '../errors.ts'
 import type { HomeSection } from '../schema/home.ts'
 import { HomeSection as HomeSectionSchema } from '../schema/home.ts'
 import { checkType } from '../utils/checkType.ts'
-import { traverseList, traverseString } from '../utils/traverse.ts'
+import { extractList, extractString } from '../utils/extract.ts'
 import * as AlbumParser from './AlbumParser.ts'
 import * as PlaylistParser from './PlaylistParser.ts'
 import * as SongParser from './SongParser.ts'
@@ -36,22 +36,22 @@ export const parseNumber = (string: string): number => {
 export const parseHomeSection = (
   data: unknown,
 ): Either.Either<HomeSection, ParseError> => {
-  const pageType = traverseString(
+  const pageType = extractString(
     data,
     'contents',
     'title',
     'browseEndpoint',
     'pageType',
   )
-  const playlistId = traverseString(
+  const playlistId = extractString(
     data,
     'navigationEndpoint',
     'watchPlaylistEndpoint',
     'playlistId',
   )
-  const title = traverseString(data, 'header', 'title', 'text')
+  const title = extractString(data, 'header', 'title', 'text')
 
-  const contents = (traverseList(data, 'contents') as unknown[]).flatMap(
+  const contents = (extractList(data, 'contents') as unknown[]).flatMap(
     item => {
       let result: Either.Either<unknown, ParseError>
       switch (pageType) {

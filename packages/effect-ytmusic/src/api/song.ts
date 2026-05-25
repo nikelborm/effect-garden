@@ -9,7 +9,7 @@ import {
 } from '../errors.ts'
 import * as SongParser from '../parsers/SongParser.ts'
 import * as UpNextsParser from '../parsers/UpNextsParser.ts'
-import { traverseList, traverseString } from '../utils/traverse.ts'
+import { extractList, extractString } from '../utils/extract.ts'
 
 export const getSong = Effect.fn('effect-ytmusic/getSong')(function* (
   videoId: VideoId,
@@ -54,8 +54,8 @@ export const getLyrics = Effect.fn('effect-ytmusic/getLyrics')(function* (
   yield* Effect.annotateCurrentSpan('effect-ytmusic/videoId', videoId)
 
   const data = yield* constructRequest('next', { videoId })
-  const tabs = traverseList(data, 'tabs', 'tabRenderer') as unknown[]
-  const browseId = traverseString(tabs[1], 'browseId')
+  const tabs = extractList(data, 'tabs', 'tabRenderer') as unknown[]
+  const browseId = extractString(tabs[1], 'browseId')
 
   if (!browseId) {
     return yield* new MissingBrowseTokenError({ context: 'getLyrics' })
@@ -64,7 +64,7 @@ export const getLyrics = Effect.fn('effect-ytmusic/getLyrics')(function* (
   yield* Effect.annotateCurrentSpan('effect-ytmusic/lyrics.browseId', browseId)
 
   const lyricsData = yield* constructRequest('browse', { browseId })
-  const lyrics = traverseString(lyricsData, 'description', 'runs', 'text')
+  const lyrics = extractString(lyricsData, 'description', 'runs', 'text')
 
   if (!lyrics) return yield* new LyricsNotFoundError()
 

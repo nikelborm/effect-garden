@@ -1,4 +1,4 @@
-export const traverse = (data: any, ...keys: string[]) => {
+export const extract = (data: any, ...keys: string[]) => {
   const again = (data: any, key: string, deadEnd = false): any => {
     const res = []
 
@@ -25,10 +25,10 @@ export const traverse = (data: any, ...keys: string[]) => {
   return value
 }
 
-export const traverseList = (data: any, ...keys: string[]): any[] => {
-  return [traverse(data, ...keys)].flat()
+export const extractList = (data: any, ...keys: string[]): any[] => {
+  return [extract(data, ...keys)].flat()
 }
 
-export const traverseString = (data: any, ...keys: string[]): string => {
-  return traverseList(data, ...keys).at(0) || ''
+export const extractString = (data: any, ...keys: string[]): string => {
+  return extractList(data, ...keys).at(0) || ''
 }

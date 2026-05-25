@@ -4,7 +4,7 @@ import type { ParseError } from '../errors.ts'
 import type { UpNextsDetails } from '../schema/home.ts'
 import { UpNextsDetails as UpNextsDetailsSchema } from '../schema/home.ts'
 import { checkType } from '../utils/checkType.ts'
-import { traverseList, traverseString } from '../utils/traverse.ts'
+import { extractList, extractString } from '../utils/extract.ts'
 import { parseDuration } from './Parser.ts'
 
 export const parseItem = (
@@ -14,17 +14,17 @@ export const parseItem = (
     'UpNextsDetails',
     {
       type: 'SONG',
-      videoId: traverseString(item, 'videoId'),
-      title: traverseString(item, 'title', 'runs', 'text'),
+      videoId: extractString(item, 'videoId'),
+      title: extractString(item, 'title', 'runs', 'text'),
       artist: {
-        name: traverseString(item, 'shortBylineText', 'runs', 'text'),
+        name: extractString(item, 'shortBylineText', 'runs', 'text'),
         artistId:
-          traverseString(item, 'shortBylineText', 'runs', 'browseId') || null,
+          extractString(item, 'shortBylineText', 'runs', 'browseId') || null,
       },
       duration: parseDuration(
-        traverseString(item, 'lengthText', 'runs', 'text'),
+        extractString(item, 'lengthText', 'runs', 'text'),
       ),
-      thumbnails: traverseList(item, 'thumbnail', 'thumbnails'),
+      thumbnails: extractList(item, 'thumbnail', 'thumbnails'),
     },
     UpNextsDetailsSchema,
   )
@@ -32,7 +32,7 @@ export const parseItem = (
 export const parse = (
   data: unknown,
 ): Either.Either<UpNextsDetails[], ParseError> => {
-  const items = traverseList(data, 'playlistPanelVideoRenderer') as unknown[]
+  const items = extractList(data, 'playlistPanelVideoRenderer') as unknown[]
 
   const results = items.slice(1).map(parseItem)
   const firstError = results.find(Either.isLeft)
