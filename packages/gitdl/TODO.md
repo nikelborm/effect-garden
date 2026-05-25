@@ -213,7 +213,7 @@ use https://coauthors.me/ ?
 
 # Add more code-quality checks
 
-- [ ] Add stricter eslint config
+- [ ] Add stricter ~~eslint~~ oxlint config
 - [ ] integrate codacy, scorecard.dev, [checkov](https://github.com/bridgecrewio/checkov)
 
 https://app.stepsecurity.io/securerepo?repo=https://github.com/nikelborm/fetch-github-folder
