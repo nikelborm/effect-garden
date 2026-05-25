@@ -72,7 +72,7 @@
   "devDependencies": {
     "@evadev/tsconfig": "workspace:^",
     "@typescript/native-preview": "catalog:",
-    "eslint": "^9.0.0",
+    "eslint": "^10.4.0",
     "oxlint": "latest",
     "typescript": "catalog:",
     "vitest": "catalog:"
