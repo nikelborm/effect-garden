@@ -9,7 +9,6 @@ export const schema = Schema
 export type schema = typeof schema
 
 export { relationalSchema }
-export type relationalSchema = typeof relationalSchema
 
 export class DrizzleDB extends Effect.Service<DrizzleDB>()('DrizzleDB', {
   effect: make({

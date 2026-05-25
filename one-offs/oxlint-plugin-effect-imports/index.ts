@@ -125,8 +125,7 @@ export const namedToNamespace: Rule.RuleModule = {
 
         const pkgOverrides = overrides[pkg] ?? {}
         const named = node.specifiers.filter(
-          s =>
-            s.type === 'ImportSpecifier' && (s as any).importKind !== 'type',
+          s => s.type === 'ImportSpecifier' && (s as any).importKind !== 'type',
         )
 
         type NsSpec = { name: string; alias: string }

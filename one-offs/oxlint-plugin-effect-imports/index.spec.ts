@@ -1,5 +1,6 @@
-import { describe, test } from 'vitest'
 import { RuleTester } from 'eslint'
+import { describe, test } from 'vitest'
+
 import { namedToNamespace } from './index.ts'
 
 const tester = new RuleTester({
@@ -12,7 +13,9 @@ describe('effect-imports/named-to-namespace', () => {
     // it is already a subpath specifier, not a package root.
     tester.run('named-to-namespace', namedToNamespace, {
       valid: [
-        { code: `import { Unauthorized } from '@effect/platform/HttpApiError'` },
+        {
+          code: `import { Unauthorized } from '@effect/platform/HttpApiError'`,
+        },
         { code: `import { KiB } from '@effect/platform/FileSystem'` },
         { code: `import { PlatformError } from '@effect/platform/Error'` },
       ],
@@ -37,8 +40,12 @@ describe('effect-imports/named-to-namespace', () => {
         { code: `import * as Effect from 'effect/Effect'` },
         { code: `import * as EArray from 'effect/Array'` },
         { code: `import { pipe } from 'effect/Function'` },
-        { code: `import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'` },
-        { code: `import * as BunRuntime from '@effect/platform-bun/BunRuntime'` },
+        {
+          code: `import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'`,
+        },
+        {
+          code: `import * as BunRuntime from '@effect/platform-bun/BunRuntime'`,
+        },
       ],
       invalid: [],
     })

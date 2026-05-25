@@ -253,7 +253,7 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
 
     yield* Effect.annotateCurrentSpan({ ...pathes, packageJsonPath })
 
-    if(!(yield* fs.exists(packageJsonPath))) return null
+    if (!(yield* fs.exists(packageJsonPath))) return null
 
     const pkg = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
