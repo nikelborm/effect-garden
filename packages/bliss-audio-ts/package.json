@@ -42,7 +42,7 @@
     "prepack": "rm -rf dist dist-types && bun build:ts",
     "test": "bun --bun run vitest",
     "test:stryker": "bun --bun run stryker run stryker.conf.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "author": {
     "name": "nikelborm",

@@ -7,8 +7,8 @@ import * as Effect from 'effect/Effect'
 export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
   API,
   'Educational space',
-  Effect.fn(function* (handlers) {
-    return handlers
+  handlers =>
+    handlers
       .handle(
         'Create educational space',
         Effect.fn('Create educational space handler')(function* ({}) {
@@ -26,6 +26,5 @@ export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
 
           return yield* HttpServerResponse.text('ok')
         }),
-      )
-  }),
+      ),
 )

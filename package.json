@@ -45,6 +45,7 @@
     "interview-monarchs-task": "workspace:^",
     "joiners": "workspace:^",
     "next-midi-demo": "workspace:^",
+    "oxlint-plugin-effect-imports": "workspace:*",
     "playground": "workspace:^",
     "postcss-styled-syntax": "^0.7.1",
     "stylelint": "^17.12.0",
@@ -117,7 +118,7 @@
     "tar-fs": "^3.0.8",
     "@types/tar-fs": "^2.0.4",
     "@stryker-mutator/vitest-runner": "^9.5.1",
-    "tstyche": "^7.1.0",
+    "tstyche": "^7.2.0",
     "dotenv": "^17.3.1",
     "zod": "^4.3.5",
     "@microsoft/tsdoc": "^0.16.0",
@@ -160,7 +161,10 @@
     "@handfish/drizzle-effect": "^0.0.17",
     "postgres": "^3.4.9",
     "@better-auth/cli": "^1.3.18",
-    "@typescript/native-preview": "^7.0.0-dev.20260524.1"
+    "@typescript/native-preview": "^7.0.0-dev.20260524.1",
+    "canonicalize": "^3.0.0",
+    "eslint": "^10.4.0",
+    "oxlint": ">=0.15.0"
   },
   "workspaces": [
     "ideas/*",
@@ -176,7 +180,7 @@
     "build": "turbo run build --continue=dependencies-successful",
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
-    "lint": "biome check --write",
+    "lint": "oxlint --fix --quiet && biome check --write",
     "max": "zellij list-sessions --no-formatting | grep -E 'max .* \\(EXITED - attach to resurrect\\)' > /dev/null && zellij delete-session --force max; zellij --layout midi-demo.kdl attach --create max",
     "lint:css": "PATTERN='packages/*/src/**/*.{ts,tsx}'; chokidar $PATTERN --initial --command \"stylelint '$PATTERN'\"",
     "todo-lint:css": "bunx onchange \"**/*\" -- bunx prettier --write --ignore-unknown {{changed}}"

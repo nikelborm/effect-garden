@@ -13,7 +13,14 @@
   },
   "peerDependencies": {
     "@effect/ai-google": "catalog:",
+    "@effect/cli": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
+    "@types/bun": "catalog:",
     "effect": "catalog:"
+  },
+  "dependencies": {
+    "canonicalize": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/ideas/effect-schema-writer#readme",
   "bugs": {

@@ -3,6 +3,21 @@
   "type": "module",
   "version": "0.1.0",
   "description": "Oxlint plugin to enforce namespace imports from Effect package subpaths",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "@typescript/native-preview": "catalog:",
+    "eslint": "catalog:",
+    "oxlint": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/oxlint-plugin-effect-imports#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
   "keywords": [
     "oxlint",
     "oxlint-plugin",
@@ -11,15 +26,15 @@
     "lint",
     "imports"
   ],
-  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/oxlint-plugin-effect-imports#readme",
-  "bugs": {
-    "url": "https://github.com/nikelborm/effect-garden/issues",
-    "email": "evadev@duck.com"
-  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
     "directory": "one-offs/oxlint-plugin-effect-imports"
+  },
+  "scripts": {
+    "build": "bun build ./index.ts --outfile ./dist/index.js --format esm",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch"
   },
   "author": {
     "name": "nikelborm",
@@ -60,21 +75,5 @@
     "package.json",
     "!**/*.spec.*",
     "!**/*.tsbuildinfo"
-  ],
-  "scripts": {
-    "build": "bun build ./index.ts --outfile ./dist/index.js --format esm",
-    "test": "vitest --run",
-    "test:watch": "vitest --watch"
-  },
-  "peerDependencies": {
-    "oxlint": ">=0.15.0"
-  },
-  "devDependencies": {
-    "@evadev/tsconfig": "workspace:^",
-    "@typescript/native-preview": "catalog:",
-    "eslint": "^10.4.0",
-    "oxlint": "latest",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  }
+  ]
 }
