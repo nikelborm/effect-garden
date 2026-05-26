@@ -25,9 +25,9 @@ vars. Install it.
    3. [joiners](./packages/joiners) (published) — Join any Iterables with
       SQL-style semantics (inner, left, right, full, cross, and Venn diagram
       parts) and extreme TypeScript type inference.
-   4. [bliss-audio-ts](./packages/bliss-audio-ts) (published) (waiting 8 days to
-      republish) — Bun FFI bindings for bliss-audio (Rust); analyzes audio files
-      into 23-dimensional feature vectors for similarity search and automatic
+   4. [bliss-audio-ts](./packages/bliss-audio-ts) (waiting 24 hours to publish)
+      — Bun FFI bindings for bliss-audio (Rust); analyzes audio files into
+      23-dimensional feature vectors for similarity search and automatic
       playlist building.
    5. [gitdl](./packages/gitdl) (published) — CLI + library to download any file
       or folder from any GitHub repo at any ref, without cloning the whole repo.

@@ -45,7 +45,7 @@
     "interview-monarchs-task": "workspace:^",
     "joiners": "workspace:^",
     "next-midi-demo": "workspace:^",
-    "oxlint-plugin-effect-imports": "workspace:*",
+    "oxlint-plugin-effect-imports": "workspace:^",
     "playground": "workspace:^",
     "postcss-styled-syntax": "^0.7.1",
     "stylelint": "^17.12.0",
