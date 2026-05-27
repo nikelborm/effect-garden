@@ -27,6 +27,7 @@ import {
 import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
+// TODO: make TParamButton a ParamButtonData
 const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
   registryTag,
   busTag,

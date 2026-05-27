@@ -91,6 +91,10 @@ const AppLayer = ParamButtonServicesLayer.pipe(
 
 const runtime = Atom.runtime(AppLayer)
 
+// TODO: make getPressabilityChangesStream, getIsSelectedStream,
+// isPressedFlagChangesStream, isCurrentlyPlaying, getDownloadPercent accept a
+// ParamButtonData?
+
 export const isAccordButtonPressableAtom = Atom.family(
   (accord: AllAccordUnion) =>
     EFunction.pipe(

@@ -29,6 +29,8 @@ export type SupportedPhysicalButtonId =
   | PatternHtmlDomButtonIdData
   | StrengthHtmlDomButtonIdData
 
+// TODO: make TAssignedToParamButton a ParamButtonData
+
 export class PhysicalButtonModel<TAssignedToParamButton> extends Data.Class<{
   buttonPressState: ButtonState.AllSimple
   assignedToParamButton: TAssignedToParamButton

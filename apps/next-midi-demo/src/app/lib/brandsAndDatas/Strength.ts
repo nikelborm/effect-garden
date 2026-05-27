@@ -1,6 +1,7 @@
 import * as Data from 'effect/Data'
 
 import type { Strength } from '../audioAssetHelpers.ts'
+import { ParamButtonIdData, type TaggedReadonlyObject } from './ParamButton.ts'
 
 export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
   value: Strength
@@ -14,4 +15,29 @@ export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
   }
 
   static models = (s: unknown): s is StrengthData => s instanceof StrengthData
+}
+
+export class StrengthParamButtonData<
+  TStrength extends Strength = Strength,
+> extends ParamButtonIdData<StrengthData> {
+  constructor(strength: TStrength) {
+    super(new StrengthData(strength))
+  }
+
+  static override makeUnsafeFromData = (
+    idData: TaggedReadonlyObject,
+  ): ParamButtonIdData<StrengthData> => {
+    if (StrengthData.models(idData))
+      return Object.setPrototypeOf(
+        new ParamButtonIdData(idData),
+        StrengthParamButtonData,
+      )
+
+    throw new Error(
+      'Cannot create StrengthParamButtonData. argument is not StrengthData',
+    )
+  }
+
+  static makeUnsafe = (strength: string) =>
+    new StrengthParamButtonData(strength as Strength)
 }

@@ -16,6 +16,8 @@ import type {
 import type { AllAccordUnion } from './AccordRegistry.ts'
 import type { AllPatternUnion } from './PatternRegistry.ts'
 
+// TODO: make TParamButton a ParamButtonData
+
 const getMapCombinerStream = <
   TPhysicalButtonId extends SupportedPhysicalButtonId,
   TParamButton,

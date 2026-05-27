@@ -13,6 +13,8 @@ import {
 } from '../brandsAndDatas/PhysicalButton.ts'
 import type { InputBusWriterHandle } from './InputStreamBus.ts'
 
+// TODO: make TAssignedToParamButton a ParamButtonData
+
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <
   TPhysicalButtonId extends SupportedPhysicalButtonId,
   TAssignedToParamButton,

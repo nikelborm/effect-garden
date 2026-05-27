@@ -82,6 +82,8 @@ const midiStrengthNotes = EArray.range(76, 78)
 const noteDatasHandlingStrengths = makeNoteDatas(midiStrengthNotes)
 const notesHandlingStrengthsSet = toValueSet(noteDatasHandlingStrengths)
 
+// TODO: make TParamButton a ParamButtonData
+
 export const AllButtonMappingLayer = Effect.gen(function* () {
   const [accords, patterns, strengths] = yield* Effect.all([
     AccordRegistry.allAccords,
