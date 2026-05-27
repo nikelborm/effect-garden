@@ -38,10 +38,6 @@ export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
   ): i is T & ParamButtonId<T>
 }
 
-export type TaggedReadonlyObject = {
-  readonly _tag: string
-} & { readonly [k in string]: any }
-
 export class ParamButtonIdData<
   TId extends TaggedReadonlyObject = TaggedReadonlyObject,
 > extends Data.TaggedClass('next-midi-demo/ParamButtonId')<{
@@ -54,21 +50,25 @@ export class ParamButtonIdData<
   static makeUnsafeFromData = (
     idData: TaggedReadonlyObject,
   ): ParamButtonIdData<TaggedReadonlyObject> => {
-    if (
-      typeof idData === 'object' &&
-      idData !== null &&
-      '_tag' in idData &&
-      // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
-      typeof idData['_tag'] === 'string' &&
-      // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
-      idData['_tag'] !== '' &&
-      Hash.symbol in idData &&
-      Equal.symbol in idData
-    )
-      return new ParamButtonIdData(idData)
+    if (isData(idData)) return new ParamButtonIdData(idData)
 
     throw new Error(
       "Cannot create ParamButtonIdData. Argument doesn't pass as effect/Data.TaggedClass instance",
     )
   }
 }
+
+export type TaggedReadonlyObject = {
+  readonly _tag: string
+} & { readonly [k in string]: any }
+
+export const isData = (idData: TaggedReadonlyObject) =>
+  typeof idData === 'object' &&
+  idData !== null &&
+  '_tag' in idData &&
+  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
+  typeof idData['_tag'] === 'string' &&
+  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
+  idData['_tag'] !== '' &&
+  Hash.symbol in idData &&
+  Equal.symbol in idData

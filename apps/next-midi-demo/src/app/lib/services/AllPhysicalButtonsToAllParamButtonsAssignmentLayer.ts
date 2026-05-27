@@ -6,6 +6,7 @@ import * as Stream from 'effect/Stream'
 import { AccordIndexData } from '../brandsAndDatas/Accord.ts'
 import { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
 import { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
+import { PhysicalButtonId } from '../brandsAndDatas/PhysicalButton.ts'
 import { KeyboardPhysicalButtonIdData } from '../brandsAndDatas/StoreValues.ts'
 import { StrengthData } from '../brandsAndDatas/Strength.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
@@ -139,7 +140,9 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       // On screen buttons
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        accords.map(accord => new AccordIndexData(accord.index)),
+        accords.map(accord =>
+          PhysicalButtonId(new AccordIndexData(accord.index)),
+        ),
         accords,
         makeVirtualParamStream('accordIndex', s =>
           AccordIndexData.makeUnsafe(parseInt(s, 10)),
@@ -147,7 +150,9 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        patterns.map(pattern => new PatternIndexData(pattern.index)),
+        patterns.map(pattern =>
+          PhysicalButtonId(new PatternIndexData(pattern.index)),
+        ),
         patterns,
         makeVirtualParamStream('patternIndex', s =>
           PatternIndexData.makeUnsafe(parseInt(s, 10)),
@@ -155,7 +160,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        strengths.map(strength => new StrengthData(strength)),
+        strengths.map(strength => PhysicalButtonId(new StrengthData(strength))),
         strengths,
         makeVirtualParamStream('strength', s => new StrengthData(s)),
         StrengthInputBus,
