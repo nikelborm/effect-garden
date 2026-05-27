@@ -4,6 +4,7 @@ import * as Data from 'effect/Data'
 import type { AccordIndexData } from './Accord.ts'
 import type * as ButtonState from './ButtonState.ts'
 import type { NoteIdData } from './MIDIValues.ts'
+import type { ParamButtonIdData, TaggedReadonlyObject } from './ParamButton.ts'
 import type { PatternIndexData } from './Pattern.ts'
 import type { KeyboardPhysicalButtonIdData } from './StoreValues.ts'
 import type { StrengthData } from './Strength.ts'
@@ -29,16 +30,16 @@ export type SupportedPhysicalButtonId =
   | PatternHtmlDomButtonIdData
   | StrengthHtmlDomButtonIdData
 
-// TODO: make TAssignedToParamButton a ParamButtonData
-
-export class PhysicalButtonModel<TAssignedToParamButton> extends Data.Class<{
+export class PhysicalButtonModel<
+  TParamButtonId extends TaggedReadonlyObject,
+> extends Data.Class<{
   buttonPressState: ButtonState.AllSimple
-  assignedToParamButton: TAssignedToParamButton
+  assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
 }> {
   constructor(
     buttonPressState: ButtonState.AllSimple,
-    assignedToParamButton: TAssignedToParamButton,
+    assignedToParamButtonId: ParamButtonIdData<TParamButtonId>,
   ) {
-    super({ buttonPressState, assignedToParamButton })
+    super({ buttonPressState, assignedToParamButtonId })
   }
 }

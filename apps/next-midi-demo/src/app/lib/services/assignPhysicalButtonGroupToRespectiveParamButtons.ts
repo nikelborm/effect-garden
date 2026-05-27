@@ -7,22 +7,24 @@ import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../brandsAndDatas/index.ts'
+import type {
+  ParamButtonIdData,
+  TaggedReadonlyObject,
+} from '../brandsAndDatas/ParamButton.ts'
 import {
   PhysicalButtonModel,
   type SupportedPhysicalButtonId,
 } from '../brandsAndDatas/PhysicalButton.ts'
 import type { InputBusWriterHandle } from './InputStreamBus.ts'
 
-// TODO: make TAssignedToParamButton a ParamButtonData
-
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <
   TPhysicalButtonId extends SupportedPhysicalButtonId,
-  TAssignedToParamButton,
+  TParamButtonId extends TaggedReadonlyObject,
   R,
   BusR,
 >(
   allPhysicalButtonIdsRepresentingPhysicalButtonGroup: readonly TPhysicalButtonId[],
-  allParamButtonsRepresentedByPhysicalButtonGroup: readonly TAssignedToParamButton[],
+  allParamButtonIdsRepresentedByPhysicalButtonGroup: readonly ParamButtonIdData<TParamButtonId>[],
   physicalButtonPressStream: Stream.Stream<
     readonly [
       id: TPhysicalButtonId,
@@ -32,7 +34,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     R
   >,
   inputBusWriterEffect: Effect.Effect<
-    InputBusWriterHandle<TPhysicalButtonId, TAssignedToParamButton>,
+    InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>,
     never,
     BusR
   >,
@@ -40,7 +42,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
   Effect.gen(function* () {
     if (
       allPhysicalButtonIdsRepresentingPhysicalButtonGroup.length !==
-      allParamButtonsRepresentedByPhysicalButtonGroup.length
+      allParamButtonIdsRepresentedByPhysicalButtonGroup.length
     )
       return yield* Effect.dieMessage(
         'Assertion failed: allEntities.length !== allPhysicalButtonIds.length',
@@ -49,15 +51,15 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     const physicalButtonIdToModelMapRef = yield* Ref.make(
       HashMap.make(
         ...EArray.zipWith(
-          allParamButtonsRepresentedByPhysicalButtonGroup,
+          allParamButtonIdsRepresentedByPhysicalButtonGroup,
           allPhysicalButtonIdsRepresentingPhysicalButtonGroup,
 
-          (paramButtonThePhysicalButtonIsAssignedTo, physicalButtonId) =>
+          (paramButtonIdThePhysicalButtonIsAssignedTo, physicalButtonId) =>
             [
               physicalButtonId,
               new PhysicalButtonModel(
                 ButtonState.NotPressed,
-                paramButtonThePhysicalButtonIsAssignedTo,
+                paramButtonIdThePhysicalButtonIsAssignedTo,
               ),
             ] as const,
         ),
@@ -75,18 +77,18 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     const latestPhysicalButtonModelsStream =
       yield* physicalButtonPressStream.pipe(
         Stream.mapEffect(
-          ([id, physicalButtonPressState]) =>
+          ([physicalButtonId, physicalButtonPressState]) =>
             Effect.map(
               currentMapEffect,
               EFunction.flow(
-                HashMap.get(id),
+                HashMap.get(physicalButtonId),
                 Option.map(
                   previousButtonModel =>
                     [
-                      id,
+                      physicalButtonId,
                       new PhysicalButtonModel(
                         physicalButtonPressState,
-                        previousButtonModel.assignedToParamButton,
+                        previousButtonModel.assignedToParamButtonId,
                       ),
                     ] as const,
                 ),
