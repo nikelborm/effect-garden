@@ -209,6 +209,9 @@ const { registry, tree: rootNode } = walkRoot(data, {
     'likeButtonRenderer',
     'shelfDivider',
     'contentsMultiSelectable',
+    'menuServiceItemDownloadRenderer',
+    'menuNavigationItemRenderer',
+    'menuServiceItemRenderer',
     'isToggled',
     'toggleButtonRenderer',
     'siteName',
@@ -259,9 +262,17 @@ await $`bunx tsgo --noEmit`
 const { MainSchema } = await import('./generated/experiment1_sample_schema.ts')
 
 // sanity check of the resulted schema
-Schema.decodeUnknownSync(MainSchema, {
-  exact: true,
+const res = Schema.decodeUnknownSync(MainSchema, {
+  // exact: true,
   // onExcessProperty: 'error',
+  // onExcessProperty: 'ignore',
 })(data)
+
+// TODO: report effect issue about redundant fields not being stripped
+
+// await writeFile(
+//   './data/out.json',
+//   JSON.stringify(MainSchema.make(res), null, 2),
+// )
 
 console.log('done')

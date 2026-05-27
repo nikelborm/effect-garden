@@ -17,16 +17,6 @@ const Part21 = Schema.Struct({
         examples: [
           '13K plays',
           '1:13',
-          'Start mix',
-          'Play next',
-          'Add to queue',
-          'Save to playlist',
-          'Save this for later',
-          'Make playlists and share them after signing in',
-          'Sign in',
-          'Go to artist',
-          'View song credits',
-          'Share',
           '1',
           '8.3K plays',
           '2:31',
@@ -78,7 +68,6 @@ const Part21 = Schema.Struct({
           '16K plays',
           '3:04',
           '18',
-          'Shuffle play',
           'The Lost Flowers of Alice Hart (Prime Video Original Series Soundtrack)',
           'Album',
           ' • ',
@@ -93,72 +82,9 @@ const Part21 = Schema.Struct({
 
 const Part22 = Schema.Struct({ text: Part21 })
 
-const Part34 = Schema.Array(Part16)
+const Part27 = Schema.Array(Part16)
 
-const Part45 = Schema.Struct({ text: Part21, navigationEndpoint: Part16 })
-
-const Part52 = Schema.Struct({
-  menuNavigationItemRenderer: Schema.Struct({
-    text: Part21,
-    navigationEndpoint: Schema.Struct({
-      modalEndpoint: Schema.Struct({
-        modal: Schema.Struct({
-          modalWithTitleAndButtonRenderer: Schema.Struct({
-            title: Part21,
-            content: Part21,
-            button: Schema.Struct({ buttonRenderer: Part45 }),
-          }),
-        }),
-      }),
-    }),
-  }),
-})
-
-const Part56 = Schema.Struct({
-  browseEndpoint: Schema.Struct({
-    browseId: Schema.String.annotations({
-      examples: [
-        'UCkBoNlyN9hWbq6uO_CqGeIg',
-        'MPTCSZ6Bj2tX6Ag',
-        'MPTCeBauYFxXb3k',
-        'MPTCjq06vGZ0fNw',
-        'MPTCF2b_haxo9-g',
-        'MPTCOe4QjqkziaI',
-        'MPTCuztr1Nv17us',
-        'MPTCczAhvbGOAp0',
-        'MPTCQnS2zbYOpsI',
-        'MPTCzf6ePjpBjGE',
-        'MPTCu-udXcdNeu8',
-        'MPTCQXWNCqCHZ1s',
-        'MPTCk9gTFWJfBPs',
-        'MPTCFcVT19XAVZk',
-        'MPTCocta65bsLg0',
-        'MPTCqi5gZSnrh1M',
-        'MPTCcz8jHtz3QMM',
-        'MPTC4N81orCJ-KM',
-        'MPTCsohD_VX7KDk',
-      ],
-    }),
-    browseEndpointContextSupportedConfigs: Schema.Struct({
-      browseEndpointContextMusicConfig: Schema.Struct({
-        pageType: Schema.String.annotations({
-          examples: ['MUSIC_PAGE_TYPE_ARTIST', 'MUSIC_PAGE_TYPE_TRACK_CREDITS'],
-        }),
-      }),
-    }),
-  }),
-})
-
-const Part58 = Schema.Struct({
-  menuNavigationItemRenderer: Schema.Struct({
-    text: Part21,
-    navigationEndpoint: Part56,
-  }),
-})
-
-const Part59 = Schema.Struct({ menuNavigationItemRenderer: Part45 })
-
-const Part74 = Schema.Struct({
+const Part41 = Schema.Struct({
   thumbnails: Schema.Array(
     Schema.Struct({
       url: Schema.String.annotations({
@@ -179,21 +105,15 @@ const Part74 = Schema.Struct({
   ),
 })
 
-const Part76 = Schema.Struct({
+const Part43 = Schema.Struct({
   musicThumbnailRenderer: Schema.Struct({
-    thumbnail: Part74,
+    thumbnail: Part41,
     thumbnailCrop: Schema.String.annotations({
       examples: ['MUSIC_THUMBNAIL_CROP_UNSPECIFIED'],
     }),
     thumbnailScale: Schema.String.annotations({
       examples: ['MUSIC_THUMBNAIL_SCALE_UNSPECIFIED'],
     }),
-  }),
-})
-
-const Part77 = Schema.Struct({
-  playlistId: Schema.String.annotations({
-    examples: ['OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ'],
   }),
 })
 
@@ -369,194 +289,8 @@ export const MainSchema = Schema.Struct({
                       ),
                       menu: Schema.Struct({
                         menuRenderer: Schema.Struct({
-                          items: Schema.Array(
-                            Schema.Union(
-                              Schema.Struct({
-                                menuNavigationItemRenderer: Schema.Struct({
-                                  text: Part21,
-                                  navigationEndpoint: Schema.Struct({
-                                    watchEndpoint: Schema.Struct({
-                                      videoId: Schema.String.annotations({
-                                        examples: [
-                                          'SZ6Bj2tX6Ag',
-                                          'eBauYFxXb3k',
-                                          'jq06vGZ0fNw',
-                                          'F2b_haxo9-g',
-                                          'Oe4QjqkziaI',
-                                          'uztr1Nv17us',
-                                          'czAhvbGOAp0',
-                                          'QnS2zbYOpsI',
-                                          'zf6ePjpBjGE',
-                                          'u-udXcdNeu8',
-                                          'QXWNCqCHZ1s',
-                                          'k9gTFWJfBPs',
-                                          'FcVT19XAVZk',
-                                          'octa65bsLg0',
-                                          'qi5gZSnrh1M',
-                                          'cz8jHtz3QMM',
-                                          '4N81orCJ-KM',
-                                          'sohD_VX7KDk',
-                                        ],
-                                      }),
-                                      playlistId: Schema.String.annotations({
-                                        examples: [
-                                          'RDAMVMSZ6Bj2tX6Ag',
-                                          'RDAMVMeBauYFxXb3k',
-                                          'RDAMVMjq06vGZ0fNw',
-                                          'RDAMVMF2b_haxo9-g',
-                                          'RDAMVMOe4QjqkziaI',
-                                          'RDAMVMuztr1Nv17us',
-                                          'RDAMVMczAhvbGOAp0',
-                                          'RDAMVMQnS2zbYOpsI',
-                                          'RDAMVMzf6ePjpBjGE',
-                                          'RDAMVMu-udXcdNeu8',
-                                          'RDAMVMQXWNCqCHZ1s',
-                                          'RDAMVMk9gTFWJfBPs',
-                                          'RDAMVMFcVT19XAVZk',
-                                          'RDAMVMocta65bsLg0',
-                                          'RDAMVMqi5gZSnrh1M',
-                                          'RDAMVMcz8jHtz3QMM',
-                                          'RDAMVM4N81orCJ-KM',
-                                          'RDAMVMsohD_VX7KDk',
-                                        ],
-                                      }),
-                                      params: Schema.String.annotations({
-                                        examples: ['wAEB'],
-                                      }),
-                                      watchEndpointMusicSupportedConfigs: Part2,
-                                    }),
-                                  }),
-                                }),
-                              }),
-                              Schema.Struct({
-                                menuServiceItemRenderer: Schema.Struct({
-                                  text: Part21,
-                                  serviceEndpoint: Schema.Struct({
-                                    queueAddEndpoint: Schema.Struct({
-                                      queueTarget: Schema.Struct({
-                                        videoId: Schema.String.annotations({
-                                          examples: [
-                                            'SZ6Bj2tX6Ag',
-                                            'eBauYFxXb3k',
-                                            'jq06vGZ0fNw',
-                                            'F2b_haxo9-g',
-                                            'Oe4QjqkziaI',
-                                            'uztr1Nv17us',
-                                            'czAhvbGOAp0',
-                                            'QnS2zbYOpsI',
-                                            'zf6ePjpBjGE',
-                                            'u-udXcdNeu8',
-                                            'QXWNCqCHZ1s',
-                                            'k9gTFWJfBPs',
-                                            'FcVT19XAVZk',
-                                            'octa65bsLg0',
-                                            'qi5gZSnrh1M',
-                                            'cz8jHtz3QMM',
-                                            '4N81orCJ-KM',
-                                            'sohD_VX7KDk',
-                                          ],
-                                        }),
-                                        onEmptyQueue: Schema.Struct({
-                                          watchEndpoint: Schema.Struct({
-                                            videoId: Schema.String.annotations({
-                                              examples: [
-                                                'SZ6Bj2tX6Ag',
-                                                'eBauYFxXb3k',
-                                                'jq06vGZ0fNw',
-                                                'F2b_haxo9-g',
-                                                'Oe4QjqkziaI',
-                                                'uztr1Nv17us',
-                                                'czAhvbGOAp0',
-                                                'QnS2zbYOpsI',
-                                                'zf6ePjpBjGE',
-                                                'u-udXcdNeu8',
-                                                'QXWNCqCHZ1s',
-                                                'k9gTFWJfBPs',
-                                                'FcVT19XAVZk',
-                                                'octa65bsLg0',
-                                                'qi5gZSnrh1M',
-                                                'cz8jHtz3QMM',
-                                                '4N81orCJ-KM',
-                                                'sohD_VX7KDk',
-                                              ],
-                                            }),
-                                          }),
-                                        }),
-                                      }),
-                                      commands: Part34,
-                                    }),
-                                  }),
-                                }),
-                              }),
-                              Part16,
-                              Schema.Struct({
-                                menuServiceItemDownloadRenderer: Schema.Struct({
-                                  serviceEndpoint: Schema.Struct({
-                                    offlineVideoEndpoint: Schema.Struct({
-                                      videoId: Schema.String.annotations({
-                                        examples: [
-                                          'SZ6Bj2tX6Ag',
-                                          'eBauYFxXb3k',
-                                          'jq06vGZ0fNw',
-                                          'F2b_haxo9-g',
-                                          'Oe4QjqkziaI',
-                                          'uztr1Nv17us',
-                                          'czAhvbGOAp0',
-                                          'QnS2zbYOpsI',
-                                          'zf6ePjpBjGE',
-                                          'u-udXcdNeu8',
-                                          'QXWNCqCHZ1s',
-                                          'k9gTFWJfBPs',
-                                          'FcVT19XAVZk',
-                                          'octa65bsLg0',
-                                          'qi5gZSnrh1M',
-                                          'cz8jHtz3QMM',
-                                          '4N81orCJ-KM',
-                                          'sohD_VX7KDk',
-                                        ],
-                                      }),
-                                      onAddCommand: Schema.Struct({
-                                        getDownloadActionCommand: Schema.Struct(
-                                          {
-                                            videoId: Schema.String.annotations({
-                                              examples: [
-                                                'SZ6Bj2tX6Ag',
-                                                'eBauYFxXb3k',
-                                                'jq06vGZ0fNw',
-                                                'F2b_haxo9-g',
-                                                'Oe4QjqkziaI',
-                                                'uztr1Nv17us',
-                                                'czAhvbGOAp0',
-                                                'QnS2zbYOpsI',
-                                                'zf6ePjpBjGE',
-                                                'u-udXcdNeu8',
-                                                'QXWNCqCHZ1s',
-                                                'k9gTFWJfBPs',
-                                                'FcVT19XAVZk',
-                                                'octa65bsLg0',
-                                                'qi5gZSnrh1M',
-                                                'cz8jHtz3QMM',
-                                                '4N81orCJ-KM',
-                                                'sohD_VX7KDk',
-                                              ],
-                                            }),
-                                            params: Schema.String.annotations({
-                                              examples: ['CAI%3D'],
-                                            }),
-                                          },
-                                        ),
-                                      }),
-                                    }),
-                                  }),
-                                  badgeIcon: Part16,
-                                }),
-                              }),
-                              Part52,
-                              Part58,
-                              Part59,
-                            ),
-                          ),
-                          topLevelButtons: Part34,
+                          items: Part27,
+                          topLevelButtons: Part27,
                         }),
                       }),
                       playlistItemData: Schema.Struct({
@@ -625,71 +359,25 @@ export const MainSchema = Schema.Struct({
                 contents: Schema.Array(
                   Schema.Struct({
                     musicResponsiveHeaderRenderer: Schema.Struct({
-                      thumbnail: Part76,
+                      thumbnail: Part43,
                       buttons: Schema.Array(
                         Schema.Union(
                           Part16,
                           Schema.Struct({
                             musicPlayButtonRenderer: Schema.Struct({
                               playNavigationEndpoint: Schema.Struct({
-                                watchPlaylistEndpoint: Part77,
+                                watchPlaylistEndpoint: Schema.Struct({
+                                  playlistId: Schema.String.annotations({
+                                    examples: [
+                                      'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
+                                    ],
+                                  }),
+                                }),
                               }),
                             }),
                           }),
                           Schema.Struct({
-                            menuRenderer: Schema.Struct({
-                              items: Schema.Array(
-                                Schema.Union(
-                                  Schema.Struct({
-                                    menuNavigationItemRenderer: Schema.Struct({
-                                      text: Part21,
-                                      navigationEndpoint: Schema.Struct({
-                                        watchPlaylistEndpoint: Schema.Struct({
-                                          playlistId: Schema.String.annotations(
-                                            {
-                                              examples: [
-                                                'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
-                                                'RDAMPLOLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
-                                              ],
-                                            },
-                                          ),
-                                          params: Schema.String.annotations({
-                                            examples: [
-                                              'wAEB8gECKAE%3D',
-                                              'wAEB',
-                                            ],
-                                          }),
-                                        }),
-                                      }),
-                                    }),
-                                  }),
-                                  Schema.Struct({
-                                    menuServiceItemRenderer: Schema.Struct({
-                                      text: Part21,
-                                      serviceEndpoint: Schema.Struct({
-                                        queueAddEndpoint: Schema.Struct({
-                                          queueTarget: Schema.Struct({
-                                            playlistId:
-                                              Schema.String.annotations({
-                                                examples: [
-                                                  'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
-                                                ],
-                                              }),
-                                            onEmptyQueue: Schema.Struct({
-                                              watchEndpoint: Part77,
-                                            }),
-                                          }),
-                                          commands: Part34,
-                                        }),
-                                      }),
-                                    }),
-                                  }),
-                                  Part52,
-                                  Part58,
-                                  Part59,
-                                ),
-                              ),
-                            }),
+                            menuRenderer: Schema.Struct({ items: Part27 }),
                           }),
                         ),
                       ),
@@ -701,11 +389,26 @@ export const MainSchema = Schema.Struct({
                             text: Schema.String.annotations({
                               examples: ['Hania Rani'],
                             }),
-                            navigationEndpoint: Part56,
+                            navigationEndpoint: Schema.Struct({
+                              browseEndpoint: Schema.Struct({
+                                browseId: Schema.String.annotations({
+                                  examples: ['UCkBoNlyN9hWbq6uO_CqGeIg'],
+                                }),
+                                browseEndpointContextSupportedConfigs:
+                                  Schema.Struct({
+                                    browseEndpointContextMusicConfig:
+                                      Schema.Struct({
+                                        pageType: Schema.String.annotations({
+                                          examples: ['MUSIC_PAGE_TYPE_ARTIST'],
+                                        }),
+                                      }),
+                                  }),
+                              }),
+                            }),
                           }),
                         ),
                       }),
-                      straplineThumbnail: Part76,
+                      straplineThumbnail: Part43,
                       secondSubtitle: Part21,
                     }),
                   }),
@@ -734,7 +437,7 @@ export const MainSchema = Schema.Struct({
           'Listen to The Lost Flowers of Alice Hart (Prime Video Original Series Soundtrack) by Hania Rani on YouTube Music - a dedicated music app with official songs, music videos, remixes, covers, and more.',
         ],
       }),
-      thumbnail: Part74,
+      thumbnail: Part41,
       androidPackage: Schema.String.annotations({
         examples: ['com.google.android.apps.youtube.music'],
       }),
