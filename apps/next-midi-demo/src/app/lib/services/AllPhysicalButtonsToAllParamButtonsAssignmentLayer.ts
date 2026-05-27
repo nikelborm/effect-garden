@@ -4,7 +4,7 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
 import { AccordIndexData } from '../brandsAndDatas/Accord.ts'
-import * as MIDIValues from '../brandsAndDatas/MIDIValues.ts'
+import { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
 import { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
 import { KeyboardPhysicalButtonIdData } from '../brandsAndDatas/StoreValues.ts'
 import { StrengthData } from '../brandsAndDatas/Strength.ts'
@@ -25,7 +25,7 @@ const toValueSet = <V>(datas: readonly { readonly value: V }[]) =>
   new Set(datas.map(_ => _.value))
 
 const makeNoteDatas = (notes: Iterable<number>) =>
-  Array.from(notes, note => new MIDIValues.NoteIdData(note))
+  Array.from(notes, NoteIdData.makeUnsafe)
 
 const makeVirtualParamStream = <const Key extends string, Data>(
   key: Key,

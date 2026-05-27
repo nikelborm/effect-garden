@@ -19,11 +19,9 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
     strength: StrengthSchema,
   },
 ) {
-  static models = (p: unknown): p is TaggedPatternPointer =>
-    typeof p === 'object' &&
-    p !== null &&
-    '_tag' in p &&
-    p._tag === 'TaggedPatternPointer'
+  static models = Schema.is(TaggedPatternPointer) as (
+    p: unknown,
+  ) => p is TaggedPatternPointer
 }
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
@@ -36,11 +34,9 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
     strength: StrengthSchema,
   },
 ) {
-  static models = (p: unknown): p is TaggedSlowStrumPointer =>
-    typeof p === 'object' &&
-    p !== null &&
-    '_tag' in p &&
-    p._tag === 'TaggedSlowStrumPointer'
+  static models = Schema.is(TaggedSlowStrumPointer) as (
+    p: unknown,
+  ) => p is TaggedSlowStrumPointer
 }
 
 export const RECORDED_ACCORDS = [

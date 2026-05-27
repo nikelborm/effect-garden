@@ -10,9 +10,11 @@ export const NoteId = Brand.refined<NoteId>(
 export class NoteIdData extends Data.TaggedClass('next-midi-demo/NoteId')<{
   value: NoteId
 }> {
-  constructor(note: number) {
+  constructor(note: NoteId) {
     super({ value: NoteId(note) })
   }
+
+  static makeUnsafe = (note: number) => new NoteIdData(note as NoteId)
 }
 
 export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>

@@ -4,6 +4,7 @@ import type * as Either from 'effect/Either'
 import type * as Option from 'effect/Option'
 
 import type { AccordIndexUnion } from '../audioAssetHelpers.ts'
+import { ParamButtonIdData, type TaggedReadonlyObject } from './ParamButton.ts'
 
 export type AccordIndex<Index extends AccordIndexUnion = AccordIndexUnion> =
   Brand.Branded<Index, 'AccordIndex: integer in range 0...7'>
@@ -23,9 +24,9 @@ export const AccordIndex = Brand.refined<AccordIndex>(
     i: TIndex,
   ): Either.Either<AccordIndex<TIndex>, Brand.Brand.BrandErrors>
 
-  is<TIndex extends AccordIndexUnion = AccordIndexUnion>(
+  is<TIndex extends number = number>(
     i: TIndex,
-  ): i is TIndex & AccordIndex<TIndex>
+  ): i is TIndex & AccordIndexUnion & AccordIndex<TIndex & AccordIndexUnion>
 }
 
 export class AccordIndexData<
@@ -39,6 +40,34 @@ export class AccordIndexData<
 
   static makeUnsafe = (index: number) =>
     new AccordIndexData(index as AccordIndexUnion)
+
+  static models = (aid: unknown): aid is AccordIndexData =>
+    aid instanceof AccordIndexData
+}
+
+export class AccordParamButtonData<
+  TIndex extends AccordIndexUnion = AccordIndexUnion,
+> extends ParamButtonIdData<AccordIndexData> {
+  constructor(index: TIndex) {
+    super(new AccordIndexData(index))
+  }
+
+  static override makeUnsafeFromData = (
+    idData: TaggedReadonlyObject,
+  ): ParamButtonIdData<AccordIndexData> => {
+    if (AccordIndexData.models(idData))
+      return Object.setPrototypeOf(
+        new ParamButtonIdData(idData),
+        AccordParamButtonData,
+      )
+
+    throw new Error(
+      'Cannot create AccordParamButtonData. argument is not AccordIndexData',
+    )
+  }
+
+  static makeUnsafe = (index: number) =>
+    new AccordParamButtonData(index as AccordIndexUnion)
 }
 
 export interface AccordMiniInfo<
@@ -72,9 +101,5 @@ export class Accord<
       },
     )
 
-  static models = (p: unknown): p is Accord =>
-    typeof p === 'object' &&
-    p !== null &&
-    '_tag' in p &&
-    p._tag === this.prototype._tag
+  static models = (a: unknown): a is Accord => a instanceof Accord
 }

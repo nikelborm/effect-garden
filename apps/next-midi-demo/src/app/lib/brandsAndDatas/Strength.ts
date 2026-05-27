@@ -12,4 +12,6 @@ export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
       )
     super({ value: strength })
   }
+
+  static models = (s: unknown): s is StrengthData => s instanceof StrengthData
 }
