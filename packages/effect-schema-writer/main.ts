@@ -35,7 +35,9 @@ const numberLeaf = {
 }
 const nullLeaf = { schema: Schema.Null, code: () => 'Schema.Null' }
 
-const walkRoot = (obj: unknown) => {
+const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
+  const skipFields = new Set(options?.skipFields ?? [])
+
   const registry = new Map<
     string,
     { id: number; subtree: Subtree; dependenciesMap: Map<number, number> }
@@ -54,7 +56,8 @@ const walkRoot = (obj: unknown) => {
         for (const [field, incoming] of subtree.fieldExamples) {
           const existing = existingMap.get(field) ?? new Set()
           existingMap.set(field, existing)
-          for (const ex of incoming) if (existing.size < 5) existing.add(ex)
+          /* if (existing.size < 5) */ for (const ex of incoming)
+            existing.add(ex)
         }
       }
       return oldval.subtree
@@ -118,7 +121,10 @@ const walkRoot = (obj: unknown) => {
 
     const fieldExamples: FieldExamples = new Map()
     const structTree = Record.map(
-      something as Record<string, unknown>,
+      Record.filter(
+        something as Record<string, unknown>,
+        (_, key) => !skipFields.has(key),
+      ),
       (value, key) => {
         if (typeof value === 'string' || typeof value === 'number')
           fieldExamples.set(key, new Set([value]))
@@ -155,7 +161,60 @@ const walkRoot = (obj: unknown) => {
   return { registry, tree: walk(obj) }
 }
 
-const { registry, tree: rootNode } = walkRoot(data)
+const { registry, tree: rootNode } = walkRoot(data, {
+  skipFields: [
+    'trackingParams',
+    'iconType',
+    'clickTrackingParams',
+    'serializedContextData',
+    'feedbackEndpoint',
+    'playIcon',
+    'pauseIcon',
+    'iconColor',
+    'backgroundColor',
+    'activeBackgroundColor',
+    'loadingIndicatorColor',
+    'playingIcon',
+    'iconLoadingColor',
+    'activeScaleFactor',
+    'buttonSize',
+    'playerParams',
+    'contentPosition',
+    'queueInsertPosition',
+    'loggingContext',
+    'isDisabled',
+    'displayStyle',
+    'serviceTrackingParams',
+    'style',
+    'shareEntityEndpoint',
+    'displayPriority',
+    'size',
+    'rippleTarget',
+    'addToToastAction',
+    'background',
+    'icon',
+    'accessibility',
+    'accessibilityPlayData',
+    'accessibilityPauseData',
+    'accessibilityData',
+    'signInEndpoint',
+    'defaultIcon',
+    'toggledIcon',
+    'toggleMenuServiceItemRenderer',
+    'likeStatus',
+    'likesAllowed',
+    'dislikeNavigationEndpoint',
+    'likeCommand',
+    'multiSelectCheckbox',
+    'likeButtonRenderer',
+    'shelfDivider',
+    'contentsMultiSelectable',
+    'isToggled',
+    'toggleButtonRenderer',
+    'siteName',
+    'appName',
+  ],
+})
 
 // they're already sorted, and we make one pass to delete siblingless nodes
 for (const [childKey, child] of registry) {
@@ -202,7 +261,7 @@ const { MainSchema } = await import('./generated/experiment1_sample_schema.ts')
 // sanity check of the resulted schema
 Schema.decodeUnknownSync(MainSchema, {
   exact: true,
-  onExcessProperty: 'error',
+  // onExcessProperty: 'error',
 })(data)
 
 console.log('done')
