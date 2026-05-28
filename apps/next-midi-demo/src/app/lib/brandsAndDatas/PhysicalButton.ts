@@ -1,10 +1,11 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type { AccordIndexData } from './Accord.ts'
 import type * as ButtonState from './ButtonState.ts'
 import type { NoteIdData } from './MIDIValues.ts'
-import type { ParamButtonIdData, TaggedReadonlyObject } from './ParamButton.ts'
+import type { ParamButtonIdData } from './ParamButton.ts'
 import type { PatternIndexData } from './Pattern.ts'
 import type { KeyboardPhysicalButtonIdData } from './StoreValues.ts'
 import type { StrengthData } from './Strength.ts'

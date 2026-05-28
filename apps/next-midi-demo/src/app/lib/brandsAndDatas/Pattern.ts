@@ -4,7 +4,8 @@ import type * as Either from 'effect/Either'
 import type * as Option from 'effect/Option'
 
 import type { PatternIndexUnion } from '../audioAssetHelpers.ts'
-import { ParamButtonIdData, type TaggedReadonlyObject } from './ParamButton.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
+import { ParamButtonIdData } from './ParamButton.ts'
 
 export type PatternIndex<Index extends PatternIndexUnion = PatternIndexUnion> =
   Brand.Branded<Index, 'PatternIndex: integer in range 0...7'>

@@ -9,16 +9,14 @@ import * as Stream from 'effect/Stream'
 
 import type { AccordIndexData } from '../brandsAndDatas/Accord.ts'
 import { ButtonState } from '../brandsAndDatas/index.ts'
-import type {
-  ParamButtonIdData,
-  TaggedReadonlyObject,
-} from '../brandsAndDatas/ParamButton.ts'
+import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
 import type { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
 import type {
   PhysicalButtonModel,
   SupportedPhysicalButtonId,
 } from '../brandsAndDatas/PhysicalButton.ts'
 import type { StrengthData } from '../brandsAndDatas/Strength.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',

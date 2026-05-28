@@ -1,7 +1,8 @@
 import * as Data from 'effect/Data'
 
 import type { Strength } from '../audioAssetHelpers.ts'
-import { ParamButtonIdData, type TaggedReadonlyObject } from './ParamButton.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
+import { ParamButtonIdData } from './ParamButton.ts'
 
 export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
   value: Strength

@@ -7,14 +7,12 @@ import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../brandsAndDatas/index.ts'
-import type {
-  ParamButtonIdData,
-  TaggedReadonlyObject,
-} from '../brandsAndDatas/ParamButton.ts'
+import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
 import {
   PhysicalButtonModel,
   type SupportedPhysicalButtonId,
 } from '../brandsAndDatas/PhysicalButton.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type { InputBusWriterHandle } from './InputStreamBus.ts'
 
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <

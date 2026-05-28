@@ -9,9 +9,10 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
-import * as Equal from 'effect/Equal'
-import * as Hash from 'effect/Hash'
 import type * as Option from 'effect/Option'
+
+import { isData } from '../helpers/isData.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 
 export type ParamButtonId<T extends string | number> = T extends any
   ? Brand.Branded<T, 'ParamButtonId'>
@@ -57,18 +58,3 @@ export class ParamButtonIdData<
     )
   }
 }
-
-export type TaggedReadonlyObject = {
-  readonly _tag: string
-} & { readonly [k in string]: any }
-
-export const isData = (idData: TaggedReadonlyObject) =>
-  typeof idData === 'object' &&
-  idData !== null &&
-  '_tag' in idData &&
-  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
-  typeof idData['_tag'] === 'string' &&
-  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
-  idData['_tag'] !== '' &&
-  Hash.symbol in idData &&
-  Equal.symbol in idData
