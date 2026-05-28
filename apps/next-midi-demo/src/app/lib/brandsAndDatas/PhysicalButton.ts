@@ -11,7 +11,6 @@ import type { NoteIdData } from './MIDIValues.ts'
 import type { ParamButtonIdData } from './ParamButton.ts'
 // import type { ParamButtonIdData } from './ParamButton.ts'
 import type { PatternIndexData } from './Pattern.ts'
-import type { KeyboardPhysicalButtonIdData } from './StoreValues.ts'
 import type { StrengthData } from './Strength.ts'
 
 // export type HtmlDomButton = PhysicalButtonId & Brand.Brand<'HTML DOM button'>
@@ -24,13 +23,6 @@ import type { StrengthData } from './Strength.ts'
 // export type AccordNoteIdData =
 // export type PatternNoteIdData =
 // export type StrengthNoteIdData =
-
-// export type SupportedPhysicalButtonId =
-//   | KeyboardPhysicalButtonIdData
-//   | NoteIdData
-//   | AccordHtmlDomButtonIdData
-//   | PatternHtmlDomButtonIdData
-//   | StrengthHtmlDomButtonIdData
 
 export type PhysicalButtonId<T extends string | number> = T extends any
   ? Brand.Branded<T, 'PhysicalButtonId'>
@@ -61,9 +53,7 @@ export const PhysicalButtonId = Brand.refined<
 
 export class PhysicalButtonIdData<
   TId extends TaggedReadonlyObject = TaggedReadonlyObject,
-> extends Data.TaggedClass('next-midi-demo/PhysicalButtonId')<{
-  id: TId
-}> {
+> extends Data.TaggedClass('next-midi-demo/PhysicalButtonId')<{ id: TId }> {
   constructor(id: TId) {
     super({ id })
   }

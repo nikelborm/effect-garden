@@ -1,44 +1,39 @@
+import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
+import type * as Either from 'effect/Either'
+import type * as Option from 'effect/Option'
 
-import type { Strength } from '../audioAssetHelpers.ts'
-import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
+import type { StrengthUnion } from '../audioAssetHelpers.ts'
+import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { ParamButtonIdData } from './ParamButton.ts'
 
-export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
-  value: Strength
-}> {
-  constructor(strength: string) {
-    if (strength !== 's' && strength !== 'm' && strength !== 'v')
-      throw new Error(
-        `StrengthData expected strength ('s' | 'm' | 'v'), but got: ${JSON.stringify(strength)}`,
-      )
-    super({ value: strength })
-  }
+export type Strength = Brand.Branded<StrengthUnion, 'Strength'>
 
-  static models = (s: unknown): s is StrengthData => s instanceof StrengthData
+export const Strength = Brand.refined<Strength>(
+  s => s === 's' || s === 'm' || s === 'v',
+  s => Brand.error(`Expected ${JSON.stringify(s)} to be 's' | 'm' | 'v'`),
+) as {
+  (s: string): Strength
+  option(s: string): Option.Option<Strength>
+  either(s: string): Either.Either<Strength, Brand.Brand.BrandErrors>
+  is(s: string): s is Strength
 }
 
-export class StrengthParamButtonData<
-  TStrength extends Strength = Strength,
-> extends ParamButtonIdData<StrengthData> {
-  constructor(strength: TStrength) {
-    super(new StrengthData(strength))
+export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
+  strength: Strength
+}> {
+  constructor(strength: Strength) {
+    super({ strength })
   }
 
-  static override makeUnsafeFromData = (
-    idData: TaggedReadonlyObject,
-  ): ParamButtonIdData<StrengthData> => {
-    if (StrengthData.models(idData))
-      return Object.setPrototypeOf(
-        new ParamButtonIdData(idData),
-        StrengthParamButtonData,
-      )
+  static makeUnsafe = (strength: string) => new this(Strength(strength))
+  static models = (strength: unknown) => strength instanceof this
+}
 
-    throw new Error(
-      'Cannot create StrengthParamButtonData. argument is not StrengthData',
-    )
-  }
+export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
+  static override makeUnsafeFromData =
+    makeUnsafeFromData<typeof StrengthParamButtonData>()(StrengthData)
 
   static makeUnsafe = (strength: string) =>
-    new StrengthParamButtonData(strength as Strength)
+    new this(StrengthData.makeUnsafe(strength))
 }

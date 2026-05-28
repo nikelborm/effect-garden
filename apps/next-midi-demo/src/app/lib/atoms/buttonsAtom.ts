@@ -10,7 +10,7 @@ import * as Logger from 'effect/Logger'
 // import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
 
-import type { Strength } from '../audioAssetHelpers.ts'
+import type { StrengthUnion } from '../audioAssetHelpers.ts'
 import {
   AccordRegistry,
   type AllAccordUnion,
@@ -142,22 +142,25 @@ export const isPatternButtonPressableAtom = Atom.family(
     ),
 )
 
-export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
-  EFunction.pipe(
-    strength,
-    StrengthParamButtonService.getPressabilityChangesStream,
-    Stream.unwrap,
-    s =>
-      runtime.atom(s, {
-        initialValue: strength !== 'm',
-      }),
-    Atom.withFallback(
-      Atom.readable(() => Result.success(strength !== 'm', { waiting: true })),
+export const isStrengthButtonPressableAtom = Atom.family(
+  (strength: StrengthUnion) =>
+    EFunction.pipe(
+      strength,
+      StrengthParamButtonService.getPressabilityChangesStream,
+      Stream.unwrap,
+      s =>
+        runtime.atom(s, {
+          initialValue: strength !== 'm',
+        }),
+      Atom.withFallback(
+        Atom.readable(() =>
+          Result.success(strength !== 'm', { waiting: true }),
+        ),
+      ),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
+      ),
     ),
-    Atom.withServerValue(
-      EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
-    ),
-  ),
 )
 
 export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
@@ -202,7 +205,7 @@ export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
   ),
 )
 
-export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
+export const isStrengthSelectedAtom = Atom.family((strength: StrengthUnion) =>
   EFunction.pipe(
     strength,
     StrengthParamButtonService.getIsSelectedStream,
@@ -256,7 +259,7 @@ export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
   ),
 )
 
-export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
+export const isStrengthPressedAtom = Atom.family((strength: StrengthUnion) =>
   EFunction.pipe(
     strength,
     StrengthParamButtonService.isPressedFlagChangesStream,
@@ -313,7 +316,7 @@ export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
 )
 
 export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
-  (strength: Strength) =>
+  (strength: StrengthUnion) =>
     EFunction.pipe(
       strength,
       StrengthParamButtonService.isCurrentlyPlaying,
@@ -370,7 +373,7 @@ export const patternButtonDownloadPercentAtom = Atom.family(
 )
 
 export const strengthButtonDownloadPercentAtom = Atom.family(
-  (strength: Strength) =>
+  (strength: StrengthUnion) =>
     EFunction.pipe(
       strength,
       StrengthParamButtonService.getDownloadPercent,

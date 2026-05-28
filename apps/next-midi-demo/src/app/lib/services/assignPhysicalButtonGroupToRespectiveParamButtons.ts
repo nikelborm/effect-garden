@@ -9,48 +9,48 @@ import * as Stream from 'effect/Stream'
 import { ButtonState } from '../brandsAndDatas/index.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
 import {
+  type PhysicalButtonIdData,
   PhysicalButtonModel,
-  type SupportedPhysicalButtonId,
 } from '../brandsAndDatas/PhysicalButton.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type { InputBusWriterHandle } from './InputStreamBus.ts'
 
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <
-  TPhysicalButtonId extends SupportedPhysicalButtonId,
+  TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
-  R,
-  BusR,
+  TStreamR,
+  TBusR,
 >(
-  allPhysicalButtonIdsRepresentingPhysicalButtonGroup: readonly TPhysicalButtonId[],
-  allParamButtonIdsRepresentedByPhysicalButtonGroup: readonly ParamButtonIdData<TParamButtonId>[],
+  physicalButtonIdsRepresentingPhysicalButtonGroup: readonly PhysicalButtonIdData<TPhysicalButtonId>[],
+  paramButtonIdsRepresentedByPhysicalButtonGroup: readonly ParamButtonIdData<TParamButtonId>[],
   physicalButtonPressStream: Stream.Stream<
     readonly [
-      id: TPhysicalButtonId,
+      id: PhysicalButtonIdData<TPhysicalButtonId>,
       physicalButtonPressState: ButtonState.AllSimple,
     ],
     never,
-    R
+    TStreamR
   >,
   inputBusWriterEffect: Effect.Effect<
     InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>,
     never,
-    BusR
+    TBusR
   >,
 ) =>
   Effect.gen(function* () {
     if (
-      allPhysicalButtonIdsRepresentingPhysicalButtonGroup.length !==
-      allParamButtonIdsRepresentedByPhysicalButtonGroup.length
+      physicalButtonIdsRepresentingPhysicalButtonGroup.length !==
+      paramButtonIdsRepresentedByPhysicalButtonGroup.length
     )
       return yield* Effect.dieMessage(
-        'Assertion failed: allEntities.length !== allPhysicalButtonIds.length',
+        'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
       )
 
     const physicalButtonIdToModelMapRef = yield* Ref.make(
       HashMap.make(
         ...EArray.zipWith(
-          allParamButtonIdsRepresentedByPhysicalButtonGroup,
-          allPhysicalButtonIdsRepresentingPhysicalButtonGroup,
+          paramButtonIdsRepresentedByPhysicalButtonGroup,
+          physicalButtonIdsRepresentingPhysicalButtonGroup,
 
           (paramButtonIdThePhysicalButtonIsAssignedTo, physicalButtonId) =>
             [

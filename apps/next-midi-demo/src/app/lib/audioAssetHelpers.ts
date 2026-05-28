@@ -6,7 +6,7 @@ export type AssetPointer = TaggedPatternPointer | TaggedSlowStrumPointer
 export const AccordIndexSchema = Schema.Literal(0, 1, 2, 3, 4, 5, 6, 7)
 export const PatternIndexSchema = Schema.Literal(0, 1, 2, 3, 4, 5, 6, 7)
 export const StrengthSchema = Schema.Literal('s', 'm', 'v')
-export type Strength = (typeof StrengthSchema)['Type']
+export type StrengthUnion = (typeof StrengthSchema)['Type']
 
 export const decodeAccordIndexSync = Schema.decodeSync(AccordIndexSchema)
 export const decodePatternIndexSync = Schema.decodeSync(PatternIndexSchema)
@@ -79,7 +79,7 @@ export type GetPaddedAccordName<SelectedAccordIndex extends AccordIndexUnion> =
 
 const getRemotePatternAssetFileName = <
   const SelectedAccordIndex extends AccordIndexUnion,
-  const SelectedStrength extends Strength,
+  const SelectedStrength extends StrengthUnion,
 >(
   accordIndex: SelectedAccordIndex,
   strength: SelectedStrength,
@@ -95,7 +95,7 @@ const getRemotePatternAssetFolderName = <
 const getRemotePatternAssetPath = <
   const SelectedAccordIndex extends AccordIndexUnion,
   const SelectedPatternIndex extends PatternIndexUnion,
-  const SelectedStrength extends Strength,
+  const SelectedStrength extends StrengthUnion,
 >({
   accordIndex,
   patternIndex,
@@ -113,7 +113,7 @@ const getRemotePatternAssetPath = <
 
 const getRemoteSlowStrumAssetPath = <
   const SelectedAccordIndex extends AccordIndexUnion,
-  const SelectedStrength extends Strength,
+  const SelectedStrength extends StrengthUnion,
 >(
   accordIndex: SelectedAccordIndex,
   strength: SelectedStrength,
@@ -123,12 +123,12 @@ const getRemoteSlowStrumAssetPath = <
 export type RemotePatternAssetFileName<
   SelectedAccordIndex extends AccordIndexUnion,
   SelectedPatternIndex extends PatternIndexUnion,
-  SelectedStrength extends Strength,
+  SelectedStrength extends StrengthUnion,
 > = `/samples/pattern_${SelectedPatternIndex}/accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 export type RemoteSlowStrumAssetFileName<
   SelectedAccordIndex extends AccordIndexUnion,
-  SelectedStrength extends Strength,
+  SelectedStrength extends StrengthUnion,
 > = `/samples/slow_strum/accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 export type RemoteAssetPath<Asset extends AssetPointer> = [Asset] extends [
@@ -153,18 +153,18 @@ export const getRemoteAssetPath = <Asset extends AssetPointer>(
 export type LocalPatternAssetFileName<
   SelectedAccordIndex extends AccordIndexUnion,
   SelectedPatternIndex extends PatternIndexUnion,
-  SelectedStrength extends Strength,
+  SelectedStrength extends StrengthUnion,
 > = `pattern_${SelectedPatternIndex}_accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 export type LocalSlowStrumAssetFileName<
   SelectedAccordIndex extends AccordIndexUnion,
-  SelectedStrength extends Strength,
+  SelectedStrength extends StrengthUnion,
 > = `slow_strum_accord_${SelectedAccordIndex}_${GetPaddedAccordName<SelectedAccordIndex>}_strength_${SelectedStrength}.wav`
 
 const getLocalPatternAssetFileName = <
   const SelectedAccordIndex extends AccordIndexUnion,
   const SelectedPatternIndex extends PatternIndexUnion,
-  const SelectedStrength extends Strength,
+  const SelectedStrength extends StrengthUnion,
 >({
   accordIndex,
   patternIndex,
@@ -182,7 +182,7 @@ const getLocalPatternAssetFileName = <
 
 const getLocalSlowStrumAssetFileName = <
   const SelectedAccordIndex extends AccordIndexUnion,
-  const SelectedStrength extends Strength,
+  const SelectedStrength extends StrengthUnion,
 >(
   accordIndex: SelectedAccordIndex,
   strength: SelectedStrength,
@@ -229,7 +229,7 @@ export const getAssetFromLocalFileName = (
       new TaggedPatternPointer({
         patternIndex: parseInt(patternIndex, 10) as PatternIndexUnion,
         accordIndex: parseInt(accordIndex, 10) as AccordIndexUnion,
-        strength: strength as Strength,
+        strength: strength as StrengthUnion,
       }),
     )
 
@@ -240,7 +240,7 @@ export const getAssetFromLocalFileName = (
     return Option.some(
       new TaggedSlowStrumPointer({
         accordIndex: parseInt(accordIndex, 10) as AccordIndexUnion,
-        strength: strength as Strength,
+        strength: strength as StrengthUnion,
       }),
     )
 

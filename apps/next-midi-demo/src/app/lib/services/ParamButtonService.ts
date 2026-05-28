@@ -5,10 +5,11 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { Strength } from '../audioAssetHelpers.ts'
-import type { SupportedPhysicalButtonId } from '../brandsAndDatas/PhysicalButton.ts'
+import type { StrengthUnion } from '../audioAssetHelpers.ts'
+import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
+import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
 import {
   AppPlaybackStateService,
@@ -28,7 +29,12 @@ import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 // TODO: make TParamButton a ParamButtonData
-const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
+const makeParamButtonService = <
+  TPhysicalButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends TaggedReadonlyObject,
+  S,
+  Reg,
+>({
   registryTag,
   busTag,
   getSelectedChangesStream,
@@ -40,18 +46,18 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
   readonly registryTag: Context.ReadonlyTag<any, Reg>
   readonly busTag: Context.ReadonlyTag<
     any,
-    InputBusHandle<SupportedPhysicalButtonId, TParamButton>
+    InputBusHandle<TPhysicalButtonId, TParamButtonId>
   >
   readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
-  readonly toCompareValue: (value: TParamButton) => S
-  readonly toLabel: (value: TParamButton) => string
+  readonly toCompareValue: (value: ParamButtonIdData<TParamButtonId>) => S
+  readonly toLabel: (value: ParamButtonIdData<TParamButtonId>) => string
   readonly isCurrentlyPlayingPredicate: (
     pb: PlayingAppPlaybackStates,
-    value: TParamButton,
+    value: ParamButtonIdData<TParamButtonId>,
   ) => boolean
   readonly selectAction: (
     registry: Reg,
-    value: TParamButton,
+    value: ParamButtonIdData<TParamButtonId>,
   ) => Effect.Effect<void>
 }) =>
   Effect.gen(function* () {
@@ -68,7 +74,7 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
 
     const selectedChangesStream = getSelectedChangesStream(registry)
 
-    const getIsSelectedStream = (value: TParamButton) =>
+    const getIsSelectedStream = (value: ParamButtonIdData<TParamButtonId>) =>
       selectedChangesStream.pipe(
         Stream.map(Equal.equals(toCompareValue(value))),
         Stream.changes,
@@ -80,7 +86,9 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
         ),
       )
 
-    const getPressabilityChangesStream = (value: TParamButton) =>
+    const getPressabilityChangesStream = (
+      value: ParamButtonIdData<TParamButtonId>,
+    ) =>
       streamAll({
         isPlaying: appPlaybackState.latestIsPlayingFlagStream,
         completionStatusOfTheAssetThisButtonWouldSelect:
@@ -100,7 +108,7 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
         Stream.rechunk(1),
       )
 
-    const isCurrentlyPlaying = (value: TParamButton) =>
+    const isCurrentlyPlaying = (value: ParamButtonIdData<TParamButtonId>) =>
       appPlaybackState.playbackPublicInfoChangesStream.pipe(
         Stream.map(
           pb =>
@@ -113,7 +121,7 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
         ),
       )
 
-    const getDownloadPercent = (value: TParamButton) =>
+    const getDownloadPercent = (value: ParamButtonIdData<TParamButtonId>) =>
       currentlySelectedAssetState
         .getPatchedAssetFetchingCompletionStatusChangesStream(value)
         .pipe(
@@ -160,7 +168,7 @@ const makeParamButtonService = <TParamButton extends Patch, S, Reg>({
       getPressabilityChangesStream,
       isCurrentlyPlaying,
       getDownloadPercent,
-      isPressedFlagChangesStream: (value: TParamButton) =>
+      isPressedFlagChangesStream: (value: ParamButtonIdData<TParamButtonId>) =>
         bus.isPressedStream(value),
     }
   })
@@ -207,7 +215,7 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
       registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
       getSelectedChangesStream: reg => reg.selectedStrengthChanges,
-      toCompareValue: EFunction.identity<Strength>,
+      toCompareValue: EFunction.identity<StrengthUnion>,
       toLabel: strength => `Strength=${strength}`,
       isCurrentlyPlayingPredicate: (pb, strength) =>
         pb.currentAsset.strength === strength,

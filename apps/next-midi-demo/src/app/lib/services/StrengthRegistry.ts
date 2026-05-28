@@ -3,7 +3,7 @@ import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import { type Strength, StrengthSchema } from '../audioAssetHelpers.ts'
+import { StrengthSchema, type StrengthUnion } from '../audioAssetHelpers.ts'
 
 const allStrengths = ['m', 'v', 's'] as const
 
@@ -13,7 +13,8 @@ export class StrengthRegistry
     {
       accessors: true,
       scoped: Effect.gen(function* () {
-        const selectedStrengthRef = yield* SubscriptionRef.make<Strength>('m')
+        const selectedStrengthRef =
+          yield* SubscriptionRef.make<StrengthUnion>('m')
         const selectedStrengthChanges = yield* selectedStrengthRef.changes.pipe(
           Stream.changes,
           Stream.rechunk(1),
@@ -23,7 +24,7 @@ export class StrengthRegistry
           currentlySelectedStrength: selectedStrengthRef.get,
           allStrengths: Effect.succeed(allStrengths),
           selectedStrengthChanges,
-          selectStrength: (strength: Strength) => {
+          selectStrength: (strength: StrengthUnion) => {
             const trustedStrength = Schema.decodeSync(StrengthSchema)(strength)
 
             return SubscriptionRef.set(selectedStrengthRef, trustedStrength)
@@ -35,10 +36,10 @@ export class StrengthRegistry
   implements IStrengthRegistry {}
 
 interface IStrengthRegistry {
-  readonly currentlySelectedStrength: Effect.Effect<Strength>
+  readonly currentlySelectedStrength: Effect.Effect<StrengthUnion>
   readonly allStrengths: Effect.Effect<AllStrengthTuple>
-  readonly selectedStrengthChanges: Stream.Stream<Strength>
-  readonly selectStrength: (strength: Strength) => Effect.Effect<void>
+  readonly selectedStrengthChanges: Stream.Stream<StrengthUnion>
+  readonly selectStrength: (strength: StrengthUnion) => Effect.Effect<void>
 }
 
 export type AllStrengthTuple = typeof allStrengths

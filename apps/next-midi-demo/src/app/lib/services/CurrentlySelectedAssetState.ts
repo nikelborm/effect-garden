@@ -7,7 +7,7 @@ import {
   type AccordIndexUnion,
   type AssetPointer,
   type PatternIndexUnion,
-  type Strength,
+  type StrengthUnion,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../audioAssetHelpers.ts'
@@ -104,7 +104,7 @@ const complexifyAssetPointer = ({
   pattern,
   strength,
 }: {
-  readonly strength: Strength
+  readonly strength: StrengthUnion
   readonly pattern: Option.Option<AllPatternUnion>
   readonly accord: AllAccordUnion
 }): AssetPointer =>
@@ -142,7 +142,7 @@ export const desimplifyAssetPointer = ({
 export interface SimpleAssetPointer {
   accordIndex: AccordIndexUnion
   patternIndex: Option.Option<PatternIndexUnion>
-  strength: Strength
+  strength: StrengthUnion
 }
 
 const makePatchApplier =
@@ -161,4 +161,4 @@ const makePatchApplier =
       : TaggedSlowStrumPointer.make({ ...old, strength: patch })
   }
 
-export type Patch = AllPatternUnion | AllAccordUnion | Strength
+export type Patch = AllPatternUnion | AllAccordUnion | StrengthUnion

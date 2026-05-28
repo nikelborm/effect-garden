@@ -152,13 +152,19 @@ type ElementOrOther = ElementWithDataset | typeof other
 type TypedPointerEvent = PointerEvent & { readonly type: EventType }
 type EventType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel'
 
-type IsNonDistributableUnion<A> = [A] extends [infer U]
+export type IsNonDistributableUnion<A> = [A] extends [infer U]
   ? U extends any // distribute type
     ? A extends U // if only one key in a union (full union can be assigned to any union element)
       ? true
       : false
     : never
   : never
+
+export type IsSingleStringLiteral<A> = string extends A
+  ? false
+  : [A] extends [string]
+    ? IsNonDistributableUnion<A>
+    : false
 
 const isElementWithDataset = (k: unknown): k is ElementWithDataset =>
   k instanceof Element && 'dataset' in k && k.dataset instanceof DOMStringMap

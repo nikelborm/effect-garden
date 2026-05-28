@@ -4,10 +4,10 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
 import { AccordIndexData } from '../brandsAndDatas/Accord.ts'
+import { KeyboardKeyPhysicalButtonData } from '../brandsAndDatas/KeyboardKey.ts'
 import { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
 import { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
 import { PhysicalButtonId } from '../brandsAndDatas/PhysicalButton.ts'
-import { KeyboardPhysicalButtonIdData } from '../brandsAndDatas/StoreValues.ts'
 import { StrengthData } from '../brandsAndDatas/Strength.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
@@ -48,7 +48,7 @@ const makeVirtualParamStream = <const Key extends string, Data>(
 const keyboardAccordKeys = 'qwertyuiйцукенгш'
 const keyDatasHandlingAccords = Array.from(
   keyboardAccordKeys,
-  key => new KeyboardPhysicalButtonIdData(key),
+  key => new KeyboardKeyPhysicalButtonData(key),
 )
 const keysHandlingAccordsSet = toValueSet(keyDatasHandlingAccords)
 
@@ -56,7 +56,7 @@ const keysHandlingAccordsSet = toValueSet(keyDatasHandlingAccords)
 const keyboardPatternKeys = '12345678'
 const keyDatasHandlingPatterns = Array.from(
   keyboardPatternKeys,
-  key => new KeyboardPhysicalButtonIdData(key),
+  key => new KeyboardKeyPhysicalButtonData(key),
 )
 const keysHandlingPatternsSet = toValueSet(keyDatasHandlingPatterns)
 
@@ -64,7 +64,7 @@ const keysHandlingPatternsSet = toValueSet(keyDatasHandlingPatterns)
 const keyboardStrengthKeys = 'asdфыв'
 const keyDatasHandlingStrengths = Array.from(
   keyboardStrengthKeys,
-  key => new KeyboardPhysicalButtonIdData(key),
+  key => new KeyboardKeyPhysicalButtonData(key),
 )
 const keysHandlingStrengthsSet = toValueSet(keyDatasHandlingStrengths)
 

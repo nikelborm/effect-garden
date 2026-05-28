@@ -4,14 +4,16 @@ import * as Stream from 'effect/Stream'
 
 import { ButtonState } from '../brandsAndDatas/index.ts'
 import {
-  KeyboardPhysicalButtonIdData,
-  type ValidKeyboardKey,
-} from '../brandsAndDatas/StoreValues.ts'
+  type KeyboardKey,
+  KeyboardKeyPhysicalButtonData,
+} from '../brandsAndDatas/KeyboardKey.ts'
 
 export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
-  keysToFocusOn: Set<ValidKeyboardKey>,
+  keysToFocusOn: Set<KeyboardKey>,
   ref?: GlobalEventHandlers,
-) => {
+): Stream.Stream<
+  readonly [KeyboardKeyPhysicalButtonData, ButtonState.AllSimple]
+> => {
   const refWithFallback = ref ?? globalThis.window
 
   if (!refWithFallback) return Stream.empty
@@ -21,7 +23,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
     Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keyup'),
   ).pipe(
     Stream.filterMap(event =>
-      keysToFocusOn.has(event.key as ValidKeyboardKey) &&
+      keysToFocusOn.has(event.key as KeyboardKey) &&
       !event.ctrlKey &&
       !event.shiftKey &&
       !event.altKey &&
@@ -34,7 +36,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
       )
         ? Option.some(
             Data.tuple(
-              new KeyboardPhysicalButtonIdData(event.key),
+              KeyboardKeyPhysicalButtonData.makeUnsafe(event.key),
               event.type === 'keydown'
                 ? ButtonState.Pressed
                 : ButtonState.NotPressed,

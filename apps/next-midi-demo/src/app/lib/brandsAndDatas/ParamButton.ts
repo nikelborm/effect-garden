@@ -41,9 +41,7 @@ export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
 
 export class ParamButtonIdData<
   TId extends TaggedReadonlyObject = TaggedReadonlyObject,
-> extends Data.TaggedClass('next-midi-demo/ParamButtonId')<{
-  id: TId
-}> {
+> extends Data.TaggedClass('next-midi-demo/ParamButtonId')<{ id: TId }> {
   constructor(id: TId) {
     super({ id })
   }

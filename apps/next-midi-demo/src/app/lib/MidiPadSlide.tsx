@@ -27,7 +27,7 @@ import {
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
-import type { Strength } from './audioAssetHelpers.ts'
+import type { StrengthUnion } from './audioAssetHelpers.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
 import type { AllAccordUnion } from './services/AccordRegistry.ts'
 import type { AllPatternUnion } from './services/PatternRegistry.ts'
@@ -211,7 +211,7 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   // )
 }
 
-const StrengthButton = ({ strength }: { strength: Strength }) => {
+const StrengthButton = ({ strength }: { strength: StrengthUnion }) => {
   const isPressableRes = Hooks.useAtomValue(
     isStrengthButtonPressableAtom(strength),
   )
