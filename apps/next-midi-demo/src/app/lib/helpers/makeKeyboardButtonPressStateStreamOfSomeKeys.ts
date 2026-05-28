@@ -16,14 +16,10 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
 
   if (!refWithFallback) return Stream.empty
 
-  return Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown', {
-    bufferSize: 0,
-  }).pipe(
-    Stream.merge(
-      Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keyup', {
-        bufferSize: 0,
-      }),
-    ),
+  return Stream.merge(
+    Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown'),
+    Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keyup'),
+  ).pipe(
     Stream.filterMap(event =>
       keysToFocusOn.has(event.key as ValidKeyboardKey) &&
       !event.ctrlKey &&

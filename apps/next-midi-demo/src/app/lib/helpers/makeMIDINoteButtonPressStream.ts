@@ -1,6 +1,7 @@
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as Parsing from 'effect-web-midi/Parsing'
 
+import * as Data from 'effect/Data'
 import * as Predicate from 'effect/Predicate'
 import * as Stream from 'effect/Stream'
 
@@ -26,11 +27,10 @@ export const makeMIDINoteButtonPressStream = (notesToFocusOn: Set<NoteId>) =>
         _ => notesToFocusOn.has(_.midiMessage.note as NoteId),
       ),
     ),
-    Stream.map(
-      ({ midiMessage: { _tag, note } }) =>
-        [
-          NoteIdData.makeUnsafe(note),
-          _tag === 'Note Press' ? ButtonState.Pressed : ButtonState.NotPressed,
-        ] as const,
+    Stream.map(({ midiMessage: { _tag, note } }) =>
+      Data.tuple(
+        NoteIdData.makeUnsafe(note),
+        _tag === 'Note Press' ? ButtonState.Pressed : ButtonState.NotPressed,
+      ),
     ),
   )

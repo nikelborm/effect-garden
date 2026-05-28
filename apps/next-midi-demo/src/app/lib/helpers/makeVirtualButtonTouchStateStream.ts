@@ -1,5 +1,6 @@
 import { OptionalProperty } from '@evadev/effect-helpers'
 
+import * as Data from 'effect/Data'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
@@ -37,15 +38,13 @@ export const makeVirtualButtonTouchStateStream = <
     ),
   )
 
-  const makePointerEventStream = (type: EventType) =>
-    Stream.fromEventListener<TypedPointerEvent>(refWithFallback, type, {
-      bufferSize: 'unbounded',
-    })
-
-  return makePointerEventStream('pointerdown').pipe(
-    Stream.merge(makePointerEventStream('pointermove')),
-    Stream.merge(makePointerEventStream('pointerup')),
-    Stream.merge(makePointerEventStream('pointercancel')),
+  return Stream.mergeAll(
+    ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].map(
+      eventType =>
+        Stream.fromEventListener<TypedPointerEvent>(refWithFallback, eventType),
+    ),
+    { concurrency: 'unbounded' },
+  ).pipe(
     Stream.mapAccum(HashMap.empty<number, ElementOrOther>(), (oldMap, ev) => {
       //                          ^ pointerId
       const { clientX, clientY, type, currentTarget, pointerId, target } = ev
@@ -104,12 +103,11 @@ export const makeVirtualButtonTouchStateStream = <
       ]
     }),
     Stream.flatten(),
-    Stream.map(
-      ([e, state]) =>
-        [
-          Schema.decodeUnknownSync(DatasetSchema)(e.dataset) as Dataset,
-          state,
-        ] as const,
+    Stream.map(([element, state]) =>
+      Data.tuple(
+        Schema.decodeUnknownSync(DatasetSchema)(element.dataset) as Dataset,
+        state,
+      ),
     ),
   )
 }
