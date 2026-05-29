@@ -13,6 +13,7 @@ export const Strength = Brand.refined<Strength>(
   s => s === 's' || s === 'm' || s === 'v',
   s => Brand.error(`Expected ${JSON.stringify(s)} to be 's' | 'm' | 'v'`),
 ) as {
+  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (s: string): Strength
   option(s: string): Option.Option<Strength>
   either(s: string): Either.Either<Strength, Brand.Brand.BrandErrors>

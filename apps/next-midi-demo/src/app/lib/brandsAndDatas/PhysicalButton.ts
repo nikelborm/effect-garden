@@ -39,6 +39,7 @@ export const PhysicalButtonId = Brand.refined<
       `Expected PhysicalButtonId which is either finite non-NaN number, or non-empty string. Got ${t}`,
     ),
 ) as {
+  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   <T extends string | number = string | number>(i: T): PhysicalButtonId<T>
   option<T extends string | number = string | number>(
     i: T,

@@ -110,12 +110,13 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
     StrengthRegistry.allStrengths,
   ])
 
-  const [accords, patterns, strengths] = [
-    params[0].map(a => AccordParamButtonData.make(a.index)),
-    params[1].map(p => PatternParamButtonData.make(p.index)),
-    // TODO: make upstream properly branded
-    params[2].map(s => StrengthParamButtonData.make(s as Strength)),
-  ]
+  const [accordParamButtonIds, patternParamButtonIds, strengthParamButtonIds] =
+    [
+      params[0].map(a => AccordParamButtonData.make(a.index)),
+      params[1].map(p => PatternParamButtonData.make(p.index)),
+      // TODO: make upstream properly branded
+      params[2].map(s => StrengthParamButtonData.make(s as Strength)),
+    ]
 
   yield* Effect.all(
     [
@@ -123,7 +124,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalKeyIdsHandlingAccords,
-        [...accords, ...accords],
+        [...accordParamButtonIds, ...accordParamButtonIds],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingAccordsSet),
         AccordInputBus,
       ),
@@ -131,13 +132,13 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         physicalKeyIdsHandlingPatterns,
         // patterns are bound to number keys which produce the same signals
         // across layout switches
-        patterns,
+        patternParamButtonIds,
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingPatternsSet),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalKeyIdsHandlingStrengths,
-        [...strengths, ...strengths],
+        [...strengthParamButtonIds, ...strengthParamButtonIds],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
         StrengthInputBus,
       ),
@@ -147,44 +148,47 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       // TODO: midi device selector
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalNoteIdsHandlingAccords,
-        accords,
+        accordParamButtonIds,
         makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalNoteIdsHandlingPatterns,
-        patterns,
+        patternParamButtonIds,
         makeMIDINoteButtonPressStream(notesHandlingPatternsSet),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalNoteIdsHandlingStrengths,
-        strengths,
+        strengthParamButtonIds,
         makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
         StrengthInputBus,
       ),
 
       // On screen buttons
 
+      // Since UI button ids are assigned manually, there's no better candidate
+      // for their ids, than the entities they represent
+
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        accords.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
-        accords,
+        accordParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        accordParamButtonIds,
         makeVirtualParamStream('accordIndex', datasetFieldValue =>
           AccordIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        patterns.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
-        patterns,
+        patternParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        patternParamButtonIds,
         makeVirtualParamStream('patternIndex', datasetFieldValue =>
           PatternIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        strengths.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
-        strengths,
+        strengthParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        strengthParamButtonIds,
         makeVirtualParamStream('strength', StrengthData.makeUnsafe),
         StrengthInputBus,
       ),

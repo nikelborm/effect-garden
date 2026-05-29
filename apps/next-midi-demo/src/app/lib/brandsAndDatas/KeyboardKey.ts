@@ -2,10 +2,13 @@ import * as NonPrintableKey from 'ts-key-not-enum'
 
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
+import * as Either from 'effect/Either'
+import { flow } from 'effect/Function'
 import * as Iterable from 'effect/Iterable'
+import * as Option from 'effect/Option'
 
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
-import { PhysicalButtonIdData } from './PhysicalButton.ts'
+import { PhysicalButtonId, PhysicalButtonIdData } from './PhysicalButton.ts'
 
 export type NonPrintableKeyboardKeysUnion =
   (typeof NonPrintableKey)[keyof typeof NonPrintableKey]
@@ -16,15 +19,25 @@ export const NonPrintableKeyboardKeys = new Set(
 
 // ======================================================
 
-export type KeyboardKey = Brand.Branded<string, 'KeyboardKey'>
+export type KeyboardKey = Brand.Branded<PhysicalButtonId<string>, 'KeyboardKey'>
 export const KeyboardKey = Brand.refined<KeyboardKey>(
-  // the second check is needed to ensure length of string of 1 Unicode
-  // character instead of checking for it to be 1 byte
-  key => NonPrintableKeyboardKeys.has(key as any) || [...key].length === 1,
-  key =>
-    Brand.error(
-      `Expected ${JSON.stringify(key)} to be either a valid non-printable key name, or a single unicode symbol`,
+  // `[...key].length === 1` check is needed to ensure length of string of 1
+  // Unicode character instead of checking for it to be 1 byte that would be
+  // returned by `.length`
+  flow(
+    PhysicalButtonId.either<string>,
+    Either.flatMap(
+      Either.liftPredicate(
+        key =>
+          NonPrintableKeyboardKeys.has(key as any) || [...key].length === 1,
+        key =>
+          Brand.error(
+            `Expected ${JSON.stringify(key)} to be either a valid non-printable key name, or a single unicode symbol`,
+          ),
+      ),
     ),
+    Option.getLeft,
+  ),
 )
 
 export class KeyboardKeyData extends Data.TaggedClass(

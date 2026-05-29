@@ -19,6 +19,7 @@ export const PatternIndex = Brand.refined<PatternIndex>(
       `Expected ${JSON.stringify(n)} to be an integer in range 0...7`,
     ),
 ) as {
+  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (i: number): PatternIndex
   option(i: number): Option.Option<PatternIndex>
   either(i: number): Either.Either<PatternIndex, Brand.Brand.BrandErrors>

@@ -19,6 +19,7 @@ export const AccordIndex = Brand.refined<AccordIndex>(
       `Expected ${JSON.stringify(n)} to be an integer in range 0...7`,
     ),
 ) as {
+  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (i: number): AccordIndex
   option(i: number): Option.Option<AccordIndex>
   either(i: number): Either.Either<AccordIndex, Brand.Brand.BrandErrors>

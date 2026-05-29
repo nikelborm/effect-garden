@@ -27,6 +27,7 @@ export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
       `Expected ParamButtonId which is either finite non-NaN number, or non-empty string. Got ${t}`,
     ),
 ) as {
+  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   <T extends string | number = string | number>(i: T): ParamButtonId<T>
   option<T extends string | number = string | number>(
     i: T,
