@@ -206,11 +206,14 @@ const { registry, tree: rootNode } = walkRoot(data, {
     'dislikeNavigationEndpoint',
     'likeCommand',
     'multiSelectCheckbox',
+    'overlay',
     'likeButtonRenderer',
     'shelfDivider',
     'contentsMultiSelectable',
     'menuServiceItemDownloadRenderer',
     'menuNavigationItemRenderer',
+    'menu',
+    'buttons',
     'menuServiceItemRenderer',
     'isToggled',
     'toggleButtonRenderer',
@@ -254,7 +257,16 @@ const file =
   '\n\n' +
   `export const MainSchema = ${rootNode.code()}`
 
-await writeFile('./generated/experiment1_sample_schema.ts', file)
+// await writeFile('./generated/experiment1_sample_schema.ts', file)
+
+// TODO: replace Schema.Struct({}) with
+Schema.Unknown.pipe(
+  Schema.filter(v => v !== null && v !== undefined),
+  Schema.transform(Schema.Struct({}), {
+    decode: () => ({}),
+    encode: v => v,
+  }),
+)
 
 await $`bunx biome format --fix`
 await $`bunx tsgo --noEmit`
@@ -262,17 +274,15 @@ await $`bunx tsgo --noEmit`
 const { MainSchema } = await import('./generated/experiment1_sample_schema.ts')
 
 // sanity check of the resulted schema
-const res = Schema.decodeUnknownSync(MainSchema, {
-  // exact: true,
-  // onExcessProperty: 'error',
-  // onExcessProperty: 'ignore',
-})(data)
+const res = Schema.decodeUnknownSync(MainSchema, { exact: true })(data)
 
 // TODO: report effect issue about redundant fields not being stripped
-
-// await writeFile(
-//   './data/out.json',
-//   JSON.stringify(MainSchema.make(res), null, 2),
-// )
+await writeFile(
+  './data/out.yaml',
+  Bun.YAML.stringify(res, null, 2)
+    .split('\n')
+    .map(e => e.trimEnd())
+    .join('\n'),
+)
 
 console.log('done')

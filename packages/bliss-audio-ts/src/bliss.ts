@@ -117,7 +117,7 @@ export interface CueInfo {
 /** Per-feature breakdown of a bliss analysis. */
 export interface Analysis {
   /** Normalised f32 feature vector. Length depends on `featuresVersion`. */
-  features: Float32Array
+  features: Float32Array<ArrayBuffer>
   /** Feature-set version used to produce this analysis. */
   featuresVersion: FeaturesVersion
 }
@@ -184,7 +184,10 @@ export interface CueSongsResult {
 }
 
 /** A function that computes the distance between two feature vectors. */
-export type DistanceFunction = (a: Float32Array, b: Float32Array) => number
+export type DistanceFunction = (
+  a: Float32Array<ArrayBuffer>,
+  b: Float32Array<ArrayBuffer>,
+) => number
 
 // ── Raw JSON shapes returned by Rust ─────────────────────────────────────────
 
@@ -434,8 +437,12 @@ export function getFeatureV1(
 
 // ── Internal call helpers ─────────────────────────────────────────────────────
 
-type SongCall = { json: string; features: Float32Array }
-type CueCall = { json: string; features: Float32Array; stride: number }
+type SongCall = { json: string; features: Float32Array<ArrayBuffer> }
+type CueCall = {
+  json: string
+  features: Float32Array<ArrayBuffer>
+  stride: number
+}
 
 function numFeaturesForVersion(v: number): number {
   return v === FeaturesVersion.Version1 ? NUMBER_FEATURES_V1 : NUMBER_FEATURES
@@ -504,7 +511,10 @@ function callAnalyzeCueWithOptions(
 
 // ── Internal meta-decode helpers ──────────────────────────────────────────────
 
-function decodeSongFromMeta(raw: RawSongMeta, features: Float32Array): Song {
+function decodeSongFromMeta(
+  raw: RawSongMeta,
+  features: Float32Array<ArrayBuffer>,
+): Song {
   return {
     path: raw.path,
     ...('artist' in raw ? { artist: raw.artist! } : {}),
@@ -533,7 +543,7 @@ function decodeSongFromMeta(raw: RawSongMeta, features: Float32Array): Song {
 
 function decodeSongResultFromMeta(
   raw: RawSongMeta,
-  features: Float32Array,
+  features: Float32Array<ArrayBuffer>,
 ): Song | BlissError {
   if ('error_tag' in raw && 'error' in raw) {
     return { _tag: raw.error_tag!, message: raw.error! }
@@ -543,7 +553,7 @@ function decodeSongResultFromMeta(
 
 function decodeCueMeta(
   raw: RawCueMeta,
-  featBuf: Float32Array,
+  featBuf: Float32Array<ArrayBuffer>,
   stride: number,
 ): CueSongsResult | BlissError {
   if ('error_tag' in raw && 'error' in raw) {
@@ -663,7 +673,10 @@ export function analyzeSongsSafe(filePaths: string[]): {
  * Euclidean distance between two feature vectors.
  * Lower values indicate more similar songs.
  */
-export function euclideanDistance(a: Float32Array, b: Float32Array): number {
+export function euclideanDistance(
+  a: Float32Array<ArrayBuffer>,
+  b: Float32Array<ArrayBuffer>,
+): number {
   if (a.length !== b.length) {
     throw new Error(
       `bliss: feature length mismatch (${a.length} vs ${b.length})`,
@@ -676,7 +689,10 @@ export function euclideanDistance(a: Float32Array, b: Float32Array): number {
  * Cosine distance between two feature vectors.
  * Lower values indicate more similar songs.
  */
-export function cosineDistance(a: Float32Array, b: Float32Array): number {
+export function cosineDistance(
+  a: Float32Array<ArrayBuffer>,
+  b: Float32Array<ArrayBuffer>,
+): number {
   if (a.length !== b.length) {
     throw new Error(
       `bliss: feature length mismatch (${a.length} vs ${b.length})`,
@@ -693,9 +709,9 @@ export function cosineDistance(a: Float32Array, b: Float32Array): number {
  * When `m` is the identity matrix this equals euclidean distance.
  */
 export function mahalanobisDistance(
-  a: Float32Array,
-  b: Float32Array,
-  m: Float32Array,
+  a: Float32Array<ArrayBuffer>,
+  b: Float32Array<ArrayBuffer>,
+  m: Float32Array<ArrayBuffer>,
 ): number {
   const n = a.length
   const delta = new Float32Array(n)
@@ -727,13 +743,15 @@ export function mahalanobisDistance(
  *   (_, k) => (k % (NUMBER_FEATURES + 1) === 0 ? 1 : 0));
  * const dist = mahalanobisDistanceBuilder(identity);
  */
-export function mahalanobisDistanceBuilder(m: Float32Array): DistanceFunction {
+export function mahalanobisDistanceBuilder(
+  m: Float32Array<ArrayBuffer>,
+): DistanceFunction {
   return (a, b) => mahalanobisDistance(a, b, m)
 }
 
 // ── Playlist helpers ──────────────────────────────────────────────────────────
 
-function meanFeatures(songs: Song[]): Float32Array {
+function meanFeatures(songs: Song[]): Float32Array<ArrayBuffer> {
   const n = songs.length
   const result = new Float32Array(NUMBER_FEATURES)
   for (const song of songs) {
@@ -804,7 +822,7 @@ export function closestAlbumToGroup(
  * @param distanceFn - Distance metric to use (default: euclidean).
  */
 export function closestSongs(
-  target: Song | Float32Array,
+  target: Song | Float32Array<ArrayBuffer>,
   songs: Song[],
   distanceFn: DistanceFunction = euclideanDistance,
 ): Song[] {
@@ -833,7 +851,7 @@ export function closestSongs(
  * @param distanceFn     - Distance metric to use (default: euclidean).
  */
 export function songToSong(
-  initialSongs: (Song | Float32Array)[],
+  initialSongs: (Song | Float32Array<ArrayBuffer>)[],
   candidateSongs: Song[],
   distanceFn: DistanceFunction = euclideanDistance,
 ): Song[] {
@@ -874,7 +892,7 @@ export function songToSong(
  * Convenience wrapper around `closestSongs` that limits the result length.
  */
 export function buildPlaylist(
-  target: Song | Float32Array,
+  target: Song | Float32Array<ArrayBuffer>,
   songs: Song[],
   count: number,
   distanceFn: DistanceFunction = euclideanDistance,
@@ -891,7 +909,7 @@ export function buildPlaylist(
 export function distanceMatrix(
   songs: Song[],
   distanceFn: DistanceFunction = euclideanDistance,
-): Float32Array {
+): Float32Array<ArrayBuffer> {
   const n = songs.length
   const matrix = new Float32Array(n * n)
   for (let i = 0; i < n; i++) {

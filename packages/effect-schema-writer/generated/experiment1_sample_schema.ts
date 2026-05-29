@@ -1,16 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-const Part2 = Schema.Struct({
-  watchEndpointMusicConfig: Schema.Struct({
-    musicVideoType: Schema.String.annotations({
-      examples: ['MUSIC_VIDEO_TYPE_ATV'],
-    }),
-  }),
-})
-
-const Part16 = Schema.Struct({})
-
-const Part21 = Schema.Struct({
+const Part15 = Schema.Struct({
   runs: Schema.Array(
     Schema.Struct({
       text: Schema.String.annotations({
@@ -80,11 +70,9 @@ const Part21 = Schema.Struct({
   ),
 })
 
-const Part22 = Schema.Struct({ text: Part21 })
+const Part16 = Schema.Struct({ text: Part15 })
 
-const Part27 = Schema.Array(Part16)
-
-const Part41 = Schema.Struct({
+const Part32 = Schema.Struct({
   thumbnails: Schema.Array(
     Schema.Struct({
       url: Schema.String.annotations({
@@ -105,9 +93,9 @@ const Part41 = Schema.Struct({
   ),
 })
 
-const Part43 = Schema.Struct({
+const Part34 = Schema.Struct({
   musicThumbnailRenderer: Schema.Struct({
-    thumbnail: Part41,
+    thumbnail: Part32,
     thumbnailCrop: Schema.String.annotations({
       examples: ['MUSIC_THUMBNAIL_CROP_UNSPECIFIED'],
     }),
@@ -133,76 +121,6 @@ export const MainSchema = Schema.Struct({
                 contents: Schema.Array(
                   Schema.Struct({
                     musicResponsiveListItemRenderer: Schema.Struct({
-                      overlay: Schema.Struct({
-                        musicItemThumbnailOverlayRenderer: Schema.Struct({
-                          content: Schema.Struct({
-                            musicPlayButtonRenderer: Schema.Struct({
-                              playNavigationEndpoint: Schema.Struct({
-                                watchEndpoint: Schema.Struct({
-                                  videoId: Schema.String.annotations({
-                                    examples: [
-                                      'SZ6Bj2tX6Ag',
-                                      'eBauYFxXb3k',
-                                      'jq06vGZ0fNw',
-                                      'F2b_haxo9-g',
-                                      'Oe4QjqkziaI',
-                                      'uztr1Nv17us',
-                                      'czAhvbGOAp0',
-                                      'QnS2zbYOpsI',
-                                      'zf6ePjpBjGE',
-                                      'u-udXcdNeu8',
-                                      'QXWNCqCHZ1s',
-                                      'k9gTFWJfBPs',
-                                      'FcVT19XAVZk',
-                                      'octa65bsLg0',
-                                      'qi5gZSnrh1M',
-                                      'cz8jHtz3QMM',
-                                      '4N81orCJ-KM',
-                                      'sohD_VX7KDk',
-                                    ],
-                                  }),
-                                  playlistId: Schema.String.annotations({
-                                    examples: [
-                                      'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
-                                    ],
-                                  }),
-                                  index: Schema.JsonNumber.annotations({
-                                    examples: [
-                                      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                                      13, 14, 15, 16, 17,
-                                    ],
-                                  }),
-                                  playlistSetVideoId: Schema.String.annotations(
-                                    {
-                                      examples: [
-                                        '14D7A6DC653F0643',
-                                        '5B470DC84CD04A18',
-                                        '7DA598B27EF71DE5',
-                                        'ADE2E0195DAE1E00',
-                                        'A571D36D8068C0A6',
-                                        'F694E71988D5F57B',
-                                        '6A7FD4A26E31C003',
-                                        '75E4B7A1AE4DB867',
-                                        'BF72EF441115BDF7',
-                                        '80A426D95B37539C',
-                                        'D283893EA1587D2C',
-                                        'FDD8B5021E05CDF0',
-                                        '6B1567C1A9D13C34',
-                                        '5241F3FF151795ED',
-                                        '222C525FF65C10C3',
-                                        'B881DE2E2A6CF64E',
-                                        '848AA2B35E1999DB',
-                                        'C8BF589C2569A838',
-                                      ],
-                                    },
-                                  ),
-                                  watchEndpointMusicSupportedConfigs: Part2,
-                                }),
-                              }),
-                            }),
-                          }),
-                        }),
-                      }),
                       flexColumns: Schema.Array(
                         Schema.Union(
                           Schema.Struct({
@@ -265,7 +183,17 @@ export const MainSchema = Schema.Struct({
                                             },
                                           ),
                                           watchEndpointMusicSupportedConfigs:
-                                            Part2,
+                                            Schema.Struct({
+                                              watchEndpointMusicConfig:
+                                                Schema.Struct({
+                                                  musicVideoType:
+                                                    Schema.String.annotations({
+                                                      examples: [
+                                                        'MUSIC_VIDEO_TYPE_ATV',
+                                                      ],
+                                                    }),
+                                                }),
+                                            }),
                                         }),
                                       }),
                                     }),
@@ -275,24 +203,28 @@ export const MainSchema = Schema.Struct({
                           }),
                           Schema.Struct({
                             musicResponsiveListItemFlexColumnRenderer:
-                              Schema.Struct({ text: Part16 }),
+                              Schema.Struct({
+                                text: Schema.Unknown.pipe(
+                                  Schema.filter(
+                                    v => v !== null && v !== undefined,
+                                  ),
+                                  Schema.transform(Schema.Struct({}), {
+                                    decode: () => ({}),
+                                    encode: v => v,
+                                  }),
+                                ),
+                              }),
                           }),
                           Schema.Struct({
-                            musicResponsiveListItemFlexColumnRenderer: Part22,
+                            musicResponsiveListItemFlexColumnRenderer: Part16,
                           }),
                         ),
                       ),
                       fixedColumns: Schema.Array(
                         Schema.Struct({
-                          musicResponsiveListItemFixedColumnRenderer: Part22,
+                          musicResponsiveListItemFixedColumnRenderer: Part16,
                         }),
                       ),
-                      menu: Schema.Struct({
-                        menuRenderer: Schema.Struct({
-                          items: Part27,
-                          topLevelButtons: Part27,
-                        }),
-                      }),
                       playlistItemData: Schema.Struct({
                         playlistSetVideoId: Schema.String.annotations({
                           examples: [
@@ -342,7 +274,7 @@ export const MainSchema = Schema.Struct({
                       itemHeight: Schema.String.annotations({
                         examples: ['MUSIC_RESPONSIVE_LIST_ITEM_HEIGHT_MEDIUM'],
                       }),
-                      index: Part21,
+                      index: Part15,
                     }),
                   }),
                 ),
@@ -359,30 +291,9 @@ export const MainSchema = Schema.Struct({
                 contents: Schema.Array(
                   Schema.Struct({
                     musicResponsiveHeaderRenderer: Schema.Struct({
-                      thumbnail: Part43,
-                      buttons: Schema.Array(
-                        Schema.Union(
-                          Part16,
-                          Schema.Struct({
-                            musicPlayButtonRenderer: Schema.Struct({
-                              playNavigationEndpoint: Schema.Struct({
-                                watchPlaylistEndpoint: Schema.Struct({
-                                  playlistId: Schema.String.annotations({
-                                    examples: [
-                                      'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
-                                    ],
-                                  }),
-                                }),
-                              }),
-                            }),
-                          }),
-                          Schema.Struct({
-                            menuRenderer: Schema.Struct({ items: Part27 }),
-                          }),
-                        ),
-                      ),
-                      title: Part21,
-                      subtitle: Part21,
+                      thumbnail: Part34,
+                      title: Part15,
+                      subtitle: Part15,
                       straplineTextOne: Schema.Struct({
                         runs: Schema.Array(
                           Schema.Struct({
@@ -408,8 +319,8 @@ export const MainSchema = Schema.Struct({
                           }),
                         ),
                       }),
-                      straplineThumbnail: Part43,
-                      secondSubtitle: Part21,
+                      straplineThumbnail: Part34,
+                      secondSubtitle: Part15,
                     }),
                   }),
                 ),
@@ -437,7 +348,7 @@ export const MainSchema = Schema.Struct({
           'Listen to The Lost Flowers of Alice Hart (Prime Video Original Series Soundtrack) by Hania Rani on YouTube Music - a dedicated music app with official songs, music videos, remixes, covers, and more.',
         ],
       }),
-      thumbnail: Part41,
+      thumbnail: Part32,
       androidPackage: Schema.String.annotations({
         examples: ['com.google.android.apps.youtube.music'],
       }),

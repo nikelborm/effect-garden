@@ -1,7 +1,7 @@
 {
   "name": "bliss-audio-ts",
   "type": "module",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "TypeScript bindings (bun) for bliss-audio, a music analysis library producing fixed-length feature vectors from audio files to find similar songs and build automatic playlists",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -35,7 +35,7 @@
     "build": "bun build:ts && bun build:native",
     "build:native": "cd native && cargo build --release",
     "build:native-debug": "cd native && cargo build",
-    "build:ts": "tsc",
+    "build:ts": "tsgo",
     "format": "bun format:ts && bun format:native",
     "format:native": "cd native && cargo fmt",
     "format:ts": "biome check --write --unsafe .",
