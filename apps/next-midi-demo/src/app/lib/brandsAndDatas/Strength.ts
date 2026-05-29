@@ -36,4 +36,5 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 
   static makeUnsafe = (strength: string) =>
     new this(StrengthData.makeUnsafe(strength))
+  static make = (strength: Strength) => new this(new StrengthData(strength))
 }

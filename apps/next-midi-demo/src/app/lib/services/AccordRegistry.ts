@@ -26,6 +26,7 @@ const allAccords = accords.map((info, index) =>
 const mapIndexToAccord = (index: AccordIndexUnion) =>
   new Accord({ index, ...accords[index] }) as AllAccordUnion
 
+// TODO: make currentAccordIndexRef and related shit branded
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
     accessors: true,

@@ -42,6 +42,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternIndexData> 
 
   static makeUnsafe = (index: number) =>
     new this(PatternIndexData.makeUnsafe(index))
+  static make = (index: PatternIndex) => new this(new PatternIndexData(index))
 }
 
 export class Pattern<

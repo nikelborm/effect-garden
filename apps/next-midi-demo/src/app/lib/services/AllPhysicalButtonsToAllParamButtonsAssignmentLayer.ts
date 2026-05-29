@@ -3,12 +3,25 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
-import { AccordIndexData } from '../brandsAndDatas/Accord.ts'
+import {
+  AccordIndexData,
+  AccordParamButtonData,
+} from '../brandsAndDatas/Accord.ts'
 import { KeyboardKeyPhysicalButtonData } from '../brandsAndDatas/KeyboardKey.ts'
-import { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
-import { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
-import { PhysicalButtonId } from '../brandsAndDatas/PhysicalButton.ts'
-import { StrengthData } from '../brandsAndDatas/Strength.ts'
+import { NotePhysicalButtonData } from '../brandsAndDatas/MIDIValues.ts'
+import {
+  PatternIndexData,
+  PatternParamButtonData,
+} from '../brandsAndDatas/Pattern.ts'
+import {
+  PhysicalButtonId,
+  PhysicalButtonIdData,
+} from '../brandsAndDatas/PhysicalButton.ts'
+import {
+  type Strength,
+  StrengthData,
+  StrengthParamButtonData,
+} from '../brandsAndDatas/Strength.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
 import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
@@ -22,11 +35,11 @@ import {
 import { PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-const toValueSet = <V>(datas: readonly { readonly value: V }[]) =>
-  new Set(datas.map(_ => _.value))
+const makePhysicalNoteDatas = (notes: Iterable<number>) =>
+  Array.from(notes, NotePhysicalButtonData.makeUnsafe)
 
-const makeNoteDatas = (notes: Iterable<number>) =>
-  Array.from(notes, NoteIdData.makeUnsafe)
+const makePhysicalKeyDatas = (keys: Iterable<string>) =>
+  Array.from(keys, KeyboardKeyPhysicalButtonData.makeUnsafe)
 
 const makeVirtualParamStream = <const Key extends string, Data>(
   key: Key,
@@ -46,51 +59,61 @@ const makeVirtualParamStream = <const Key extends string, Data>(
 
 // Keyboard - Accord
 const keyboardAccordKeys = 'qwertyuiйцукенгш'
-const keyDatasHandlingAccords = Array.from(
-  keyboardAccordKeys,
-  key => new KeyboardKeyPhysicalButtonData(key),
+const keyDatasHandlingAccords = makePhysicalKeyDatas(keyboardAccordKeys)
+const keysHandlingAccordsSet = new Set(
+  keyDatasHandlingAccords.map(data => data.id.key),
 )
-const keysHandlingAccordsSet = toValueSet(keyDatasHandlingAccords)
 
 // Keyboard - Pattern
 const keyboardPatternKeys = '12345678'
-const keyDatasHandlingPatterns = Array.from(
-  keyboardPatternKeys,
-  key => new KeyboardKeyPhysicalButtonData(key),
+const keyDatasHandlingPatterns = makePhysicalKeyDatas(keyboardPatternKeys)
+const keysHandlingPatternsSet = new Set(
+  keyDatasHandlingAccords.map(data => data.id.key),
 )
-const keysHandlingPatternsSet = toValueSet(keyDatasHandlingPatterns)
 
 // Keyboard - Strength
 const keyboardStrengthKeys = 'asdфыв'
-const keyDatasHandlingStrengths = Array.from(
-  keyboardStrengthKeys,
-  key => new KeyboardKeyPhysicalButtonData(key),
+const keyDatasHandlingStrengths = makePhysicalKeyDatas(keyboardStrengthKeys)
+const keysHandlingStrengthsSet = new Set(
+  keyDatasHandlingAccords.map(data => data.id.key),
 )
-const keysHandlingStrengthsSet = toValueSet(keyDatasHandlingStrengths)
 
 // MIDI - Accord
 const midiAccordNotes = EArray.range(84, 91)
-const noteDatasHandlingAccords = makeNoteDatas(midiAccordNotes)
-const notesHandlingAccordsSet = toValueSet(noteDatasHandlingAccords)
+const noteDatasHandlingAccords = makePhysicalNoteDatas(midiAccordNotes)
+const notesHandlingAccordsSet = new Set(
+  noteDatasHandlingAccords.map(data => data.id.note),
+)
 
 // MIDI - Pattern
 const midiPatternNotes = EArray.range(92, 99)
-const noteDatasHandlingPatterns = makeNoteDatas(midiPatternNotes)
-const notesHandlingPatternsSet = toValueSet(noteDatasHandlingPatterns)
+const noteDatasHandlingPatterns = makePhysicalNoteDatas(midiPatternNotes)
+const notesHandlingPatternsSet = new Set(
+  noteDatasHandlingPatterns.map(data => data.id.note),
+)
 
 // MIDI - Strength
 const midiStrengthNotes = EArray.range(76, 78)
-const noteDatasHandlingStrengths = makeNoteDatas(midiStrengthNotes)
-const notesHandlingStrengthsSet = toValueSet(noteDatasHandlingStrengths)
+const noteDatasHandlingStrengths = makePhysicalNoteDatas(midiStrengthNotes)
+const notesHandlingStrengthsSet = new Set(
+  noteDatasHandlingStrengths.map(data => data.id.note),
+)
 
 // TODO: make TParamButton a ParamButtonData
 
 export const AllButtonMappingLayer = Effect.gen(function* () {
-  const [accords, patterns, strengths] = yield* Effect.all([
+  const params = yield* Effect.all([
     AccordRegistry.allAccords,
     PatternRegistry.allPatterns,
     StrengthRegistry.allStrengths,
   ])
+
+  const [accords, patterns, strengths] = [
+    params[0].map(a => AccordParamButtonData.make(a.index)),
+    params[1].map(p => PatternParamButtonData.make(p.index)),
+    // TODO: make upstream properly branded
+    params[2].map(s => StrengthParamButtonData.make(s as Strength)),
+  ]
 
   yield* Effect.all(
     [
@@ -104,6 +127,8 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         keyDatasHandlingPatterns,
+        // patterns are bound to number keys which produce the same signals
+        // across layout switches
         patterns,
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingPatternsSet),
         PatternInputBus,
@@ -166,6 +191,6 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         StrengthInputBus,
       ),
     ],
-    { discard: true },
+    { discard: true, concurrency: 'unbounded' },
   )
 }).pipe(Layer.scopedDiscard)

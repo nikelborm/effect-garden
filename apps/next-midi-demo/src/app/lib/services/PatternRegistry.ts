@@ -18,6 +18,7 @@ const allPatterns = patternLabels.map(
   Pattern.makeUnsafe,
 ) as unknown as AllPatternTuple
 
+// TODO: make currentPatternIndexRef and related shit branded
 export class PatternRegistry
   extends Effect.Service<PatternRegistry>()('next-midi-demo/PatternRegistry', {
     accessors: true,

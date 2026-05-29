@@ -42,6 +42,7 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordIndexData> {
 
   static makeUnsafe = (index: number) =>
     new this(AccordIndexData.makeUnsafe(index))
+  static make = (index: AccordIndex) => new this(new AccordIndexData(index))
 }
 
 export interface AccordMiniInfo<
