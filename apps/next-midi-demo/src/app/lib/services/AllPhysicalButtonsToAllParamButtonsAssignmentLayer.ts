@@ -7,16 +7,13 @@ import {
   AccordIndexData,
   AccordParamButtonData,
 } from '../brandsAndDatas/Accord.ts'
+import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
 import { KeyboardKeyPhysicalButtonData } from '../brandsAndDatas/KeyboardKey.ts'
 import { NotePhysicalButtonData } from '../brandsAndDatas/MIDIValues.ts'
 import {
   PatternIndexData,
   PatternParamButtonData,
 } from '../brandsAndDatas/Pattern.ts'
-import {
-  PhysicalButtonId,
-  PhysicalButtonIdData,
-} from '../brandsAndDatas/PhysicalButton.ts'
 import {
   type Strength,
   StrengthData,
@@ -41,7 +38,10 @@ const makePhysicalNoteDatas = (notes: Iterable<number>) =>
 const makePhysicalKeyDatas = (keys: Iterable<string>) =>
   Array.from(keys, KeyboardKeyPhysicalButtonData.makeUnsafe)
 
-const makeVirtualParamStream = <const Key extends string, Data>(
+const makeVirtualParamStream = <
+  const Key extends string,
+  Data extends PatternIndexData | AccordIndexData | StrengthData,
+>(
   key: Key,
   makeData: (value: string) => Data,
 ) =>
@@ -53,50 +53,52 @@ const makeVirtualParamStream = <const Key extends string, Data>(
         throw new Error(
           "makeVirtualParamStream can't find proper dataset field in DOM element",
         )
-      return [makeData(val), state] as const
+      return [new DOMPhysicalButtonData(makeData(val)), state] as const
     },
   )
 
 // Keyboard - Accord
 const keyboardAccordKeys = 'qwertyuiйцукенгш'
-const keyDatasHandlingAccords = makePhysicalKeyDatas(keyboardAccordKeys)
+const physicalKeyIdsHandlingAccords = makePhysicalKeyDatas(keyboardAccordKeys)
 const keysHandlingAccordsSet = new Set(
-  keyDatasHandlingAccords.map(data => data.id.key),
+  physicalKeyIdsHandlingAccords.map(data => data.id.key),
 )
 
 // Keyboard - Pattern
 const keyboardPatternKeys = '12345678'
-const keyDatasHandlingPatterns = makePhysicalKeyDatas(keyboardPatternKeys)
+const physicalKeyIdsHandlingPatterns = makePhysicalKeyDatas(keyboardPatternKeys)
 const keysHandlingPatternsSet = new Set(
-  keyDatasHandlingAccords.map(data => data.id.key),
+  physicalKeyIdsHandlingPatterns.map(data => data.id.key),
 )
 
 // Keyboard - Strength
 const keyboardStrengthKeys = 'asdфыв'
-const keyDatasHandlingStrengths = makePhysicalKeyDatas(keyboardStrengthKeys)
+const physicalKeyIdsHandlingStrengths =
+  makePhysicalKeyDatas(keyboardStrengthKeys)
 const keysHandlingStrengthsSet = new Set(
-  keyDatasHandlingAccords.map(data => data.id.key),
+  physicalKeyIdsHandlingStrengths.map(data => data.id.key),
 )
 
 // MIDI - Accord
 const midiAccordNotes = EArray.range(84, 91)
-const noteDatasHandlingAccords = makePhysicalNoteDatas(midiAccordNotes)
+const physicalNoteIdsHandlingAccords = makePhysicalNoteDatas(midiAccordNotes)
 const notesHandlingAccordsSet = new Set(
-  noteDatasHandlingAccords.map(data => data.id.note),
+  physicalNoteIdsHandlingAccords.map(data => data.id.note),
 )
 
 // MIDI - Pattern
 const midiPatternNotes = EArray.range(92, 99)
-const noteDatasHandlingPatterns = makePhysicalNoteDatas(midiPatternNotes)
+const physicalNoteIdsHandlingPatterns = makePhysicalNoteDatas(midiPatternNotes)
 const notesHandlingPatternsSet = new Set(
-  noteDatasHandlingPatterns.map(data => data.id.note),
+  physicalNoteIdsHandlingPatterns.map(data => data.id.note),
 )
 
 // MIDI - Strength
 const midiStrengthNotes = EArray.range(76, 78)
-const noteDatasHandlingStrengths = makePhysicalNoteDatas(midiStrengthNotes)
+const physicalNoteIdsHandlingStrengths =
+  makePhysicalNoteDatas(midiStrengthNotes)
 const notesHandlingStrengthsSet = new Set(
-  noteDatasHandlingStrengths.map(data => data.id.note),
+  physicalNoteIdsHandlingStrengths.map(data => data.id.note),
 )
 
 // TODO: make TParamButton a ParamButtonData
@@ -120,13 +122,13 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       // Keyboard
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        keyDatasHandlingAccords,
+        physicalKeyIdsHandlingAccords,
         [...accords, ...accords],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingAccordsSet),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        keyDatasHandlingPatterns,
+        physicalKeyIdsHandlingPatterns,
         // patterns are bound to number keys which produce the same signals
         // across layout switches
         patterns,
@@ -134,7 +136,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        keyDatasHandlingStrengths,
+        physicalKeyIdsHandlingStrengths,
         [...strengths, ...strengths],
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
         StrengthInputBus,
@@ -144,19 +146,19 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
 
       // TODO: midi device selector
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        noteDatasHandlingAccords,
+        physicalNoteIdsHandlingAccords,
         accords,
         makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        noteDatasHandlingPatterns,
+        physicalNoteIdsHandlingPatterns,
         patterns,
         makeMIDINoteButtonPressStream(notesHandlingPatternsSet),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        noteDatasHandlingStrengths,
+        physicalNoteIdsHandlingStrengths,
         strengths,
         makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
         StrengthInputBus,
@@ -165,29 +167,25 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       // On screen buttons
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        accords.map(accord =>
-          PhysicalButtonId(new AccordIndexData(accord.index)),
-        ),
+        accords.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
         accords,
-        makeVirtualParamStream('accordIndex', s =>
-          AccordIndexData.makeUnsafe(parseInt(s, 10)),
+        makeVirtualParamStream('accordIndex', datasetFieldValue =>
+          AccordIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        patterns.map(pattern =>
-          PhysicalButtonId(new PatternIndexData(pattern.index)),
-        ),
+        patterns.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
         patterns,
-        makeVirtualParamStream('patternIndex', s =>
-          PatternIndexData.makeUnsafe(parseInt(s, 10)),
+        makeVirtualParamStream('patternIndex', datasetFieldValue =>
+          PatternIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        strengths.map(strength => PhysicalButtonId(new StrengthData(strength))),
+        strengths.map(paramButton => new DOMPhysicalButtonData(paramButton.id)),
         strengths,
-        makeVirtualParamStream('strength', s => new StrengthData(s)),
+        makeVirtualParamStream('strength', StrengthData.makeUnsafe),
         StrengthInputBus,
       ),
     ],

@@ -96,7 +96,12 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
 })
 
 // TODO: add DOM here
-export type SupportedInputs = KeyboardKeyData | NoteIdData
+export type SupportedInputs =
+  | KeyboardKeyData
+  | NoteIdData
+  | AccordIndexData
+  | PatternIndexData
+  | StrengthData
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',

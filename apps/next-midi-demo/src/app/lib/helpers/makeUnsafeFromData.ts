@@ -18,8 +18,6 @@ export const makeUnsafeFromData =
     DataClass: TChildDataClass,
   ) =>
     function (this: TParentDataClass, idData: TaggedReadonlyObject) {
-      console.log(this.name)
-
       if (DataClass.models(idData))
         return new this(idData) as InstanceType<TParentDataClass>
 
