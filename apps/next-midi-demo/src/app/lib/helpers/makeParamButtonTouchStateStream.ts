@@ -8,13 +8,36 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
+import type { AccordIndexData } from '../brandsAndDatas/Accord.ts'
 import {
   type AllSimple,
   NotPressed,
   Pressed,
 } from '../brandsAndDatas/ButtonState.ts'
+import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
+import type { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
+import type { StrengthData } from '../brandsAndDatas/Strength.ts'
 
-export const makeVirtualButtonTouchStateStream = <
+export const makeParamButtonTouchStateStream = <
+  const TKey extends string,
+  TData extends PatternIndexData | AccordIndexData | StrengthData,
+>(
+  key: TKey,
+  parseField: (value: string) => TData,
+) =>
+  Stream.map(
+    makeParamButtonTouchStateStreamWithDatasets(new Set([key] as const)),
+    ([element, state]) => {
+      const val = element[key]
+      if (!val)
+        throw new Error(
+          "makeParamButtonTouchStateStream can't find proper dataset field in DOM element",
+        )
+      return Data.tuple(new DOMPhysicalButtonData(parseField(val)), state)
+    },
+  )
+
+export const makeParamButtonTouchStateStreamWithDatasets = <
   const DatasetKeys extends string,
 >(
   keysOfDatasetToLookFor: Set<DatasetKeys>,

@@ -1,7 +1,6 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
-import * as Stream from 'effect/Stream'
 
 import {
   AccordIndexData,
@@ -21,7 +20,7 @@ import {
 } from '../brandsAndDatas/Strength.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
-import { makeVirtualButtonTouchStateStream } from '../helpers/makeVirtualButtonTouchStateStream.ts'
+import { makeParamButtonTouchStateStream } from '../helpers/makeParamButtonTouchStateStream.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import { assignPhysicalButtonGroupToRespectiveParamButtons } from './assignPhysicalButtonGroupToRespectiveParamButtons.ts'
 import {
@@ -37,25 +36,6 @@ const makePhysicalNoteDatas = (notes: Iterable<number>) =>
 
 const makePhysicalKeyDatas = (keys: Iterable<string>) =>
   Array.from(keys, KeyboardKeyPhysicalButtonData.makeUnsafe)
-
-const makeVirtualParamStream = <
-  const Key extends string,
-  Data extends PatternIndexData | AccordIndexData | StrengthData,
->(
-  key: Key,
-  makeData: (value: string) => Data,
-) =>
-  Stream.map(
-    makeVirtualButtonTouchStateStream(new Set([key] as const)),
-    ([element, state]) => {
-      const val = element[key]
-      if (!val)
-        throw new Error(
-          "makeVirtualParamStream can't find proper dataset field in DOM element",
-        )
-      return [new DOMPhysicalButtonData(makeData(val)), state] as const
-    },
-  )
 
 // Keyboard - Accord
 const keyboardAccordKeys = 'qwertyuiйцукенгш'
@@ -173,7 +153,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       assignPhysicalButtonGroupToRespectiveParamButtons(
         accordParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
         accordParamButtonIds,
-        makeVirtualParamStream('accordIndex', datasetFieldValue =>
+        makeParamButtonTouchStateStream('accordIndex', datasetFieldValue =>
           AccordIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         AccordInputBus,
@@ -181,7 +161,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       assignPhysicalButtonGroupToRespectiveParamButtons(
         patternParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
         patternParamButtonIds,
-        makeVirtualParamStream('patternIndex', datasetFieldValue =>
+        makeParamButtonTouchStateStream('patternIndex', datasetFieldValue =>
           PatternIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
         ),
         PatternInputBus,
@@ -189,7 +169,7 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       assignPhysicalButtonGroupToRespectiveParamButtons(
         strengthParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
         strengthParamButtonIds,
-        makeVirtualParamStream('strength', StrengthData.makeUnsafe),
+        makeParamButtonTouchStateStream('strength', StrengthData.makeUnsafe),
         StrengthInputBus,
       ),
     ],
