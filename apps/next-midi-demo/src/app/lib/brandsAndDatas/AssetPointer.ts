@@ -17,7 +17,8 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
     strength: StrengthSchema,
   },
 ) {
-  static models = Schema.is(this) as (p: unknown) => p is TaggedPatternPointer
+  static models: (candidate: unknown) => candidate is TaggedPatternPointer =
+    Schema.is(this)
 }
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
@@ -30,7 +31,8 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
     strength: StrengthSchema,
   },
 ) {
-  static models = Schema.is(this) as (p: unknown) => p is TaggedSlowStrumPointer
+  static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
+    Schema.is(this)
 }
 
 export type SlowStrumPointer = Omit<TaggedSlowStrumPointer, '_tag'>

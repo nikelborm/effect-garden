@@ -48,7 +48,8 @@ export class StrengthData<
   }
   static makeUnsafe = (strengthCandidate: string) =>
     new this(Strength(strengthCandidate))
-  static models = (candidate: unknown) => candidate instanceof this
+  static models = (candidate: unknown): candidate is StrengthData =>
+    candidate instanceof this
 }
 
 export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {

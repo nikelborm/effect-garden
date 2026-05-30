@@ -48,7 +48,8 @@ export class AccordData<
   }
   static makeUnsafe = (accordCandidate: string) =>
     new this(Accord(accordCandidate))
-  static models = (candidate: unknown) => candidate instanceof this
+  static models = (candidate: unknown): candidate is AccordData =>
+    candidate instanceof this
 }
 
 export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
