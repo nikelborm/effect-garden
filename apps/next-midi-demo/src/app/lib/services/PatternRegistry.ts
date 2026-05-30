@@ -5,44 +5,36 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
   type AllPatternTuple,
-  type AllPatternUnion,
   allPatterns,
-  mapIndexToPattern,
-  type PatternIndex,
+  type Pattern,
+  type PatternOption,
 } from '../brandsAndDatas/Pattern.ts'
 
-// TODO: make currentPatternIndexRef and related shit branded
 export class PatternRegistry
   extends Effect.Service<PatternRegistry>()('next-midi-demo/PatternRegistry', {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const currentPatternIndexRef = yield* SubscriptionRef.make(
-        Option.none<PatternIndex>(),
+      const currentPatternRef = yield* SubscriptionRef.make(
+        Option.none<Pattern>(),
       )
 
-      const selectedPatternChanges = yield* currentPatternIndexRef.changes.pipe(
+      const selectedPatternChanges = yield* currentPatternRef.changes.pipe(
         Stream.changes,
         Stream.rechunk(1),
-        Stream.map(Option.map(mapIndexToPattern)),
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
       return {
-        currentlySelectedPattern: Effect.map(
-          currentPatternIndexRef.get,
-          Option.map(mapIndexToPattern),
-        ),
+        currentlySelectedPattern: currentPatternRef.get,
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
-        switchPattern: (patternIndex: PatternIndex) =>
+        switchPattern: (pattern: Pattern) =>
           SubscriptionRef.update(
-            currentPatternIndexRef,
+            currentPatternRef,
             Option.match({
-              onNone: () => Option.some(patternIndex),
-              onSome: prevPatternIndex =>
-                prevPatternIndex === patternIndex
-                  ? Option.none()
-                  : Option.some(patternIndex),
+              onNone: () => Option.some(pattern),
+              onSome: prevPattern =>
+                prevPattern === pattern ? Option.none() : Option.some(pattern),
             }),
           ),
       }
@@ -51,10 +43,8 @@ export class PatternRegistry
   implements IPatternRegistry {}
 
 export interface IPatternRegistry {
-  readonly currentlySelectedPattern: Effect.Effect<
-    Option.Option<AllPatternUnion>
-  >
+  readonly currentlySelectedPattern: Effect.Effect<PatternOption>
   readonly allPatterns: Effect.Effect<AllPatternTuple>
-  readonly selectedPatternChanges: Stream.Stream<Option.Option<AllPatternUnion>>
-  readonly switchPattern: (patternIndex: PatternIndex) => Effect.Effect<void>
+  readonly selectedPatternChanges: Stream.Stream<PatternOption>
+  readonly switchPattern: (pattern: Pattern) => Effect.Effect<void>
 }

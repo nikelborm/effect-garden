@@ -8,19 +8,19 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import type { AccordIndexData } from '../brandsAndDatas/Accord.ts'
+import type { AccordData } from '../brandsAndDatas/Accord.ts'
 import {
   type AllSimple,
   NotPressed,
   Pressed,
 } from '../brandsAndDatas/ButtonState.ts'
 import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
-import type { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
+import type { PatternData } from '../brandsAndDatas/Pattern.ts'
 import type { StrengthData } from '../brandsAndDatas/Strength.ts'
 
 export const makeParamButtonTouchStateStream = <
   const TKey extends string,
-  TData extends PatternIndexData | AccordIndexData | StrengthData,
+  TData extends PatternData | AccordData | StrengthData,
 >(
   key: TKey,
   parseField: (value: string) => TData,

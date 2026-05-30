@@ -2,14 +2,14 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import { Accord, type AllAccordUnion } from '../brandsAndDatas/Accord.ts'
+import { Accord } from '../brandsAndDatas/Accord.ts'
 import {
   type AssetPointer,
   complexifyAssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../brandsAndDatas/AssetPointer.ts'
-import { type AllPatternUnion, Pattern } from '../brandsAndDatas/Pattern.ts'
+import { Pattern } from '../brandsAndDatas/Pattern.ts'
 import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
@@ -100,17 +100,17 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 const makePatchApplier =
   (patch: Patch) =>
   (old: AssetPointer): AssetPointer => {
-    if (Pattern.models(patch))
-      return TaggedPatternPointer.make({ ...old, patternIndex: patch.index })
+    if (Pattern.is(patch))
+      return TaggedPatternPointer.make({ ...old, pattern: patch.index })
 
-    if (Accord.models(patch))
+    if (Accord.is(patch))
       return TaggedPatternPointer.models(old)
-        ? TaggedPatternPointer.make({ ...old, accordIndex: patch.index })
-        : TaggedSlowStrumPointer.make({ ...old, accordIndex: patch.index })
+        ? TaggedPatternPointer.make({ ...old, accord: patch.index })
+        : TaggedSlowStrumPointer.make({ ...old, accord: patch.index })
 
     return TaggedPatternPointer.models(old)
       ? TaggedPatternPointer.make({ ...old, strength: patch })
       : TaggedSlowStrumPointer.make({ ...old, strength: patch })
   }
 
-export type Patch = AllPatternUnion | AllAccordUnion | Strength
+export type Patch = Pattern | Accord | Strength

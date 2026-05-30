@@ -4,126 +4,107 @@ import { pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
 
-import {
-  type AccordByIndex,
-  AccordIndex,
-  mapIndexToAccord,
-  UnbrandedAccordIndex,
-} from '../brandsAndDatas/Accord.ts'
+import { Accord, UnbrandedAccord } from '../brandsAndDatas/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../brandsAndDatas/AssetPointer.ts'
-import {
-  PatternIndex,
-  UnbrandedPatternIndex,
-} from '../brandsAndDatas/Pattern.ts'
+import { Pattern, UnbrandedPattern } from '../brandsAndDatas/Pattern.ts'
 import { Strength, UnbrandedStrength } from '../brandsAndDatas/Strength.ts'
 import { parseInt10 } from './parseInt10.ts'
 import type { StringToArray } from './StringToArray.ts'
 
-const getPaddedAccordLabel = <const TAccordIndex extends AccordIndex>(
-  accordIndex: TAccordIndex,
-) =>
-  mapIndexToAccord(accordIndex).label.padEnd(
-    2,
-    '_',
-  ) as PaddedAccordLabel<TAccordIndex>
+const getPaddedAccord = <const TAccord extends Accord>(accord: TAccord) =>
+  accord.padEnd(2, '_') as PaddedAccord<TAccord>
 
-export type PaddedAccordLabel<TAccordIndex extends AccordIndex> =
-  AccordByIndex<TAccordIndex>['label'] extends infer Label extends string
-    ? StringToArray<Label>['length'] extends infer LabelLength extends number
-      ? LabelLength extends 2
-        ? Label
-        : LabelLength extends 1
-          ? `${Label}_`
-          : never
-      : never
+export type PaddedAccord<TAccord extends Accord> =
+  StringToArray<TAccord>['length'] extends infer TAccordLength extends number
+    ? TAccordLength extends 2
+      ? TAccord
+      : TAccordLength extends 1
+        ? `${TAccord}_`
+        : never
     : never
 
 ///
 
 const getRemotePatternAssetFileName = <
-  const TAccordIndex extends AccordIndex,
+  const TAccord extends Accord,
   const TStrength extends Strength,
 >(
-  accordIndex: TAccordIndex,
+  accord: TAccord,
   strength: TStrength,
-): RemotePatternAssetFileName<TAccordIndex, TStrength> =>
-  `accord_${UnbrandedAccordIndex(accordIndex)}_${getPaddedAccordLabel(accordIndex)}_strength_${UnbrandedStrength(strength)}.wav`
+): RemotePatternAssetFileName<TAccord, TStrength> =>
+  `accord_${UnbrandedAccord(accord)}_${getPaddedAccord(accord)}_strength_${UnbrandedStrength(strength)}.wav`
 
 export type RemotePatternAssetFileName<
-  TAccordIndex extends AccordIndex,
+  TAccord extends Accord,
   TStrength extends Strength,
-> = `accord_${UnbrandedAccordIndex<TAccordIndex>}_${PaddedAccordLabel<TAccordIndex>}_strength_${UnbrandedStrength<TStrength>}.wav`
+> = `accord_${UnbrandedAccord<TAccord>}_${PaddedAccord<TAccord>}_strength_${UnbrandedStrength<TStrength>}.wav`
 
 ///
 
-const getRemotePatternAssetFolderName = <
-  const TPatternIndex extends PatternIndex,
->(
-  patternIndex: TPatternIndex,
-): RemotePatternAssetFolderName<TPatternIndex> =>
-  `pattern_${UnbrandedPatternIndex(patternIndex)}`
+const getRemotePatternAssetFolderName = <const TPattern extends Pattern>(
+  pattern: TPattern,
+): RemotePatternAssetFolderName<TPattern> =>
+  `pattern_${UnbrandedPattern(pattern)}`
 
-export type RemotePatternAssetFolderName<TPatternIndex extends PatternIndex> =
-  `pattern_${UnbrandedPatternIndex<TPatternIndex>}`
+export type RemotePatternAssetFolderName<TPattern extends Pattern> =
+  `pattern_${UnbrandedPattern<TPattern>}`
 
 ///
 
 const getRemotePatternAssetPath = <
-  const TAccordIndex extends AccordIndex,
-  const TPatternIndex extends PatternIndex,
+  const TAccord extends Accord,
+  const TPattern extends Pattern,
   const TStrength extends Strength,
 >(
-  accordIndex: TAccordIndex,
-  patternIndex: TPatternIndex,
+  accord: TAccord,
+  pattern: TPattern,
   strength: TStrength,
-): RemotePatternAssetPath<TAccordIndex, TPatternIndex, TStrength> =>
-  `/samples/${getRemotePatternAssetFolderName(patternIndex)}/${getRemotePatternAssetFileName(accordIndex, strength)}` as const
+): RemotePatternAssetPath<TAccord, TPattern, TStrength> =>
+  `/samples/${getRemotePatternAssetFolderName(pattern)}/${getRemotePatternAssetFileName(accord, strength)}` as const
 
 export type RemotePatternAssetPath<
-  TAccordIndex extends AccordIndex,
-  TPatternIndex extends PatternIndex,
+  TAccord extends Accord,
+  TPattern extends Pattern,
   TStrength extends Strength,
-> = `/samples/${RemotePatternAssetFolderName<TPatternIndex>}/${RemotePatternAssetFileName<
-  TAccordIndex,
+> = `/samples/${RemotePatternAssetFolderName<TPattern>}/${RemotePatternAssetFileName<
+  TAccord,
   TStrength
 >}`
 
 ///
 
 const getRemoteSlowStrumAssetPath = <
-  const TAccordIndex extends AccordIndex,
+  const TAccord extends Accord,
   const TStrength extends Strength,
 >(
-  accordIndex: TAccordIndex,
+  accord: TAccord,
   strength: TStrength,
-): RemoteSlowStrumAssetPath<TAccordIndex, TStrength> =>
-  `/samples/slow_strum/${getRemotePatternAssetFileName(accordIndex, strength)}`
+): RemoteSlowStrumAssetPath<TAccord, TStrength> =>
+  `/samples/slow_strum/${getRemotePatternAssetFileName(accord, strength)}`
 
 export type RemoteSlowStrumAssetPath<
-  TAccordIndex extends AccordIndex,
+  TAccord extends Accord,
   TStrength extends Strength,
-> = `/samples/slow_strum/${RemotePatternAssetFileName<TAccordIndex, TStrength>}`
+> = `/samples/slow_strum/${RemotePatternAssetFileName<TAccord, TStrength>}`
 
 ///
 
-const getAssetAccordIndex = <TAsset extends AssetPointer>(asset: TAsset) =>
-  asset.accordIndex as AssetAccordIndex<TAsset>
+const getAssetAccord = <TAsset extends AssetPointer>(asset: TAsset) =>
+  asset.accord as AssetAccord<TAsset>
 
-export type AssetAccordIndex<TAsset extends AssetPointer> =
-  TAsset['accordIndex']
+export type AssetAccord<TAsset extends AssetPointer> = TAsset['accord']
 
 ///
 
-const getAssetPatternIndex = <TAsset extends TaggedPatternPointer>(
-  asset: TAsset,
-) => asset.patternIndex as AssetPatternIndex<TAsset>
+const getAssetPattern = <TAsset extends TaggedPatternPointer>(asset: TAsset) =>
+  asset.pattern as AssetPattern<TAsset>
 
-export type AssetPatternIndex<TAsset extends TaggedPatternPointer> =
-  TAsset['patternIndex']
+export type AssetPattern<TAsset extends TaggedPatternPointer> =
+  TAsset['pattern']
 
 ///
 
@@ -135,37 +116,37 @@ export type AssetStrength<TAsset extends AssetPointer> = TAsset['strength']
 ///
 
 const getLocalPatternAssetFileName = <
-  const TAccordIndex extends AccordIndex,
-  const TPatternIndex extends PatternIndex,
+  const TAccord extends Accord,
+  const TPattern extends Pattern,
   const TStrength extends Strength,
 >(
-  accordIndex: TAccordIndex,
-  patternIndex: TPatternIndex,
+  accord: TAccord,
+  pattern: TPattern,
   strength: TStrength,
-): LocalPatternAssetFileName<TAccordIndex, TPatternIndex, TStrength> =>
-  `${getRemotePatternAssetFolderName(patternIndex)}_${getRemotePatternAssetFileName(accordIndex, strength)}`
+): LocalPatternAssetFileName<TAccord, TPattern, TStrength> =>
+  `${getRemotePatternAssetFolderName(pattern)}_${getRemotePatternAssetFileName(accord, strength)}`
 
 export type LocalPatternAssetFileName<
-  TAccordIndex extends AccordIndex,
-  TPatternIndex extends PatternIndex,
+  TAccord extends Accord,
+  TPattern extends Pattern,
   TStrength extends Strength,
-> = `${RemotePatternAssetFolderName<TPatternIndex>}_${RemotePatternAssetFileName<TAccordIndex, TStrength>}`
+> = `${RemotePatternAssetFolderName<TPattern>}_${RemotePatternAssetFileName<TAccord, TStrength>}`
 
 ///
 
 const getLocalSlowStrumAssetFileName = <
-  const TAccordIndex extends AccordIndex,
+  const TAccord extends Accord,
   const TStrength extends Strength,
 >(
-  accordIndex: TAccordIndex,
+  accord: TAccord,
   strength: TStrength,
-): LocalSlowStrumAssetFileName<TAccordIndex, TStrength> =>
-  `slow_strum_${getRemotePatternAssetFileName(accordIndex, strength)}`
+): LocalSlowStrumAssetFileName<TAccord, TStrength> =>
+  `slow_strum_${getRemotePatternAssetFileName(accord, strength)}`
 
 export type LocalSlowStrumAssetFileName<
-  TAccordIndex extends AccordIndex,
+  TAccord extends Accord,
   TStrength extends Strength,
-> = `slow_strum_${RemotePatternAssetFileName<TAccordIndex, TStrength>}`
+> = `slow_strum_${RemotePatternAssetFileName<TAccord, TStrength>}`
 
 ///
 
@@ -174,27 +155,24 @@ export const getRemoteAssetPath = <TAsset extends AssetPointer>(
 ): RemoteAssetPath<TAsset> =>
   TaggedPatternPointer.models(asset)
     ? getRemotePatternAssetPath(
-        getAssetAccordIndex(asset),
-        getAssetPatternIndex(asset),
+        getAssetAccord(asset),
+        getAssetPattern(asset),
         getAssetStrength(asset),
       )
     : getRemoteSlowStrumAssetPath(
-        getAssetAccordIndex(asset),
+        getAssetAccord(asset),
         getAssetStrength(asset),
       )
 
 export type RemoteAssetPath<TAsset extends AssetPointer> =
   TAsset extends TaggedPatternPointer
     ? RemotePatternAssetPath<
-        AssetAccordIndex<TAsset>,
-        AssetPatternIndex<TAsset>,
+        AssetAccord<TAsset>,
+        AssetPattern<TAsset>,
         AssetStrength<TAsset>
       >
     : TAsset extends TaggedSlowStrumPointer
-      ? RemoteSlowStrumAssetPath<
-          AssetAccordIndex<TAsset>,
-          AssetStrength<TAsset>
-        >
+      ? RemoteSlowStrumAssetPath<AssetAccord<TAsset>, AssetStrength<TAsset>>
       : never
 ///
 
@@ -203,27 +181,24 @@ export const getLocalAssetFileName = <TAsset extends AssetPointer>(
 ): LocalAssetFileName<TAsset> =>
   TaggedPatternPointer.models(asset)
     ? getLocalPatternAssetFileName(
-        getAssetAccordIndex(asset),
-        getAssetPatternIndex(asset),
+        getAssetAccord(asset),
+        getAssetPattern(asset),
         getAssetStrength(asset),
       )
     : getLocalSlowStrumAssetFileName(
-        getAssetAccordIndex(asset),
+        getAssetAccord(asset),
         getAssetStrength(asset),
       )
 
 export type LocalAssetFileName<TAsset extends AssetPointer> =
   TAsset extends TaggedPatternPointer
     ? LocalPatternAssetFileName<
-        AssetAccordIndex<TAsset>,
-        AssetPatternIndex<TAsset>,
+        AssetAccord<TAsset>,
+        AssetPattern<TAsset>,
         AssetStrength<TAsset>
       >
     : TAsset extends TaggedSlowStrumPointer
-      ? LocalSlowStrumAssetFileName<
-          AssetAccordIndex<TAsset>,
-          AssetStrength<TAsset>
-        >
+      ? LocalSlowStrumAssetFileName<AssetAccord<TAsset>, AssetStrength<TAsset>>
       : never
 
 ///
@@ -238,10 +213,10 @@ export type LocalAssetFilePath<TAsset extends AssetPointer> =
 ///
 
 const localPatternAssetFileNameRegExp =
-  /^pattern_(?<patternIndex>\d)_accord_(?<accordIndex>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
+  /^pattern_(?<pattern>\d)_accord_(?<accord>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
 
 const localSlowStrumAssetFileNameRegExp =
-  /^slow_strum_accord_(?<accordIndex>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
+  /^slow_strum_accord_(?<accord>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
 
 export const getAssetFromLocalFileName = (
   fileName: string,
@@ -252,19 +227,19 @@ export const getAssetFromLocalFileName = (
       groups =>
         Option.all({
           ...Record.map(groups, Option.some),
-          accordIndex: AccordIndex.option(parseInt10(groups['accordIndex'])),
+          accord: Accord.option(parseInt10(groups['accord'])),
           strength: Strength.option(groups['strength']),
         }),
-    ) as Option.Option<{ accordIndex: AccordIndex; strength: Strength }>
+    ) as Option.Option<{ accord: Accord; strength: Strength }>
 
   return parseBase(localPatternAssetFileNameRegExp).pipe(
     Option.orElse(() => parseBase(localSlowStrumAssetFileNameRegExp)),
     Option.flatMap(base =>
       pipe(
-        (base as { patternIndex?: string }).patternIndex,
+        (base as { pattern?: string }).pattern,
         parseInt10,
-        PatternIndex.option,
-        Option.map(patternIndex => ({ ...base, patternIndex })),
+        Pattern.option,
+        Option.map(pattern => ({ ...base, pattern })),
         Option.map(extended => new TaggedPatternPointer(extended)),
         Option.orElseSome(() => new TaggedSlowStrumPointer(base)),
       ),

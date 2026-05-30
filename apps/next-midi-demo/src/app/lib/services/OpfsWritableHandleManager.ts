@@ -53,7 +53,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             Effect.acquireRelease(e => e.close),
             Effect.acquireRelease(() =>
               Effect.log(
-                `OPFS writer finalizer for accordIndex=${selector.accordIndex} patternIndex=${selector.patternIndex} strength=${selector.strength} ran`,
+                `OPFS writer finalizer for accord=${selector.accord} pattern=${selector.pattern} strength=${selector.strength} ran`,
               ),
             ),
           ),

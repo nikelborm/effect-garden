@@ -6,4 +6,4 @@ const runtime = Atom.runtime(PatternRegistry.Default)
 
 export const patternsAtom = runtime.atom(PatternRegistry.allPatterns)
 
-export const setActivePatternAtom = runtime.fn(PatternRegistry.selectPattern)
+export const setActivePatternAtom = runtime.fn(PatternRegistry.switchPattern)

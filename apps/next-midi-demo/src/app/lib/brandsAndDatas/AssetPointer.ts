@@ -1,24 +1,19 @@
 /** biome-ignore-all lint/complexity/useLiteralKeys: incompatibility with TS */
+
+import { AbsentProperty } from '@evadev/effect-helpers'
+
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
-import {
-  type AccordIndex,
-  AccordIndexSchema,
-  type AllAccordUnion,
-} from './Accord.ts'
-import {
-  type AllPatternUnion,
-  type PatternIndex,
-  PatternIndexSchema,
-} from './Pattern.ts'
+import { type Accord, AccordSchema } from './Accord.ts'
+import { type PatternOption, PatternSchema } from './Pattern.ts'
 import { type Strength, StrengthSchema } from './Strength.ts'
 
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
   'TaggedPatternPointer',
   {
-    patternIndex: PatternIndexSchema,
-    accordIndex: AccordIndexSchema,
+    pattern: PatternSchema,
+    accord: AccordSchema,
     strength: StrengthSchema,
   },
 ) {
@@ -30,8 +25,8 @@ export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPointer>()(
   'TaggedSlowStrumPointer',
   {
-    patternIndex: Schema.Never.pipe(Schema.optionalWith({ exact: true })),
-    accordIndex: AccordIndexSchema,
+    pattern: AbsentProperty,
+    accord: AccordSchema,
     strength: StrengthSchema,
   },
 ) {
@@ -53,16 +48,15 @@ export const complexifyAssetPointer = ({
   strength,
 }: {
   readonly strength: Strength
-  readonly pattern: Option.Option<AllPatternUnion>
-  readonly accord: AllAccordUnion
+  readonly pattern: PatternOption
+  readonly accord: Accord
 }): AssetPointer =>
   Option.match(pattern, {
-    onNone: () =>
-      TaggedSlowStrumPointer.make({ accordIndex: accord.index, strength }),
+    onNone: () => TaggedSlowStrumPointer.make({ accord, strength }),
     onSome: pattern =>
       TaggedPatternPointer.make({
-        accordIndex: accord.index,
-        patternIndex: pattern.index,
+        accord,
+        pattern,
         strength,
       }),
   })
@@ -70,25 +64,24 @@ export const complexifyAssetPointer = ({
 export const simplifyAssetPointer = (
   asset: AssetPointer,
 ): SimpleAssetPointer => ({
-  accordIndex: asset.accordIndex,
-  patternIndex: TaggedPatternPointer.models(asset)
-    ? Option.some(asset.patternIndex)
+  accord: asset.accord,
+  pattern: TaggedPatternPointer.models(asset)
+    ? Option.some(asset.pattern)
     : Option.none(),
   strength: asset.strength,
 })
 
 export const desimplifyAssetPointer = ({
-  patternIndex: patternIndexOption,
+  pattern,
   ...other
 }: SimpleAssetPointer) =>
-  Option.match(patternIndexOption, {
+  Option.match(pattern, {
     onNone: () => TaggedSlowStrumPointer.make(other),
-    onSome: patternIndex =>
-      TaggedPatternPointer.make({ ...other, patternIndex }),
+    onSome: pattern => TaggedPatternPointer.make({ ...other, pattern }),
   })
 
 export interface SimpleAssetPointer {
-  accordIndex: AccordIndex
-  patternIndex: Option.Option<PatternIndex>
+  accord: Accord
+  pattern: PatternOption
   strength: Strength
 }

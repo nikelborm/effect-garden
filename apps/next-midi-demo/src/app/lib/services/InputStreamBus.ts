@@ -7,12 +7,12 @@ import * as PubSub from 'effect/PubSub'
 import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 
-import type { AccordIndexData } from '../brandsAndDatas/Accord.ts'
+import type { AccordData } from '../brandsAndDatas/Accord.ts'
 import { ButtonState } from '../brandsAndDatas/index.ts'
 import type { KeyboardKeyData } from '../brandsAndDatas/KeyboardKey.ts'
 import type { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type { PatternIndexData } from '../brandsAndDatas/Pattern.ts'
+import type { PatternData } from '../brandsAndDatas/Pattern.ts'
 import type {
   PhysicalButtonIdData,
   PhysicalButtonModel,
@@ -99,18 +99,18 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
 export type SupportedInputs =
   | KeyboardKeyData
   | NoteIdData
-  | AccordIndexData
-  | PatternIndexData
+  | AccordData
+  | PatternData
   | StrengthData
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
-  { scoped: makeInputBus<SupportedInputs, AccordIndexData>() },
+  { scoped: makeInputBus<SupportedInputs, AccordData>() },
 ) {}
 
 export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
-  { scoped: makeInputBus<SupportedInputs, PatternIndexData>() },
+  { scoped: makeInputBus<SupportedInputs, PatternData>() },
 ) {}
 
 export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(

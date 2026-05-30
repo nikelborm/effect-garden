@@ -5,9 +5,9 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { AllAccordUnion } from '../brandsAndDatas/Accord.ts'
+import type { Accord } from '../brandsAndDatas/Accord.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type { AllPatternUnion } from '../brandsAndDatas/Pattern.ts'
+import type { Pattern } from '../brandsAndDatas/Pattern.ts'
 import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
@@ -180,11 +180,11 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
       registryTag: AccordRegistry,
       busTag: AccordInputBus,
       getSelectedChangesStream: reg => reg.selectedAccordChanges,
-      toCompareValue: EFunction.identity<AllAccordUnion>,
-      toLabel: accord => `Accord index=${accord.index}`,
+      toCompareValue: EFunction.identity<Accord>,
+      toLabel: accord => `Accord index=${accord}`,
       isCurrentlyPlayingPredicate: (pb, accord) =>
-        pb.currentAsset.accord.index === accord.index,
-      selectAction: (reg, accord) => reg.selectAccord(accord.index),
+        pb.currentAsset.accord === accord,
+      selectAction: (reg, accord) => reg.selectAccord(accord),
     }),
   },
 ) {}
@@ -197,11 +197,11 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
       registryTag: PatternRegistry,
       busTag: PatternInputBus,
       getSelectedChangesStream: reg => reg.selectedPatternChanges,
-      toCompareValue: Option.some<AllPatternUnion>,
-      toLabel: pattern => `Pattern index=${pattern.index}`,
+      toCompareValue: Option.some<Pattern>,
+      toLabel: pattern => `Pattern index=${pattern}`,
       isCurrentlyPlayingPredicate: (pb, pattern) =>
         Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-      selectAction: (reg, pattern) => reg.switchPattern(pattern.index),
+      selectAction: (reg, pattern) => reg.switchPattern(pattern),
     }),
   },
 ) {}

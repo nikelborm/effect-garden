@@ -2,19 +2,15 @@ import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import {
-  AccordIndexData,
-  AccordParamButtonData,
-} from '../brandsAndDatas/Accord.ts'
+import { AccordData, AccordParamButtonData } from '../brandsAndDatas/Accord.ts'
 import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
 import { KeyboardKeyPhysicalButtonData } from '../brandsAndDatas/KeyboardKey.ts'
 import { NotePhysicalButtonData } from '../brandsAndDatas/MIDIValues.ts'
 import {
-  PatternIndexData,
+  PatternData,
   PatternParamButtonData,
 } from '../brandsAndDatas/Pattern.ts'
 import {
-  type Strength,
   StrengthData,
   StrengthParamButtonData,
 } from '../brandsAndDatas/Strength.ts'
@@ -92,10 +88,9 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
 
   const [accordParamButtonIds, patternParamButtonIds, strengthParamButtonIds] =
     [
-      params[0].map(a => AccordParamButtonData.make(a.index)),
-      params[1].map(p => PatternParamButtonData.make(p.index)),
-      // TODO: make upstream properly branded
-      params[2].map(s => StrengthParamButtonData.make(s as Strength)),
+      params[0].map(AccordParamButtonData.make),
+      params[1].map(PatternParamButtonData.make),
+      params[2].map(StrengthParamButtonData.make),
     ]
 
   yield* Effect.all(
@@ -153,17 +148,13 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       assignPhysicalButtonGroupToRespectiveParamButtons(
         accordParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
         accordParamButtonIds,
-        makeParamButtonTouchStateStream('accordIndex', datasetFieldValue =>
-          AccordIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
-        ),
+        makeParamButtonTouchStateStream('accord', AccordData.makeUnsafe),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         patternParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
         patternParamButtonIds,
-        makeParamButtonTouchStateStream('patternIndex', datasetFieldValue =>
-          PatternIndexData.makeUnsafe(parseInt(datasetFieldValue, 10)),
-        ),
+        makeParamButtonTouchStateStream('pattern', PatternData.makeUnsafe),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(

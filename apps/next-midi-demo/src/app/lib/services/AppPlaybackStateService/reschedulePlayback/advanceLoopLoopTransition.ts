@@ -7,6 +7,7 @@ import * as Struct from 'effect/Struct'
 
 import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { maxLoudness } from '../constants.ts'
+import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createScheduledNextPlayback,
   helpGarbageCollectionOfPlayback,

@@ -20,7 +20,7 @@ import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
 //   Effect.gen(function* () {
 //     const asset = yield* fetchAudioAsset({
 //       _tag: 'pattern',
-//       patternIndex: 1,
+//       pattern: 1,
 //       noteIndex: 26,
 //       strength: 'm',
 //     })

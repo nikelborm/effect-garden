@@ -10,8 +10,8 @@ import * as Logger from 'effect/Logger'
 // import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
 
-import type { AllAccordUnion } from '../brandsAndDatas/Accord.ts'
-import type { AllPatternUnion } from '../brandsAndDatas/Pattern.ts'
+import { type Accord, defaultAccord } from '../brandsAndDatas/Accord.ts'
+import { defaultPattern, type Pattern } from '../brandsAndDatas/Pattern.ts'
 import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { AccordRegistry } from '../services/AccordRegistry.ts'
 import { AllButtonMappingLayer } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
@@ -91,51 +91,49 @@ const runtime = Atom.runtime(AppLayer)
 // isPressedFlagChangesStream, isCurrentlyPlaying, getDownloadPercent accept a
 // ParamButtonData?
 
-export const isAccordButtonPressableAtom = Atom.family(
-  (accord: AllAccordUnion) =>
-    EFunction.pipe(
-      accord,
-      AccordParamButtonService.getPressabilityChangesStream,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: accord.index !== 0,
-        }),
-      Atom.withFallback(
-        Atom.readable(() =>
-          Result.success(accord.index !== 0, { waiting: true }),
-        ),
-      ),
-
-      Atom.withServerValue(
-        EFunction.constant(
-          Result.success(accord.index !== 0, { waiting: true }),
-        ),
+export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
+  EFunction.pipe(
+    accord,
+    AccordParamButtonService.getPressabilityChangesStream,
+    Stream.unwrap,
+    s =>
+      runtime.atom(s, {
+        initialValue: accord !== defaultAccord,
+      }),
+    Atom.withFallback(
+      Atom.readable(() =>
+        Result.success(accord !== defaultAccord, { waiting: true }),
       ),
     ),
+
+    Atom.withServerValue(
+      EFunction.constant(
+        Result.success(accord !== defaultAccord, { waiting: true }),
+      ),
+    ),
+  ),
 )
 
-export const isPatternButtonPressableAtom = Atom.family(
-  (pattern: AllPatternUnion) =>
-    EFunction.pipe(
-      pattern,
-      PatternParamButtonService.getPressabilityChangesStream,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: pattern.index !== 0,
-        }),
-      Atom.withFallback(
-        Atom.readable(() =>
-          Result.success(pattern.index !== 0, { waiting: true }),
-        ),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(
-          Result.success(pattern.index !== 0, { waiting: true }),
-        ),
+export const isPatternButtonPressableAtom = Atom.family((pattern: Pattern) =>
+  EFunction.pipe(
+    pattern,
+    PatternParamButtonService.getPressabilityChangesStream,
+    Stream.unwrap,
+    s =>
+      runtime.atom(s, {
+        initialValue: pattern !== defaultPattern,
+      }),
+    Atom.withFallback(
+      Atom.readable(() =>
+        Result.success(pattern !== defaultPattern, { waiting: true }),
       ),
     ),
+    Atom.withServerValue(
+      EFunction.constant(
+        Result.success(pattern !== defaultPattern, { waiting: true }),
+      ),
+    ),
+  ),
 )
 
 export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
@@ -156,43 +154,45 @@ export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
   ),
 )
 
-export const isAccordSelectedAtom = Atom.family((accord: AllAccordUnion) =>
+export const isAccordSelectedAtom = Atom.family((accord: Accord) =>
   EFunction.pipe(
     accord,
     AccordParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
-        initialValue: accord.index === 0,
+        initialValue: accord === defaultAccord,
       }),
     Atom.withFallback(
       Atom.readable(() =>
-        Result.success(accord.index === 0, { waiting: true }),
+        Result.success(accord === defaultAccord, { waiting: true }),
       ),
     ),
     Atom.withServerValue(
-      EFunction.constant(Result.success(accord.index === 0, { waiting: true })),
+      EFunction.constant(
+        Result.success(accord === defaultAccord, { waiting: true }),
+      ),
     ),
   ),
 )
 
-export const isPatternSelectedAtom = Atom.family((pattern: AllPatternUnion) =>
+export const isPatternSelectedAtom = Atom.family((pattern: Pattern) =>
   EFunction.pipe(
     pattern,
     PatternParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
       runtime.atom(s, {
-        initialValue: pattern.index === 0,
+        initialValue: pattern === defaultPattern,
       }),
     Atom.withFallback(
       Atom.readable(() =>
-        Result.success(pattern.index === 0, { waiting: true }),
+        Result.success(pattern === defaultPattern, { waiting: true }),
       ),
     ),
     Atom.withServerValue(
       EFunction.constant(
-        Result.success(pattern.index === 0, { waiting: true }),
+        Result.success(pattern === defaultPattern, { waiting: true }),
       ),
     ),
   ),
@@ -216,7 +216,7 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
   ),
 )
 
-export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
+export const isAccordPressedAtom = Atom.family((accord: Accord) =>
   EFunction.pipe(
     accord,
     AccordParamButtonService.isPressedFlagChangesStream,
@@ -234,7 +234,7 @@ export const isAccordPressedAtom = Atom.family((accord: AllAccordUnion) =>
   ),
 )
 
-export const isPatternPressedAtom = Atom.family((pattern: AllPatternUnion) =>
+export const isPatternPressedAtom = Atom.family((pattern: Pattern) =>
   EFunction.pipe(
     pattern,
     PatternParamButtonService.isPressedFlagChangesStream,
@@ -271,7 +271,7 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
 )
 
 export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
-  (accord: AllAccordUnion) =>
+  (accord: Accord) =>
     EFunction.pipe(
       accord,
       AccordParamButtonService.isCurrentlyPlaying,
@@ -290,7 +290,7 @@ export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
 )
 
 export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
-  (pattern: AllPatternUnion) =>
+  (pattern: Pattern) =>
     EFunction.pipe(
       pattern,
       PatternParamButtonService.isCurrentlyPlaying,
@@ -327,27 +327,26 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
     ),
 )
 
-export const accordButtonDownloadPercentAtom = Atom.family(
-  (accord: AllAccordUnion) =>
-    EFunction.pipe(
-      accord,
-      AccordParamButtonService.getDownloadPercent,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: 0,
-        }),
-      Atom.withFallback(
-        Atom.readable(() => Result.success(0, { waiting: true })),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(Result.success(0, { waiting: true })),
-      ),
+export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
+  EFunction.pipe(
+    accord,
+    AccordParamButtonService.getDownloadPercent,
+    Stream.unwrap,
+    s =>
+      runtime.atom(s, {
+        initialValue: 0,
+      }),
+    Atom.withFallback(
+      Atom.readable(() => Result.success(0, { waiting: true })),
     ),
+    Atom.withServerValue(
+      EFunction.constant(Result.success(0, { waiting: true })),
+    ),
+  ),
 )
 
 export const patternButtonDownloadPercentAtom = Atom.family(
-  (pattern: AllPatternUnion) =>
+  (pattern: Pattern) =>
     EFunction.pipe(
       pattern,
       PatternParamButtonService.getDownloadPercent,

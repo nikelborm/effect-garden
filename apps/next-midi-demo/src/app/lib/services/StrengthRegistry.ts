@@ -15,11 +15,13 @@ export class StrengthRegistry
       accessors: true,
       scoped: Effect.gen(function* () {
         const selectedStrengthRef = yield* SubscriptionRef.make(Strength('m'))
+
         const selectedStrengthChanges = yield* selectedStrengthRef.changes.pipe(
           Stream.changes,
           Stream.rechunk(1),
           Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
         )
+
         return {
           currentlySelectedStrength: selectedStrengthRef.get,
           allStrengths: Effect.succeed(allStrengths),

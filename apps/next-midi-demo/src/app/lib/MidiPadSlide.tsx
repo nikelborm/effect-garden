@@ -27,10 +27,10 @@ import {
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
+import type { Accord } from './brandsAndDatas/Accord.ts'
+import type { Pattern } from './brandsAndDatas/Pattern.ts'
+import type { Strength } from './brandsAndDatas/Strength.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
-import type { StrengthUnion } from './helpers/audioAssetFileNameAndPath.ts'
-import type { AllAccordUnion } from './services/AccordRegistry.ts'
-import type { AllPatternUnion } from './services/PatternRegistry.ts'
 
 export const MidiPadSlide = ({
   selectedInputPortId,
@@ -53,12 +53,12 @@ export const MidiPadSlide = ({
     >
       <DisplayContentsWrapper role="row" aria-rowindex={0}>
         {Array.from(patterns, pattern => (
-          <PatternButton pattern={pattern} key={pattern.index} />
+          <PatternButton pattern={pattern} key={pattern} />
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={1}>
         {Array.from(accords, accord => (
-          <AccordButton accord={accord} key={accord.index} />
+          <AccordButton accord={accord} key={accord} />
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={2}>
@@ -71,7 +71,7 @@ export const MidiPadSlide = ({
   )
 }
 
-const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
+const PatternButton = ({ pattern }: { pattern: Pattern }) => {
   const isPressableRes = Hooks.useAtomValue(
     isPatternButtonPressableAtom(pattern),
   )
@@ -84,27 +84,24 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
     patternButtonDownloadPercentAtom(pattern),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. pattern №${pattern.index}. isPlayingRes`, isPlayingRes)
+    console.log(`wtf. pattern №${pattern}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    console.log(
-      `wtf. pattern № ${pattern.index} isPressableRes`,
-      isPressableRes,
-    )
+    console.log(`wtf. pattern № ${pattern} isPressableRes`, isPressableRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    console.log(`wtf. pattern № ${pattern.index} isSelectedRes`, isSelectedRes)
+    console.log(`wtf. pattern № ${pattern} isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    console.log(`wtf. pattern № ${pattern.index} isPressedRes`, isPressedRes)
+    console.log(`wtf. pattern № ${pattern} isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(downloadPercentRes)) {
     console.log(
-      `wtf. pattern № ${pattern.index} downloadPercentRes`,
+      `wtf. pattern № ${pattern} downloadPercentRes`,
       downloadPercentRes,
     )
     return 'wtf'
@@ -116,7 +113,7 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton data-pattern-index={pattern.index}>
+    <DebugButton data-pattern-index={pattern}>
       Pattern: {pattern.label}
       <br />
       Pressable: {isPressable ? Yes : No}
@@ -133,17 +130,17 @@ const PatternButton = ({ pattern }: { pattern: AllPatternUnion }) => {
   // return (
   //   <NeumorphicButton
   //     data-is-externally-active={false}
-  //     data-button-id={pattern.index}
+  //     data-button-id={pattern}
   //     role="gridcell"
-  //     aria-colindex={pattern.index}
+  //     aria-colindex={pattern}
   //     type="button"
-  //     aria-label={'Pattern №' + (pattern.index + 1)}
+  //     aria-label={'Pattern №' + (pattern + 1)}
   //     children={pattern.label}
   //   />
   // )
 }
 
-const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
+const AccordButton = ({ accord }: { accord: Accord }) => {
   const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
   const isSelectedRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
   const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
@@ -154,26 +151,23 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
     accordButtonDownloadPercentAtom(accord),
   )
   if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. accord №${accord.index}. isPlayingRes`, isPlayingRes)
+    console.log(`wtf. accord №${accord}. isPlayingRes`, isPlayingRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf accord №${accord.index}. isPressableRes`, isPressableRes)
+    console.log(`wtf accord №${accord}. isPressableRes`, isPressableRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isSelectedRes)) {
-    console.log(`wtf accord №${accord.index}. isSelectedRes`, isSelectedRes)
+    console.log(`wtf accord №${accord}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(isPressedRes)) {
-    console.log(`wtf accord №${accord.index}. isPressedRes`, isPressedRes)
+    console.log(`wtf accord №${accord}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!Result.isSuccess(downloadPercentRes)) {
-    console.log(
-      `wtf accord №${accord.index}. downloadPercentRes`,
-      downloadPercentRes,
-    )
+    console.log(`wtf accord №${accord}. downloadPercentRes`, downloadPercentRes)
     return 'wtf'
   }
 
@@ -184,7 +178,7 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton data-accord-index={accord.index}>
+    <DebugButton data-accord-index={accord}>
       Accord: {accord.label}
       <br />
       Pressable: {isPressable ? Yes : No}
@@ -201,9 +195,9 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   // return (
   //   <NeumorphicButton
   //     data-is-externally-active={false}
-  //     data-button-id={accord.index}
+  //     data-button-id={accord}
   //     role="gridcell"
-  //     aria-colindex={accord.index}
+  //     aria-colindex={accord}
   //     type="button"
   //     aria-label={accord.label}
   //     children={accord.label}
@@ -211,7 +205,7 @@ const AccordButton = ({ accord }: { accord: AllAccordUnion }) => {
   // )
 }
 
-const StrengthButton = ({ strength }: { strength: StrengthUnion }) => {
+const StrengthButton = ({ strength }: { strength: Strength }) => {
   const isPressableRes = Hooks.useAtomValue(
     isStrengthButtonPressableAtom(strength),
   )
