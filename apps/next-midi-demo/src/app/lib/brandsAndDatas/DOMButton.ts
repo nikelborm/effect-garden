@@ -24,6 +24,6 @@ export class DOMPhysicalButtonData<
   static makeFromParamButton = <
     TId extends AccordIndexData | PatternIndexData | StrengthData,
   >(
-    idData: ParamButtonIdData<TId>,
-  ) => new this(idData.id)
+    paramData: ParamButtonIdData<TId>,
+  ) => new this(paramData.id)
 }

@@ -2,8 +2,8 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
 
-import type { AssetPointer } from '../../audioAssetHelpers.ts'
-import { getLocalAssetFileName } from '../../audioAssetHelpers.ts'
+import type { AssetPointer } from '../../helpers/audioAssetFileNameAndPath.ts'
+import { getLocalAssetFileName } from '../../helpers/audioAssetFileNameAndPath.ts'
 import { getFileHandle, readFileBuffer } from '../../opfs.ts'
 import { RootDirectoryHandle } from '../RootDirectoryHandle.ts'
 

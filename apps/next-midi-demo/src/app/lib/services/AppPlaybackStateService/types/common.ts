@@ -2,15 +2,7 @@ import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as Schema from 'effect/Schema'
 
-import {
-  TaggedPatternPointer,
-  TaggedSlowStrumPointer,
-} from '../../../audioAssetHelpers.ts'
-
-const AssetPointerSchema = Schema.Union(
-  TaggedPatternPointer,
-  TaggedSlowStrumPointer,
-)
+import { AssetPointerSchema } from '../../../brandsAndDatas/AssetPointer.ts'
 
 // GOD DAMNN
 
@@ -35,11 +27,13 @@ export const CleanupFiberToolkitSchema = Schema.Struct({
     { identifier: 'Effect<void>' },
   ),
   fiberWaitingSignalToStartGarbageCollection: Schema.declare(
-    (u): u is Fiber.RuntimeFiber<void> => Fiber.isRuntimeFiber(u),
+    (u): u is Fiber.RuntimeFiber<void> =>
+      Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
     { identifier: 'Fiber.RuntimeFiber<void>' },
   ),
   fiberWaitingDelayToGiveGarbageCollectionSignal: Schema.declare(
-    (u): u is Fiber.RuntimeFiber<void> => Fiber.isRuntimeFiber(u),
+    (u): u is Fiber.RuntimeFiber<void> =>
+      Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
     { identifier: 'Fiber.RuntimeFiber<void>' },
   ),
   cancelDelayedCleanupSignal: Schema.declare(

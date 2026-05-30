@@ -5,7 +5,7 @@ import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
-import type { AssetPointer } from '../../../audioAssetHelpers.ts'
+import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { maxLoudness } from '../constants.ts'
 import {
   createScheduledNextPlayback,

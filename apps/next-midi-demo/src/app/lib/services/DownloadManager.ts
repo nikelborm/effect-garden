@@ -1,14 +1,15 @@
 import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Effect from 'effect/Effect'
-import type * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
-import * as MutableHashMap from 'effect/MutableHashMap'
 import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
 
-import { type AssetPointer, getRemoteAssetPath } from '../audioAssetHelpers.ts'
+import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
+import { getRemoteAssetPath } from '../helpers/audioAssetFileNameAndPath.ts'
+import { getFiberMapKeys } from '../helpers/getFiberMapKeys.ts'
+import { getFibersOfFiberMap } from '../helpers/getFibersOfFiberMap.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from './OpfsWritableHandleManager.ts'
 
@@ -144,45 +145,3 @@ export const getStreamOfRemoteAsset = (
       never
     >
   }).pipe(Effect.withSpan('getStreamOfRemoteAsset'), Stream.unwrap)
-
-export const getFiberMapKeys = <K, A, E>(self: FiberMap.FiberMap<K, A, E>) => {
-  const state = (
-    self as unknown as {
-      state:
-        | { readonly _tag: 'Closed' }
-        | {
-            readonly _tag: 'Open'
-            readonly backing: MutableHashMap.MutableHashMap<
-              K,
-              Fiber.RuntimeFiber<A, E>
-            >
-          }
-    }
-  ).state
-
-  return Effect.sync(() =>
-    state._tag === 'Closed' ? [] : MutableHashMap.keys(state.backing),
-  )
-}
-
-export const getFibersOfFiberMap = <K, A, E>(
-  self: FiberMap.FiberMap<K, A, E>,
-) => {
-  const state = (
-    self as unknown as {
-      state:
-        | { readonly _tag: 'Closed' }
-        | {
-            readonly _tag: 'Open'
-            readonly backing: MutableHashMap.MutableHashMap<
-              K,
-              Fiber.RuntimeFiber<A, E>
-            >
-          }
-    }
-  ).state
-
-  return Effect.sync(() =>
-    state._tag === 'Closed' ? [] : MutableHashMap.values(state.backing),
-  )
-}

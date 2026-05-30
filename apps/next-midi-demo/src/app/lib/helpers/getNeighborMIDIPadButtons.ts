@@ -1,20 +1,10 @@
-import * as Iterable from 'effect/Iterable'
-import * as Option from 'effect/Option'
-
-import type { PatternIndexUnion } from '../audioAssetHelpers.ts'
+import { accordIndexSet } from '../brandsAndDatas/Accord.ts';
+import { patternIndexSomeSet } from '../brandsAndDatas/Pattern.ts';
+import { strengthSet } from '../brandsAndDatas/Strength.ts';
 import { neighborFactory } from './neighborFactory.ts'
 
-const strengthSet = new Set(['s', 'm', 'v'] as const)
-const accordIndexSet = new Set([0, 1, 2, 3, 4, 5, 6, 7] as const)
-const patternIndexSet = new Set(
-  Iterable.append(
-    Iterable.map([0, 1, 2, 3, 4, 5, 6, 7] as const, Option.some),
-    Option.none<PatternIndexUnion>(),
-  ),
-)
-
 export const getNeighborMIDIPadButtons = neighborFactory([
-  { setName: 'patternIndex', set: patternIndexSet },
+  { setName: 'patternIndex', set: patternIndexSomeSet },
   { setName: 'strength', set: strengthSet },
   { setName: 'accordIndex', set: accordIndexSet },
 ])

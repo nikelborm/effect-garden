@@ -6,7 +6,7 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { AssetPointer } from '../../audioAssetHelpers.ts'
+import type { AssetPointer } from '../../helpers/audioAssetFileNameAndPath.ts'
 import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'

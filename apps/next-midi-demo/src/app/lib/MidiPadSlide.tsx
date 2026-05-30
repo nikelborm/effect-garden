@@ -27,8 +27,8 @@ import {
 } from './atoms/buttonsAtom.ts'
 import { patternsAtom } from './atoms/patternsAtom.ts'
 import { strengthsAtom } from './atoms/strengthAtom.ts'
-import type { StrengthUnion } from './audioAssetHelpers.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
+import type { StrengthUnion } from './helpers/audioAssetFileNameAndPath.ts'
 import type { AllAccordUnion } from './services/AccordRegistry.ts'
 import type { AllPatternUnion } from './services/PatternRegistry.ts'
 

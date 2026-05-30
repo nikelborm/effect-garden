@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { AssetPointer } from '../../../audioAssetHelpers.ts'
+import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import type { AppPlaybackState } from '../types/index.ts'
 import { advanceLoopLoopTransition } from './advanceLoopLoopTransition.ts'
 import { advanceLoopSilenceTransition } from './advanceLoopSilenceTransition.ts'

@@ -1,10 +1,8 @@
 import * as Effect from 'effect/Effect'
 import * as KeyedPool from 'effect/KeyedPool'
 
-import {
-  type AssetPointer,
-  getLocalAssetFileName,
-} from '../audioAssetHelpers.ts'
+import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
+import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
 import { getFileHandle } from '../opfs.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'

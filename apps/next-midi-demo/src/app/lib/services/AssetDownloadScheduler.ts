@@ -5,16 +5,16 @@ import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
-import type { AssetPointer } from '../audioAssetHelpers.ts'
-import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
-import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.ts'
-import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import {
-  CurrentlySelectedAssetState,
+  type AssetPointer,
   desimplifyAssetPointer,
   type SimpleAssetPointer,
   simplifyAssetPointer,
-} from './CurrentlySelectedAssetState.ts'
+} from '../brandsAndDatas/AssetPointer.ts'
+import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
+import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.ts'
+import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
+import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { DownloadManager } from './DownloadManager.ts'
 
 export const AssetDownloadSchedulerLive = Effect.gen(function* () {
@@ -27,7 +27,7 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
   )(function* (currentlySelectedAsset: AssetPointer) {
     if (yield* allDownloadedRef) return
 
-    for (const priorityTier of priorityTiers) {
+    for (const priorityTier of [0, 1, 2, 3] as const) {
       const logWithPriorityTier = (
         message: string,
         ...rest: ReadonlyArray<any>
@@ -124,4 +124,4 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
   )
 }).pipe(Layer.scopedDiscard)
 
-const priorityTiers = [0, 1, 2, 3] as const
+

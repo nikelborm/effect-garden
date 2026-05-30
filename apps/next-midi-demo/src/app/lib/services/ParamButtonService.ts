@@ -5,27 +5,26 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { StrengthUnion } from '../audioAssetHelpers.ts'
+import type { AllAccordUnion } from '../brandsAndDatas/Accord.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
+import type { AllPatternUnion } from '../brandsAndDatas/Pattern.ts'
+import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
-import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
+import { AccordRegistry } from './AccordRegistry.ts'
 import {
   AppPlaybackStateService,
   type PlayingAppPlaybackStates,
 } from './AppPlaybackStateService/AppPlaybackStateService.ts'
-import {
-  CurrentlySelectedAssetState,
-  type Patch,
-} from './CurrentlySelectedAssetState.ts'
+import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import {
   AccordInputBus,
   type InputBusHandle,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
-import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
+import { PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 // TODO: make TParamButton a ParamButtonData
@@ -215,7 +214,7 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
       registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
       getSelectedChangesStream: reg => reg.selectedStrengthChanges,
-      toCompareValue: EFunction.identity<StrengthUnion>,
+      toCompareValue: EFunction.identity<Strength>,
       toLabel: strength => `Strength=${strength}`,
       isCurrentlyPlayingPredicate: (pb, strength) =>
         pb.currentAsset.strength === strength,

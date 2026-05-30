@@ -1,22 +1,20 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
-import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
+import { Accord, type AllAccordUnion } from '../brandsAndDatas/Accord.ts'
 import {
-  type AccordIndexUnion,
   type AssetPointer,
-  type PatternIndexUnion,
-  type StrengthUnion,
+  complexifyAssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../audioAssetHelpers.ts'
-import { Accord } from '../brandsAndDatas/Accord.ts'
-import { Pattern } from '../brandsAndDatas/Pattern.ts'
+} from '../brandsAndDatas/AssetPointer.ts'
+import { type AllPatternUnion, Pattern } from '../brandsAndDatas/Pattern.ts'
+import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { streamAll } from '../helpers/streamAll.ts'
-import { AccordRegistry, type AllAccordUnion } from './AccordRegistry.ts'
+import { AccordRegistry } from './AccordRegistry.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
-import { type AllPatternUnion, PatternRegistry } from './PatternRegistry.ts'
+import { PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelectedAssetState>()(
@@ -99,52 +97,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
   },
 ) {}
 
-const complexifyAssetPointer = ({
-  accord,
-  pattern,
-  strength,
-}: {
-  readonly strength: StrengthUnion
-  readonly pattern: Option.Option<AllPatternUnion>
-  readonly accord: AllAccordUnion
-}): AssetPointer =>
-  Option.match(pattern, {
-    onNone: () =>
-      TaggedSlowStrumPointer.make({ accordIndex: accord.index, strength }),
-    onSome: pattern =>
-      TaggedPatternPointer.make({
-        accordIndex: accord.index,
-        patternIndex: pattern.index,
-        strength,
-      }),
-  })
-
-export const simplifyAssetPointer = (
-  asset: AssetPointer,
-): SimpleAssetPointer => ({
-  accordIndex: asset.accordIndex,
-  patternIndex: TaggedPatternPointer.models(asset)
-    ? Option.some(asset.patternIndex)
-    : Option.none(),
-  strength: asset.strength,
-})
-
-export const desimplifyAssetPointer = ({
-  patternIndex: patternIndexOption,
-  ...other
-}: SimpleAssetPointer) =>
-  Option.match(patternIndexOption, {
-    onNone: () => TaggedSlowStrumPointer.make(other),
-    onSome: patternIndex =>
-      TaggedPatternPointer.make({ ...other, patternIndex }),
-  })
-
-export interface SimpleAssetPointer {
-  accordIndex: AccordIndexUnion
-  patternIndex: Option.Option<PatternIndexUnion>
-  strength: StrengthUnion
-}
-
 const makePatchApplier =
   (patch: Patch) =>
   (old: AssetPointer): AssetPointer => {
@@ -161,4 +113,4 @@ const makePatchApplier =
       : TaggedSlowStrumPointer.make({ ...old, strength: patch })
   }
 
-export type Patch = AllPatternUnion | AllAccordUnion | StrengthUnion
+export type Patch = AllPatternUnion | AllAccordUnion | Strength

@@ -5,24 +5,9 @@ import type * as Option from 'effect/Option'
 
 import { isData } from '../helpers/isData.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
-import type { AccordIndexData } from './Accord.ts'
 import type * as ButtonState from './ButtonState.ts'
-import type { NoteIdData } from './MIDIValues.ts'
 import type { ParamButtonIdData } from './ParamButton.ts'
 // import type { ParamButtonIdData } from './ParamButton.ts'
-import type { PatternIndexData } from './Pattern.ts'
-import type { StrengthData } from './Strength.ts'
-
-// export type HtmlDomButton = PhysicalButtonId & Brand.Brand<'HTML DOM button'>
-
-// TODO: types unused??
-// export type AccordHtmlDomButtonIdData = AccordIndexData & HtmlDomButton
-// export type PatternHtmlDomButtonIdData = PatternIndexData & HtmlDomButton
-// export type StrengthHtmlDomButtonIdData = StrengthData & HtmlDomButton
-
-// export type AccordNoteIdData =
-// export type PatternNoteIdData =
-// export type StrengthNoteIdData =
 
 export type PhysicalButtonId<T extends string | number> = T extends any
   ? Brand.Branded<T, 'PhysicalButtonId'>

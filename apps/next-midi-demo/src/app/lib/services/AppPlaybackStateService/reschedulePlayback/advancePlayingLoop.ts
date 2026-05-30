@@ -4,7 +4,7 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
-import type { AssetPointer } from '../../../audioAssetHelpers.ts'
+import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createScheduledNextPlayback,

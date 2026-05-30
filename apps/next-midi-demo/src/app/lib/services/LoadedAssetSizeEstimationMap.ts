@@ -6,12 +6,12 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
+import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
+import { ASSET_SIZE_BYTES } from '../constants.ts'
 import {
-  type AssetPointer,
   getAssetFromLocalFileName,
   getLocalAssetFileName,
-} from '../audioAssetHelpers.ts'
-import { ASSET_SIZE_BYTES } from '../constants.ts'
+} from '../helpers/audioAssetFileNameAndPath.ts'
 import { getFileSize, listEntries } from '../opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
