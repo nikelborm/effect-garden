@@ -4,20 +4,24 @@ import type * as Either from 'effect/Either'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
+import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
 import type { Distribute } from '../helpers/Distribute.ts'
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { ParamButtonIdData } from './ParamButton.ts'
 
-const strengthRawBase = ['s', 'm', 'v'] as const
+const strengthsRawBase = ['s', 'm', 'v'] as const
 
-export const strengthSet = new Set(strengthRawBase)
+export type AllStrengthTuple = BrandifyTuple<Strength, typeof strengthsRawBase>
+export const allStrengths = strengthsRawBase as AllStrengthTuple
+
+export const strengthSet = new Set(allStrengths)
 
 export type Strength = Distribute<
-  Brand.Branded<(typeof strengthRawBase)[number], 'Strength'>
+  Brand.Branded<(typeof strengthsRawBase)[number], 'Strength'>
 >
 
 export const Strength = Brand.refined<Strength>(
-  strengthCandidate => strengthSet.has(strengthCandidate),
+  strengthCandidate => strengthSet.has(strengthCandidate as any),
   notStrength =>
     Brand.error(
       `Expected ${JSON.stringify(notStrength)} to be a valid strength label`,
@@ -30,7 +34,7 @@ export const Strength = Brand.refined<Strength>(
   is(s: unknown): s is Strength
 }
 
-export const defaultStrength = Strength(strengthRawBase[0])
+export const defaultStrength = Strength(strengthsRawBase[0])
 
 export type StrengthOption = Option.Option<Strength>
 
@@ -58,7 +62,7 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   ) => new this(new StrengthData(strength))
 }
 
-export const StrengthSchema = Schema.Literal(...strengthRawBase)
+export const StrengthSchema = Schema.Literal(...strengthsRawBase)
   .annotations({ title: 'Strength' })
   .pipe(Schema.fromBrand(Strength))
 
@@ -68,11 +72,3 @@ export type UnbrandedStrength<TStrength extends Strength> =
 export const UnbrandedStrength = <TStrength extends Strength>(
   strength: TStrength,
 ) => strength as UnbrandedStrength<TStrength>
-
-export const allStrengths = [
-  'm' as 'm' & Strength,
-  'v' as 'v' & Strength,
-  's' as 's' & Strength,
-] as const
-
-export type AllStrengthTuple = typeof allStrengths

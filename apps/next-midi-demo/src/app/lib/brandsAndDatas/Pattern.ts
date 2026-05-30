@@ -5,20 +5,24 @@ import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
+import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
 import type { Distribute } from '../helpers/Distribute.ts'
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { ParamButtonIdData } from './ParamButton.ts'
 
 const patternsRawBase = ['1', '2', '3', '4', '5', '6', '7', '8'] as const
 
-export const patternSet = new Set(patternsRawBase)
+export type AllPatternTuple = BrandifyTuple<Pattern, typeof patternsRawBase>
+export const allPatterns = patternsRawBase as AllPatternTuple
+
+export const patternSet = new Set(allPatterns)
 
 export type Pattern = Distribute<
   Brand.Branded<(typeof patternsRawBase)[number], 'Pattern'>
 >
 
 export const Pattern = Brand.refined<Pattern>(
-  patternCandidate => patternSet.has(patternCandidate),
+  patternCandidate => patternSet.has(patternCandidate as any),
   notPattern =>
     Brand.error(
       `Expected ${JSON.stringify(notPattern)} to be a valid pattern label`,
@@ -62,18 +66,15 @@ export const PatternSchema = Schema.Literal(...patternsRawBase)
   .annotations({ title: 'Pattern' })
   .pipe(Schema.fromBrand(Pattern))
 
-export type UnbrandedPattern<TAccord extends Pattern> =
-  Brand.Brand.Unbranded<TAccord>
+export type UnbrandedPattern<TPattern extends Pattern> =
+  Brand.Brand.Unbranded<TPattern>
 
-export const UnbrandedPattern = <TAccord extends Pattern>(accord: TAccord) =>
-  accord as UnbrandedPattern<TAccord>
+export const UnbrandedPattern = <TPattern extends Pattern>(pattern: TPattern) =>
+  pattern as UnbrandedPattern<TPattern>
 
-export const patternSomeSet = new Set(
+export const patternSomeSet: Set<PatternOption> = new Set(
   Iterable.append(
-    Iterable.map(patternsRawBase, Option.some),
+    Iterable.map(allPatterns, Option.some),
     Option.none<Pattern>(),
   ),
 )
-
-// TODO: type AllPatternTuple
-export type AllPatternTuple = any

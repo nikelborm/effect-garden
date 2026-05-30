@@ -1,24 +1,27 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
-import * as Iterable from 'effect/Iterable'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
+import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
 import type { Distribute } from '../helpers/Distribute.ts'
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { ParamButtonIdData } from './ParamButton.ts'
 
 const accordsRawBase = ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'D', 'E'] as const
 
-export const accordSet = new Set(accordsRawBase)
+export type AllAccordTuple = BrandifyTuple<Accord, typeof accordsRawBase>
+export const allAccords = accordsRawBase as AllAccordTuple
+
+export const accordSet = new Set(allAccords)
 
 export type Accord = Distribute<
   Brand.Branded<(typeof accordsRawBase)[number], 'Accord'>
 >
 
 export const Accord = Brand.refined<Accord>(
-  accordCandidate => accordSet.has(accordCandidate),
+  accordCandidate => accordSet.has(accordCandidate as any),
   notAccord =>
     Brand.error(
       `Expected ${JSON.stringify(notAccord)} to be a valid accord label`,
@@ -67,6 +70,3 @@ export type UnbrandedAccord<TAccord extends Accord> =
 
 export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
   accord as UnbrandedAccord<TAccord>
-
-// TODO type AllAccordTuple
-export type AllAccordTuple = any
