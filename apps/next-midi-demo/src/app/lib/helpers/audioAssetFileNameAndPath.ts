@@ -4,7 +4,7 @@ import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
-import { Accord, UnbrandedAccord } from '../brandsAndDatas/Accord.ts'
+import { Accord, type UnbrandedAccord } from '../brandsAndDatas/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
@@ -18,13 +18,16 @@ import type { StringToArray } from './StringToArray.ts'
 const getPaddedAccord = <const TAccord extends Accord>(accord: TAccord) =>
   accord.padEnd(2, '_') as PaddedAccord<TAccord>
 
-export type PaddedAccord<TAccord extends Accord> =
-  StringToArray<TAccord>['length'] extends infer TAccordLength extends number
-    ? TAccordLength extends 2
-      ? TAccord
-      : TAccordLength extends 1
-        ? `${TAccord}_`
-        : never
+export type PaddedAccord<TAccordBranded extends Accord> =
+  UnbrandedAccord<TAccordBranded> extends infer TAccord extends string
+    ? StringToArray<TAccord>['length'] extends infer TAccordLength extends
+        number
+      ? TAccordLength extends 2
+        ? TAccord
+        : TAccordLength extends 1
+          ? `${TAccord}_`
+          : never
+      : never
     : never
 
 ///
@@ -36,12 +39,12 @@ const getRemotePatternAssetFileName = <
   accord: TAccord,
   strength: TStrength,
 ): RemotePatternAssetFileName<TAccord, TStrength> =>
-  `accord_${UnbrandedAccord(accord)}_${getPaddedAccord(accord)}_strength_${UnbrandedStrength(strength)}.wav`
+  `accord_${getPaddedAccord(accord)}_strength_${UnbrandedStrength(strength)}.wav`
 
 export type RemotePatternAssetFileName<
   TAccord extends Accord,
   TStrength extends Strength,
-> = `accord_${UnbrandedAccord<TAccord>}_${PaddedAccord<TAccord>}_strength_${UnbrandedStrength<TStrength>}.wav`
+> = `accord_${PaddedAccord<TAccord>}_strength_${UnbrandedStrength<TStrength>}.wav`
 
 ///
 
@@ -93,22 +96,23 @@ export type RemoteSlowStrumAssetPath<
 
 ///
 
-const getAssetAccord = <TAsset extends AssetPointer>(asset: TAsset) =>
+const getAssetAccord = <const TAsset extends AssetPointer>(asset: TAsset) =>
   asset.accord as AssetAccord<TAsset>
 
 export type AssetAccord<TAsset extends AssetPointer> = TAsset['accord']
 
 ///
 
-const getAssetPattern = <TAsset extends TaggedPatternPointer>(asset: TAsset) =>
-  asset.pattern as AssetPattern<TAsset>
+const getAssetPattern = <const TAsset extends TaggedPatternPointer>(
+  asset: TAsset,
+) => asset.pattern as AssetPattern<TAsset>
 
 export type AssetPattern<TAsset extends TaggedPatternPointer> =
   TAsset['pattern']
 
 ///
 
-const getAssetStrength = <TAsset extends AssetPointer>(asset: TAsset) =>
+const getAssetStrength = <const TAsset extends AssetPointer>(asset: TAsset) =>
   asset.strength as AssetStrength<TAsset>
 
 export type AssetStrength<TAsset extends AssetPointer> = TAsset['strength']
@@ -150,7 +154,7 @@ export type LocalSlowStrumAssetFileName<
 
 ///
 
-export const getRemoteAssetPath = <TAsset extends AssetPointer>(
+export const getRemoteAssetPath = <const TAsset extends AssetPointer>(
   asset: TAsset,
 ): RemoteAssetPath<TAsset> =>
   TaggedPatternPointer.models(asset)
@@ -174,9 +178,10 @@ export type RemoteAssetPath<TAsset extends AssetPointer> =
     : TAsset extends TaggedSlowStrumPointer
       ? RemoteSlowStrumAssetPath<AssetAccord<TAsset>, AssetStrength<TAsset>>
       : never
+
 ///
 
-export const getLocalAssetFileName = <TAsset extends AssetPointer>(
+export const getLocalAssetFileName = <const TAsset extends AssetPointer>(
   asset: TAsset,
 ): LocalAssetFileName<TAsset> =>
   TaggedPatternPointer.models(asset)
@@ -203,7 +208,7 @@ export type LocalAssetFileName<TAsset extends AssetPointer> =
 
 ///
 
-export const getLocalAssetFilePath = <TAsset extends AssetPointer>(
+export const getLocalAssetFilePath = <const TAsset extends AssetPointer>(
   asset: TAsset,
 ): LocalAssetFilePath<TAsset> => `/${getLocalAssetFileName(asset)}`
 
