@@ -5,10 +5,10 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { Accord } from '../brandsAndDatas/Accord.ts'
+import type { AccordParamButtonData } from '../brandsAndDatas/Accord.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type { Pattern } from '../brandsAndDatas/Pattern.ts'
-import type { Strength } from '../brandsAndDatas/Strength.ts'
+import type { PatternParamButtonData } from '../brandsAndDatas/Pattern.ts'
+import type { StrengthParamButtonData } from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
@@ -180,11 +180,11 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
       registryTag: AccordRegistry,
       busTag: AccordInputBus,
       getSelectedChangesStream: reg => reg.selectedAccordChanges,
-      toCompareValue: EFunction.identity<Accord>,
+      toCompareValue: EFunction.identity<AccordParamButtonData>,
       toLabel: accord => `Accord index=${accord}`,
       isCurrentlyPlayingPredicate: (pb, accord) =>
         pb.currentAsset.accord === accord,
-      selectAction: (reg, accord) => reg.selectAccord(accord),
+      selectAction: (reg, param) => reg.selectAccord(param.id.accord),
     }),
   },
 ) {}
@@ -197,11 +197,11 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
       registryTag: PatternRegistry,
       busTag: PatternInputBus,
       getSelectedChangesStream: reg => reg.selectedPatternChanges,
-      toCompareValue: Option.some<Pattern>,
+      toCompareValue: Option.some<PatternParamButtonData>,
       toLabel: pattern => `Pattern index=${pattern}`,
       isCurrentlyPlayingPredicate: (pb, pattern) =>
         Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-      selectAction: (reg, pattern) => reg.switchPattern(pattern),
+      selectAction: (reg, param) => reg.switchPattern(param.id.pattern),
     }),
   },
 ) {}
@@ -214,11 +214,11 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
       registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
       getSelectedChangesStream: reg => reg.selectedStrengthChanges,
-      toCompareValue: EFunction.identity<Strength>,
+      toCompareValue: EFunction.identity<StrengthParamButtonData>,
       toLabel: strength => `Strength=${strength}`,
       isCurrentlyPlayingPredicate: (pb, strength) =>
         pb.currentAsset.strength === strength,
-      selectAction: (reg, strength) => reg.selectStrength(strength),
+      selectAction: (reg, param) => reg.selectStrength(param.id.strength),
     }),
   },
 ) {}
