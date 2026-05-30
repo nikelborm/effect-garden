@@ -114,7 +114,7 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
 
   return (
     <DebugButton data-pattern-index={pattern}>
-      Pattern: {pattern.label}
+      Pattern: {pattern}
       <br />
       Pressable: {isPressable ? Yes : No}
       <br />
@@ -135,7 +135,7 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
   //     aria-colindex={pattern}
   //     type="button"
   //     aria-label={'Pattern №' + (pattern + 1)}
-  //     children={pattern.label}
+  //     children={pattern}
   //   />
   // )
 }
@@ -179,7 +179,7 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
 
   return (
     <DebugButton data-accord-index={accord}>
-      Accord: {accord.label}
+      Accord: {accord}
       <br />
       Pressable: {isPressable ? Yes : No}
       <br />
@@ -199,8 +199,8 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
   //     role="gridcell"
   //     aria-colindex={accord}
   //     type="button"
-  //     aria-label={accord.label}
-  //     children={accord.label}
+  //     aria-label={accord}
+  //     children={accord}
   //   />
   // )
 }
@@ -269,8 +269,8 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
   //     role="gridcell"
   //     aria-colindex={strength}
   //     type="button"
-  //     aria-label={strength.label}
-  //     children={strength.label}
+  //     aria-label={strength}
+  //     children={strength}
   //   />
   // )
 }
