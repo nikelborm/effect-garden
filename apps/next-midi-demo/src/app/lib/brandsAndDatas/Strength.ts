@@ -21,7 +21,7 @@ export type Strength = Distribute<
 >
 
 export const Strength = Brand.refined<Strength>(
-  strengthCandidate => strengthSet.has(strengthCandidate as any),
+  candidate => strengthSet.has(candidate as any),
   notStrength =>
     Brand.error(
       `Expected ${JSON.stringify(notStrength)} to be a valid strength label`,
@@ -46,8 +46,7 @@ export class StrengthData<
   constructor(strength: TStrength) {
     super({ strength })
   }
-  static makeUnsafe = (strengthCandidate: string) =>
-    new this(Strength(strengthCandidate))
+  static makeUnsafe = (candidate: string) => new this(Strength(candidate))
   static models = (candidate: unknown): candidate is StrengthData =>
     candidate instanceof this
 }
@@ -56,8 +55,8 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof StrengthParamButtonData>()(StrengthData)
 
-  static makeUnsafe = (strengthCandidate: string) =>
-    new this(StrengthData.makeUnsafe(strengthCandidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(StrengthData.makeUnsafe(candidate))
   static make = <const TStrength extends Strength = Strength>(
     strength: TStrength,
   ) => new this(new StrengthData(strength))

@@ -22,7 +22,7 @@ export type Pattern = Distribute<
 >
 
 export const Pattern = Brand.refined<Pattern>(
-  patternCandidate => patternSet.has(patternCandidate as any),
+  candidate => patternSet.has(candidate as any),
   notPattern =>
     Brand.error(
       `Expected ${JSON.stringify(notPattern)} to be a valid pattern label`,
@@ -47,8 +47,7 @@ export class PatternData<
   constructor(pattern: TPattern) {
     super({ pattern })
   }
-  static makeUnsafe = (patternCandidate: string) =>
-    new this(Pattern(patternCandidate))
+  static makeUnsafe = (candidate: string) => new this(Pattern(candidate))
   static models = (candidate: unknown): candidate is PatternData =>
     candidate instanceof this
 }
@@ -57,8 +56,8 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof PatternParamButtonData>()(PatternData)
 
-  static makeUnsafe = (patternCandidate: string) =>
-    new this(PatternData.makeUnsafe(patternCandidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(PatternData.makeUnsafe(candidate))
   static make = <const TPattern extends Pattern = Pattern>(pattern: TPattern) =>
     new this(new PatternData(pattern))
 }

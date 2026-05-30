@@ -21,7 +21,7 @@ export type Accord = Distribute<
 >
 
 export const Accord = Brand.refined<Accord>(
-  accordCandidate => accordSet.has(accordCandidate as any),
+  candidate => accordSet.has(candidate as any),
   notAccord =>
     Brand.error(
       `Expected ${JSON.stringify(notAccord)} to be a valid accord label`,
@@ -46,8 +46,7 @@ export class AccordData<
   constructor(accord: TAccord) {
     super({ accord })
   }
-  static makeUnsafe = (accordCandidate: string) =>
-    new this(Accord(accordCandidate))
+  static makeUnsafe = (candidate: string) => new this(Accord(candidate))
   static models = (candidate: unknown): candidate is AccordData =>
     candidate instanceof this
 }
@@ -56,8 +55,8 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof AccordParamButtonData>()(AccordData)
 
-  static makeUnsafe = (accordCandidate: string) =>
-    new this(AccordData.makeUnsafe(accordCandidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(AccordData.makeUnsafe(candidate))
   static make = <const TAccord extends Accord = Accord>(accord: TAccord) =>
     new this(new AccordData(accord))
 }

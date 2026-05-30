@@ -34,15 +34,16 @@ export class NoteIdData extends Data.TaggedClass('next-midi-demo/NoteId')<{
     super({ note })
   }
 
-  static makeUnsafe = (note: number) => new this(NoteId(note))
-  static models = (note: unknown) => note instanceof this
+  static makeUnsafe = (candidate: number) => new this(NoteId(candidate))
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class NotePhysicalButtonData extends PhysicalButtonIdData<NoteIdData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof NotePhysicalButtonData>()(NoteIdData)
 
-  static makeUnsafe = (note: number) => new this(NoteIdData.makeUnsafe(note))
+  static makeUnsafe = (candidate: number) =>
+    new this(NoteIdData.makeUnsafe(candidate))
 }
 
 export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>

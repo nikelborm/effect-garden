@@ -28,11 +28,12 @@ export const KeyboardKey = Brand.refined<KeyboardKey>(
     PhysicalButtonId.either<string>,
     Either.flatMap(
       Either.liftPredicate(
-        key =>
-          NonPrintableKeyboardKeys.has(key as any) || [...key].length === 1,
-        key =>
+        candidate =>
+          NonPrintableKeyboardKeys.has(candidate as any) ||
+          [...candidate].length === 1,
+        notKey =>
           Brand.error(
-            `Expected ${JSON.stringify(key)} to be either a valid non-printable key name, or a single unicode symbol`,
+            `Expected ${JSON.stringify(notKey)} to be either a valid non-printable key name, or a single unicode symbol`,
           ),
       ),
     ),
@@ -47,13 +48,14 @@ export class KeyboardKeyData extends Data.TaggedClass(
     super({ key })
   }
 
-  static makeUnsafe = (key: string) => new this(KeyboardKey(key))
-  static models = (key: unknown) => key instanceof this
+  static makeUnsafe = (candidate: string) => new this(KeyboardKey(candidate))
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class KeyboardKeyPhysicalButtonData extends PhysicalButtonIdData<KeyboardKeyData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof KeyboardKeyPhysicalButtonData>()(KeyboardKeyData)
 
-  static makeUnsafe = (key: string) => new this(KeyboardKeyData.makeUnsafe(key))
+  static makeUnsafe = (candidate: string) =>
+    new this(KeyboardKeyData.makeUnsafe(candidate))
 }
