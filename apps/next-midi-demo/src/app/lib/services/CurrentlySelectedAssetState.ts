@@ -2,7 +2,7 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import { AccordData } from '../brandsAndDatas/Accord.ts'
+import type { AccordData } from '../brandsAndDatas/Accord.ts'
 import {
   type AssetPointer,
   complexifyAssetPointer,
@@ -99,18 +99,10 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 
 const makePatchApplier =
   (patch: Patch) =>
-  (old: AssetPointer): AssetPointer => {
-    if (PatternData.models(patch))
-      return TaggedPatternPointer.make({ ...old, pattern: patch.pattern })
-
-    if (AccordData.models(patch))
-      return TaggedPatternPointer.models(old)
-        ? TaggedPatternPointer.make({ ...old, accord: patch.accord })
-        : TaggedSlowStrumPointer.make({ ...old, accord: patch.accord })
-
-    return TaggedPatternPointer.models(old)
-      ? TaggedPatternPointer.make({ ...old, strength: patch.strength })
-      : TaggedSlowStrumPointer.make({ ...old, strength: patch.strength })
-  }
+  (old: AssetPointer): AssetPointer =>
+    (TaggedPatternPointer.models(old) || PatternData.models(patch)
+      ? TaggedPatternPointer
+      : TaggedSlowStrumPointer
+    ).make({ ...old, ...patch } as any)
 
 export type Patch = PatternData | AccordData | StrengthData
