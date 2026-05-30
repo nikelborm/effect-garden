@@ -1,6 +1,7 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
+import * as Iterable from 'effect/Iterable'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
@@ -18,17 +19,21 @@ export type Accord = Distribute<
 
 export const Accord = Brand.refined<Accord>(
   accordCandidate => accordSet.has(accordCandidate),
-  label =>
-    Brand.error(`Expected ${JSON.stringify(label)} to be a valid accord label`),
+  notAccord =>
+    Brand.error(
+      `Expected ${JSON.stringify(notAccord)} to be a valid accord label`,
+    ),
 ) as {
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  (i: unknown): Accord
-  option(i: unknown): Option.Option<Accord>
-  either(i: unknown): Either.Either<Accord, Brand.Brand.BrandErrors>
-  is(i: unknown): i is Accord
+  (a: unknown): Accord
+  option(a: unknown): AccordOption
+  either(a: unknown): Either.Either<Accord, Brand.Brand.BrandErrors>
+  is(a: unknown): a is Accord
 }
 
 export const defaultAccord = Accord(accordsRawBase[0])
+
+export type AccordOption = Option.Option<Accord>
 
 export class AccordData<
   const TAccord extends Accord = Accord,
@@ -38,29 +43,30 @@ export class AccordData<
   constructor(accord: TAccord) {
     super({ accord })
   }
-
-  static makeUnsafe = (accord: string) => new this(Accord(accord))
-  static models = (accord: unknown) => accord instanceof this
+  static makeUnsafe = (accordCandidate: string) =>
+    new this(Accord(accordCandidate))
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof AccordParamButtonData>()(AccordData)
 
-  static makeUnsafe = (accord: string) =>
-    new this(AccordData.makeUnsafe(accord))
-  static make = (accord: Accord) => new this(new AccordData(accord))
+  static makeUnsafe = (accordCandidate: string) =>
+    new this(AccordData.makeUnsafe(accordCandidate))
+  static make = <const TAccord extends Accord = Accord>(accord: TAccord) =>
+    new this(new AccordData(accord))
 }
 
-export const AccordSchema = Schema.Literal(...accordsRawBase).pipe(
-  Schema.fromBrand(Accord),
-)
+export const AccordSchema = Schema.Literal(...accordsRawBase)
+  .annotations({ title: 'Accord' })
+  .pipe(Schema.fromBrand(Accord))
 
-export type UnbrandedAccord<TIndex extends Accord> =
-  Brand.Brand.Unbranded<TIndex>
+export type UnbrandedAccord<TAccord extends Accord> =
+  Brand.Brand.Unbranded<TAccord>
 
-export const UnbrandedAccord = <TIndex extends Accord>(index: TIndex) =>
-  index as UnbrandedAccord<TIndex>
+export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
+  accord as UnbrandedAccord<TAccord>
 
 // TODO type AllAccordTuple
 export type AllAccordTuple = any

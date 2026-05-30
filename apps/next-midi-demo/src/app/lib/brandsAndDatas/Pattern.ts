@@ -7,89 +7,70 @@ import * as Schema from 'effect/Schema'
 
 import type { Distribute } from '../helpers/Distribute.ts'
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
-import type { TupleIndices } from '../helpers/TupleIndices.ts'
 import { ParamButtonIdData } from './ParamButton.ts'
 
-export const patternsRawBase = [
-  'P1',
-  'P2',
-  'P3',
-  'P4',
-  'P5',
-  'P6',
-  'P7',
-  'P8',
-] as const
+const patternsRawBase = ['1', '2', '3', '4', '5', '6', '7', '8'] as const
 
-export const patternIndicies = []
+export const patternSet = new Set(patternsRawBase)
 
-export type Pattern = Distribute<Brand.Branded<PatternUnion, 'Pattern'>>
+export type Pattern = Distribute<
+  Brand.Branded<(typeof patternsRawBase)[number], 'Pattern'>
+>
 
 export const Pattern = Brand.refined<Pattern>(
-  n => Number.isSafeInteger(n) && n >= 0 && n < 8,
-  n =>
+  patternCandidate => patternSet.has(patternCandidate),
+  notPattern =>
     Brand.error(
-      `Expected ${JSON.stringify(n)} to be an integer in range 0...7`,
+      `Expected ${JSON.stringify(notPattern)} to be a valid pattern label`,
     ),
 ) as {
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  (i: number): Pattern
-  option(i: number): PatternOption
-  either(i: number): Either.Either<Pattern, Brand.Brand.BrandErrors>
-  is(i: number): i is Pattern
+  (p: unknown): Pattern
+  option(p: unknown): PatternOption
+  either(p: unknown): Either.Either<Pattern, Brand.Brand.BrandErrors>
+  is(p: unknown): p is Pattern
 }
 
 export const defaultPattern = Pattern(patternsRawBase[0])
 
 export type PatternOption = Option.Option<Pattern>
 
-export class PatternData extends Data.TaggedClass('next-midi-demo/Pattern')<{
-  index: Pattern
+export class PatternData<
+  const TPattern extends Pattern = Pattern,
+> extends Data.TaggedClass('next-midi-demo/Pattern')<{
+  pattern: TPattern
 }> {
-  constructor(index: Pattern) {
-    super({ index })
+  constructor(pattern: TPattern) {
+    super({ pattern })
   }
-
-  static makeUnsafe = (index: number) => new this(Pattern(index))
-  static models = (aid: unknown) => aid instanceof this
+  static makeUnsafe = (patternCandidate: string) =>
+    new this(Pattern(patternCandidate))
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof PatternParamButtonData>()(PatternData)
 
-  static makeUnsafe = (index: number) => new this(PatternData.makeUnsafe(index))
-  static make = (index: Pattern) => new this(new PatternData(index))
+  static makeUnsafe = (patternCandidate: string) =>
+    new this(PatternData.makeUnsafe(patternCandidate))
+  static make = <const TPattern extends Pattern = Pattern>(pattern: TPattern) =>
+    new this(new PatternData(pattern))
 }
 
-export class Pattern<
-  const TLabel extends string = string,
-  TIndex extends Pattern = Pattern,
-> extends Data.TaggedClass('next-midi-demo/Pattern')<{
-  label: TLabel
-  index: TIndex
-}> {
-  static models = (p: unknown): p is Pattern => p instanceof Pattern
-}
+export const PatternSchema = Schema.Literal(...patternsRawBase)
+  .annotations({ title: 'Pattern' })
+  .pipe(Schema.fromBrand(Pattern))
 
-export const PatternSchema = Schema.Literal(0, 1, 2, 3, 4, 5, 6, 7).pipe(
-  Schema.fromBrand(Pattern),
-)
-export type PatternUnion = TupleIndices<typeof patternsRawBase>
+export type UnbrandedPattern<TAccord extends Pattern> =
+  Brand.Brand.Unbranded<TAccord>
 
-export const allPatterns = patternsRawBase.map(
-  (body, index) => new Pattern({ ...body, index: Pattern(index) }),
-) as unknown as AllPatternTuple
-
-export type UnbrandedPattern<TIndex extends Pattern> =
-  Brand.Brand.Unbranded<TIndex>
-
-export const UnbrandedPattern = <TIndex extends Pattern>(index: TIndex) =>
-  index as UnbrandedPattern<TIndex>
+export const UnbrandedPattern = <TAccord extends Pattern>(accord: TAccord) =>
+  accord as UnbrandedPattern<TAccord>
 
 export const patternSomeSet = new Set(
   Iterable.append(
-    Iterable.map([0, 1, 2, 3, 4, 5, 6, 7] as const, Option.some),
+    Iterable.map(patternsRawBase, Option.some),
     Option.none<Pattern>(),
   ),
 )
