@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/complexity/useLiteralKeys: incompatibility with TS */
 
-import { pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
-import * as Record from 'effect/Record'
+import * as Struct from 'effect/Struct'
 
 import { Accord, UnbrandedAccord } from '../brandsAndDatas/Accord.ts'
 import {
@@ -222,15 +222,17 @@ export const getAssetFromLocalFileName = (
   fileName: string,
 ): Option.Option<AssetPointer> => {
   const parseBase = (regexp: RegExp) =>
-    Option.flatMap(
+    Option.map(
       Option.fromNullable(fileName.match(regexp)?.groups),
-      groups =>
-        Option.all({
-          ...Record.map(groups, Option.some),
-          accord: Accord.option(parseInt10(groups['accord'])),
-          strength: Strength.option(groups['strength']),
-        }),
-    ) as Option.Option<{ accord: Accord; strength: Strength }>
+      Struct.evolve({
+        pattern: Option.some,
+        accord: flow(parseInt10, Accord.option),
+        strength: Strength.option,
+      }),
+    ).pipe(Option.flatMap(Option.all as any)) as Option.Option<{
+      accord: Accord
+      strength: Strength
+    }>
 
   return parseBase(localPatternAssetFileNameRegExp).pipe(
     Option.orElse(() => parseBase(localSlowStrumAssetFileNameRegExp)),
