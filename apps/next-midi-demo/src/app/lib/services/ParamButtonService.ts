@@ -5,17 +5,17 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type {
-  AccordData,
+import {
+  type AccordData,
   AccordParamButtonData,
 } from '../brandsAndDatas/Accord.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type {
-  PatternData,
+import {
+  type PatternData,
   PatternParamButtonData,
 } from '../brandsAndDatas/Pattern.ts'
-import type {
-  StrengthData,
+import {
+  type StrengthData,
   StrengthParamButtonData,
 } from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
@@ -36,7 +36,6 @@ import {
 import { PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
-// TODO: make TParamButton a ParamButtonData
 const makeParamButtonService = <
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends PatternData | AccordData | StrengthData,
@@ -188,7 +187,8 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
     scoped: makeParamButtonService({
       registryTag: AccordRegistry,
       busTag: AccordInputBus,
-      getSelectedChangesStream: reg => reg.selectedAccordChanges,
+      getSelectedChangesStream: reg =>
+        reg.selectedAccordChanges.pipe(Stream.map(AccordParamButtonData.make)),
       toCompareValue: EFunction.identity<AccordParamButtonData>,
       toLabel: accord => `Accord index=${accord}`,
       isCurrentlyPlayingPredicate: (pb, accord) =>
@@ -205,7 +205,10 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
     scoped: makeParamButtonService({
       registryTag: PatternRegistry,
       busTag: PatternInputBus,
-      getSelectedChangesStream: reg => reg.selectedPatternChanges,
+      getSelectedChangesStream: reg =>
+        reg.selectedPatternChanges.pipe(
+          Stream.map(Option.map(PatternParamButtonData.make)),
+        ),
       toCompareValue: Option.some<PatternParamButtonData>,
       toLabel: pattern => `Pattern index=${pattern}`,
       isCurrentlyPlayingPredicate: (pb, pattern) =>
@@ -222,7 +225,10 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
     scoped: makeParamButtonService({
       registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
-      getSelectedChangesStream: reg => reg.selectedStrengthChanges,
+      getSelectedChangesStream: reg =>
+        reg.selectedStrengthChanges.pipe(
+          Stream.map(StrengthParamButtonData.make),
+        ),
       toCompareValue: EFunction.identity<StrengthParamButtonData>,
       toLabel: strength => `Strength=${strength}`,
       isCurrentlyPlayingPredicate: (pb, strength) =>
