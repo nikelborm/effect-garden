@@ -4,8 +4,8 @@ import { $ } from 'bun'
 
 const now = new Date()
 
-const branch = 'claude-test'
-// const branch = 'main'
+// const branch = 'claude-test'
+const branch = 'main'
 
 const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
 

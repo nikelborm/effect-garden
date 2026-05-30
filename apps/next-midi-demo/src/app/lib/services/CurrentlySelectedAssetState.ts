@@ -101,12 +101,12 @@ const makePatchApplier =
   (patch: Patch) =>
   (old: AssetPointer): AssetPointer => {
     if (Pattern.is(patch))
-      return TaggedPatternPointer.make({ ...old, pattern: patch.index })
+      return TaggedPatternPointer.make({ ...old, pattern: patch })
 
     if (Accord.is(patch))
       return TaggedPatternPointer.models(old)
-        ? TaggedPatternPointer.make({ ...old, accord: patch.index })
-        : TaggedSlowStrumPointer.make({ ...old, accord: patch.index })
+        ? TaggedPatternPointer.make({ ...old, accord: patch })
+        : TaggedSlowStrumPointer.make({ ...old, accord: patch })
 
     return TaggedPatternPointer.models(old)
       ? TaggedPatternPointer.make({ ...old, strength: patch })
