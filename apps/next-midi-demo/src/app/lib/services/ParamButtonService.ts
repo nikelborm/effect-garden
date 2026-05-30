@@ -5,10 +5,19 @@ import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { AccordParamButtonData } from '../brandsAndDatas/Accord.ts'
+import type {
+  AccordData,
+  AccordParamButtonData,
+} from '../brandsAndDatas/Accord.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type { PatternParamButtonData } from '../brandsAndDatas/Pattern.ts'
-import type { StrengthParamButtonData } from '../brandsAndDatas/Strength.ts'
+import type {
+  PatternData,
+  PatternParamButtonData,
+} from '../brandsAndDatas/Pattern.ts'
+import type {
+  StrengthData,
+  StrengthParamButtonData,
+} from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
@@ -30,7 +39,7 @@ import { StrengthRegistry } from './StrengthRegistry.ts'
 // TODO: make TParamButton a ParamButtonData
 const makeParamButtonService = <
   TPhysicalButtonId extends TaggedReadonlyObject,
-  TParamButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends PatternData | AccordData | StrengthData,
   S,
   Reg,
 >({
@@ -92,7 +101,7 @@ const makeParamButtonService = <
         isPlaying: appPlaybackState.latestIsPlayingFlagStream,
         completionStatusOfTheAssetThisButtonWouldSelect:
           currentlySelectedAssetState.getPatchedAssetFetchingCompletionStatusChangesStream(
-            value,
+            value.id,
           ),
         isSelectedParam: getIsSelectedStream(value),
       }).pipe(
@@ -122,7 +131,7 @@ const makeParamButtonService = <
 
     const getDownloadPercent = (value: ParamButtonIdData<TParamButtonId>) =>
       currentlySelectedAssetState
-        .getPatchedAssetFetchingCompletionStatusChangesStream(value)
+        .getPatchedAssetFetchingCompletionStatusChangesStream(value.id)
         .pipe(
           Stream.map(s =>
             s.status === 'not finished'

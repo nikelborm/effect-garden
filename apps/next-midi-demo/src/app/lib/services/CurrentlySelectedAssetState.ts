@@ -2,15 +2,15 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Stream from 'effect/Stream'
 
-import { Accord } from '../brandsAndDatas/Accord.ts'
+import { AccordData } from '../brandsAndDatas/Accord.ts'
 import {
   type AssetPointer,
   complexifyAssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../brandsAndDatas/AssetPointer.ts'
-import { Pattern } from '../brandsAndDatas/Pattern.ts'
-import type { Strength } from '../brandsAndDatas/Strength.ts'
+import { PatternData } from '../brandsAndDatas/Pattern.ts'
+import type { StrengthData } from '../brandsAndDatas/Strength.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
@@ -100,17 +100,17 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
 const makePatchApplier =
   (patch: Patch) =>
   (old: AssetPointer): AssetPointer => {
-    if (Pattern.is(patch))
-      return TaggedPatternPointer.make({ ...old, pattern: patch })
+    if (PatternData.models(patch))
+      return TaggedPatternPointer.make({ ...old, pattern: patch.pattern })
 
-    if (Accord.is(patch))
+    if (AccordData.models(patch))
       return TaggedPatternPointer.models(old)
-        ? TaggedPatternPointer.make({ ...old, accord: patch })
-        : TaggedSlowStrumPointer.make({ ...old, accord: patch })
+        ? TaggedPatternPointer.make({ ...old, accord: patch.accord })
+        : TaggedSlowStrumPointer.make({ ...old, accord: patch.accord })
 
     return TaggedPatternPointer.models(old)
-      ? TaggedPatternPointer.make({ ...old, strength: patch })
-      : TaggedSlowStrumPointer.make({ ...old, strength: patch })
+      ? TaggedPatternPointer.make({ ...old, strength: patch.strength })
+      : TaggedSlowStrumPointer.make({ ...old, strength: patch.strength })
   }
 
-export type Patch = Pattern | Accord | Strength
+export type Patch = PatternData | AccordData | StrengthData
