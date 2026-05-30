@@ -424,7 +424,7 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
   ),
 )
 
-// TODO: add to all atoms
+// TODO: add to all atoms?
 // Atom.withLabel('notePressReleaseEvents'),
 // Atom.keepAlive,
 // Atom.withServerValueInitial,
