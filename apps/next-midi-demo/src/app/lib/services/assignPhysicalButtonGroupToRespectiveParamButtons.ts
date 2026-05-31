@@ -1,6 +1,5 @@
 import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'

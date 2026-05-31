@@ -20,7 +20,6 @@ import {
 } from '../brandsAndDatas/Strength.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
-import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
 import {
   AppPlaybackStateService,
@@ -29,7 +28,7 @@ import {
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import {
   AccordInputBus,
-  type InputBusHandle,
+  type InputBusReaderHandle,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
@@ -37,7 +36,6 @@ import { PatternRegistry } from './PatternRegistry.ts'
 import { StrengthRegistry } from './StrengthRegistry.ts'
 
 const makeParamButtonService = <
-  TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends PatternData | AccordData | StrengthData,
   S,
   Reg,
@@ -53,7 +51,7 @@ const makeParamButtonService = <
   readonly registryTag: Context.ReadonlyTag<any, Reg>
   readonly busTag: Context.ReadonlyTag<
     any,
-    InputBusHandle<TPhysicalButtonId, TParamButtonId>
+    InputBusReaderHandle<TParamButtonId>
   >
   readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
   readonly toCompareValue: (value: ParamButtonIdData<TParamButtonId>) => S
