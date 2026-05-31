@@ -227,17 +227,17 @@ export const getAssetFromLocalFileName = (
   fileName: string,
 ): Option.Option<AssetPointer> => {
   const parseBase = (regexp: RegExp) =>
-    Option.map(
+    Option.flatMap(
       Option.fromNullable(fileName.match(regexp)?.groups),
-      Struct.evolve({
-        pattern: Option.some,
-        accord: flow(parseInt10, Accord.option),
-        strength: Strength.option,
-      }),
-    ).pipe(Option.flatMap(Option.all as any)) as Option.Option<{
-      accord: Accord
-      strength: Strength
-    }>
+      flow(
+        Struct.evolve({
+          pattern: Option.some,
+          accord: flow(parseInt10, Accord.option),
+          strength: Strength.option,
+        }),
+        Option.all as any,
+      ),
+    ) as Option.Option<{ accord: Accord; strength: Strength }>
 
   return parseBase(localPatternAssetFileNameRegExp).pipe(
     Option.orElse(() => parseBase(localSlowStrumAssetFileNameRegExp)),
