@@ -9,27 +9,27 @@ layout {
         args "dev"
       }
       pane {
-        name "Next.js tsc watch"
+        name "Next.js tsgo watch"
         cwd "./apps/next-midi-demo"
         command "bunx"
-        args "tsc" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
+        args "tsgo" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
       }
     }
     pane split_direction="horizontal" {
       pane {
-        name "Web MIDI tsc watch"
+        name "Web MIDI tsgo watch"
         cwd "./packages/effect-web-midi"
         command "bun"
         args "dev"
       }
       pane {
-        name "Web MediaCapture tsc watch"
+        name "Web MediaCapture tsgo watch"
         cwd "./packages/effect-web-mediacapture-streams"
         command "bun"
         args "dev"
       }
       pane {
-        name "Web Audio tsc watch"
+        name "Web Audio tsgo watch"
         cwd "./packages/effect-web-audio"
         command "bun"
         args "dev"
