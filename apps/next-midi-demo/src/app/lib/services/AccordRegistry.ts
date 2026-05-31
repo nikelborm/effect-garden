@@ -3,17 +3,17 @@ import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import {
-  Accord,
+  type Accord,
   type AllAccordTuple,
   allAccords,
+  defaultAccord,
 } from '../brandsAndDatas/Accord.ts'
 
-// TODO: make currentAccordRef and related shit branded
 export class AccordRegistry
   extends Effect.Service<AccordRegistry>()('next-midi-demo/AccordRegistry', {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const currentAccordRef = yield* SubscriptionRef.make(Accord(0))
+      const currentAccordRef = yield* SubscriptionRef.make(defaultAccord)
 
       const selectedAccordChanges = yield* currentAccordRef.changes.pipe(
         Stream.changes,

@@ -77,8 +77,6 @@ const notesHandlingStrengthsSet = new Set(
   physicalNoteIdsHandlingStrengths.map(data => data.id.note),
 )
 
-// TODO: make TParamButton a ParamButtonData
-
 export const AllButtonMappingLayer = Effect.gen(function* () {
   const params = yield* Effect.all([
     AccordRegistry.allAccords,

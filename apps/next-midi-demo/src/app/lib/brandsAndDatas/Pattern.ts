@@ -35,6 +35,7 @@ export const Pattern = Brand.refined<Pattern>(
   is(p: unknown): p is Pattern
 }
 
+// TODO: delete this? or replace with `Option.none()`?
 export const defaultPattern = Pattern(patternsRawBase[0])
 
 export type PatternOption = Option.Option<Pattern>

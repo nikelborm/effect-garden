@@ -95,7 +95,6 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
   }
 })
 
-// TODO: add DOM here
 export type SupportedInputs =
   | KeyboardKeyData
   | NoteIdData

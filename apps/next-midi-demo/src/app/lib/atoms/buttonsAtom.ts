@@ -132,6 +132,7 @@ export const isPatternButtonPressableAtom = Atom.family((pattern: Pattern) =>
     PatternParamButtonData.make,
     PatternParamButtonService.getPressabilityChangesStream,
     Stream.unwrap,
+    // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
     s =>
       runtime.atom(s, {
         initialValue: pattern !== defaultPattern,
@@ -197,6 +198,7 @@ export const isPatternSelectedAtom = Atom.family((pattern: Pattern) =>
     PatternParamButtonData.make,
     PatternParamButtonService.getIsSelectedStream,
     Stream.unwrap,
+    // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
     s =>
       runtime.atom(s, {
         initialValue: pattern === defaultPattern,
