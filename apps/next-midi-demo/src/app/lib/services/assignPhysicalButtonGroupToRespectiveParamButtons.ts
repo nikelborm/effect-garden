@@ -3,17 +3,17 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
-import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
+import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { ButtonState } from '../brandsAndDatas/index.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import {
-  type PhysicalButtonIdData,
-  PhysicalButtonModel,
-} from '../brandsAndDatas/PhysicalButton.ts'
+import type { PhysicalButtonIdData } from '../brandsAndDatas/PhysicalButton.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
-import type { InputBusWriterHandle } from './InputStreamBus.ts'
+import type {
+  InputBusWriterHandle,
+  PhysicalButtonRegistration,
+} from './InputStreamBus.ts'
 
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <
   TPhysicalButtonId extends TaggedReadonlyObject,
@@ -46,74 +46,46 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
         'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
       )
 
-    const physicalButtonIdToModelMapRef = yield* Ref.make(
-      HashMap.make(
-        ...EArray.zipWith(
-          paramButtonIdsRepresentedByPhysicalButtonGroup,
-          physicalButtonIdsRepresentingPhysicalButtonGroup,
-
-          (paramButtonIdThePhysicalButtonIsAssignedTo, physicalButtonId) =>
-            [
+    const registrations: ReadonlyArray<
+      PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>
+    > = yield* Effect.all(
+      EArray.zipWith(
+        paramButtonIdsRepresentedByPhysicalButtonGroup,
+        physicalButtonIdsRepresentingPhysicalButtonGroup,
+        (assignedToParamButtonId, physicalButtonId) =>
+          Effect.map(
+            SubscriptionRef.make(
+              ButtonState.NotPressed as ButtonState.AllSimple,
+            ),
+            stateRef => ({
               physicalButtonId,
-              new PhysicalButtonModel(
-                ButtonState.NotPressed,
-                paramButtonIdThePhysicalButtonIsAssignedTo,
-              ),
-            ] as const,
-        ),
+              assignedToParamButtonId,
+              stateRef,
+            }),
+          ),
+      ),
+      { concurrency: 'unbounded' },
+    )
+
+    const physicalButtonIdToRef = HashMap.make(
+      ...registrations.map(
+        reg => [reg.physicalButtonId, reg.stateRef] as const,
       ),
     )
 
-    const currentMapEffect = Ref.get(physicalButtonIdToModelMapRef)
-
-    // TODO: maybe move {id -> ButtonModel.assignedToParamButton} into a separate map?
-
-    // These 2 separate streams (latestPhysicalButtonModelsStream, mapChanges)
-    // have 2 non atomic Ref method calls. And it's fine because the keys of the
-    // map are permanent, and the value, the first call depends on
-    // (previousButtonModel.assignedToParamButton) is permanent
-    const latestPhysicalButtonModelsStream =
-      yield* physicalButtonPressStream.pipe(
-        Stream.mapEffect(
-          ([physicalButtonId, physicalButtonPressState]) =>
-            Effect.map(
-              currentMapEffect,
-              EFunction.flow(
-                HashMap.get(physicalButtonId),
-                Option.map(
-                  previousButtonModel =>
-                    [
-                      physicalButtonId,
-                      new PhysicalButtonModel(
-                        physicalButtonPressState,
-                        previousButtonModel.assignedToParamButtonId,
-                      ),
-                    ] as const,
-                ),
-              ),
-            ),
-          { concurrency: 1 },
-        ),
-        Stream.filterMap(e => e),
-        Stream.broadcastDynamic({ capacity: 'unbounded' }),
-      )
-
-    const mapChanges = yield* latestPhysicalButtonModelsStream.pipe(
+    yield* physicalButtonPressStream.pipe(
       Stream.mapEffect(
-        ([id, latestButtonModel]) =>
-          Ref.updateAndGet(
-            physicalButtonIdToModelMapRef,
-            HashMap.set(id, latestButtonModel),
-          ),
+        ([physicalButtonId, state]) =>
+          Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId), {
+            onNone: () => Effect.void,
+            onSome: SubscriptionRef.set(state),
+          }),
         { concurrency: 1 },
       ),
-      Effect.succeed,
-      // Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      Stream.runDrain,
+      Effect.forkScoped,
     )
 
     const inputBus = yield* inputBusWriterEffect
-    yield* inputBus.publish({
-      mapChanges,
-      latestPresses: latestPhysicalButtonModelsStream,
-    })
+    yield* inputBus.publish(registrations)
   })

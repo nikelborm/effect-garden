@@ -1,11 +1,13 @@
+import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
+import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
-import * as PubSub from 'effect/PubSub'
 import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
+import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AccordData } from '../brandsAndDatas/Accord.ts'
 import { ButtonState } from '../brandsAndDatas/index.ts'
@@ -13,12 +15,45 @@ import type { KeyboardKeyData } from '../brandsAndDatas/KeyboardKey.ts'
 import type { NoteIdData } from '../brandsAndDatas/MIDIValues.ts'
 import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
 import type { PatternData } from '../brandsAndDatas/Pattern.ts'
-import type {
-  PhysicalButtonIdData,
-  PhysicalButtonModel,
-} from '../brandsAndDatas/PhysicalButton.ts'
+import type { PhysicalButtonIdData } from '../brandsAndDatas/PhysicalButton.ts'
+import { PhysicalButtonModel } from '../brandsAndDatas/PhysicalButton.ts'
 import type { StrengthData } from '../brandsAndDatas/Strength.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
+
+export interface PhysicalButtonRegistration<
+  TPhysicalButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends TaggedReadonlyObject,
+> {
+  readonly physicalButtonId: PhysicalButtonIdData<TPhysicalButtonId>
+  readonly assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
+  readonly stateRef: SubscriptionRef.SubscriptionRef<ButtonState.AllSimple>
+}
+
+// Converts an append-only SubscriptionRef<ReadonlyArray<T>> into a flat stream
+// of new elements. A new subscriber atomically receives all current items first,
+// then future additions — preserving async init ordering without replay buffers.
+const streamNewRegistrations = <
+  TPhysicalButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends TaggedReadonlyObject,
+>(
+  ref: SubscriptionRef.SubscriptionRef<
+    ReadonlyArray<PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>>
+  >,
+): Stream.Stream<
+  PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>
+> =>
+  ref.changes.pipe(
+    Stream.mapAccum(
+      0,
+      (prevLen, latestStateOfRegistrationsStore) =>
+        [
+          latestStateOfRegistrationsStore.length,
+          latestStateOfRegistrationsStore.slice(prevLen),
+        ] as const,
+    ),
+    e => e,
+    Stream.flatMap(a => Stream.fromIterable(a)),
+  )
 
 const makeInputBus = Effect.fn('makeInputBus')(function* <
   TPhysicalButtonId extends TaggedReadonlyObject,
@@ -28,32 +63,68 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
   never,
   Scope.Scope
 > {
-  const mapChangesPubSub =
-    yield* PubSub.unbounded<
-      MapChangesStream<TPhysicalButtonId, TParamButtonId>
-    >()
-
-  const latestPressesPubSub =
-    yield* PubSub.unbounded<
-      LatestPressesStream<TPhysicalButtonId, TParamButtonId>
-    >()
+  const registrationsRef = yield* SubscriptionRef.make(
+    [] as ReadonlyArray<
+      PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>
+    >,
+  )
 
   const pressAggregateStream: PressAggregateStream<
     TPhysicalButtonId,
     TParamButtonId
-  > = yield* EFunction.pipe(
-    Stream.fromPubSub(mapChangesPubSub),
-    Stream.flatten({ concurrency: 'unbounded' }),
-    e => e,
-    getMapCombinerStream<TPhysicalButtonId, TParamButtonId>(),
+  > = yield* streamNewRegistrations(registrationsRef).pipe(
+    Stream.flatMap(
+      reg =>
+        reg.stateRef.changes.pipe(
+          Stream.map(state => ({
+            physId: reg.physicalButtonId,
+            paramId: reg.assignedToParamButtonId,
+            state,
+          })),
+        ),
+      { concurrency: 'unbounded', switch: false },
+    ),
+    Stream.scan(
+      HashMap.empty<
+        ParamButtonIdData<TParamButtonId>,
+        HashSet.HashSet<PhysicalButtonIdData<TPhysicalButtonId>>
+      >(),
+      (aggregate, { physId, paramId, state }) =>
+        HashMap.modifyAt(
+          aggregate,
+          paramId,
+          EFunction.flow(
+            Option.orElseSome(HashSet.empty),
+            Option.map(
+              ButtonState.isPressed(state)
+                ? HashSet.add(physId)
+                : HashSet.remove(physId),
+            ),
+          ),
+        ),
+    ),
     Stream.changes,
     Stream.rechunk(1),
     Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
   )
 
-  const mergedLatestPresses = yield* EFunction.pipe(
-    Stream.fromPubSub(latestPressesPubSub),
-    Stream.flatten({ concurrency: 'unbounded' }),
+  const mergedLatestPresses: LatestPressesStream<
+    TPhysicalButtonId,
+    TParamButtonId
+  > = yield* streamNewRegistrations(registrationsRef).pipe(
+    Stream.flatMap(
+      reg =>
+        reg.stateRef.changes.pipe(
+          Stream.map(
+            state =>
+              [
+                reg.physicalButtonId,
+                new PhysicalButtonModel(state, reg.assignedToParamButtonId),
+              ] as const,
+          ),
+        ),
+      { concurrency: 'unbounded', switch: false },
+    ),
     Stream.broadcastDynamic({ capacity: 'unbounded' }),
   )
 
@@ -69,23 +140,28 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
     )
 
   return {
-    publish: inputs =>
-      Effect.all(
-        [
-          PubSub.publish(mapChangesPubSub, inputs.mapChanges),
-          PubSub.publish(latestPressesPubSub, inputs.latestPresses),
-        ],
-        { discard: true },
-      ),
-    isPressedStream: key =>
-      pressAggregateStream.pipe(
-        Stream.map(
-          EFunction.flow(
-            HashMap.get(key),
-            Option.map(set => HashSet.size(set) !== 0),
-            Option.getOrElse(() => false),
-          ),
+    publish: registrations =>
+      SubscriptionRef.update(registrationsRef, EArray.appendAll(registrations)),
+    isPressedStream: paramButton =>
+      streamNewRegistrations(registrationsRef).pipe(
+        Stream.filter(reg =>
+          Equal.equals(reg.assignedToParamButtonId, paramButton),
         ),
+        Stream.flatMap(
+          reg =>
+            reg.stateRef.changes.pipe(
+              Stream.map(state => [reg.physicalButtonId, state] as const),
+            ),
+          { concurrency: 'unbounded', switch: false },
+        ),
+        Stream.scan(
+          HashSet.empty<PhysicalButtonIdData<TPhysicalButtonId>>(),
+          (pressedSet, [physId, state]) =>
+            ButtonState.isPressed(state)
+              ? HashSet.add(pressedSet, physId)
+              : HashSet.remove(pressedSet, physId),
+        ),
+        Stream.map(set => HashSet.size(set) > 0),
         Stream.changes,
         Stream.rechunk(1),
       ),
@@ -122,7 +198,9 @@ export interface InputBusWriterHandle<
   TParamButtonId extends TaggedReadonlyObject,
 > {
   readonly publish: (
-    config: InputBusInitConfig<TPhysicalButtonId, TParamButtonId>,
+    registrations: ReadonlyArray<
+      PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>
+    >,
   ) => Effect.Effect<void>
 }
 
@@ -156,14 +234,6 @@ export interface InputBusHandle<
 export interface PressesOnlyStream<TParamButtonId extends TaggedReadonlyObject>
   extends Stream.Stream<ParamButtonIdData<TParamButtonId>> {}
 
-export interface LatestMap<
-  TPhysicalButtonId extends TaggedReadonlyObject,
-  TParamButtonId extends TaggedReadonlyObject,
-> extends HashMap.HashMap<
-    PhysicalButtonIdData<TPhysicalButtonId>,
-    PhysicalButtonModel<TParamButtonId>
-  > {}
-
 export interface AggregateMap<
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
@@ -177,19 +247,6 @@ export interface PressAggregateStream<
   TParamButtonId extends TaggedReadonlyObject,
 > extends Stream.Stream<AggregateMap<TPhysicalButtonId, TParamButtonId>> {}
 
-export interface InputBusInitConfig<
-  TPhysicalButtonId extends TaggedReadonlyObject,
-  TParamButtonId extends TaggedReadonlyObject,
-> {
-  readonly mapChanges: MapChangesStream<TPhysicalButtonId, TParamButtonId>
-  readonly latestPresses: LatestPressesStream<TPhysicalButtonId, TParamButtonId>
-}
-
-export interface MapChangesStream<
-  TPhysicalButtonId extends TaggedReadonlyObject,
-  TParamButtonId extends TaggedReadonlyObject,
-> extends Stream.Stream<LatestMap<TPhysicalButtonId, TParamButtonId>> {}
-
 export interface LatestPressesStream<
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
@@ -199,44 +256,3 @@ export interface LatestPressesStream<
       PhysicalButtonModel<TParamButtonId>,
     ]
   > {}
-
-function getMapCombinerStream<
-  TPhysicalButtonId extends TaggedReadonlyObject,
-  TParamButtonId extends TaggedReadonlyObject,
->() {
-  return Stream.scan<
-    // out
-    AggregateMap<TPhysicalButtonId, TParamButtonId>,
-    // in
-    LatestMap<TPhysicalButtonId, TParamButtonId>
-  >(
-    HashMap.empty(),
-    (
-      previousMapOfParamButtonToSetOfPhysicalButtonIds,
-      latestMapOfPhysicalButtonIdToModel,
-    ) =>
-      HashMap.reduce(
-        // will sequentially apply latest map's entries to start point
-        latestMapOfPhysicalButtonIdToModel,
-        // zero start point
-        previousMapOfParamButtonToSetOfPhysicalButtonIds,
-        (
-          newMapOfParamButtonToSetOfPhysicalButtonIds,
-          physicalButtonModel,
-          physicalButtonId,
-        ) =>
-          HashMap.modifyAt(
-            newMapOfParamButtonToSetOfPhysicalButtonIds,
-            physicalButtonModel.assignedToParamButtonId,
-            EFunction.flow(
-              Option.orElseSome(HashSet.empty),
-              Option.map(
-                (physicalButtonModel.buttonPressState === ButtonState.Pressed
-                  ? HashSet.add
-                  : HashSet.remove)(physicalButtonId),
-              ),
-            ),
-          ),
-      ),
-  )
-}
