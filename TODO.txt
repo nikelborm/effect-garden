@@ -7,3 +7,74 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
 3. documentation on scripts
 4. integrate hot reload from [nounder/effect-start](https://github.com/nounder/effect-start)?
 5. integrate https://github.com/useairfoil/typescript-sdk/tree/main/packages/effect-vcr
+6. add Effect.withRuntimeFlagsPatch to audio context/midi shit and maybe dom manipulation shit
+7. make initialization of EMidiAccess layer non-blocking. Likely would require
+   creating a special helper to replace Effect.service. the example:
+
+   ```ts
+   import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+   import * as Deferred from 'effect/Deferred'
+   import * as Duration from 'effect/Duration'
+   import * as Effect from 'effect/Effect'
+   import * as Layer from 'effect/Layer'
+   import * as Context from 'effect/Context'
+   import * as Scope from 'effect/Scope'
+
+   class Service1 extends Context.Tag("Service1")<Service1, Effect.Effect<{ field1:'test' }>>() {}
+   class Service2 extends Context.Tag("Service2")<Service2, Effect.Effect<{ field2:'test' }>>() {}
+   class Service3 extends Context.Tag("Service3")<Service3, Effect.Effect<{ field3:'test' }>>() {}
+
+   const makeLazyLayer = <I, S>(
+     tag: Context.Tag<I, Effect.Effect<S>>,
+     init: Effect.Effect<S, never, Scope.Scope>
+   ) =>
+     Layer.scoped(tag, Effect.gen(function* () {
+       const d = yield* Deferred.make<S>()
+       yield* Effect.forkScoped(Effect.flatMap(init, (s) => Deferred.succeed(d, s)))
+       return Deferred.await(d)
+     }))
+
+   const Service1Live = makeLazyLayer(Service1, Effect.gen(function* () {
+       yield* Effect.log('Service1 started initializing')
+       yield* Effect.sleep(Duration.seconds(1))
+       yield* Effect.log('Service1 finished initializing')
+       yield* Effect.addFinalizer(asd => Effect.log('Service1 finalizing'))
+       return {field1:'test'}
+     }))
+
+   const Service2Live = makeLazyLayer(Service2, Effect.gen(function* () {
+       yield* Effect.log('Service2 started initializing')
+       yield* Effect.sleep(Duration.seconds(1.5))
+       yield* Effect.log('Service2 finished initializing')
+       yield* Effect.addFinalizer(asd => Effect.log('Service2 finalizing'))
+       return {field2:'test'}
+     }))
+
+   const Service3Live = makeLazyLayer(Service3, Effect.gen(function* () {
+       yield* Effect.log('Service3 started initializing')
+       yield* Effect.sleep(Duration.seconds(1))
+       yield* Effect.log('Service3 finished initializing')
+       yield* Effect.addFinalizer(asd => Effect.log('Service3 finalizing'))
+       return {field3:'test'}
+     }))
+
+   const program = Effect.gen(function* () {
+     yield* Effect.log('requested initialization of service1')
+     const service1 = yield* Effect.flatten(Service1)
+     yield* Effect.log('happy with acquired service1')
+
+     yield* Effect.log('requested initialization of service2')
+     const service2 = yield* Effect.flatten(Service2)
+     yield* Effect.log('happy with acquired service2')
+
+     yield* Effect.log('requested initialization of service3')
+     const service3 = yield* Effect.flatten(Service3)
+     yield* Effect.log('happy with acquired service3')
+   })
+
+   const AppLayer = Layer.mergeAll(Service1Live, Service2Live, Service3Live)
+
+   program.pipe(Effect.provide(AppLayer),BunRuntime.runMain)
+   ```
+
+8. make mock version of EMidiAccess
