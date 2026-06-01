@@ -1,7 +1,6 @@
 [tools]
 bun = "latest"
-node = "24"
-cargo = "latest"
+node = "latest"
 deno = "latest"
 
 [tasks]
