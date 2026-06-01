@@ -164,7 +164,8 @@
     "@typescript/native-preview": "^7.0.0-dev.20260524.1",
     "canonicalize": "^3.0.0",
     "eslint": "^10.4.0",
-    "oxlint": ">=0.15.0"
+    "oxlint": ">=0.15.0",
+    "smol-toml": "^1.6.1"
   },
   "workspaces": [
     "ideas/*",

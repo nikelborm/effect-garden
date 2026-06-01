@@ -14,12 +14,20 @@ import * as Either from 'effect/Either'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 
-import type { SubPackageJson } from './fix_package_jsons.ts'
+import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
 export const vscodeConfig = {
   'git.openRepositoryInParentFolders': 'always',
+  // TODO: make path calculation smarter, because packages can be at different
+  // depth and so will the tsconfig path be.
   'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
+}
+
+export const biomeDefaultConfig = {
+  // TODO: use the schema url from the main biome.jsonc
+  $schema: 'https://biomejs.dev/schemas/2.4.15/schema.json',
+  extends: '//',
 }
 
 export const githubUser = 'nikelborm'
@@ -176,6 +184,9 @@ const program = Effect.gen(function* () {
 
   const map = {
     [path.join(vscodeDirPath, 'settings.json')]: toJSON(vscodeConfig),
+    [path.join(packagePath, 'biome.jsonc')]: toJSON(biomeDefaultConfig),
+    [path.join(packagePath, 'mise.toml')]:
+      `[env._]\npath = ["./node_modules/.bin"]\n`,
     [path.join(packagePath, 'package.json')]: toJSON(packageJson(config)),
     [path.join(packagePath, 'tsconfig.json')]: toJSON(tsconfigJson),
     [path.join(packagePath, 'README.md')]:

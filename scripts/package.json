@@ -23,6 +23,7 @@
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "effect-errors": "catalog:",
+    "smol-toml": "catalog:",
     "sort-package-json": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/scripts#readme",

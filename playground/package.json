@@ -138,6 +138,7 @@
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "serwist": "catalog:",
+    "smol-toml": "catalog:",
     "sort-package-json": "catalog:",
     "tar-fs": "catalog:",
     "tinybench": "^6.0.2",

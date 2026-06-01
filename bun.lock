@@ -519,7 +519,7 @@
     },
     "packages/bliss-audio-ts": {
       "name": "bliss-audio-ts",
-      "version": "0.1.8",
+      "version": "0.1.9",
       "devDependencies": {
         "@biomejs/biome": "catalog:",
         "@effect/language-service": "catalog:",
@@ -1046,6 +1046,7 @@
         "rollup": "catalog:",
         "rollup-plugin-visualizer": "catalog:",
         "serwist": "catalog:",
+        "smol-toml": "catalog:",
         "sort-package-json": "catalog:",
         "tar-fs": "catalog:",
         "tinybench": "^6.0.2",
@@ -1074,6 +1075,7 @@
         "dotenv": "catalog:",
         "drizzle-kit": "catalog:",
         "effect-errors": "catalog:",
+        "smol-toml": "catalog:",
         "sort-package-json": "catalog:",
       },
       "devDependencies": {
@@ -1193,6 +1195,7 @@
     "rollup": "^4.60.4",
     "rollup-plugin-visualizer": "^7.0.1",
     "serwist": "^9.5.5",
+    "smol-toml": "^1.6.1",
     "sort-package-json": "^3.6.1",
     "tar-fs": "^3.0.8",
     "ts-namespace-import": "nounder/ts-namespace-import",
@@ -3876,6 +3879,8 @@
     "slice-ansi": ["slice-ansi@4.0.0", "", { "dependencies": { "ansi-styles": "^4.0.0", "astral-regex": "^2.0.0", "is-fullwidth-code-point": "^3.0.0" } }, "sha512-qMCMfhY040cVHT43K9BFygqYbUPFZKHOg7K73mtTWJRb8pyP3fzf4Ixd5SzdEJQ6MRUg/WBnOLxghZtKKurENQ=="],
 
     "smob": ["smob@1.6.2", "", {}, "sha512-RQsvleCbF8cVHEv+xuDGaA4pOizFqJ0GgjtMSRo6oP8pnN7WsigHgVGey6aILRBKv4W2YOMHLqbKdnB6hpB9fw=="],
+
+    "smol-toml": ["smol-toml@1.6.1", "", {}, "sha512-dWUG8F5sIIARXih1DTaQAX4SsiTXhInKf1buxdY9DIg4ZYPZK5nGM1VRIYmEbDbsHt7USo99xSLFu5Q1IqTmsg=="],
 
     "sort-object-keys": ["sort-object-keys@2.1.0", "", {}, "sha512-SOiEnthkJKPv2L6ec6HMwhUcN0/lppkeYuN1x63PbyPRrgSPIuBJCiYxYyvWRTtjMlOi14vQUCGUJqS6PLVm8g=="],
 

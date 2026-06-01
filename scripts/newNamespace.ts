@@ -10,7 +10,7 @@ import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Effect from 'effect/Effect'
 import * as Either from 'effect/Either'
 
-import { myMonorepoPackagesEffect } from './fix_package_jsons.ts'
+import { myMonorepoPackagesEffect } from './fix_monorepo.ts'
 
 const emptyInternalTsNamespaceFile = `/** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */

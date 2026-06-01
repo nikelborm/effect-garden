@@ -9,6 +9,7 @@ import {
   observableExec,
 } from '@evadev/effect-helpers'
 import { prettyPrint } from 'effect-errors'
+import { parse as parseTOML, stringify as stringifyTOML } from 'smol-toml'
 import sortPackageJson from 'sort-package-json'
 
 import * as FileSystem from '@effect/platform/FileSystem'
@@ -26,12 +27,14 @@ import * as Schema from 'effect/Schema'
 import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
+import { patchFile } from './lib/patchFile.ts'
 import {
   playgroundDirPath,
   projectRootAbsolutePath,
   rootPackageJsonPath,
 } from './lib/paths.ts'
 import {
+  biomeDefaultConfig,
   email,
   githubUser,
   gitSshUrl,
@@ -850,42 +853,108 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
   )
 }).pipe(Effect.withSpan('fixNonWorkspaceDeps'))
 
+const jsonDecode = (s: string): unknown => JSON.parse(s)
+const jsonEncode = (obj: unknown): string => JSON.stringify(obj, null, 2) + '\n'
+
+const plainObjectFieldsFixers = (record: Record<string, any>) =>
+  Object.entries(record).map(([key, value]) => ({
+    isFine: (input: unknown) =>
+      typeof input === 'object' &&
+      input !== null &&
+      key in input &&
+      (input as any)[key] === value,
+    getFixed: (input: unknown) => ({
+      ...(typeof input === 'object' && input !== null ? input : {}),
+      [key]: value,
+    }),
+  }))
+
 const ensureVscodeSettingsInPackage = Effect.fn(
   'ensureVscodeSettingsInPackage',
 )(function* (paths: MyMonorepoPackagePathBundle) {
-  const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
 
-  const vscodeDir = path.join(paths.absolutePackageDirPath, '.vscode')
-  const settingsPath = path.join(vscodeDir, 'settings.json')
-  yield* Effect.annotateCurrentSpan({ settingsPath })
-
-  const settingsExisted = yield* fs.exists(settingsPath)
-  yield* Effect.annotateCurrentSpan({ settingsExisted })
-
-  let currentSettings: Record<string, unknown> = {}
-
-  if (settingsExisted) {
-    const content = yield* fs.readFileString(settingsPath)
-    currentSettings = JSON.parse(content) as Record<string, unknown>
-  } else {
-    yield* fs.makeDirectory(vscodeDir, { recursive: true })
-  }
-
-  const missing = Record.filter(
-    vscodeConfig,
-    (value, key) => currentSettings[key] !== value,
-  )
-
-  if (!Record.size(missing)) return
-
-  const updatedSettings = { ...currentSettings, ...missing }
-
-  yield* fs.writeFileString(
-    settingsPath,
-    JSON.stringify(updatedSettings, null, 2) + '\n',
-  )
+  yield* patchFile({
+    filePath: path.join(
+      paths.absolutePackageDirPath,
+      '.vscode',
+      'settings.json',
+    ),
+    decode: jsonDecode,
+    encode: jsonEncode,
+    defaultValue: {},
+    fixers: [...plainObjectFieldsFixers(vscodeConfig)],
+  })
 })
+
+const ensureMiseTomlInPackage = Effect.fn('ensureMiseTomlInPackage')(function* (
+  paths: MyMonorepoPackagePathBundle,
+) {
+  const path = yield* Path.Path
+
+  yield* patchFile({
+    filePath: path.join(paths.absolutePackageDirPath, 'mise.toml'),
+    decode: s => parseTOML(s),
+    encode: obj => stringifyTOML(obj as Parameters<typeof stringifyTOML>[0]),
+    defaultValue: {},
+    fixers: [
+      {
+        isFine: (input: unknown) =>
+          typeof input === 'object' &&
+          input !== null &&
+          'env' in input &&
+          typeof input.env === 'object' &&
+          input.env !== null &&
+          '_' in input.env &&
+          typeof input.env._ === 'object' &&
+          input.env._ !== null &&
+          'path' in input.env._ &&
+          typeof input.env._.path === 'object' &&
+          input.env._.path !== null &&
+          Array.isArray(input.env._.path) &&
+          input.env._.path.includes('./node_modules/.bin'),
+        getFixed: (input: unknown) => {
+          const root: object =
+            typeof input === 'object' && input !== null ? input : {}
+          const envRaw = 'env' in root ? root.env : undefined
+          const env =
+            typeof envRaw === 'object' && envRaw !== null ? envRaw : {}
+          const underRaw = '_' in env ? env._ : undefined
+          const under =
+            typeof underRaw === 'object' && underRaw !== null ? underRaw : {}
+          const pathRaw = 'path' in under ? under.path : undefined
+          const existing: unknown[] = Array.isArray(pathRaw) ? pathRaw : []
+          return {
+            ...root,
+            env: {
+              ...env,
+              _: { ...under, path: [...existing, './node_modules/.bin'] },
+            },
+          }
+        },
+      },
+    ],
+  })
+})
+
+const ensureBiomeJsoncInPackage = Effect.fn('ensureBiomeJsoncInPackage')(
+  function* (paths: MyMonorepoPackagePathBundle) {
+    const path = yield* Path.Path
+
+    const biomeJsoncPath = path.join(
+      paths.absolutePackageDirPath,
+      'biome.jsonc',
+    )
+
+    yield* patchFile({
+      filePath: biomeJsoncPath,
+      decode: jsonDecode,
+      encode: jsonEncode,
+      defaultValue: {},
+      fixers: [...plainObjectFieldsFixers(biomeDefaultConfig)],
+    })
+  },
+)
 
 const ensureVscodeSettingsExistInAllPackages =
   myMonorepoPackagePathsEffect.pipe(
@@ -896,6 +965,20 @@ const ensureVscodeSettingsExistInAllPackages =
     ),
     Effect.withSpan('ensureVscodeSettingsExistInAllPackages'),
   )
+
+const ensureMiseTomlExistsInAllPackages = myMonorepoPackagePathsEffect.pipe(
+  Effect.flatMap(
+    Effect.forEach(ensureMiseTomlInPackage, { concurrency: 'unbounded' }),
+  ),
+  Effect.withSpan('ensureMiseTomlExistsInAllPackages'),
+)
+
+const ensureBiomeJsoncExistsInAllPackages = myMonorepoPackagePathsEffect.pipe(
+  Effect.flatMap(
+    Effect.forEach(ensureBiomeJsoncInPackage, { concurrency: 'unbounded' }),
+  ),
+  Effect.withSpan('ensureBiomeJsoncExistsInAllPackages'),
+)
 
 const sortPackageJsonEffect = Effect.gen(function* () {
   for (const { pkg, update } of yield* myMonorepoPackagesEffect) {
@@ -1007,6 +1090,8 @@ const program = Effect.all([
   ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized,
   addAllDepsToPlayground,
   ensureVscodeSettingsExistInAllPackages,
+  ensureMiseTomlExistsInAllPackages,
+  ensureBiomeJsoncExistsInAllPackages,
   ensureAllMonorepoPackagesAreRootDeps,
   ensureTsconfigDepsAreInAllPackages,
   ensureCatalogHasNoUnusedOrUsedOnceEntries,
