@@ -469,5 +469,7 @@ export type DecodeAudioDataResult = Effect.Effect<
 export const currentTime = (context: EAudioContextInstance) =>
   Effect.sync(() => assumeImpl(context)._audioContext.currentTime)
 
+export const currentTimeFromContext = Effect.flatMap(EAudioContext, currentTime)
+
 export const layer = (config?: Readonly<MakeAudioContextOptions>) =>
   Layer.effect(EAudioContext, make(config))

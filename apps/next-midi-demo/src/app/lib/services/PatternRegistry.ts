@@ -28,6 +28,18 @@ export class PatternRegistry
         currentlySelectedPattern: currentPatternRef.get,
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
+        assertIsNone: Effect.filterOrDieMessage(
+          currentPatternRef.get,
+          Option.isNone,
+          'Assertion failed: expected pattern to be not selected',
+        ).pipe(Effect.asVoid),
+        getSomeOrDie: Effect.flatMap(currentPatternRef.get, patternOption =>
+          Option.isSome(patternOption)
+            ? Effect.succeed(patternOption.value)
+            : Effect.dieMessage(
+                'Assertion failed: expected pattern to be selected',
+              ),
+        ),
         switchPattern: (pattern: Pattern) =>
           SubscriptionRef.update(
             currentPatternRef,
@@ -35,6 +47,17 @@ export class PatternRegistry
               onNone: () => Option.some(pattern),
               onSome: prevPattern =>
                 prevPattern === pattern ? Option.none() : Option.some(pattern),
+            }),
+          ),
+        replaceNoneOrDieIfPresent: (pattern: Pattern) =>
+          SubscriptionRef.updateEffect(
+            currentPatternRef,
+            Option.match({
+              onNone: () => Effect.succeedSome(pattern),
+              onSome: prevPattern =>
+                Effect.dieMessage(
+                  `Assertion failed: Expected pattern to be None and got Some("${prevPattern}") instead`,
+                ),
             }),
           ),
       }
@@ -47,4 +70,7 @@ export interface IPatternRegistry {
   readonly allPatterns: Effect.Effect<AllPatternTuple>
   readonly selectedPatternChanges: Stream.Stream<PatternOption>
   readonly switchPattern: (pattern: Pattern) => Effect.Effect<void>
+  readonly getSomeOrDie: Effect.Effect<Pattern>
+  readonly assertIsNone: Effect.Effect<void>
+  readonly replaceNoneOrDieIfPresent: (pattern: Pattern) => Effect.Effect<void>
 }

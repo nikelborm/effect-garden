@@ -1,23 +1,26 @@
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
-import * as Equal from 'effect/Equal'
-import * as Option from 'effect/Option'
 
-import { AccordData } from '../../../brandsAndDatas/Accord.ts'
-import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
-import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
-import type { RootDirectoryHandle } from '../../RootDirectoryHandle.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
-  createScheduledNextPlayback,
-  scheduleFadeOutOf,
-} from '../playbackNodes/index.ts'
-import { calcTimingsMath } from '../timingMath.ts'
+  type AssetPointer,
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+} from '../../../brandsAndDatas/AssetPointer.ts'
+import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
+import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
+import { AccordRegistry } from '../../AccordRegistry.ts'
+import { LoadedAssetSizeEstimationMap } from '../../LoadedAssetSizeEstimationMap.ts'
+import { PatternRegistry } from '../../PatternRegistry.ts'
+import { StrengthRegistry } from '../../StrengthRegistry.ts'
+import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
+import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
+import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
+import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
+import { getAudioBufferDurationSeconds } from '../playbackNodes/index.ts'
 import type {
-  PatternPatternTransition,
-  PatternSilenceTransition,
   PlayingPattern,
+  PlayingSlowStrum,
   Silence,
 } from '../types/index.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
@@ -26,83 +29,67 @@ import type { Signal } from './signal.ts'
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
   oldState: Silence,
   signal: Signal,
-  deps: AdvancePlaybackDeps,
+  _deps: AdvancePlaybackDeps,
 ) {
   if (StrengthData.models(signal)) {
-    // Although should probably at least change the Ref with config
+    // even if it's not downloaded, it's fine to set different strength, while
+    // it's silent, because no playback will be scheduled
+    yield* StrengthRegistry.selectStrength(signal.strength)
     return oldState
   }
 
-  if (AccordData.models(signal)) {
-    // should run slow strum with patched accord
-    return yield* Effect.dieMessage('Playing slow strums is unimplemented')
-  }
-  signal.pattern
+  const strength = yield* StrengthRegistry.currentlySelectedStrength
 
-  const selectedAssetState = yield* CurrentlySelectedAssetState
-  const audioContext = yield* EAudioContext.EAudioContext
+  let asset: AssetPointer
+  if (PatternData.models(signal)) {
+    yield* PatternRegistry.replaceNoneOrDieIfPresent(signal.pattern)
 
-  if (!(yield* selectedAssetState.isFinishedDownloadCompletely))
-    return yield* Effect.die(
-      'Play command should only be called when the current asset finished loading',
-    )
-
-  const currentAsset = yield* selectedAssetState.current
-
-  const audioBuffer = yield* getAudioBufferOfAsset(currentAsset)
-
-  const secondsSinceAudioContextInit =
-    yield* EAudioContext.currentTime(audioContext)
-
-  if (Option.isNone(currentAsset.pattern)) {
-    const currentPlayback = yield* createOneshotPlayback(
-      audioContext,
-      audioBuffer,
-    )
-
-    yield* Effect.sync(() => {
-      currentPlayback.gainNode.gain.setValueAtTime(
-        maxLoudness,
-        asEarlyAsPossibleInSeconds,
-      )
-      currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
+    asset = new TaggedPatternPointer({
+      ...signal,
+      accord: yield* AccordRegistry.currentlySelectedAccord,
+      strength,
     })
+  } else {
+    yield* AccordRegistry.selectAccord(signal.accord)
 
-    yield* Effect.log('started playing slow strum')
-
-    const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
-
-    return {
-      _tag: 'PlayingSlowStrum' as const,
-      transitionQueue: [
-        {
-          playback: currentPlayback,
-          asset: currentAsset,
-          durationSeconds,
-        },
-      ],
-      playbackStartedAtSecond: secondsSinceAudioContextInit,
-    } satisfies PlayingSlowStrum
+    asset = new TaggedSlowStrumPointer({ ...signal, strength })
   }
 
-  const currentPlayback = yield* createLoopingPlayback(
-    audioContext,
-    audioBuffer,
-  )
+  yield* LoadedAssetSizeEstimationMap.assertFinished(asset)
+
+  const audioBuffer = yield* getAudioBufferOfAsset(asset)
+
+  const playbackStartedAtSecond = yield* EAudioContext.currentTimeFromContext
+
+  const playback = yield* (
+    PatternData.models(signal)
+      ? createLoopingPlaybackInContext
+      : createOneshotPlaybackInContext
+  )(audioBuffer)
 
   yield* Effect.sync(() => {
-    currentPlayback.gainNode.gain.setValueAtTime(
+    playback.gainNode.gain.setValueAtTime(
       maxLoudness,
       asEarlyAsPossibleInSeconds,
     )
-    currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
+    playback.bufferSource.start(playbackStartedAtSecond)
   })
 
-  yield* Effect.log('started playing')
-
-  return {
-    _tag: 'PlayingPattern' as const,
-    transitionQueue: [{ playback: currentPlayback, asset: currentAsset }],
-    playbackStartedAtSecond: secondsSinceAudioContextInit,
-  } satisfies PlayingPattern
+  return TaggedPatternPointer.models(asset)
+    ? ({
+        _tag: 'PlayingPattern',
+        transitionQueue: [{ playback, asset }],
+        playbackStartedAtSecond,
+      } satisfies PlayingPattern)
+    : ({
+        _tag: 'PlayingSlowStrum',
+        transitionQueue: [
+          {
+            playback,
+            asset,
+            durationSeconds: getAudioBufferDurationSeconds(audioBuffer),
+          },
+        ],
+        playbackStartedAtSecond,
+      } satisfies PlayingSlowStrum)
 })

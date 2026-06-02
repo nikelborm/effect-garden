@@ -1,5 +1,6 @@
+import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
+import { constFalse, flow, pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
@@ -19,13 +20,14 @@ import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
+    accessors: true,
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
-      const assetToSizeHashMapRef = yield* EFunction.pipe(
+      const assetToSizeHashMapRef = yield* pipe(
         listEntries(rootDirectoryHandle),
         Effect.map(
-          EFunction.flow(
+          flow(
             Iterable.filter(dirOrFileEntry => dirOrFileEntry.kind === 'file'),
             Iterable.filterMap(({ name, size }) =>
               Option.map(
@@ -64,7 +66,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       ): Stream.Stream<AssetSizeEstimation> =>
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(getOrDefaultBy(asset)),
-          // Stream.changes,
+          Stream.changes,
         )
 
       const modifyMapAt = (
@@ -75,7 +77,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           assetToSizeHashMapRef,
           HashMap.modifyAt(
             asset,
-            EFunction.flow(fallbackEstimationOption, update, Option.some),
+            flow(fallbackEstimationOption, update, Option.some),
           ),
         )
 
@@ -87,28 +89,25 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           asset,
           Struct.evolve({
             size: size => size + bytesDownloaded,
-            verifiedOnDisk: () => false,
+            verifiedOnDisk: constFalse,
           }),
         )
 
       const verify = (asset: AssetPointer) =>
-        modifyMapAt(asset, Struct.evolve({ verifiedOnDisk: () => false }))
+        modifyMapAt(asset, Struct.evolve({ verifiedOnDisk: constFalse }))
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
         Effect.fn('mapCurrentFetchedBytesToCompletionStatus')(function* (
           previous: AssetSizeEstimation,
         ): Effect.fn.Return<AssetCompletionStatus> {
           if (previous.size !== ASSET_SIZE_BYTES)
-            return {
-              status: 'not finished',
-              currentBytes: previous.size,
-            } satisfies NotFinished
+            return new NotFinished(previous.size)
 
           // Optimization to avoid UI rendering delays by skipping slow opfs
           // operations
           const sizeOnDisk = previous.verifiedOnDisk
             ? previous.size
-            : yield* EFunction.pipe(
+            : yield* pipe(
                 getFileSize(getLocalAssetFileName(asset)),
                 Effect.provideService(RootDirectoryHandle, rootDirectoryHandle),
                 Effect.catchTag('OPFSError', err =>
@@ -138,7 +137,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           mapCurrentFetchedBytesToCompletionStatus(asset),
         )
 
-      const areAllBytesFetched = EFunction.flow(
+      const areAllBytesFetched = flow(
         getAssetFetchingCompletionStatus,
         Effect.map(({ status }) => status !== 'not finished'),
       )
@@ -148,6 +147,16 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         verify,
         areAllBytesFetched,
         getCurrentDownloadedBytes,
+        assertFinished: flow(
+          getAssetFetchingCompletionStatus,
+          Effect.flatMap(e =>
+            e.status === 'finished'
+              ? Effect.void
+              : Effect.dieMessage(
+                  'Assertion failed: Expected Asset download to be finished',
+                ),
+          ),
+        ),
         getAssetFetchingCompletionStatusChangesStream,
         getAssetFetchingCompletionStatus,
       }
@@ -155,16 +164,21 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
   },
 ) {}
 
-export const AlmostFinished = {
-  status: 'almost finished: fetched, but not written',
-} as const
-
+export const AlmostFinished = Data.struct({
+  status: 'almost finished: fetched, but not written' as const,
+})
 export type AlmostFinished = typeof AlmostFinished
 
-export interface NotFinished
-  extends Readonly<{ status: 'not finished'; currentBytes: number }> {}
+export class NotFinished extends Data.Class<{
+  status: 'not finished'
+  currentBytes: number
+}> {
+  constructor(currentBytes: number) {
+    super({ status: 'not finished', currentBytes })
+  }
+}
 
-export const Finished = { status: 'finished' } as const
+export const Finished = Data.struct({ status: 'finished' as const })
 export type Finished = typeof Finished
 
 export type AssetCompletionStatus = NotFinished | AlmostFinished | Finished

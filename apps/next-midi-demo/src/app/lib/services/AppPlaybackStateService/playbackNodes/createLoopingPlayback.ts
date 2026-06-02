@@ -1,12 +1,19 @@
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 
-import { createPlayback } from './createPlayback.ts'
-
-export const createLoopingPlayback = EFunction.flow(
+import {
   createPlayback,
-  Effect.map(pb => {
-    pb.bufferSource.loop = true
-    return pb
-  }),
+  createPlaybackInContext,
+  type Playback,
+} from './createPlayback.ts'
+
+const withLoop = Effect.map((pb: Playback) => {
+  pb.bufferSource.loop = true
+  return pb
+})
+
+export const createLoopingPlayback = EFunction.flow(createPlayback, withLoop)
+export const createLoopingPlaybackInContext = EFunction.flow(
+  createPlaybackInContext,
+  withLoop,
 )

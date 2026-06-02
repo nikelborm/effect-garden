@@ -1,3 +1,4 @@
-import { createPlayback } from './createPlayback.ts'
+import { createPlayback, createPlaybackInContext } from './createPlayback.ts'
 
 export const createOneshotPlayback = createPlayback
+export const createOneshotPlaybackInContext = createPlaybackInContext
