@@ -38,7 +38,7 @@ export const advancePatternPatternTransition = Effect.fn(
   const audioContext = yield* EAudioContext.EAudioContext
 
   const secondsSinceAudioContextInit =
-    yield* EAudioContext.currentTime(audioContext)
+    yield* EAudioContext.currentTimeFromContext
 
   const math = calcTimingsMath(
     oldState.playbackStartedAtSecond,
