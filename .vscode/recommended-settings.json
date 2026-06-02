@@ -31,6 +31,8 @@
     "Промпт",
     "промпта",
     "промптами",
+    "EMIDI",
+    "tspc",
     "Эндпоинт"
   ],
   "emojisense.languages": {
@@ -58,14 +60,17 @@
     ".github/workflows/release.yml",
     ".github/workflows/test.yml"
   ],
-  "typescript.preferences.importModuleSpecifier": "project-relative",
-  "javascript.preferences.importModuleSpecifier": "project-relative",
-  "typescript.preferences.importModuleSpecifierEnding": "js",
-  "javascript.preferences.importModuleSpecifierEnding": "js",
-  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "js/ts.preferences.importModuleSpecifier": "project-relative",
+  "js/ts.preferences.importModuleSpecifierEnding": "js",
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
   "prettier.jsxSingleQuote": true,
   "prettier.singleQuote": true,
   "cmake.ignoreCMakeListsMissing": true,
-  "typescript.tsdk": "./packages/tsconfig/node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "js/ts.tsdk.path": "./packages/tsconfig/node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
+  "js/ts.experimental.useTsgo": true
 }

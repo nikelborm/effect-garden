@@ -17,12 +17,32 @@ import * as Stream from 'effect/Stream'
 import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
-export const vscodeConfig = {
-  'git.openRepositoryInParentFolders': 'always',
-  // TODO: make path calculation smarter, because packages can be at different
-  // depth and so will the tsconfig path be.
-  'js/ts.tsdk.path': '../tsconfig/node_modules/typescript/lib',
-}
+export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
+  packagePath: string,
+) {
+  const path = yield* Path.Path
+
+  return {
+    // TODO: make them synced with recomended settings?
+    'git.openRepositoryInParentFolders': 'always',
+    'js/ts.tsdk.path': path.relative(
+      packagePath,
+      path.join(packagesDirPath, 'tsconfig/node_modules/typescript/lib'),
+    ),
+    'js/ts.tsdk.promptToUseWorkspaceVersion': true,
+    'editor.codeActionsOnSave': {
+      'source.organizeImports.biome': 'explicit',
+      'source.fixAll.biome': 'explicit',
+    },
+    'js/ts.experimental.useTsgo': true,
+
+    'js/ts.preferences.importModuleSpecifier': 'project-relative',
+    'js/ts.preferences.importModuleSpecifierEnding': 'js',
+    'js/ts.preferences.preferTypeOnlyAutoImports': true,
+    'prettier.jsxSingleQuote': true,
+    'prettier.singleQuote': true,
+  }
+})
 
 export const biomeDefaultConfig = {
   // TODO: use the schema url from the main biome.jsonc
@@ -183,7 +203,9 @@ const program = Effect.gen(function* () {
   const toJSON = (e: any) => JSON.stringify(e, null, 2) + '\n'
 
   const map = {
-    [path.join(vscodeDirPath, 'settings.json')]: toJSON(vscodeConfig),
+    [path.join(vscodeDirPath, 'settings.json')]: toJSON(
+      yield* vscodeConfig(packagePath),
+    ),
     [path.join(packagePath, 'biome.jsonc')]: toJSON(biomeDefaultConfig),
     [path.join(packagePath, 'mise.toml')]:
       `[env._]\npath = ["./node_modules/.bin"]\n`,

@@ -862,7 +862,7 @@ const plainObjectFieldsFixers = (record: Record<string, any>) =>
       typeof input === 'object' &&
       input !== null &&
       key in input &&
-      (input as any)[key] === value,
+      JSON.stringify((input as any)[key]) === JSON.stringify(value),
     getFixed: (input: unknown) => ({
       ...(typeof input === 'object' && input !== null ? input : {}),
       [key]: value,
@@ -883,7 +883,11 @@ const ensureVscodeSettingsInPackage = Effect.fn(
     decode: jsonDecode,
     encode: jsonEncode,
     defaultValue: {},
-    fixers: [...plainObjectFieldsFixers(vscodeConfig)],
+    fixers: [
+      ...plainObjectFieldsFixers(
+        yield* vscodeConfig(paths.absolutePackageDirPath),
+      ),
+    ],
   })
 })
 
