@@ -116,8 +116,7 @@ const makeParamButtonService = <
     const isCurrentlyPlaying = (value: ParamButtonIdData<TParamButtonId>) =>
       appPlaybackState.playbackPublicInfoChangesStream.pipe(
         Stream.map(
-          pb =>
-            pb._tag !== 'NotPlaying' && isCurrentlyPlayingPredicate(pb, value),
+          pb => pb._tag !== 'Silence' && isCurrentlyPlayingPredicate(pb, value),
         ),
         Stream.changes,
         Stream.rechunk(1),

@@ -49,7 +49,7 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
     if (stateRightBeforeCleanup._tag === 'PatternSilenceTransition') {
       const [fading] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(fading.playback)
-      return { _tag: 'NotPlaying' as const }
+      return { _tag: 'Silence' as const }
     }
 
     if (stateRightBeforeCleanup._tag === 'PatternPatternSilenceTransition') {

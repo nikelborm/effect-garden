@@ -17,7 +17,6 @@ import type { AppPlaybackState } from './types/index.ts'
 export type {
   AppPlaybackState,
   AudioPlayback,
-  NotPlaying,
   PatternPatternPatternTransition,
   PatternPatternSilenceTransition,
   PatternPatternTransition,
@@ -27,6 +26,7 @@ export type {
   PlayingAppPlaybackStates,
   PlayingPattern,
   PlayingSlowStrum,
+  Silence,
   SlowStrumPatternTransition,
   SlowStrumTransitionQueueElement,
 } from './types/index.ts'
@@ -42,34 +42,32 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const selectedAssetState = yield* CurrentlySelectedAssetState
 
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
-        _tag: 'NotPlaying',
+        _tag: 'Silence',
       })
 
       const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
         stateRef,
         Effect.fn(function* (state) {
           yield* Effect.log('Switch play pause from currently selected')
-          const isStopped = state._tag === 'NotPlaying'
+          const isStopped = state._tag === 'Silence'
           if (isStopped) return yield* makeNewPlayingAssetState
 
           yield* cleanupAllPlaybacks(state)
 
-          return { _tag: 'NotPlaying' as const }
+          return { _tag: 'Silence' as const }
         }),
       ).pipe(Effect.tapErrorCause(Effect.logError))
 
       yield* Effect.addFinalizer(() =>
         Effect.map(stateRef.get, state =>
-          state._tag === 'NotPlaying'
-            ? Effect.void
-            : cleanupAllPlaybacks(state),
+          state._tag === 'Silence' ? Effect.void : cleanupAllPlaybacks(state),
         ),
       )
 
       const makeCleanupFibers = makeCleanupFibersFactory(stateRef)
 
       const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
-        Stream.map(current => current._tag !== 'NotPlaying'),
+        Stream.map(current => current._tag !== 'Silence'),
         Stream.changes,
         Stream.rechunk(1),
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
@@ -92,7 +90,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       const _playbackPublicInfoChangesStream = Stream.map(
         stateRef.changes,
         state =>
-          state._tag === 'NotPlaying'
+          state._tag === 'Silence'
             ? state
             : ({
                 _tag: state._tag,
@@ -135,7 +133,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       //           )
       //             return currentState
       //           yield* cleanupAllPlaybacks(currentState)
-      //           return { _tag: 'NotPlaying' as const }
+      //           return { _tag: 'Silence' as const }
       //         }),
       //       ).pipe(
       //         stateSemaphore.withPermits(1),

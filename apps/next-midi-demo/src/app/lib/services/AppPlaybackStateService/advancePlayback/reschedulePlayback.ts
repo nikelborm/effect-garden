@@ -17,7 +17,7 @@ export const reschedulePlayback = Effect.fn('reschedulePlayback')(function* (
   deps: ReschedulePlaybackDeps,
 ) {
   switch (oldState._tag) {
-    case 'NotPlaying':
+    case 'Silence':
       return oldState
     case 'PlayingPattern':
       return yield* advancePlayingPattern(oldState, asset, deps)
