@@ -29,6 +29,7 @@ out
 package-lock.json
 reports
 scratchpad.ts
+reposCreatedAndStarredByMe.json
 stats.html
 superset
 temp.json

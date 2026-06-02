@@ -53,9 +53,9 @@
   "scripts": {
     "build": "next build --webpack",
     "dev": "next dev --experimental-https",
-    "max": "cd ../../; bun max",
     "format": "biome format --write",
     "lint": "biome check",
+    "max": "cd ../../; bun max",
     "start": "next start"
   },
   "author": {

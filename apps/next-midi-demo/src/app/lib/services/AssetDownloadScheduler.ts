@@ -123,5 +123,3 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
     executeLatestPlan,
   )
 }).pipe(Layer.scopedDiscard)
-
-

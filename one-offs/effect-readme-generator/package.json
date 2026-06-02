@@ -1,0 +1,99 @@
+{
+  "name": "effect-readme-generator",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Generate Readme with table for my github profile",
+  "devDependencies": {
+    "@effect/language-service": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "@typescript/native-preview": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@types/bun": "catalog:",
+    "@types/node": "catalog:",
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "@octokit/core": "catalog:",
+    "@octokit/request-error": "catalog:",
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/parse-link-header": "catalog:",
+    "outdent": "catalog:",
+    "parse-link-header": "catalog:",
+    "undici": "catalog:",
+    "zod": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/effect-readme-generator#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "one-offs/effect-readme-generator"
+  },
+  "scripts": {
+    "build": "tsgo",
+    "dev": "tsgo --watch --preserveWatchOutput false",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsgo"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    ".": {
+      "types": "./dist-types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
+  "files": [
+    "dist-types",
+    "dist",
+    "index.ts",
+    "package.json",
+    "src",
+    "!**/*.spec.*",
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
+  ]
+}

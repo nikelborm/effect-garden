@@ -98,6 +98,7 @@ const packageJson = (config: { name: string; description: string }) =>
       '@evadev/tsconfig': 'workspace:^',
       '@effect/language-service': 'catalog:',
       'ts-namespace-import': 'catalog:',
+      '@typescript/native-preview': 'catalog:',
       'ts-patch': 'catalog:',
       typescript: 'catalog:',
     },

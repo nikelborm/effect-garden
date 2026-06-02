@@ -34,6 +34,7 @@
     "effect-npm-api": "workspace:^",
     "effect-npm-api-schema": "workspace:^",
     "effect-opfs": "workspace:^",
+    "effect-readme-generator": "workspace:^",
     "effect-schema-writer": "workspace:^",
     "effect-web-audio": "workspace:^",
     "effect-web-audio-generation-experiment": "workspace:^",
@@ -45,6 +46,7 @@
     "interview-monarchs-task": "workspace:^",
     "joiners": "workspace:^",
     "next-midi-demo": "workspace:^",
+    "oxlint": "catalog:",
     "oxlint-plugin-effect-imports": "workspace:^",
     "playground": "workspace:^",
     "postcss-styled-syntax": "^0.7.1",
@@ -165,7 +167,10 @@
     "canonicalize": "^3.0.0",
     "eslint": "^10.4.0",
     "oxlint": ">=0.15.0",
-    "smol-toml": "^1.6.1"
+    "smol-toml": "^1.6.1",
+    "@types/parse-link-header": "^2.0.3",
+    "parse-link-header": "^2.0.0",
+    "undici": "^8.3.0"
   },
   "workspaces": [
     "ideas/*",
