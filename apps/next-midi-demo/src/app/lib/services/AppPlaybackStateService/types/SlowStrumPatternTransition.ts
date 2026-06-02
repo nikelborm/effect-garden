@@ -5,14 +5,13 @@ import {
   SlowStrumTransitionQueueElementSchema,
 } from './common.ts'
 
-export const SlowStrumPatternTransitionSchema = Schema.Struct({
-  _tag: Schema.Literal('SlowStrumPatternTransition'),
-  playbackStartedAtSecond: Schema.Number,
-  transitionQueue: Schema.Tuple(
-    SlowStrumTransitionQueueElementSchema,
-    PatternTransitionQueueElementSchema,
-  ),
-})
-export type SlowStrumPatternTransition = Schema.Schema.Type<
-  typeof SlowStrumPatternTransitionSchema
->
+export class SlowStrumPatternTransition extends Schema.TaggedClass<SlowStrumPatternTransition>()(
+  'SlowStrumPatternTransition',
+  {
+    playbackStartedAtSecond: Schema.Number,
+    transitionQueue: Schema.Tuple(
+      SlowStrumTransitionQueueElementSchema,
+      PatternTransitionQueueElementSchema,
+    ),
+  },
+) {}

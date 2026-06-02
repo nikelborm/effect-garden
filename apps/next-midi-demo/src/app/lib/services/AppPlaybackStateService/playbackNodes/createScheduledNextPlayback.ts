@@ -1,5 +1,5 @@
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
-import type * as EAudioContext from 'effect-web-audio/EAudioContext'
+import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
 
@@ -29,3 +29,11 @@ export const createScheduledNextPlayback = (
     )
     return pb
   })
+
+export const createScheduledNextPlaybackInContext = (
+  audioBuffer: EAudioBuffer.EAudioBuffer,
+  math: ReturnType<typeof calcTimingsMath>,
+) =>
+  Effect.flatMap(EAudioContext.EAudioContext, context =>
+    createScheduledNextPlayback(context, audioBuffer, math),
+  )

@@ -14,7 +14,7 @@ import {
   scheduleFadeOutOf,
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
-import type {
+import {
   PatternPatternPatternTransition,
   PatternPatternSilenceTransition,
   PatternPatternTransition,
@@ -49,16 +49,14 @@ export const advancePatternPatternTransition = Effect.fn(
     if (math.fitsIntoBufferOfClosestTransition) {
       // Pattern deselected before transition — cancel latest, keep current fading to silence
       yield* helpGarbageCollectionOfPlayback(latest.playback)
-      return {
-        _tag: 'PatternSilenceTransition' as const,
+      return new PatternSilenceTransition({
         playbackStartedAtSecond: oldState.playbackStartedAtSecond,
         transitionQueue: [current],
-      } satisfies PatternSilenceTransition
+      })
     }
     // Transition already in progress — latest is fading in; schedule its fade-out too
     yield* scheduleFadeOutOf(latest.playback, math)
-    return {
-      _tag: 'PatternPatternSilenceTransition' as const,
+    return new PatternPatternSilenceTransition({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
@@ -71,7 +69,7 @@ export const advancePatternPatternTransition = Effect.fn(
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
         },
       ],
-    } satisfies PatternPatternSilenceTransition
+    })
   }
 
   if (
@@ -89,11 +87,10 @@ export const advancePatternPatternTransition = Effect.fn(
     })
     yield* current.cleanupFiberToolkit.cancelCleanup
     yield* helpGarbageCollectionOfPlayback(latest.playback)
-    return {
-      _tag: 'PlayingPattern',
+    return new PlayingPattern({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [Struct.pick(current, 'asset', 'playback')],
-    } satisfies PlayingPattern
+    })
   }
 
   const audioBuffer = yield* getAudioBufferOfAsset(asset)
@@ -105,8 +102,7 @@ export const advancePatternPatternTransition = Effect.fn(
 
   if (!math.fitsIntoBufferOfClosestTransition) {
     yield* scheduleFadeOutOf(latest.playback, math)
-    return {
-      _tag: 'PatternPatternPatternTransition' as const,
+    return new PatternPatternPatternTransition({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
@@ -120,12 +116,11 @@ export const advancePatternPatternTransition = Effect.fn(
         },
         { asset, playback },
       ],
-    } satisfies PatternPatternPatternTransition
+    })
   }
 
-  return {
-    _tag: 'PatternPatternTransition' as const,
+  return new PatternPatternTransition({
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [current, { asset, playback }],
-  } satisfies PatternPatternTransition
+  })
 })

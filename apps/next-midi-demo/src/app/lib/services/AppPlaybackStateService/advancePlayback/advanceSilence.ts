@@ -18,10 +18,10 @@ import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
 import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
 import { getAudioBufferDurationSeconds } from '../playbackNodes/index.ts'
-import type {
+import {
   PlayingPattern,
   PlayingSlowStrum,
-  Silence,
+  type Silence,
 } from '../types/index.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
@@ -76,13 +76,11 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   })
 
   return TaggedPatternPointer.models(asset)
-    ? ({
-        _tag: 'PlayingPattern',
+    ? new PlayingPattern({
         transitionQueue: [{ playback, asset }],
         playbackStartedAtSecond,
-      } satisfies PlayingPattern)
-    : ({
-        _tag: 'PlayingSlowStrum',
+      })
+    : new PlayingSlowStrum({
         transitionQueue: [
           {
             playback,
@@ -91,5 +89,5 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
           },
         ],
         playbackStartedAtSecond,
-      } satisfies PlayingSlowStrum)
+      })
 })
