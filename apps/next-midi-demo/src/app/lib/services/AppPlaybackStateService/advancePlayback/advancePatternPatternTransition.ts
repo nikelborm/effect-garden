@@ -21,17 +21,17 @@ import type {
   PatternSilenceTransition,
   PlayingPattern,
 } from '../types/index.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
 export const advancePatternPatternTransition = Effect.fn(
   'advancePatternPatternTransition',
 )(function* (
   oldState: PatternPatternTransition,
-  asset: AssetPointer,
-  deps: ReschedulePlaybackDeps,
+  signal: Signal,
+  deps: AdvancePlaybackDeps,
 ) {
-  const current = oldState.transitionQueue[0]
-  const latest = oldState.transitionQueue[1]
+  const [current, latest] = oldState.transitionQueue
 
   if (Equal.equals(latest.asset, asset)) return oldState
 

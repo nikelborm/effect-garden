@@ -8,11 +8,11 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AssetPointer } from '../../brandsAndDatas/AssetPointer.ts'
 import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
+import { advancePlayback } from './advancePlayback/index.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
-import { reschedulePlayback } from './reschedulePlayback/reschedulePlayback.ts'
-import type { AppPlaybackState } from './types/index.ts'
+import type { AppPlaybackState, Silence } from './types/index.ts'
 
 export type {
   AppPlaybackState,
@@ -54,7 +54,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
           yield* cleanupAllPlaybacks(state)
 
-          return { _tag: 'Silence' as const }
+          return { _tag: 'Silence' } satisfies Silence
         }),
       ).pipe(Effect.tapErrorCause(Effect.logError))
 
@@ -87,24 +87,24 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const _playbackPublicInfoChangesStream = Stream.map(
-        stateRef.changes,
-        state =>
-          state._tag === 'Silence'
-            ? state
-            : ({
-                _tag: state._tag,
-                currentAsset: state.transitionQueue[0].asset,
-                assetTransitionsQueue: state.transitionQueue.map(
-                  a => a.asset,
-                ) as ReadonlyArray<AssetPointer>,
-              } as const),
-      )
+      // const _playbackPublicInfoChangesStream = Stream.map(
+      //   stateRef.changes,
+      //   state =>
+      //     state._tag === 'Silence'
+      //       ? state
+      //       : ({
+      //           _tag: state._tag,
+      //           currentAsset: state.transitionQueue[0].asset,
+      //           assetTransitionsQueue: state.transitionQueue.map(
+      //             a => a.asset,
+      //           ) as ReadonlyArray<AssetPointer>,
+      //         } as const),
+      // )
 
       yield* selectedAssetState.changes.pipe(
-        Stream.tap(asset =>
+        Stream.tap(signal =>
           SubscriptionRef.updateEffect(stateRef, state =>
-            reschedulePlayback(state, asset, { makeCleanupFibers }),
+            advancePlayback(state, signal, { makeCleanupFibers }),
           ),
         ),
         Stream.runDrain,

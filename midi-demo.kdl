@@ -1,6 +1,12 @@
 pane_frames false
 layout {
   pane split_direction="vertical" {
+    pane {
+      name "Next.js tsgo watch"
+      cwd "./apps/next-midi-demo"
+      command "bunx"
+      args "tsgo" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
+    }
     pane split_direction="horizontal" {
       pane {
         name "Next.js dev"
@@ -8,14 +14,6 @@ layout {
         command "bun"
         args "dev"
       }
-      pane {
-        name "Next.js tsgo watch"
-        cwd "./apps/next-midi-demo"
-        command "bunx"
-        args "tsgo" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
-      }
-    }
-    pane split_direction="horizontal" {
       pane {
         name "Web MIDI tsgo watch"
         cwd "./packages/effect-web-midi"

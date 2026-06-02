@@ -22,5 +22,5 @@ export const createPlayback = (
 
     gainNode.connect(audioContext.destination)
 
-    return { bufferSource, gainNode } as const
+    return { bufferSource, gainNode }
   })

@@ -78,3 +78,6 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
    ```
 
 8. make mock version of EMidiAccess
+9. make mechanism to easily escape wrapper library and operate on the raw
+object, as well as a mechanism to make batching operations that garanteed to be
+synchronous and executed sequentially

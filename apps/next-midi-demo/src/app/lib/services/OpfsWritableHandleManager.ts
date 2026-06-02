@@ -14,6 +14,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const pool = yield* KeyedPool.make({
+        size: 1,
         acquire: Effect.fn('OpfsWritableHandleManager.acquireWritable')(
           function* (pointer: AssetPointer) {
             const fileHandle = yield* getFileHandle({
@@ -36,7 +37,10 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
               appendDataToTheEndOfFile: (data: ArrayBuffer) =>
                 Effect.zipRight(
                   Effect.promise(() => writablePointingAtTheEnd.write(data)),
-                  estimationMap.increaseAssetSize(pointer, data.byteLength),
+                  estimationMap.increaseUnverifiedAssetSize(
+                    pointer,
+                    data.byteLength,
+                  ),
                 ),
               close: Effect.promise(() =>
                 writablePointingAtTheEnd.close(),
@@ -44,7 +48,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             }
           },
         ),
-        size: 1,
       })
 
       return {

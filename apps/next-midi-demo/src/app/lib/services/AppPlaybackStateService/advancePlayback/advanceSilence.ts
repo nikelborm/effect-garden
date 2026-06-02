@@ -4,7 +4,10 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
+import { AccordData } from '../../../brandsAndDatas/Accord.ts'
 import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
+import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
+import type { RootDirectoryHandle } from '../../RootDirectoryHandle.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createScheduledNextPlayback,
@@ -17,72 +20,89 @@ import type {
   PlayingPattern,
   Silence,
 } from '../types/index.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
-export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
-  function* (
-    oldState: Silence,
-    asset: AssetPointer,
-    deps: ReschedulePlaybackDeps,
-  ) {
-    const [current] = oldState.transitionQueue
-    const audioContext = yield* EAudioContext.EAudioContext
+export const advanceSilence = Effect.fn('advanceSilence')(function* (
+  oldState: Silence,
+  signal: Signal,
+  deps: AdvancePlaybackDeps,
+) {
+  if (StrengthData.models(signal)) {
+    // Although should probably at least change the Ref with config
+    return oldState
+  }
 
-    if (Equal.equals(current.asset, asset)) return oldState
+  if (AccordData.models(signal)) {
+    // should run slow strum with patched accord
+    return yield* Effect.dieMessage('Playing slow strums is unimplemented')
+  }
+  signal.pattern
 
-    if (Option.isNone(asset.pattern)) {
-      // Pattern was deselected while loop was playing — fade out to silence
-      const math = calcTimingsMath(
-        oldState.playbackStartedAtSecond,
-        yield* EAudioContext.currentTime(audioContext),
-      )
-      yield* scheduleFadeOutOf(current.playback, math)
-      return {
-        _tag: 'PatternSilenceTransition' as const,
-        playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-        transitionQueue: [
-          {
-            ...current,
-            cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-              math.secondsSinceNowUpUntilFadeoutEnds,
-            ),
-            fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-            fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-          },
-        ],
-      } satisfies PatternSilenceTransition
-    }
+  const selectedAssetState = yield* CurrentlySelectedAssetState
+  const audioContext = yield* EAudioContext.EAudioContext
 
-    const audioBuffer = yield* getAudioBufferOfAsset(asset)
-
-    const math = calcTimingsMath(
-      oldState.playbackStartedAtSecond,
-      yield* EAudioContext.currentTime(audioContext),
+  if (!(yield* selectedAssetState.isFinishedDownloadCompletely))
+    return yield* Effect.die(
+      'Play command should only be called when the current asset finished loading',
     )
 
-    yield* scheduleFadeOutOf(current.playback, math)
+  const currentAsset = yield* selectedAssetState.current
+
+  const audioBuffer = yield* getAudioBufferOfAsset(currentAsset)
+
+  const secondsSinceAudioContextInit =
+    yield* EAudioContext.currentTime(audioContext)
+
+  if (Option.isNone(currentAsset.pattern)) {
+    const currentPlayback = yield* createOneshotPlayback(
+      audioContext,
+      audioBuffer,
+    )
+
+    yield* Effect.sync(() => {
+      currentPlayback.gainNode.gain.setValueAtTime(
+        maxLoudness,
+        asEarlyAsPossibleInSeconds,
+      )
+      currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
+    })
+
+    yield* Effect.log('started playing slow strum')
+
+    const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
 
     return {
-      _tag: 'PatternPatternTransition' as const,
-      playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+      _tag: 'PlayingSlowStrum' as const,
       transitionQueue: [
         {
-          ...current,
-          cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-            math.secondsSinceNowUpUntilFadeoutEnds,
-          ),
-          fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-          fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-        },
-        {
-          asset,
-          playback: yield* createScheduledNextPlayback(
-            audioContext,
-            audioBuffer,
-            math,
-          ),
+          playback: currentPlayback,
+          asset: currentAsset,
+          durationSeconds,
         },
       ],
-    } satisfies PatternPatternTransition
-  },
-)
+      playbackStartedAtSecond: secondsSinceAudioContextInit,
+    } satisfies PlayingSlowStrum
+  }
+
+  const currentPlayback = yield* createLoopingPlayback(
+    audioContext,
+    audioBuffer,
+  )
+
+  yield* Effect.sync(() => {
+    currentPlayback.gainNode.gain.setValueAtTime(
+      maxLoudness,
+      asEarlyAsPossibleInSeconds,
+    )
+    currentPlayback.bufferSource.start(secondsSinceAudioContextInit)
+  })
+
+  yield* Effect.log('started playing')
+
+  return {
+    _tag: 'PlayingPattern' as const,
+    transitionQueue: [{ playback: currentPlayback, asset: currentAsset }],
+    playbackStartedAtSecond: secondsSinceAudioContextInit,
+  } satisfies PlayingPattern
+})

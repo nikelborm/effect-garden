@@ -2,7 +2,11 @@ import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as Schema from 'effect/Schema'
 
-import { AssetPointerSchema } from '../../../brandsAndDatas/AssetPointer.ts'
+import {
+  AssetPointerSchema,
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+} from '../../../brandsAndDatas/AssetPointer.ts'
 
 export const AudioPlaybackSchema = Schema.Struct({
   bufferSource: Schema.declare(
@@ -48,7 +52,7 @@ export type CleanupFiberToolkit = Schema.Schema.Type<
 >
 
 export const PatternTransitionQueueElementSchema = Schema.Struct({
-  asset: AssetPointerSchema,
+  asset: TaggedPatternPointer,
   playback: AudioPlaybackSchema,
 })
 export type PatternTransitionQueueElement = Schema.Schema.Type<
@@ -68,7 +72,7 @@ export type PatternTransitionElementWithScheduledCleanup = Schema.Schema.Type<
 >
 
 export const SlowStrumTransitionQueueElementSchema = Schema.Struct({
-  asset: AssetPointerSchema,
+  asset: TaggedSlowStrumPointer,
   playback: AudioPlaybackSchema,
   durationSeconds: Schema.Number,
 })

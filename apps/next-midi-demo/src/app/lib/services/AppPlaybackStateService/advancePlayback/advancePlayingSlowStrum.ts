@@ -4,7 +4,6 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
-import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
@@ -17,13 +16,14 @@ import type {
   PlayingSlowStrum,
   SlowStrumPatternTransition,
 } from '../types/index.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
 export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
   function* (
     oldState: PlayingSlowStrum,
-    asset: AssetPointer,
-    _deps: ReschedulePlaybackDeps,
+    signal: Signal,
+    _deps: AdvancePlaybackDeps,
   ) {
     const audioContext = yield* EAudioContext.EAudioContext
     const [current] = oldState.transitionQueue

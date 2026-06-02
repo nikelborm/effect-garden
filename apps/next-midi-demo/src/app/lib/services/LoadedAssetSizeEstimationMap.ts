@@ -4,6 +4,7 @@ import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
+import * as Struct from 'effect/Struct'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
@@ -21,107 +22,87 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
-      const assetSizesActuallyPresentOnDisk: Effect.Effect<AssetToSizeHashMap> =
+      const assetToSizeHashMapRef = yield* EFunction.pipe(
+        listEntries(rootDirectoryHandle),
         Effect.map(
-          listEntries(rootDirectoryHandle),
           EFunction.flow(
-            Iterable.filter(e => e.kind === 'file'),
-            Iterable.filterMap(fileEntry =>
+            Iterable.filter(dirOrFileEntry => dirOrFileEntry.kind === 'file'),
+            Iterable.filterMap(({ name, size }) =>
               Option.map(
-                getAssetFromLocalFileName(fileEntry.name),
+                getAssetFromLocalFileName(name),
                 asset =>
-                  [
-                    asset,
-                    { size: fileEntry.size, verifiedOnDisk: true },
-                  ] as const,
+                  [asset, { size, verifiedOnDisk: true as boolean }] as const,
               ),
             ),
             HashMap.fromIterable,
           ),
-        ).pipe(
-          Effect.orDie,
-          Effect.tapDefect(defectCause =>
-            Effect.logError(
-              'Defect while getting asset sizes actually present on disk',
-              defectCause,
-            ),
+        ),
+        Effect.orDie,
+        Effect.tapDefect(defectCause =>
+          Effect.logError(
+            'Defect while getting asset sizes actually present on disk',
+            defectCause,
           ),
-        )
-
-      const assetToSizeHashMapRef = yield* Effect.flatMap(
-        assetSizesActuallyPresentOnDisk,
-        SubscriptionRef.make,
+        ),
+        Effect.flatMap(SubscriptionRef.make),
       )
+      const fallbackEstimationOption = Option.getOrElse<AssetSizeEstimation>(
+        () => ({ size: 0, verifiedOnDisk: false }),
+      )<AssetSizeEstimation>
+
+      const getOrDefaultBy =
+        (asset: AssetPointer) => (map: AssetToSizeHashMap) =>
+          map.pipe(HashMap.get(asset), fallbackEstimationOption)
 
       const getCurrentDownloadedBytes = (
         asset: AssetPointer,
       ): Effect.Effect<AssetSizeEstimation> =>
-        Effect.map(
-          assetToSizeHashMapRef.get,
-          EFunction.flow(
-            HashMap.get(asset),
-            Option.getOrElse(() => ({ size: 0, verifiedOnDisk: false })),
-          ),
-        )
+        Effect.map(assetToSizeHashMapRef.get, getOrDefaultBy(asset))
 
       const getCurrentDownloadedBytesStream = (
         asset: AssetPointer,
       ): Stream.Stream<AssetSizeEstimation> =>
         assetToSizeHashMapRef.changes.pipe(
-          Stream.map(
-            EFunction.flow(
-              HashMap.get(asset),
-              Option.getOrElse(() => ({
-                size: 0,
-                verifiedOnDisk: false as boolean,
-              })),
-            ),
-          ),
+          Stream.map(getOrDefaultBy(asset)),
           // Stream.changes,
         )
 
-      const increaseAssetSize = (
+      const modifyMapAt = (
         asset: AssetPointer,
-        bytesDownloaded: number,
+        update: (estimation: AssetSizeEstimation) => AssetSizeEstimation,
       ) =>
         SubscriptionRef.update(
           assetToSizeHashMapRef,
           HashMap.modifyAt(
             asset,
-            EFunction.flow(
-              Option.orElseSome(() => ({ size: 0 })),
-              Option.map(previous => ({
-                size: previous.size + bytesDownloaded,
-                verifiedOnDisk: false as boolean,
-              })),
-            ),
+            EFunction.flow(fallbackEstimationOption, update, Option.some),
           ),
+        )
+
+      const increaseUnverifiedAssetSize = (
+        asset: AssetPointer,
+        bytesDownloaded: number,
+      ) =>
+        modifyMapAt(
+          asset,
+          Struct.evolve({
+            size: size => size + bytesDownloaded,
+            verifiedOnDisk: () => false,
+          }),
         )
 
       const verify = (asset: AssetPointer) =>
-        SubscriptionRef.update(
-          assetToSizeHashMapRef,
-          HashMap.modifyAt(
-            asset,
-            EFunction.flow(
-              Option.orElseSome(() => ({ size: 0 })),
-              Option.map(previous => ({
-                ...previous,
-                verifiedOnDisk: true as boolean,
-              })),
-            ),
-          ),
-        )
+        modifyMapAt(asset, Struct.evolve({ verifiedOnDisk: () => false }))
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
-        Effect.fn(function* (
+        Effect.fn('mapCurrentFetchedBytesToCompletionStatus')(function* (
           previous: AssetSizeEstimation,
         ): Effect.fn.Return<AssetCompletionStatus> {
           if (previous.size !== ASSET_SIZE_BYTES)
             return {
-              status: 'not finished' as const,
+              status: 'not finished',
               currentBytes: previous.size,
-            }
+            } satisfies NotFinished
 
           // Optimization to avoid UI rendering delays by skipping slow opfs
           // operations
@@ -138,12 +119,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
                 ),
               )
 
-          if (sizeOnDisk !== ASSET_SIZE_BYTES)
-            return {
-              status: 'almost finished: fetched, but not written' as const,
-            }
+          if (sizeOnDisk !== ASSET_SIZE_BYTES) return AlmostFinished
 
-          return { status: 'finished' as const }
+          return Finished
         })
 
       const getAssetFetchingCompletionStatusChangesStream = (
@@ -166,7 +144,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       )
 
       return {
-        increaseAssetSize,
+        increaseUnverifiedAssetSize,
         verify,
         areAllBytesFetched,
         getCurrentDownloadedBytes,
@@ -177,15 +155,24 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
   },
 ) {}
 
-export type AssetCompletionStatus =
-  | { status: 'not finished'; currentBytes: number }
-  | { status: 'almost finished: fetched, but not written' }
-  | { status: 'finished' }
+export const AlmostFinished = {
+  status: 'almost finished: fetched, but not written',
+} as const
 
-interface AssetToSizeHashMap
+export type AlmostFinished = typeof AlmostFinished
+
+export interface NotFinished
+  extends Readonly<{ status: 'not finished'; currentBytes: number }> {}
+
+export const Finished = { status: 'finished' } as const
+export type Finished = typeof Finished
+
+export type AssetCompletionStatus = NotFinished | AlmostFinished | Finished
+
+export interface AssetToSizeHashMap
   extends HashMap.HashMap<AssetPointer, AssetSizeEstimation> {}
 
-interface AssetSizeEstimation {
-  size: number
-  verifiedOnDisk: boolean
+export interface AssetSizeEstimation {
+  readonly size: number
+  readonly verifiedOnDisk: boolean
 }

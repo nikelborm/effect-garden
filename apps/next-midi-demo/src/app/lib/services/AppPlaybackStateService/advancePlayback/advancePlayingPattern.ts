@@ -16,13 +16,14 @@ import type {
   PatternSilenceTransition,
   PlayingPattern,
 } from '../types/index.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
 export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
   function* (
     oldState: PlayingPattern,
-    asset: AssetPointer,
-    deps: ReschedulePlaybackDeps,
+    signal: Signal,
+    deps: AdvancePlaybackDeps,
   ) {
     const [current] = oldState.transitionQueue
     const audioContext = yield* EAudioContext.EAudioContext

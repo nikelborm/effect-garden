@@ -18,14 +18,15 @@ import type {
   PlayingSlowStrum,
   SlowStrumPatternTransition,
 } from '../types/index.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
 export const advanceSlowStrumPatternTransition = Effect.fn(
   'advanceSlowStrumPatternTransition',
 )(function* (
   oldState: SlowStrumPatternTransition,
-  asset: AssetPointer,
-  _deps: ReschedulePlaybackDeps,
+  signal: Signal,
+  _deps: AdvancePlaybackDeps,
 ) {
   const audioContext = yield* EAudioContext.EAudioContext
   const [slowStrum, queuedPattern] = oldState.transitionQueue

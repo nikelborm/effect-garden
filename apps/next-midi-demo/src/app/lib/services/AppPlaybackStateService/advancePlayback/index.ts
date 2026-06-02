@@ -7,28 +7,29 @@ import { advancePatternSilenceTransition } from './advancePatternSilenceTransiti
 import { advancePlayingPattern } from './advancePlayingPattern.ts'
 import { advancePlayingSlowStrum } from './advancePlayingSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
-import type { ReschedulePlaybackDeps } from './deps.ts'
+import type { AdvancePlaybackDeps } from './deps.ts'
+import type { Signal } from './signal.ts'
 
-export type { ReschedulePlaybackDeps } from './deps.ts'
+export type { AdvancePlaybackDeps } from './deps.ts'
 
-export const reschedulePlayback = Effect.fn('reschedulePlayback')(function* (
+export const advancePlayback = Effect.fn('advancePlayback')(function* (
   oldState: AppPlaybackState,
-  asset: AssetPointer,
-  deps: ReschedulePlaybackDeps,
+  signal: Signal,
+  deps: AdvancePlaybackDeps,
 ) {
   switch (oldState._tag) {
     case 'Silence':
       return oldState
     case 'PlayingPattern':
-      return yield* advancePlayingPattern(oldState, asset, deps)
+      return yield* advancePlayingPattern(oldState, signal, deps)
     case 'PatternPatternTransition':
-      return yield* advancePatternPatternTransition(oldState, asset, deps)
+      return yield* advancePatternPatternTransition(oldState, signal, deps)
     case 'PlayingSlowStrum':
-      return yield* advancePlayingSlowStrum(oldState, asset, deps)
+      return yield* advancePlayingSlowStrum(oldState, signal, deps)
     case 'SlowStrumPatternTransition':
-      return yield* advanceSlowStrumPatternTransition(oldState, asset, deps)
+      return yield* advanceSlowStrumPatternTransition(oldState, signal, deps)
     case 'PatternSilenceTransition':
-      return yield* advancePatternSilenceTransition(oldState, asset, deps)
+      return yield* advancePatternSilenceTransition(oldState, signal, deps)
     default:
       return oldState
   }
