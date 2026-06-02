@@ -18,17 +18,18 @@ import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
 
 export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
-  packagePath: string,
+  _packagePath: string,
 ) {
-  const path = yield* Path.Path
+  const _path = yield* Path.Path
+  // path.relative(
+  //   packagePath,
+  //   path.join(packagesDirPath, './node_modules/typescript/lib'),
+  // )
 
   return {
     // TODO: make them synced with recomended settings?
     'git.openRepositoryInParentFolders': 'always',
-    'js/ts.tsdk.path': path.relative(
-      packagePath,
-      path.join(packagesDirPath, 'tsconfig/node_modules/typescript/lib'),
-    ),
+    'js/ts.tsdk.path': './node_modules/typescript/lib',
     'js/ts.tsdk.promptToUseWorkspaceVersion': true,
     'editor.codeActionsOnSave': {
       'source.organizeImports.biome': 'explicit',
@@ -40,6 +41,8 @@ export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
     'js/ts.preferences.importModuleSpecifierEnding': 'js',
     'js/ts.preferences.preferTypeOnlyAutoImports': true,
     'prettier.jsxSingleQuote': true,
+    'typescript.native-preview.tsdk':
+      './node_modules/@typescript/native-preview',
     'prettier.singleQuote': true,
   }
 })
