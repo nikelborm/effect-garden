@@ -4,8 +4,6 @@ import * as Schema from 'effect/Schema'
 
 import { AssetPointerSchema } from '../../../brandsAndDatas/AssetPointer.ts'
 
-// GOD DAMNN
-
 export const AudioPlaybackSchema = Schema.Struct({
   bufferSource: Schema.declare(
     (u): u is AudioBufferSourceNode =>
