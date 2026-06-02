@@ -49,22 +49,24 @@ export type CleanupFiberToolkit = Schema.Schema.Type<
   typeof CleanupFiberToolkitSchema
 >
 
-export const LoopTransitionQueueElementSchema = Schema.Struct({
+export const PatternTransitionQueueElementSchema = Schema.Struct({
   asset: AssetPointerSchema,
   playback: AudioPlaybackSchema,
 })
-export type LoopTransitionQueueElement = Schema.Schema.Type<
-  typeof LoopTransitionQueueElementSchema
+export type PatternTransitionQueueElement = Schema.Schema.Type<
+  typeof PatternTransitionQueueElementSchema
 >
 
-export const LoopTransitionElementWithScheduledCleanupSchema = Schema.Struct({
-  ...LoopTransitionQueueElementSchema.fields,
-  cleanupFiberToolkit: CleanupFiberToolkitSchema,
-  fadeoutStartsAtSecond: Schema.Number,
-  fadeoutEndsAtSecond: Schema.Number,
-})
-export type LoopTransitionElementWithScheduledCleanup = Schema.Schema.Type<
-  typeof LoopTransitionElementWithScheduledCleanupSchema
+export const PatternTransitionElementWithScheduledCleanupSchema = Schema.Struct(
+  {
+    ...PatternTransitionQueueElementSchema.fields,
+    cleanupFiberToolkit: CleanupFiberToolkitSchema,
+    fadeoutStartsAtSecond: Schema.Number,
+    fadeoutEndsAtSecond: Schema.Number,
+  },
+)
+export type PatternTransitionElementWithScheduledCleanup = Schema.Schema.Type<
+  typeof PatternTransitionElementWithScheduledCleanupSchema
 >
 
 export const SlowStrumTransitionQueueElementSchema = Schema.Struct({

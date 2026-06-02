@@ -11,7 +11,7 @@ import {
   createOneshotPlayback,
   getAudioBufferDurationSeconds,
 } from './playbackNodes/index.ts'
-import type { PlayingLoop, PlayingSlowStrum } from './types/index.ts'
+import type { PlayingPattern, PlayingSlowStrum } from './types/index.ts'
 
 export const makeNewPlayingAssetState = Effect.gen(function* () {
   const selectedAssetState = yield* CurrentlySelectedAssetState
@@ -76,8 +76,8 @@ export const makeNewPlayingAssetState = Effect.gen(function* () {
   yield* Effect.log('started playing')
 
   return {
-    _tag: 'PlayingLoop' as const,
+    _tag: 'PlayingPattern' as const,
     transitionQueue: [{ playback: currentPlayback, asset: currentAsset }],
     playbackStartedAtSecond: secondsSinceAudioContextInit,
-  } satisfies PlayingLoop
+  } satisfies PlayingPattern
 })

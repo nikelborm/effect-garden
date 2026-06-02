@@ -7,21 +7,21 @@ import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
-  createLoopScheduledAfterSlowStrum,
+  createLoopScheduledAfterSingleShot,
   createScheduledNextPlayback,
   scheduleFadeOutOf,
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
 import type {
-  LoopLoopTransition,
-  LoopSilenceTransition,
+  PatternPatternTransition,
+  PatternSilenceTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const advanceLoopSilenceTransition = Effect.fn(
-  'advanceLoopSilenceTransition',
+export const advancePatternSilenceTransition = Effect.fn(
+  'advancePatternSilenceTransition',
 )(function* (
-  oldState: LoopSilenceTransition,
+  oldState: PatternSilenceTransition,
   asset: AssetPointer,
   deps: ReschedulePlaybackDeps,
 ) {
@@ -53,7 +53,7 @@ export const advanceLoopSilenceTransition = Effect.fn(
     yield* current.cleanupFiberToolkit.cancelCleanup
     yield* scheduleFadeOutOf(current.playback, math)
     return {
-      _tag: 'LoopLoopTransition' as const,
+      _tag: 'PatternPatternTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         {
@@ -73,23 +73,23 @@ export const advanceLoopSilenceTransition = Effect.fn(
           ),
         },
       ],
-    } satisfies LoopLoopTransition
+    } satisfies PatternPatternTransition
   }
 
   // Fade already in progress — schedule new loop to start right after current ends
   return {
-    _tag: 'LoopLoopTransition' as const,
+    _tag: 'PatternPatternTransition' as const,
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [
       current,
       {
         asset,
-        playback: yield* createLoopScheduledAfterSlowStrum(
+        playback: yield* createLoopScheduledAfterSingleShot(
           audioContext,
           audioBuffer,
           current.fadeoutEndsAtSecond,
         ),
       },
     ],
-  } satisfies LoopLoopTransition
+  } satisfies PatternPatternTransition
 })

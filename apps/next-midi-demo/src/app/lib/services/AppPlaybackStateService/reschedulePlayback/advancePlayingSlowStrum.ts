@@ -8,14 +8,14 @@ import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
-  createLoopScheduledAfterSlowStrum,
+  createLoopScheduledAfterSingleShot,
   createOneshotPlayback,
   getAudioBufferDurationSeconds,
   helpGarbageCollectionOfPlayback,
 } from '../playbackNodes/index.ts'
 import type {
   PlayingSlowStrum,
-  SlowStrumLoopTransition,
+  SlowStrumPatternTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
@@ -59,15 +59,15 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
     const slowStrumEndsAtSecond =
       oldState.playbackStartedAtSecond + current.durationSeconds
     const audioBuffer = yield* getAudioBufferOfAsset(asset)
-    const newLoopPlayback = yield* createLoopScheduledAfterSlowStrum(
+    const newPatternPlayback = yield* createLoopScheduledAfterSingleShot(
       audioContext,
       audioBuffer,
       slowStrumEndsAtSecond,
     )
     return {
-      _tag: 'SlowStrumLoopTransition' as const,
+      _tag: 'SlowStrumPatternTransition' as const,
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-      transitionQueue: [current, { asset, playback: newLoopPlayback }],
-    } satisfies SlowStrumLoopTransition
+      transitionQueue: [current, { asset, playback: newPatternPlayback }],
+    } satisfies SlowStrumPatternTransition
   },
 )

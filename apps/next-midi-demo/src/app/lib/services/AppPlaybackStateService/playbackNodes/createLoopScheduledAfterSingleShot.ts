@@ -10,14 +10,14 @@ import {
 } from '../constants.ts'
 import { createLoopingPlayback } from './createLoopingPlayback.ts'
 
-export const createLoopScheduledAfterSlowStrum = (
+export const createLoopScheduledAfterSingleShot = (
   audioContext: EAudioContext.Instance,
   audioBuffer: EAudioBuffer.EAudioBuffer,
-  slowStrumEndsAtSecond: number,
+  singleShotEndsAtSecond: number,
 ) =>
   Effect.map(createLoopingPlayback(audioContext, audioBuffer), pb => {
     pb.gainNode.gain.setValueAtTime(minLoudness, asEarlyAsPossibleInSeconds)
-    pb.gainNode.gain.setValueAtTime(maxLoudness, slowStrumEndsAtSecond)
-    pb.bufferSource.start(slowStrumEndsAtSecond)
+    pb.gainNode.gain.setValueAtTime(maxLoudness, singleShotEndsAtSecond)
+    pb.bufferSource.start(singleShotEndsAtSecond)
     return pb
   })

@@ -15,7 +15,7 @@ export const calcTimingsMath = (
   const ticksPassedSincePlaybackStart =
     secondsPassedSincePlaybackStart / tickSizeInSeconds
 
-  const secondsSinceLatestTrackLoopStart =
+  const secondsSinceLatestTrackPatternStart =
     secondsPassedSincePlaybackStart % trackSizeInSeconds
 
   let nextAdjustedTickIndexSincePlaybackStart = Math.ceil(
@@ -60,7 +60,7 @@ export const calcTimingsMath = (
     nextAdjustedTickStartsAtSecondsSinceAudioContextInit,
     playbackFadeoutStartsAt,
     playbackFadeoutEndsAt,
-    secondsSinceLatestTrackLoopStart,
+    secondsSinceLatestTrackPatternStart,
     secondsSinceNowUpUntilFadeoutEnds,
   } as const
 }

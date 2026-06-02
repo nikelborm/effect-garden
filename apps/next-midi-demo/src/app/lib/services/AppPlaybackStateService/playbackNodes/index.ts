@@ -1,5 +1,5 @@
 export { createLoopingPlayback } from './createLoopingPlayback.ts'
-export { createLoopScheduledAfterSlowStrum } from './createLoopScheduledAfterSlowStrum.ts'
+export { createLoopScheduledAfterSingleShot } from './createLoopScheduledAfterSingleShot.ts'
 export { createOneshotPlayback } from './createOneshotPlayback.ts'
 export { createPlayback } from './createPlayback.ts'
 export { createScheduledNextPlayback } from './createScheduledNextPlayback.ts'

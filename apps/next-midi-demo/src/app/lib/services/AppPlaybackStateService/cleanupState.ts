@@ -1,7 +1,10 @@
 import * as Effect from 'effect/Effect'
 
 import { helpGarbageCollectionOfPlayback } from './playbackNodes/index.ts'
-import type { AppPlaybackState, LoopSilenceTransition } from './types/index.ts'
+import type {
+  AppPlaybackState,
+  PatternSilenceTransition,
+} from './types/index.ts'
 
 export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
   function* (
@@ -9,33 +12,33 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
   ): Effect.fn.Return<AppPlaybackState> {
     yield* Effect.logTrace('Playback cleanup')
 
-    if (stateRightBeforeCleanup._tag === 'LoopLoopTransition') {
+    if (stateRightBeforeCleanup._tag === 'PatternPatternTransition') {
       const [old, target] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(old.playback)
       return {
-        _tag: 'PlayingLoop' as const,
+        _tag: 'PlayingPattern' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond,
         transitionQueue: [target],
       }
     }
 
-    if (stateRightBeforeCleanup._tag === 'LoopLoopLoopTransition') {
+    if (stateRightBeforeCleanup._tag === 'PatternPatternPatternTransition') {
       const [oldest, middle, target] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(oldest.playback)
       return {
-        _tag: 'LoopLoopTransition' as const,
+        _tag: 'PatternPatternTransition' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond,
         transitionQueue: [middle, target],
       }
     }
 
-    if (stateRightBeforeCleanup._tag === 'SlowStrumLoopTransition') {
+    if (stateRightBeforeCleanup._tag === 'SlowStrumPatternTransition') {
       const [slowStrum, loop] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
       return {
-        _tag: 'PlayingLoop' as const,
+        _tag: 'PlayingPattern' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond +
           slowStrum.durationSeconds,
@@ -43,21 +46,21 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
       }
     }
 
-    if (stateRightBeforeCleanup._tag === 'LoopSilenceTransition') {
+    if (stateRightBeforeCleanup._tag === 'PatternSilenceTransition') {
       const [fading] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(fading.playback)
       return { _tag: 'NotPlaying' as const }
     }
 
-    if (stateRightBeforeCleanup._tag === 'LoopLoopSilenceTransition') {
+    if (stateRightBeforeCleanup._tag === 'PatternPatternSilenceTransition') {
       const [oldest, fading] = stateRightBeforeCleanup.transitionQueue
       yield* helpGarbageCollectionOfPlayback(oldest.playback)
       return {
-        _tag: 'LoopSilenceTransition' as const,
+        _tag: 'PatternSilenceTransition' as const,
         playbackStartedAtSecond:
           stateRightBeforeCleanup.playbackStartedAtSecond,
         transitionQueue: [fading],
-      } satisfies LoopSilenceTransition
+      } satisfies PatternSilenceTransition
     }
 
     return stateRightBeforeCleanup

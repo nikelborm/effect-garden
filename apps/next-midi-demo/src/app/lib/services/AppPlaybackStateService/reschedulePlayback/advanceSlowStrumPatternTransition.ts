@@ -14,29 +14,29 @@ import {
   helpGarbageCollectionOfPlayback,
 } from '../playbackNodes/index.ts'
 import type {
-  PlayingLoop,
+  PlayingPattern,
   PlayingSlowStrum,
-  SlowStrumLoopTransition,
+  SlowStrumPatternTransition,
 } from '../types/index.ts'
 import type { ReschedulePlaybackDeps } from './deps.ts'
 
-export const advanceSlowStrumLoopTransition = Effect.fn(
-  'advanceSlowStrumLoopTransition',
+export const advanceSlowStrumPatternTransition = Effect.fn(
+  'advanceSlowStrumPatternTransition',
 )(function* (
-  oldState: SlowStrumLoopTransition,
+  oldState: SlowStrumPatternTransition,
   asset: AssetPointer,
   _deps: ReschedulePlaybackDeps,
 ) {
   const audioContext = yield* EAudioContext.EAudioContext
-  const [slowStrum, queuedLoop] = oldState.transitionQueue
+  const [slowStrum, queuedPattern] = oldState.transitionQueue
 
-  if (Equal.equals(queuedLoop.asset, asset)) return oldState
+  if (Equal.equals(queuedPattern.asset, asset)) return oldState
 
   const secondsSinceAudioContextInit =
     yield* EAudioContext.currentTime(audioContext)
 
   yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
-  yield* helpGarbageCollectionOfPlayback(queuedLoop.playback)
+  yield* helpGarbageCollectionOfPlayback(queuedPattern.playback)
 
   if (Option.isNone(asset.pattern)) {
     // Pattern deselected again — start a new slow strum immediately
@@ -59,20 +59,20 @@ export const advanceSlowStrumLoopTransition = Effect.fn(
 
   // New pattern/accord: start loop immediately
   const audioBuffer = yield* getAudioBufferOfAsset(asset)
-  const newLoopPlayback = yield* createLoopingPlayback(
+  const newPatternPlayback = yield* createLoopingPlayback(
     audioContext,
     audioBuffer,
   )
   yield* Effect.sync(() => {
-    newLoopPlayback.gainNode.gain.setValueAtTime(
+    newPatternPlayback.gainNode.gain.setValueAtTime(
       maxLoudness,
       asEarlyAsPossibleInSeconds,
     )
-    newLoopPlayback.bufferSource.start(secondsSinceAudioContextInit)
+    newPatternPlayback.bufferSource.start(secondsSinceAudioContextInit)
   })
   return {
-    _tag: 'PlayingLoop' as const,
+    _tag: 'PlayingPattern' as const,
     playbackStartedAtSecond: secondsSinceAudioContextInit,
-    transitionQueue: [{ asset, playback: newLoopPlayback }],
-  } satisfies PlayingLoop
+    transitionQueue: [{ asset, playback: newPatternPlayback }],
+  } satisfies PlayingPattern
 })

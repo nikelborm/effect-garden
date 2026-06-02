@@ -25,7 +25,7 @@ export const createScheduledNextPlayback = (
     )
     pb.bufferSource.start(
       math.secondsSinceAudioContextInit,
-      math.secondsSinceLatestTrackLoopStart,
+      math.secondsSinceLatestTrackPatternStart,
     )
     return pb
   })
