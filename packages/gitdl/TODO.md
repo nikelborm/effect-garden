@@ -55,6 +55,7 @@ Competitors: (my God, I feel sooo dumb right now)
 3. https://www.npmjs.com/package/gdl
 4. https://www.npmjs.com/package/dgit
 5. https://www.npmjs.com/package/gitd
+6. https://npmx.dev/package/giget
 
 Maybe use [asciicinema](https://asciinema.org/) to demo usage of the CLI?
 
