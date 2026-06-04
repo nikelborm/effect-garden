@@ -1,26 +1,21 @@
-import type { IRepo } from './repo.interface.ts'
+import * as Order from 'effect/Order'
+import * as Struct from 'effect/Struct'
+
+import type { Repo } from './repo.interface.ts'
 
 export function getPinsSortedByTheirProbablePopularity(
-  fetchedReposWithPins: {
-    repo: IRepo
-    pin: string
-  }[],
+  fetchedReposWithPins: { repo: Repo; pin: string }[],
 ) {
-  const getAggregatedParameter = (
-    aggregationType: 'min' | 'max',
-    parameter: 'star' | 'fork',
-  ) =>
-    Math[aggregationType](
-      ...fetchedReposWithPins.map(_ => _.repo[`${parameter}Count`]),
-    )
+  const starCounts = fetchedReposWithPins.map(_ => _.repo.starCount)
+  const forkCounts = fetchedReposWithPins.map(_ => _.repo.forkCount)
 
-  const maxStars = getAggregatedParameter('max', 'star')
-  const minStars = getAggregatedParameter('min', 'star')
-  const maxForks = getAggregatedParameter('max', 'fork')
-  const minForks = getAggregatedParameter('min', 'fork')
+  const maxStars = Math.max(...starCounts)
+  const minStars = Math.min(...starCounts)
+  const maxForks = Math.max(...forkCounts)
+  const minForks = Math.min(...forkCounts)
 
   return fetchedReposWithPins
-    .map(({ repo, pin }) => {
+    .map(({ repo, pin }): Scored => {
       const normalizedStarsFactor =
         (repo.starCount - minStars) / (maxStars - minStars)
       // I have too little forks, so that repo have either 0 or 1 forks, and it
@@ -48,27 +43,37 @@ export function getPinsSortedByTheirProbablePopularity(
         publicityClassFactor: Math.ceil(publicityFactor / 0.25),
       }
     })
-    .sort((a, b) => {
-      // `extends infer K` needed to activate type distribution
-      type Factor = keyof typeof a extends infer K
-        ? K extends `${infer U}Factor`
-          ? U
-          : never
-        : never
-      const smallestFirst = (f: Factor) => a[`${f}Factor`] - b[`${f}Factor`]
-      const biggestFirst = (f: Factor) => -smallestFirst(f)
-      let _: number
-
-      if ((_ = biggestFirst('effect'))) return _
-      if ((_ = biggestFirst('template'))) return _
-      if ((_ = biggestFirst('boilerplate'))) return _
-      if ((_ = smallestFirst('archive'))) return _
-      if ((_ = smallestFirst('hackathon'))) return _
-      if ((_ = smallestFirst('experiment'))) return _
-      if ((_ = biggestFirst('publicityClass'))) return _
-      if ((_ = biggestFirst('pushRecency'))) return _ // if null goes to bottom
-
-      return 0
-    })
-    .map(_ => _.pin)
+    .sort(PinOrder)
+    .map(Struct.get('pin'))
 }
+
+const biggestFirst = (f: Factor) =>
+  Order.mapInput(Order.reverse(Order.number), (a: Scored) => a[`${f}Factor`])
+
+const smallestFirst = (f: Factor) =>
+  Order.mapInput(Order.number, (a: Scored) => a[`${f}Factor`])
+
+const PinOrder = Order.combineAll([
+  biggestFirst('effect'),
+  biggestFirst('template'),
+  biggestFirst('boilerplate'),
+  smallestFirst('archive'),
+  smallestFirst('hackathon'),
+  smallestFirst('experiment'),
+  biggestFirst('publicityClass'),
+  biggestFirst('pushRecency'), // if null goes to bottom
+])
+
+interface Scored {
+  pin: string
+  templateFactor: number
+  boilerplateFactor: number
+  archiveFactor: number
+  effectFactor: number
+  hackathonFactor: number
+  experimentFactor: number
+  pushRecencyFactor: number
+  publicityClassFactor: number
+}
+
+type Factor<Key = keyof Scored> = Key extends `${infer U}Factor` ? U : never
