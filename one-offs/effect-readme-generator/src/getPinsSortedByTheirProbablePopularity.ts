@@ -18,11 +18,13 @@ export function getPinsSortedByTheirProbablePopularity(
     .map(({ repo, pin }): Scored => {
       const normalizedStarsFactor =
         (repo.starCount - minStars) / (maxStars - minStars)
+
       // I have too little forks, so that repo have either 0 or 1 forks, and it
       // affects coefficient too much, hence I added 0.25 to bring impact a
       // little down
       const normalizedForksFactorWithAdjustedValue =
         ((repo.forkCount - minForks) / (maxForks - minForks)) * 0.25
+
       const publicityFactor =
         normalizedStarsFactor + normalizedForksFactorWithAdjustedValue
       // publicityFactor: min=0, max=1.25
