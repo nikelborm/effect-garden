@@ -25,11 +25,11 @@ export function renderMarkdownTableOfSmallStrings(
   ] as const
 
   return [
-    ,
+    '',
     firstRowRendered,
     '|' + '-|'.repeat(columnsAmount),
     ...renderedRowsExceptFirst,
-    ,
+    '',
   ].join('\n')
 }
 

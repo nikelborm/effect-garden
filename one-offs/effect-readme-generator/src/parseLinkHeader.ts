@@ -28,6 +28,7 @@ export class LinkHeader extends Schema.TaggedError<LinkHeader>()('LinkHeader', {
 
 export const parseLinkHeader = (linkHeader: string | null | undefined) =>
   pipe(
+    linkHeader,
     parseLinkHeaderToObject,
     Schema.decodeUnknown(LinkHeader),
     Effect.mapError(
