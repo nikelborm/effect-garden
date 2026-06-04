@@ -1,3 +1,4 @@
 # effect-readme-generator
 
-Generate Readme with table for my github profile
+Generate [nikelborm](https://github.com/nikelborm/nikelborm)'s GitHub profile
+Readme with table
