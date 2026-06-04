@@ -123,9 +123,8 @@ const program = Effect.gen(function* () {
           extractReposFromMarkdownStrict(currentMarkdownTable)
 
         const minReposToDownloadAndNotFail =
-          (reposExtractedFromCurrentMarkdownTable.length *
-            FATAL_PERCENT_OF_REPOS_LOST_DUE_TO_API_ERRORS) /
-          100
+          reposExtractedFromCurrentMarkdownTable.length *
+          (FATAL_PERCENT_OF_REPOS_LOST_DUE_TO_API_ERRORS / 100)
 
         return (
           areAllOctokitErrors && repos.length > minReposToDownloadAndNotFail
