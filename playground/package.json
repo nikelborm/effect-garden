@@ -153,7 +153,7 @@
     "tstyche": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:",
-    "undici": "catalog:",
+    "undici": "^8.3.0",
     "unified": "catalog:",
     "vitest": "catalog:",
     "webidl2": "catalog:",

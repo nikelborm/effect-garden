@@ -1,60 +1,113 @@
-import { writeFile } from 'node:fs/promises'
+import * as FileSystem from '@effect/platform/FileSystem'
+import * as HttpClient from '@effect/platform/HttpClient'
+import * as HttpClientRequest from '@effect/platform/HttpClientRequest'
+import * as EArray from 'effect/Array'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
+import * as Tuple from 'effect/Tuple'
 
-import { outdent } from 'outdent'
-import { request } from 'undici'
-
+import { FetchPinImageError } from './errors.ts'
 import { getPathToImageInRepoRelativeToRepoRoot } from './getPathToImageInRepo.ts'
 import { getDarkThemePinUrlFromGithubReadmeStatsService } from './getPinURLs.ts'
 import type { IMiniRepo } from './repo.interface.ts'
 import { themes } from './themes.ts'
 
-export async function refreshScaledRepaintedPinInImagesFolder({
-  owner,
-  name,
-}: IMiniRepo) {
+export const refreshScaledRepaintedPinInImagesFolder = Effect.fn(
+  'refreshScaledRepaintedPinInImagesFolder',
+)(function* (repo: IMiniRepo) {
   const { originalDarkThemePinSVG, originalDarkThemePinURL } =
-    await fetchOriginalDarkThemePin({ owner, name })
-  console.log(`Fetched original repo pin { owner:"${owner}", name:"${name}" }`)
+    yield* fetchOriginalDarkThemePin(repo)
 
   const scaledRepaintedPinSVGs = cutOffMarginsAndRepaintRepoPin(
     originalDarkThemePinSVG,
   )
 
-  const writtenPaths = await Promise.all(
-    themes.map(async theme => {
-      const filePath = getPathToImageInRepoRelativeToRepoRoot(
-        { owner, name },
-        theme,
-      )
-      await writeFile(filePath, scaledRepaintedPinSVGs[`${theme}ThemePinSVG`])
-      return filePath
-    }),
+  const fs = yield* FileSystem.FileSystem
+
+  const attemptedPaths = yield* Effect.all(
+    Tuple.map(
+      themes,
+      Effect.fn(function* (theme) {
+        const filePath = getPathToImageInRepoRelativeToRepoRoot(repo, theme)
+        yield* fs.writeFileString(
+          filePath,
+          scaledRepaintedPinSVGs[`${theme}ThemePinSVG`],
+        )
+        return filePath
+      }),
+    ),
+    { concurrency: 'unbounded', mode: 'either' },
   )
 
-  console.log(outdent`
-    Written files:
-    ${writtenPaths.map(v => '- ' + v).join('\n')}
-    Those files are transformed versions of ${originalDarkThemePinURL}\n
-  `)
-}
+  const writtenPaths = EArray.getRights(attemptedPaths)
 
-async function fetchOriginalDarkThemePin(repo: IMiniRepo) {
-  const originalDarkThemePinURL =
-    getDarkThemePinUrlFromGithubReadmeStatsService(repo)
+  yield* Effect.log(
+    'Written files:\n' +
+      writtenPaths.map(v => '- ' + v).join('\n') +
+      '\nThose files are transformed versions of ' +
+      originalDarkThemePinURL +
+      '\n',
+  )
 
-  console.log(`Started fetching repo pin ` + JSON.stringify(repo))
-  const { statusCode, body } = await request(originalDarkThemePinURL)
+  const writeErrors = EArray.getLefts(attemptedPaths)
 
-  if (statusCode !== 200)
-    throw new Error(
-      `statusCode=${statusCode}: Failed to fetch repo pin image for ${originalDarkThemePinURL}`,
+  if (writeErrors.length) {
+    yield* Effect.logError(
+      'Failed to write files:\n' +
+        writeErrors.map(v => '- ' + v.message).join('\n') +
+        '\nThose files were supposed to be transformed versions of ' +
+        originalDarkThemePinURL +
+        '\n',
     )
-
-  return {
-    originalDarkThemePinURL,
-    originalDarkThemePinSVG: await body.text(),
+    yield* Effect.failCause(writeErrors.map(Cause.fail).reduce(Cause.parallel))
   }
-}
+})
+
+const fetchOriginalDarkThemePin = Effect.fn('fetchOriginalDarkThemePin')(
+  function* (repo: IMiniRepo) {
+    const originalDarkThemePinURL =
+      getDarkThemePinUrlFromGithubReadmeStatsService(repo)
+
+    yield* Effect.log(`Started fetching original repo pin`, repo)
+
+    const client = yield* HttpClient.HttpClient
+
+    const response = yield* client
+      .execute(HttpClientRequest.get(originalDarkThemePinURL))
+      .pipe(
+        Effect.mapError(
+          e =>
+            new FetchPinImageError({
+              url: originalDarkThemePinURL,
+              statusCode: e._tag === 'ResponseError' ? e.response.status : 0,
+            }),
+        ),
+      )
+
+    if (response.status !== 200)
+      return yield* new FetchPinImageError({
+        url: originalDarkThemePinURL,
+        statusCode: response.status,
+      })
+
+    const result = {
+      originalDarkThemePinURL,
+      originalDarkThemePinSVG: yield* response.text.pipe(
+        Effect.mapError(
+          e =>
+            new FetchPinImageError({
+              url: originalDarkThemePinURL,
+              statusCode: e.response.status,
+            }),
+        ),
+      ),
+    }
+
+    yield* Effect.log(`Fetched original repo pin`, repo)
+
+    return result
+  },
+)
 
 function cutOffMarginsAndRepaintRepoPin(originalDarkThemePinSVG: string) {
   const darkThemePinSVG = originalDarkThemePinSVG

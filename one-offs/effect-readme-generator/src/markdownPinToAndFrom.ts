@@ -10,20 +10,34 @@ import {
 import type { IMiniRepo } from './repo.interface.ts'
 import { themes } from './themes.ts'
 
-export function getScaledRepaintedMarkdownPin(repo: IMiniRepo) {
-  return themes
+const renderBothThemesWhen = new Set([
+  '',
+  undefined,
+  null,
+  'both',
+  'null',
+  'any',
+  'all',
+  'every',
+  'each',
+])
+
+export const getScaledRepaintedMarkdownPin = (
+  repo: IMiniRepo,
+  themeToRenderExclusively?: string | undefined | null,
+) =>
+  themes
     .map(theme =>
-      hidePinIfEnvSaysSo(
-        theme,
-        getMarkdownPin(
-          repo.name,
-          getUrlOfScaledRepaintedRepoPinInGithubCdn(repo, theme),
-          `${getRepoURL(repo)}#gh-${theme}-mode-only`,
-        ),
-      ),
+      renderBothThemesWhen.has(themeToRenderExclusively) ||
+      themeToRenderExclusively === theme
+        ? getMarkdownPin(
+            repo.name,
+            getUrlOfScaledRepaintedRepoPinInGithubCdn(repo, theme),
+            `${getRepoURL(repo)}#gh-${theme}-mode-only`,
+          )
+        : '',
     )
     .join('')
-}
 
 export function getOriginalDarkThemeMarkdownPin(repo: IMiniRepo) {
   return getMarkdownPin(
@@ -52,11 +66,11 @@ export function extractReposFromMarkdownSoft(markdownText: string) {
     .map(({ groups }) => {
       try {
         return parseMarkdownPinRegexMatchGroup(groups)
-      } catch (error) {
+      } catch {
         return null
       }
     })
-    .filter(Boolean)
+    .filter((x): x is Exclude<typeof x, null> => !!x)
 }
 
 function parsePathToImageInsideRepo(pathToImageInsideRepo: string) {
@@ -82,22 +96,6 @@ function parsePathToImageInsideRepo(pathToImageInsideRepo: string) {
   return result.data
 }
 
-const hidePinIfEnvSaysSo = (theme: string, pin: string) =>
-  [
-    theme,
-    '',
-    undefined,
-    null,
-    'both',
-    'null',
-    'any',
-    'all',
-    'every',
-    'each',
-  ].includes(process.env['RENDER_ONLY_THEME'])
-    ? pin
-    : ''
-
 const imageFileNameElements = z
   .object({
     username: z.string().min(1),
@@ -110,14 +108,13 @@ const MarkdownRepoPinZodSchema = z
   .object({
     repoNameFromPinImageAltText: z.string().min(1),
     repoPinImageURL: z
-      .string()
-      .min(50)
       .url()
+      .min(50)
+
       .transform(val => new URL(val)),
     repoURL: z
-      .string()
-      .min(22)
       .url()
+      .min(22)
       .transform(val => new URL(val)),
   })
   .strict()
@@ -131,30 +128,33 @@ function parseMarkdownPinRegexMatchGroup(
   const { repoURL, repoPinImageURL, repoNameFromPinImageAltText } =
     MarkdownRepoPinZodSchema.parse(markdownRegexPinMatchGroup)
 
-  let usernameFromPinURL, repoNameFromPinURL, additionalContext
+  let usernameFromPinURL: string
+  let repoNameFromPinURL: string
+  let additionalContext: { imageHost: string; themeName: 'dark' | 'light' }
 
   // see:
   // https://vscode.dev/github/nikelborm/nikelborm/blob/main/src/getPinURLs.ts#L6
   // file://./getPinURLs.ts
 
   if (repoPinImageURL.host === ('github-readme-stats.vercel.app' as const)) {
-    repoNameFromPinURL = repoPinImageURL.searchParams.get('repo')
-
-    if (!repoNameFromPinURL)
+    const rawRepo = repoPinImageURL.searchParams.get('repo')
+    if (!rawRepo)
       throw new Error(outdent`
         pinURL that looks like github-readme-stats link doesn\'t have
         "repo" query param
       `)
+    repoNameFromPinURL = rawRepo
 
-    usernameFromPinURL = repoPinImageURL.searchParams.get('username')
-
-    if (!usernameFromPinURL)
+    const rawUsername = repoPinImageURL.searchParams.get('username')
+    if (!rawUsername)
       throw new Error(outdent`
         pinURL that looks like github-readme-stats link doesn\'t have
         "username" query param
       `)
+    usernameFromPinURL = rawUsername
 
     additionalContext = {
+      themeName: 'dark',
       imageHost: repoPinImageURL.host,
     }
   } else if (repoPinImageURL.host === ('raw.githubusercontent.com' as const)) {

@@ -169,8 +169,7 @@
     "oxlint": ">=0.15.0",
     "smol-toml": "^1.6.1",
     "@types/parse-link-header": "^2.0.3",
-    "parse-link-header": "^2.0.0",
-    "undici": "^8.3.0"
+    "parse-link-header": "^2.0.0"
   },
   "workspaces": [
     "ideas/*",

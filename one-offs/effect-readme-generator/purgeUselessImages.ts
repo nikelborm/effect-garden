@@ -1,8 +1,8 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 
 import { readdir, readFile, rm } from 'node:fs/promises'
 
-import { END_TOKEN, README_FILE_PATH, START_TOKEN } from './constants.ts'
+import { END_TOKEN, README_FILE_PATH, START_TOKEN } from './src/constants.ts'
 import { getImageFileName } from './src/getPathToImageInRepo.ts'
 import { extractReposFromMarkdownSoft } from './src/markdownPinToAndFrom.ts'
 import { TokenReplacer } from './src/splitStringApart.ts'

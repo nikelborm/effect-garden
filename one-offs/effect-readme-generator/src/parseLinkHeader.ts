@@ -1,43 +1,36 @@
+import { OptionalProperty } from '@evadev/effect-helpers'
 import parseLinkHeaderToObject from 'parse-link-header'
-import { ZodError, z } from 'zod'
 
-export const LinkHeaderZodSchema = z.object({
-  ...getLinkFieldShapeObject('prev'),
-  ...getLinkFieldShapeObject('next'),
-  ...getLinkFieldShapeObject('last'),
-  ...getLinkFieldShapeObject('first'),
-})
+import * as Effect from 'effect/Effect'
+import { pipe } from 'effect/Function'
+import * as Schema from 'effect/Schema'
 
-export type ILinkHeader = z.infer<typeof LinkHeaderZodSchema>
+import { ParseLinkHeaderError } from './errors.ts'
 
-export function parseLinkHeader(linkHeader: string | undefined | null) {
-  try {
-    return LinkHeaderZodSchema.parse(parseLinkHeaderToObject(linkHeader))
-  } catch (error) {
-    if (error instanceof ZodError) {
-      console.log(
-        (error as ZodError<z.infer<typeof LinkHeaderZodSchema>>).format(),
-      )
-    }
-    throw new Error(
-      `Failed to parse Link header of the response:\n"${linkHeader}"`,
-      { cause: error },
-    )
-  }
-}
+const linkField = <const T extends string>(name: T) =>
+  Schema.Struct({
+    per_page: Schema.NumberFromString,
+    page: Schema.NumberFromString,
+    rel: Schema.Literal(name),
+    direction: Schema.Literal('asc', 'desc'),
+    sort: Schema.Literal('updated', 'created'),
+    url: Schema.URL,
+  })
+    .annotations({ title: 'Link' })
+    .pipe(OptionalProperty)
 
-function getLinkFieldShapeObject<const T extends string>(name: T) {
-  const FieldSchema = z
-    .object({
-      per_page: z.coerce.number(),
-      page: z.coerce.number(),
-      rel: z.literal(name),
-      direction: z.enum(['asc', 'desc']),
-      sort: z.enum(['updated', 'created']),
-      url: z.string().url(),
-    })
-    .strict()
-    .optional()
+export class LinkHeader extends Schema.TaggedError<LinkHeader>()('LinkHeader', {
+  prev: linkField('prev'),
+  next: linkField('next'),
+  last: linkField('last'),
+  first: linkField('first'),
+}) {}
 
-  return { [name]: FieldSchema } as { [k in T]: typeof FieldSchema }
-}
+export const parseLinkHeader = (linkHeader: string | null | undefined) =>
+  pipe(
+    parseLinkHeaderToObject,
+    Schema.decodeUnknown(LinkHeader),
+    Effect.mapError(
+      parseError => new ParseLinkHeaderError({ linkHeader, cause: parseError }),
+    ),
+  )

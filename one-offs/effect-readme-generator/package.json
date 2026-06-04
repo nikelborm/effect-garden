@@ -12,8 +12,9 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
+    "@effect/platform": "catalog:",
+    "@effect/platform-bun": "catalog:",
     "@types/bun": "catalog:",
-    "@types/node": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
@@ -21,9 +22,9 @@
     "@octokit/request-error": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "@types/parse-link-header": "catalog:",
+    "effect-octokit-layer": "catalog:",
     "outdent": "catalog:",
     "parse-link-header": "catalog:",
-    "undici": "catalog:",
     "zod": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/effect-readme-generator#readme",
