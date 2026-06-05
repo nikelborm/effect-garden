@@ -102,72 +102,72 @@ const runtime = Atom.runtime(AppLayer)
 // isPressedFlagChangesStream, isCurrentlyPlaying, getDownloadPercent accept a
 // ParamButtonData?
 
-export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
-  EFunction.pipe(
-    accord,
-    AccordParamButtonData.make,
-    AccordParamButtonService.getPressabilityChangesStream,
-    Stream.unwrap,
-    s =>
-      runtime.atom(s, {
-        initialValue: accord !== defaultAccord,
-      }),
-    Atom.withFallback(
-      Atom.readable(() =>
-        Result.success(accord !== defaultAccord, { waiting: true }),
-      ),
-    ),
+// export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
+//   EFunction.pipe(
+//     accord,
+//     AccordParamButtonData.make,
+//     AccordParamButtonService.getPressabilityChangesStream,
+//     Stream.unwrap,
+//     s =>
+//       runtime.atom(s, {
+//         initialValue: accord !== defaultAccord,
+//       }),
+//     Atom.withFallback(
+//       Atom.readable(() =>
+//         Result.success(accord !== defaultAccord, { waiting: true }),
+//       ),
+//     ),
 
-    Atom.withServerValue(
-      EFunction.constant(
-        Result.success(accord !== defaultAccord, { waiting: true }),
-      ),
-    ),
-  ),
-)
+//     Atom.withServerValue(
+//       EFunction.constant(
+//         Result.success(accord !== defaultAccord, { waiting: true }),
+//       ),
+//     ),
+//   ),
+// )
 
-export const isPatternButtonPressableAtom = Atom.family((pattern: Pattern) =>
-  EFunction.pipe(
-    pattern,
-    PatternParamButtonData.make,
-    PatternParamButtonService.getPressabilityChangesStream,
-    Stream.unwrap,
-    // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
-    s =>
-      runtime.atom(s, {
-        initialValue: pattern !== defaultPattern,
-      }),
-    Atom.withFallback(
-      Atom.readable(() =>
-        Result.success(pattern !== defaultPattern, { waiting: true }),
-      ),
-    ),
-    Atom.withServerValue(
-      EFunction.constant(
-        Result.success(pattern !== defaultPattern, { waiting: true }),
-      ),
-    ),
-  ),
-)
+// export const isPatternButtonPressableAtom = Atom.family((pattern: Pattern) =>
+//   EFunction.pipe(
+//     pattern,
+//     PatternParamButtonData.make,
+//     PatternParamButtonService.getPressabilityChangesStream,
+//     Stream.unwrap,
+//     // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
+//     s =>
+//       runtime.atom(s, {
+//         initialValue: pattern !== defaultPattern,
+//       }),
+//     Atom.withFallback(
+//       Atom.readable(() =>
+//         Result.success(pattern !== defaultPattern, { waiting: true }),
+//       ),
+//     ),
+//     Atom.withServerValue(
+//       EFunction.constant(
+//         Result.success(pattern !== defaultPattern, { waiting: true }),
+//       ),
+//     ),
+//   ),
+// )
 
-export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
-  EFunction.pipe(
-    strength,
-    StrengthParamButtonData.make,
-    StrengthParamButtonService.getPressabilityChangesStream,
-    Stream.unwrap,
-    s =>
-      runtime.atom(s, {
-        initialValue: strength !== 'm',
-      }),
-    Atom.withFallback(
-      Atom.readable(() => Result.success(strength !== 'm', { waiting: true })),
-    ),
-    Atom.withServerValue(
-      EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
-    ),
-  ),
-)
+// export const isStrengthButtonPressableAtom = Atom.family((strength: Strength) =>
+//   EFunction.pipe(
+//     strength,
+//     StrengthParamButtonData.make,
+//     StrengthParamButtonService.getPressabilityChangesStream,
+//     Stream.unwrap,
+//     s =>
+//       runtime.atom(s, {
+//         initialValue: strength !== 'm',
+//       }),
+//     Atom.withFallback(
+//       Atom.readable(() => Result.success(strength !== 'm', { waiting: true })),
+//     ),
+//     Atom.withServerValue(
+//       EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
+//     ),
+//   ),
+// )
 
 export const isAccordSelectedAtom = Atom.family((accord: Accord) =>
   EFunction.pipe(
@@ -292,65 +292,65 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
   ),
 )
 
-export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
-  (accord: Accord) =>
-    EFunction.pipe(
-      accord,
-      AccordParamButtonData.make,
-      AccordParamButtonService.isCurrentlyPlaying,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: false,
-        }),
-      Atom.withFallback(
-        Atom.readable(() => Result.success(false, { waiting: true })),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(Result.success(false, { waiting: true })),
-      ),
-    ),
-)
+// export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
+//   (accord: Accord) =>
+//     EFunction.pipe(
+//       accord,
+//       AccordParamButtonData.make,
+//       AccordParamButtonService.isCurrentlyPlaying,
+//       Stream.unwrap,
+//       s =>
+//         runtime.atom(s, {
+//           initialValue: false,
+//         }),
+//       Atom.withFallback(
+//         Atom.readable(() => Result.success(false, { waiting: true })),
+//       ),
+//       Atom.withServerValue(
+//         EFunction.constant(Result.success(false, { waiting: true })),
+//       ),
+//     ),
+// )
 
-export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
-  (pattern: Pattern) =>
-    EFunction.pipe(
-      pattern,
-      PatternParamButtonData.make,
-      PatternParamButtonService.isCurrentlyPlaying,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: false,
-        }),
-      Atom.withFallback(
-        Atom.readable(() => Result.success(false, { waiting: true })),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(Result.success(false, { waiting: true })),
-      ),
-    ),
-)
+// export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
+//   (pattern: Pattern) =>
+//     EFunction.pipe(
+//       pattern,
+//       PatternParamButtonData.make,
+//       PatternParamButtonService.isCurrentlyPlaying,
+//       Stream.unwrap,
+//       s =>
+//         runtime.atom(s, {
+//           initialValue: false,
+//         }),
+//       Atom.withFallback(
+//         Atom.readable(() => Result.success(false, { waiting: true })),
+//       ),
+//       Atom.withServerValue(
+//         EFunction.constant(Result.success(false, { waiting: true })),
+//       ),
+//     ),
+// )
 
-export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
-  (strength: Strength) =>
-    EFunction.pipe(
-      strength,
-      StrengthParamButtonData.make,
-      StrengthParamButtonService.isCurrentlyPlaying,
-      Stream.unwrap,
-      s =>
-        runtime.atom(s, {
-          initialValue: false,
-        }),
-      Atom.withFallback(
-        Atom.readable(() => Result.success(false, { waiting: true })),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(Result.success(false, { waiting: true })),
-      ),
-    ),
-)
+// export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
+//   (strength: Strength) =>
+//     EFunction.pipe(
+//       strength,
+//       StrengthParamButtonData.make,
+//       StrengthParamButtonService.isCurrentlyPlaying,
+//       Stream.unwrap,
+//       s =>
+//         runtime.atom(s, {
+//           initialValue: false,
+//         }),
+//       Atom.withFallback(
+//         Atom.readable(() => Result.success(false, { waiting: true })),
+//       ),
+//       Atom.withServerValue(
+//         EFunction.constant(Result.success(false, { waiting: true })),
+//       ),
+//     ),
+// )
 
 export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
   EFunction.pipe(
@@ -431,18 +431,18 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
 // Atom.keepAlive,
 // Atom.withServerValueInitial,
 
-export const switchPlayPauseFnAtom = runtime
-  .fn(() =>
-    AppPlaybackStateService.switchPlayPauseFromCurrentlySelected.pipe(
-      Effect.orDie,
-      Effect.tapErrorCause(Effect.logError),
-    ),
-  )
-  .pipe(
-    Atom.withFallback(
-      Atom.readable(() => Result.success(undefined, { waiting: false })),
-    ),
-    Atom.withServerValue(
-      EFunction.constant(Result.success(undefined, { waiting: true })),
-    ),
-  )
+// export const switchPlayPauseFnAtom = runtime
+//   .fn(() =>
+//     AppPlaybackStateService.switchPlayPauseFromCurrentlySelected.pipe(
+//       Effect.orDie,
+//       Effect.tapErrorCause(Effect.logError),
+//     ),
+//   )
+//   .pipe(
+//     Atom.withFallback(
+//       Atom.readable(() => Result.success(undefined, { waiting: false })),
+//     ),
+//     Atom.withServerValue(
+//       EFunction.constant(Result.success(undefined, { waiting: true })),
+//     ),
+//   )

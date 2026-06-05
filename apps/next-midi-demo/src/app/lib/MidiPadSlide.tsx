@@ -10,16 +10,16 @@ import * as Hooks from '@effect-atom/atom-react/Hooks'
 import { accordsAtom } from './atoms/accordsAtom.ts'
 import {
   accordButtonDownloadPercentAtom,
-  isAccordButtonCurrentlyPlayingAtom,
-  isAccordButtonPressableAtom,
+  // isAccordButtonCurrentlyPlayingAtom,
+  // isAccordButtonPressableAtom,
   isAccordPressedAtom,
   isAccordSelectedAtom,
-  isPatternButtonCurrentlyPlayingAtom,
-  isPatternButtonPressableAtom,
+  // isPatternButtonCurrentlyPlayingAtom,
+  // isPatternButtonPressableAtom,
   isPatternPressedAtom,
   isPatternSelectedAtom,
-  isStrengthButtonCurrentlyPlayingAtom,
-  isStrengthButtonPressableAtom,
+  // isStrengthButtonCurrentlyPlayingAtom,
+  // isStrengthButtonPressableAtom,
   isStrengthPressedAtom,
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
@@ -72,25 +72,25 @@ export const MidiPadSlide = ({
 }
 
 const PatternButton = ({ pattern }: { pattern: Pattern }) => {
-  const isPressableRes = Hooks.useAtomValue(
-    isPatternButtonPressableAtom(pattern),
-  )
+  // const isPressableRes = Hooks.useAtomValue(
+  //   isPatternButtonPressableAtom(pattern),
+  // )
   const isSelectedRes = Hooks.useAtomValue(isPatternSelectedAtom(pattern))
   const isPressedRes = Hooks.useAtomValue(isPatternPressedAtom(pattern))
-  const isPlayingRes = Hooks.useAtomValue(
-    isPatternButtonCurrentlyPlayingAtom(pattern),
-  )
+  // const isPlayingRes = Hooks.useAtomValue(
+  //   isPatternButtonCurrentlyPlayingAtom(pattern),
+  // )
   const downloadPercentRes = Hooks.useAtomValue(
     patternButtonDownloadPercentAtom(pattern),
   )
-  if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. pattern №${pattern}. isPlayingRes`, isPlayingRes)
-    return 'wtf'
-  }
-  if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf. pattern № ${pattern} isPressableRes`, isPressableRes)
-    return 'wtf'
-  }
+  // if (!Result.isSuccess(isPlayingRes)) {
+  //   console.log(`wtf. pattern №${pattern}. isPlayingRes`, isPlayingRes)
+  //   return 'wtf'
+  // }
+  // if (!Result.isSuccess(isPressableRes)) {
+  //   console.log(`wtf. pattern № ${pattern} isPressableRes`, isPressableRes)
+  //   return 'wtf'
+  // }
   if (!Result.isSuccess(isSelectedRes)) {
     console.log(`wtf. pattern № ${pattern} isSelectedRes`, isSelectedRes)
     return 'wtf'
@@ -106,24 +106,24 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
     )
     return 'wtf'
   }
-  const { value: isPressable } = isPressableRes
+  // const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
-  const { value: isPlaying } = isPlayingRes
+  // const { value: isPlaying } = isPlayingRes
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton data-pattern-index={pattern}>
+    <DebugButton data-pattern={pattern}>
       Pattern: {pattern}
-      <br />
-      Pressable: {isPressable ? Yes : No}
+      {/* <br />
+      Pressable: {isPressable ? Yes : No} */}
       <br />
       Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
       <br />
-      Playing: {isPlaying ? Yes : No}
-      <br />
+      {/* Playing: {isPlaying ? Yes : No}
+      <br /> */}
       Fetched: {downloadPercent}%
     </DebugButton>
   )
@@ -141,23 +141,23 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
 }
 
 const AccordButton = ({ accord }: { accord: Accord }) => {
-  const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
+  // const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
   const isSelectedRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
   const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
-  const isPlayingRes = Hooks.useAtomValue(
-    isAccordButtonCurrentlyPlayingAtom(accord),
-  )
+  // const isPlayingRes = Hooks.useAtomValue(
+  //   isAccordButtonCurrentlyPlayingAtom(accord),
+  // )
   const downloadPercentRes = Hooks.useAtomValue(
     accordButtonDownloadPercentAtom(accord),
   )
-  if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. accord №${accord}. isPlayingRes`, isPlayingRes)
-    return 'wtf'
-  }
-  if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf accord №${accord}. isPressableRes`, isPressableRes)
-    return 'wtf'
-  }
+  // if (!Result.isSuccess(isPlayingRes)) {
+  //   console.log(`wtf. accord №${accord}. isPlayingRes`, isPlayingRes)
+  //   return 'wtf'
+  // }
+  // if (!Result.isSuccess(isPressableRes)) {
+  //   console.log(`wtf accord №${accord}. isPressableRes`, isPressableRes)
+  //   return 'wtf'
+  // }
   if (!Result.isSuccess(isSelectedRes)) {
     console.log(`wtf accord №${accord}. isSelectedRes`, isSelectedRes)
     return 'wtf'
@@ -171,24 +171,24 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
     return 'wtf'
   }
 
-  const { value: isPressable } = isPressableRes
+  // const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
-  const { value: isPlaying } = isPlayingRes
+  // const { value: isPlaying } = isPlayingRes
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton data-accord-index={accord}>
+    <DebugButton data-accord={accord}>
       Accord: {accord}
-      <br />
-      Pressable: {isPressable ? Yes : No}
+      {/* <br />
+      Pressable: {isPressable ? Yes : No} */}
       <br />
       Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
       <br />
-      Playing: {isPlaying ? Yes : No}
-      <br />
+      {/* Playing: {isPlaying ? Yes : No}
+      <br /> */}
       Fetched: {downloadPercent}%
     </DebugButton>
   )
@@ -206,25 +206,25 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
 }
 
 const StrengthButton = ({ strength }: { strength: Strength }) => {
-  const isPressableRes = Hooks.useAtomValue(
-    isStrengthButtonPressableAtom(strength),
-  )
+  // const isPressableRes = Hooks.useAtomValue(
+  //   isStrengthButtonPressableAtom(strength),
+  // )
   const isSelectedRes = Hooks.useAtomValue(isStrengthSelectedAtom(strength))
   const isPressedRes = Hooks.useAtomValue(isStrengthPressedAtom(strength))
-  const isPlayingRes = Hooks.useAtomValue(
-    isStrengthButtonCurrentlyPlayingAtom(strength),
-  )
+  // const isPlayingRes = Hooks.useAtomValue(
+  //   isStrengthButtonCurrentlyPlayingAtom(strength),
+  // )
   const downloadPercentRes = Hooks.useAtomValue(
     strengthButtonDownloadPercentAtom(strength),
   )
-  if (!Result.isSuccess(isPlayingRes)) {
-    console.log(`wtf. strength ${strength}. isPlayingRes`, isPlayingRes)
-    return 'wtf'
-  }
-  if (!Result.isSuccess(isPressableRes)) {
-    console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
-    return 'wtf'
-  }
+  // if (!Result.isSuccess(isPlayingRes)) {
+  //   console.log(`wtf. strength ${strength}. isPlayingRes`, isPlayingRes)
+  //   return 'wtf'
+  // }
+  // if (!Result.isSuccess(isPressableRes)) {
+  //   console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
+  //   return 'wtf'
+  // }
   if (!Result.isSuccess(isSelectedRes)) {
     console.log(`wtf. strength ${strength}. isSelectedRes`, isSelectedRes)
     return 'wtf'
@@ -241,24 +241,24 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
     return 'wtf'
   }
 
-  const { value: isPressable } = isPressableRes
+  // const { value: isPressable } = isPressableRes
   const { value: isSelected } = isSelectedRes
   const { value: isPressed } = isPressedRes
-  const { value: isPlaying } = isPlayingRes
+  // const { value: isPlaying } = isPlayingRes
   const { value: downloadPercent } = downloadPercentRes
 
   return (
     <DebugButton data-strength={strength}>
       Strength: {strength}
       <br />
-      Pressable: {isPressable ? Yes : No}
-      <br />
+      {/* Pressable: {isPressable ? Yes : No}
+      <br /> */}
       Selected: {isSelected ? Yes : No}
       <br />
       Pressed: {isPressed ? Yes : No}
       <br />
-      Playing: {isPlaying ? Yes : No}
-      <br />
+      {/* Playing: {isPlaying ? Yes : No}
+      <br /> */}
       Fetched: {downloadPercent}%
     </DebugButton>
   )

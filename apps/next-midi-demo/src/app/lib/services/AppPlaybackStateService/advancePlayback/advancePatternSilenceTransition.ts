@@ -27,70 +27,72 @@ export const advancePatternSilenceTransition = Effect.fn(
   signal: Signal,
   deps: AdvancePlaybackDeps,
 ) {
-  const audioContext = yield* EAudioContext.EAudioContext
+  // const audioContext = yield* EAudioContext.EAudioContext
 
-  const [current] = oldState.transitionQueue
+  // const [current] = oldState.transitionQueue
 
-  if (Option.isNone(asset.pattern)) return oldState
+  // if (Option.isNone(asset.pattern)) return oldState
 
-  const secondsSinceAudioContextInit =
-    yield* EAudioContext.currentTime(audioContext)
-  const math = calcTimingsMath(
-    oldState.playbackStartedAtSecond,
-    secondsSinceAudioContextInit,
-  )
-  const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  // const secondsSinceAudioContextInit =
+  //   yield* EAudioContext.currentTime(audioContext)
+  // const math = calcTimingsMath(
+  //   oldState.playbackStartedAtSecond,
+  //   secondsSinceAudioContextInit,
+  // )
+  // const audioBuffer = yield* getAudioBufferOfAsset(asset)
 
-  if (math.fitsIntoBufferOfClosestTransition) {
-    // Cancel the scheduled silence and redirect current loop into a transition to new loop
-    yield* Effect.sync(() => {
-      current.playback.gainNode.gain.cancelScheduledValues(
-        secondsSinceAudioContextInit,
-      )
-      current.playback.gainNode.gain.setValueAtTime(
-        maxLoudness,
-        secondsSinceAudioContextInit,
-      )
-    })
+  // if (math.fitsIntoBufferOfClosestTransition) {
+  //   // Cancel the scheduled silence and redirect current loop into a transition to new loop
+  //   yield* Effect.sync(() => {
+  //     current.playback.gainNode.gain.cancelScheduledValues(
+  //       secondsSinceAudioContextInit,
+  //     )
+  //     current.playback.gainNode.gain.setValueAtTime(
+  //       maxLoudness,
+  //       secondsSinceAudioContextInit,
+  //     )
+  //   })
 
-    yield* current.cleanupFiberToolkit.cancelCleanup
-    yield* scheduleFadeOutOf(current.playback, math)
-    return PatternPatternTransition.make({
-      playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-      transitionQueue: [
-        PatternTransitionElementWithScheduledCleanup.make({
-          ...current,
-          cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-            math.secondsSinceNowUpUntilFadeoutEnds,
-          ),
-          fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-          fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-        }),
-        PatternTransitionQueueElement.make({
-          asset,
-          playback: yield* createScheduledNextPlayback(
-            audioContext,
-            audioBuffer,
-            math,
-          ),
-        }),
-      ],
-    })
-  }
+  //   yield* current.cleanupFiberToolkit.cancelCleanup
+  //   yield* scheduleFadeOutOf(current.playback, math)
+  //   return PatternPatternTransition.make({
+  //     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+  //     transitionQueue: [
+  //       PatternTransitionElementWithScheduledCleanup.make({
+  //         ...current,
+  //         cleanupFiberToolkit: yield* deps.makeCleanupFibers(
+  //           math.secondsSinceNowUpUntilFadeoutEnds,
+  //         ),
+  //         fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
+  //         fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
+  //       }),
+  //       PatternTransitionQueueElement.make({
+  //         asset,
+  //         playback: yield* createScheduledNextPlayback(
+  //           audioContext,
+  //           audioBuffer,
+  //           math,
+  //         ),
+  //       }),
+  //     ],
+  //   })
+  // }
 
-  // Fade already in progress — schedule new loop to start right after current ends
-  return PatternPatternTransition.make({
-    playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-    transitionQueue: [
-      current,
-      PatternTransitionQueueElement.make({
-        asset,
-        playback: yield* createLoopScheduledAfterSingleShot(
-          audioContext,
-          audioBuffer,
-          current.fadeoutEndsAtSecond,
-        ),
-      }),
-    ],
-  })
+  // // Fade already in progress — schedule new loop to start right after current ends
+  // return PatternPatternTransition.make({
+  //   playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+  //   transitionQueue: [
+  //     current,
+  //     PatternTransitionQueueElement.make({
+  //       asset,
+  //       playback: yield* createLoopScheduledAfterSingleShot(
+  //         audioContext,
+  //         audioBuffer,
+  //         current.fadeoutEndsAtSecond,
+  //       ),
+  //     }),
+  //   ],
+  // })
+  yield* Effect.logError({ oldState, signal, deps })
+  return yield* Effect.dieMessage('not implemented')
 })

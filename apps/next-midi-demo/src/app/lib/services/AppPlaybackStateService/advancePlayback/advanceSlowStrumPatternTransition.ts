@@ -22,53 +22,56 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
 )(function* (
   oldState: SlowStrumPatternTransition,
   signal: Signal,
-  _deps: AdvancePlaybackDeps,
+  deps: AdvancePlaybackDeps,
 ) {
-  const audioContext = yield* EAudioContext.EAudioContext
-  const [slowStrum, queuedPattern] = oldState.transitionQueue
+  // const audioContext = yield* EAudioContext.EAudioContext
+  // const [slowStrum, queuedPattern] = oldState.transitionQueue
 
-  if (Equal.equals(queuedPattern.asset, asset)) return oldState
+  // if (Equal.equals(queuedPattern.asset, asset)) return oldState
 
-  const secondsSinceAudioContextInit =
-    yield* EAudioContext.currentTime(audioContext)
+  // const secondsSinceAudioContextInit =
+  //   yield* EAudioContext.currentTime(audioContext)
 
-  yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
-  yield* helpGarbageCollectionOfPlayback(queuedPattern.playback)
+  // yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
+  // yield* helpGarbageCollectionOfPlayback(queuedPattern.playback)
 
-  if (Option.isNone(asset.pattern)) {
-    // Pattern deselected again — start a new slow strum immediately
-    const audioBuffer = yield* getAudioBufferOfAsset(asset)
-    const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
-    yield* Effect.sync(() => {
-      newPlayback.gainNode.gain.setValueAtTime(
-        maxLoudness,
-        asEarlyAsPossibleInSeconds,
-      )
-      newPlayback.bufferSource.start(secondsSinceAudioContextInit)
-    })
-    return PlayingSlowStrum.make({
-      playbackStartedAtSecond: secondsSinceAudioContextInit,
-      asset,
-      playback: newPlayback,
-    })
-  }
+  // if (Option.isNone(asset.pattern)) {
+  //   // Pattern deselected again — start a new slow strum immediately
+  //   const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  //   const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
+  //   yield* Effect.sync(() => {
+  //     newPlayback.gainNode.gain.setValueAtTime(
+  //       maxLoudness,
+  //       asEarlyAsPossibleInSeconds,
+  //     )
+  //     newPlayback.bufferSource.start(secondsSinceAudioContextInit)
+  //   })
+  //   return PlayingSlowStrum.make({
+  //     playbackStartedAtSecond: secondsSinceAudioContextInit,
+  //     asset,
+  //     playback: newPlayback,
+  //   })
+  // }
 
-  // New pattern/accord: start loop immediately
-  const audioBuffer = yield* getAudioBufferOfAsset(asset)
-  const newPatternPlayback = yield* createLoopingPlayback(
-    audioContext,
-    audioBuffer,
-  )
-  yield* Effect.sync(() => {
-    newPatternPlayback.gainNode.gain.setValueAtTime(
-      maxLoudness,
-      asEarlyAsPossibleInSeconds,
-    )
-    newPatternPlayback.bufferSource.start(secondsSinceAudioContextInit)
-  })
-  return PlayingPattern.make({
-    playbackStartedAtSecond: secondsSinceAudioContextInit,
-    asset,
-    playback: newPatternPlayback,
-  })
+  // // New pattern/accord: start loop immediately
+  // const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  // const newPatternPlayback = yield* createLoopingPlayback(
+  //   audioContext,
+  //   audioBuffer,
+  // )
+  // yield* Effect.sync(() => {
+  //   newPatternPlayback.gainNode.gain.setValueAtTime(
+  //     maxLoudness,
+  //     asEarlyAsPossibleInSeconds,
+  //   )
+  //   newPatternPlayback.bufferSource.start(secondsSinceAudioContextInit)
+  // })
+  // return PlayingPattern.make({
+  //   playbackStartedAtSecond: secondsSinceAudioContextInit,
+  //   asset,
+  //   playback: newPatternPlayback,
+  // })
+
+  yield* Effect.logError({ oldState, signal, deps })
+  return yield* Effect.dieMessage('not implemented')
 })
