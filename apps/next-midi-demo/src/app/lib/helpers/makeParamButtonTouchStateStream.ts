@@ -91,10 +91,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
         ]
       }
 
-      // Realistically pointerId guaranteed to be in oldMap. We can't expect
-      // finger to release or move away from something it haven't been touching
-      // in the first place. We don't crash, just ignore
-      const oldElement = getValueOrOther(HashMap.get(oldMap, pointerId))
+      const oldElementOption = HashMap.get(oldMap, pointerId)
       const mapWithoutCurrentPointerId = HashMap.remove(oldMap, pointerId)
 
       if (type === 'pointerup' || type === 'pointercancel')
@@ -102,13 +99,20 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
           mapWithoutCurrentPointerId,
           makeStreamWithElementIfMapDidntHaveIt(
             mapWithoutCurrentPointerId,
-            oldElement,
+            // Realistically pointerId guaranteed to be in oldMap. We can't
+            // expect finger to release or move away from something it haven't
+            // been touching in the first place. We don't crash, just ignore
+            getValueOrOther(oldElementOption),
             NotPressed,
           ),
         ]
 
       // type === 'pointermove'...
 
+      // guard against mouse that doesn't produce preliminary `pointerdown`
+      if (Option.isNone(oldElementOption)) return [oldMap, Stream.empty]
+
+      const oldElement = oldElementOption.value
       const latestElement = EFunction.pipe(
         document.elementFromPoint(clientX, clientY),
         getTargetWithGoodDataset,
