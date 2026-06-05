@@ -16,4 +16,5 @@ export class PatternPatternTransition extends Schema.TaggedClass<PatternPatternT
   },
 ) {
   private declare '~brand~': never
+  static override make = super.make.bind(this)
 }

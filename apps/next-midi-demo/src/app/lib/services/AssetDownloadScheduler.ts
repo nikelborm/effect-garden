@@ -7,7 +7,7 @@ import * as Struct from 'effect/Struct'
 
 import {
   type AssetPointer,
-  desimplifyAssetPointer,
+  complexifyAssetPointer,
   type SimpleAssetPointer,
   simplifyAssetPointer,
 } from '../brandsAndDatas/AssetPointer.ts'
@@ -73,7 +73,7 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
       yield* Stream.mapEffect(
         Stream.fromIterable(currentTierAssetsToDownload),
         Effect.fn(function* (simpleAsset: SimpleAssetPointer) {
-          const asset: AssetPointer = desimplifyAssetPointer(simpleAsset)
+          const asset: AssetPointer = complexifyAssetPointer(simpleAsset)
           const attemptStart =
             downloadManager.startOrContinueOrIgnoreCompletedCached(asset)
 

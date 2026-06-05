@@ -12,6 +12,10 @@ import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createScheduledNextPlaybackInContext } from '../playbackNodes/createScheduledNextPlayback.ts'
 import { scheduleFadeOutOf } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
+import {
+  PatternTransitionElementWithScheduledCleanup,
+  PatternTransitionQueueElement,
+} from '../types/common.ts'
 import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
 import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
 import type { PlayingPattern } from '../types/PlayingPattern.ts'
@@ -24,43 +28,41 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
     signal: Signal,
     deps: AdvancePlaybackDeps,
   ) {
-    const [current] = oldState.transitionQueue
-
-    if (AccordData.models(signal) && signal.accord === current.asset.accord)
+    if (AccordData.models(signal) && signal.accord === oldState.asset.accord)
       return oldState
 
     if (
       StrengthData.models(signal) &&
-      signal.strength === current.asset.strength
+      signal.strength === oldState.asset.strength
     )
       return oldState
 
     if (PatternData.models(signal)) {
-      if (signal.pattern === current.asset.pattern) {
+      if (signal.pattern === oldState.asset.pattern) {
         // Pattern was deselected while loop was playing — fade out to silence
         const math = calcTimingsMath(
           oldState.playbackStartedAtSecond,
           yield* EAudioContext.currentTimeFromContext,
         )
 
-        yield* scheduleFadeOutOf(current.playback, math)
+        yield* scheduleFadeOutOf(oldState.playback, math)
 
         return new PatternSilenceTransition({
           playbackStartedAtSecond: oldState.playbackStartedAtSecond,
           transitionQueue: [
-            {
-              ...current,
+            PatternTransitionElementWithScheduledCleanup.make({
+              ...oldState,
               cleanupFiberToolkit: yield* deps.makeCleanupFibers(
                 math.secondsSinceNowUpUntilFadeoutEnds,
               ),
               fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
               fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-            },
+            }),
           ],
         })
       }
 
-      const asset = new TaggedPatternPointer({
+      const asset = TaggedPatternPointer.make({
         ...signal,
         accord: yield* AccordRegistry.currentlySelectedAccord,
         strength: yield* StrengthRegistry.currentlySelectedStrength,
@@ -73,26 +75,26 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
         yield* EAudioContext.currentTimeFromContext,
       )
 
-      yield* scheduleFadeOutOf(current.playback, math)
+      yield* scheduleFadeOutOf(oldState.playback, math)
 
       return new PatternPatternTransition({
         playbackStartedAtSecond: oldState.playbackStartedAtSecond,
         transitionQueue: [
-          {
-            ...current,
+          PatternTransitionElementWithScheduledCleanup.make({
+            ...oldState,
             cleanupFiberToolkit: yield* deps.makeCleanupFibers(
               math.secondsSinceNowUpUntilFadeoutEnds,
             ),
             fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
             fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-          },
-          {
+          }),
+          PatternTransitionQueueElement.make({
             asset,
             playback: yield* createScheduledNextPlaybackInContext(
               audioBuffer,
               math,
             ),
-          },
+          }),
         ],
       })
     }

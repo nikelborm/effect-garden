@@ -18,8 +18,12 @@ export const makeUnsafeFromData =
     DataClass: TChildDataClass,
   ) =>
     function (this: TParentDataClass, idData: TaggedReadonlyObject) {
-      if (DataClass.models(idData))
-        return new this(idData) as InstanceType<TParentDataClass>
+      if (DataClass.models(idData)) {
+        console.log('before')
+        const obj = new this(idData) as InstanceType<TParentDataClass>
+        console.log('after')
+        return obj
+      }
 
       throw new Error(
         `Cannot create ${this.name}. argument is not ${DataClass.name}`,

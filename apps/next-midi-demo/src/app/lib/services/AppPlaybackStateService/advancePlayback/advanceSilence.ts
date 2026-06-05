@@ -41,7 +41,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   if (PatternData.models(signal)) {
     yield* PatternRegistry.replaceNoneOrDieIfPresent(signal.pattern)
 
-    asset = new TaggedPatternPointer({
+    asset = TaggedPatternPointer.make({
       ...signal,
       accord: yield* AccordRegistry.currentlySelectedAccord,
       strength,
@@ -49,7 +49,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   } else {
     yield* AccordRegistry.selectAccord(signal.accord)
 
-    asset = new TaggedSlowStrumPointer({ ...signal, strength })
+    asset = TaggedSlowStrumPointer.make({ ...signal, strength })
   }
 
   yield* LoadedAssetSizeEstimationMap.assertFinished(asset)

@@ -20,6 +20,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedPatternPointer =
     Schema.is(this)
+  static override make = super.make.bind(this)
 }
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
@@ -35,6 +36,7 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
   private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
     Schema.is(this)
+  static override make = super.make.bind(this)
 }
 
 export type SlowStrumPointer = Omit<TaggedSlowStrumPointer, '_tag'>
@@ -47,22 +49,12 @@ export const AssetPointerSchema = Schema.Union(
 export type AssetPointer = TaggedPatternPointer | TaggedSlowStrumPointer
 
 export const complexifyAssetPointer = ({
-  accord,
   pattern,
-  strength,
-}: {
-  readonly strength: Strength
-  readonly pattern: PatternOption
-  readonly accord: Accord
-}): AssetPointer =>
+  ...other
+}: SimpleAssetPointer) =>
   Option.match(pattern, {
-    onNone: () => TaggedSlowStrumPointer.make({ accord, strength }),
-    onSome: pattern =>
-      TaggedPatternPointer.make({
-        accord,
-        pattern,
-        strength,
-      }),
+    onNone: () => TaggedSlowStrumPointer.make(other),
+    onSome: pattern => TaggedPatternPointer.make({ ...other, pattern }),
   })
 
 export const simplifyAssetPointer = (
@@ -75,17 +67,8 @@ export const simplifyAssetPointer = (
   strength: asset.strength,
 })
 
-export const desimplifyAssetPointer = ({
-  pattern,
-  ...other
-}: SimpleAssetPointer) =>
-  Option.match(pattern, {
-    onNone: () => TaggedSlowStrumPointer.make(other),
-    onSome: pattern => TaggedPatternPointer.make({ ...other, pattern }),
-  })
-
 export interface SimpleAssetPointer {
-  accord: Accord
-  pattern: PatternOption
-  strength: Strength
+  readonly accord: Accord
+  readonly pattern: PatternOption
+  readonly strength: Strength
 }

@@ -12,6 +12,7 @@ export class PlayingPattern extends Schema.TaggedClass<PlayingPattern>()(
   },
 ) {
   private declare '~brand~': never
+  static override make = super.make.bind(this)
 
   getDuration() {
     return this.playback.getDuration()

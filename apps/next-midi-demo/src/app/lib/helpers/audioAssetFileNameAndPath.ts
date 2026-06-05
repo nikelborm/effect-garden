@@ -12,7 +12,6 @@ import {
 } from '../brandsAndDatas/AssetPointer.ts'
 import { Pattern, UnbrandedPattern } from '../brandsAndDatas/Pattern.ts'
 import { Strength, UnbrandedStrength } from '../brandsAndDatas/Strength.ts'
-import { parseInt10 } from './parseInt10.ts'
 import type { StringToArray } from './StringToArray.ts'
 
 const getPaddedAccord = <const TAccord extends Accord>(accord: TAccord) =>
@@ -217,11 +216,13 @@ export type LocalAssetFilePath<TAsset extends AssetPointer> =
 
 ///
 
+// TODO: move regexeps into brandsAndData/{Accord,Pattern,Strength}.ts etc and import here
+// _? in regexp moved outside the group to make sure this padding is not included in the group
 const localPatternAssetFileNameRegExp =
-  /^pattern_(?<pattern>\d)_accord_(?<accord>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
+  /^pattern_(?<pattern>\d)_accord_(?<accord>[A-G][m#b]?)_?_strength_(?<strength>[smv])\.wav$/
 
 const localSlowStrumAssetFileNameRegExp =
-  /^slow_strum_accord_(?<accord>\d)_(?:[A-G][m#b]?_?)_strength_(?<strength>[smv])\.wav$/
+  /^slow_strum_accord_(?<accord>[A-G][m#b]?)_?_strength_(?<strength>[smv])\.wav$/
 
 export const getAssetFromLocalFileName = (
   fileName: string,
@@ -231,24 +232,20 @@ export const getAssetFromLocalFileName = (
       Option.fromNullable(fileName.match(regexp)?.groups),
       flow(
         Struct.evolve({
-          pattern: Option.some,
-          accord: flow(parseInt10, Accord.option),
+          pattern: Pattern.option,
+          accord: Accord.option,
           strength: Strength.option,
         }),
         Option.all as any,
       ),
-    ) as Option.Option<{ accord: Accord; strength: Strength }>
+    )
 
   return parseBase(localPatternAssetFileNameRegExp).pipe(
-    Option.orElse(() => parseBase(localSlowStrumAssetFileNameRegExp)),
-    Option.flatMap(base =>
-      pipe(
-        (base as { pattern?: string }).pattern,
-        parseInt10,
-        Pattern.option,
-        Option.map(pattern => ({ ...base, pattern })),
-        Option.map(extended => new TaggedPatternPointer(extended)),
-        Option.orElseSome(() => new TaggedSlowStrumPointer(base)),
+    Option.map(TaggedPatternPointer.make),
+    Option.orElse(() =>
+      Option.map(
+        parseBase(localSlowStrumAssetFileNameRegExp),
+        TaggedSlowStrumPointer.make,
       ),
     ),
   )

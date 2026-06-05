@@ -1,6 +1,6 @@
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import { constFalse, flow, pipe } from 'effect/Function'
+import { constFalse, constTrue, flow, pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
@@ -94,7 +94,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         )
 
       const verify = (asset: AssetPointer) =>
-        modifyMapAt(asset, Struct.evolve({ verifiedOnDisk: constFalse }))
+        modifyMapAt(asset, Struct.evolve({ verifiedOnDisk: constTrue }))
 
       const mapCurrentFetchedBytesToCompletionStatus = (asset: AssetPointer) =>
         Effect.fn('mapCurrentFetchedBytesToCompletionStatus')(function* (

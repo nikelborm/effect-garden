@@ -22,15 +22,17 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
       return oldState
     case 'PlayingPattern':
       return yield* advancePlayingPattern(oldState, signal, deps)
-    case 'PatternPatternTransition':
-      return yield* advancePatternPatternTransition(oldState, signal, deps)
     case 'PlayingSlowStrum':
       return yield* advancePlayingSlowStrum(oldState, signal, deps)
-    case 'SlowStrumPatternTransition':
-      return yield* advanceSlowStrumPatternTransition(oldState, signal, deps)
-    case 'PatternSilenceTransition':
-      return yield* advancePatternSilenceTransition(oldState, signal, deps)
-    default:
-      return oldState
+    // case 'PatternPatternTransition':
+    //   return yield* advancePatternPatternTransition(oldState, signal, deps)
+    // case 'SlowStrumPatternTransition':
+    //   return yield* advanceSlowStrumPatternTransition(oldState, signal, deps)
+    // case 'PatternSilenceTransition':
+    //   return yield* advancePatternSilenceTransition(oldState, signal, deps)
+    default: {
+      yield* Effect.logError({ oldState, signal, deps })
+      return yield* Effect.dieMessage('Unhandled advancePlayback')
+    }
   }
 })

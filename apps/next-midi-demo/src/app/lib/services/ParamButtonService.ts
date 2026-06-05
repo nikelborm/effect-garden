@@ -185,7 +185,7 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
       getSelectedChangesStream: reg =>
         reg.selectedAccordChanges.pipe(Stream.map(AccordParamButtonData.make)),
       toCompareValue: EFunction.identity<AccordParamButtonData>,
-      toLabel: accord => `Accord index=${accord}`,
+      toLabel: accord => `Accord index=${accord.id.accord}`,
       isCurrentlyPlayingPredicate: (pb, accord) =>
         pb.currentAsset.accord === accord,
       selectAction: (reg, param) => reg.selectAccord(param.id.accord),
@@ -205,7 +205,7 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
           Stream.map(Option.map(PatternParamButtonData.make)),
         ),
       toCompareValue: Option.some<PatternParamButtonData>,
-      toLabel: pattern => `Pattern index=${pattern}`,
+      toLabel: pattern => `Pattern index=${pattern.id.pattern}`,
       isCurrentlyPlayingPredicate: (pb, pattern) =>
         Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
       selectAction: (reg, param) => reg.switchPattern(param.id.pattern),
@@ -225,7 +225,7 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
           Stream.map(StrengthParamButtonData.make),
         ),
       toCompareValue: EFunction.identity<StrengthParamButtonData>,
-      toLabel: strength => `Strength=${strength}`,
+      toLabel: strength => `Strength=${strength.id.strength}`,
       isCurrentlyPlayingPredicate: (pb, strength) =>
         pb.currentAsset.strength === strength,
       selectAction: (reg, param) => reg.selectStrength(param.id.strength),
