@@ -49,10 +49,10 @@ export const AssetPointerSchema = Schema.Union(
 export type AssetPointer = TaggedPatternPointer | TaggedSlowStrumPointer
 
 export const complexifyAssetPointer = ({
-  pattern,
+  pattern: patternOption,
   ...other
 }: SimpleAssetPointer) =>
-  Option.match(pattern, {
+  Option.match(patternOption, {
     onNone: () => TaggedSlowStrumPointer.make(other),
     onSome: pattern => TaggedPatternPointer.make({ ...other, pattern }),
   })
