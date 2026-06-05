@@ -9,9 +9,9 @@ import { getAudioBufferOfAsset } from './getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
-  getAudioBufferDurationSeconds,
 } from './playbackNodes/index.ts'
-import type { PlayingPattern, PlayingSlowStrum } from './types/index.ts'
+import { PlayingPattern } from './types/PlayingPattern.ts'
+import { PlayingSlowStrum } from './types/PlayingSlowStrum.ts'
 
 export const makeNewPlayingAssetState = Effect.gen(function* () {
   const selectedAssetState = yield* CurrentlySelectedAssetState
@@ -45,19 +45,11 @@ export const makeNewPlayingAssetState = Effect.gen(function* () {
 
     yield* Effect.log('started playing slow strum')
 
-    const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
-
-    return {
-      _tag: 'PlayingSlowStrum' as const,
-      transitionQueue: [
-        {
-          playback: currentPlayback,
-          asset: currentAsset,
-          durationSeconds,
-        },
-      ],
+    return PlayingSlowStrum.make({
+      playback: currentPlayback,
+      asset: currentAsset,
       playbackStartedAtSecond: secondsSinceAudioContextInit,
-    } satisfies PlayingSlowStrum
+    })
   }
 
   const currentPlayback = yield* createLoopingPlayback(
@@ -75,9 +67,9 @@ export const makeNewPlayingAssetState = Effect.gen(function* () {
 
   yield* Effect.log('started playing')
 
-  return {
-    _tag: 'PlayingPattern' as const,
-    transitionQueue: [{ playback: currentPlayback, asset: currentAsset }],
+  return PlayingPattern.make({
+    playback: currentPlayback,
+    asset: currentAsset,
     playbackStartedAtSecond: secondsSinceAudioContextInit,
-  } satisfies PlayingPattern
+  })
 })

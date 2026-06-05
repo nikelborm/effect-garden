@@ -22,7 +22,14 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
       { identifier: 'GainNode' },
     ),
   },
-) {}
+) {
+  getDuration() {
+    const buffer = this.bufferSource.buffer
+    if (!buffer)
+      throw new Error('Assertion failed. expected buffer to be present')
+    return buffer.duration
+  }
+}
 
 export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>()(
   'CleanupFiberToolkit',

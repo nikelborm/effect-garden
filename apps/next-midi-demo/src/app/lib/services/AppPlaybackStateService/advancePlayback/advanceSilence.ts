@@ -17,12 +17,9 @@ import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
 import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
-import { getAudioBufferDurationSeconds } from '../playbackNodes/index.ts'
-import {
-  PlayingPattern,
-  PlayingSlowStrum,
-  type Silence,
-} from '../types/index.ts'
+import { PlayingPattern } from '../types/PlayingPattern.ts'
+import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
+import type { Silence } from '../types/Silence.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
@@ -77,17 +74,13 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
 
   return TaggedPatternPointer.models(asset)
     ? new PlayingPattern({
-        transitionQueue: [{ playback, asset }],
+        playback,
+        asset,
         playbackStartedAtSecond,
       })
     : new PlayingSlowStrum({
-        transitionQueue: [
-          {
-            playback,
-            asset,
-            durationSeconds: getAudioBufferDurationSeconds(audioBuffer),
-          },
-        ],
+        playback,
+        asset,
         playbackStartedAtSecond,
       })
 })

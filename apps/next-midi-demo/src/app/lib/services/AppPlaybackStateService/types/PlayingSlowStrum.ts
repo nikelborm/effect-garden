@@ -1,11 +1,17 @@
 import * as Schema from 'effect/Schema'
 
-import { SlowStrumTransitionQueueElement } from './common.ts'
+import { TaggedSlowStrumPointer } from '../../../brandsAndDatas/AssetPointer.ts'
+import { AudioPlayback } from './common.ts'
 
 export class PlayingSlowStrum extends Schema.TaggedClass<PlayingSlowStrum>()(
   'PlayingSlowStrum',
   {
     playbackStartedAtSecond: Schema.Number,
-    transitionQueue: Schema.Tuple(SlowStrumTransitionQueueElement),
+    asset: TaggedSlowStrumPointer,
+    playback: AudioPlayback,
   },
-) {}
+) {
+  getDuration() {
+    return this.playback.getDuration()
+  }
+}

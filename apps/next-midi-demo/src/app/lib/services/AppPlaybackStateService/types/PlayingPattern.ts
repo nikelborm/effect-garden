@@ -1,11 +1,17 @@
 import * as Schema from 'effect/Schema'
 
-import { PatternTransitionQueueElement } from './common.ts'
+import { TaggedPatternPointer } from '../../../brandsAndDatas/AssetPointer.ts'
+import { AudioPlayback } from './common.ts'
 
 export class PlayingPattern extends Schema.TaggedClass<PlayingPattern>()(
   'PlayingPattern',
   {
     playbackStartedAtSecond: Schema.Number,
-    transitionQueue: Schema.Tuple(PatternTransitionQueueElement),
+    asset: TaggedPatternPointer,
+    playback: AudioPlayback,
   },
-) {}
+) {
+  getDuration() {
+    return this.playback.getDuration()
+  }
+}

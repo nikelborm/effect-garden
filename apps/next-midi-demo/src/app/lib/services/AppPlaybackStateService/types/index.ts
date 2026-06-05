@@ -9,7 +9,7 @@ import { PlayingSlowStrum } from './PlayingSlowStrum.ts'
 import { Silence } from './Silence.ts'
 import { SlowStrumPatternTransition } from './SlowStrumPatternTransition.ts'
 
-export const PlayingAppPlaybackStatesSchema = Schema.Union(
+export const PlayingAppPlaybackStates = Schema.Union(
   PatternPatternPatternTransition,
   PatternPatternSilenceTransition,
   PatternPatternTransition,
@@ -19,23 +19,8 @@ export const PlayingAppPlaybackStatesSchema = Schema.Union(
   SlowStrumPatternTransition,
 )
 export type PlayingAppPlaybackStates = Schema.Schema.Type<
-  typeof PlayingAppPlaybackStatesSchema
+  typeof PlayingAppPlaybackStates
 >
 
-export const AppPlaybackStateSchema = Schema.Union(
-  Silence,
-  PlayingAppPlaybackStatesSchema,
-)
-export type AppPlaybackState = Schema.Schema.Type<typeof AppPlaybackStateSchema>
-
-export * from './common.ts'
-export {
-  PatternPatternPatternTransition,
-  PatternPatternSilenceTransition,
-  PatternPatternTransition,
-  PatternSilenceTransition,
-  PlayingPattern,
-  PlayingSlowStrum,
-  Silence,
-  SlowStrumPatternTransition,
-}
+export const AppPlaybackState = Schema.Union(Silence, PlayingAppPlaybackStates)
+export type AppPlaybackState = Schema.Schema.Type<typeof AppPlaybackState>

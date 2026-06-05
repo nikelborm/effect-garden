@@ -9,13 +9,11 @@ import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopScheduledAfterSingleShot,
   createOneshotPlayback,
-  getAudioBufferDurationSeconds,
   helpGarbageCollectionOfPlayback,
 } from '../playbackNodes/index.ts'
-import type {
-  PlayingSlowStrum,
-  SlowStrumPatternTransition,
-} from '../types/index.ts'
+import { PatternTransitionQueueElement } from '../types/common.ts'
+import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
+import { SlowStrumPatternTransition } from '../types/SlowStrumPatternTransition.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
@@ -47,12 +45,11 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
         )
         newPlayback.bufferSource.start(secondsSinceAudioContextInit)
       })
-      const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
-      return {
-        _tag: 'PlayingSlowStrum' as const,
+      return PlayingSlowStrum.make({
         playbackStartedAtSecond: secondsSinceAudioContextInit,
-        transitionQueue: [{ asset, playback: newPlayback, durationSeconds }],
-      } satisfies PlayingSlowStrum
+        asset,
+        playback: newPlayback,
+      })
     }
 
     // Pattern was selected while slow strum is playing → schedule loop to start after slow strum ends
@@ -64,10 +61,15 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
       audioBuffer,
       slowStrumEndsAtSecond,
     )
-    return {
-      _tag: 'SlowStrumPatternTransition' as const,
+    return SlowStrumPatternTransition.make({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-      transitionQueue: [current, { asset, playback: newPatternPlayback }],
-    } satisfies SlowStrumPatternTransition
+      transitionQueue: [
+        current,
+        PatternTransitionQueueElement.make({
+          asset,
+          playback: newPatternPlayback,
+        }),
+      ],
+    })
   },
 )

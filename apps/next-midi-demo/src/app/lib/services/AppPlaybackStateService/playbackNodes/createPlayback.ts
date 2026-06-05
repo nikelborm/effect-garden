@@ -3,16 +3,13 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
 
-export interface Playback {
-  readonly bufferSource: AudioBufferSourceNode
-  readonly gainNode: GainNode
-}
+import { AudioPlayback } from '../types/common.ts'
 
 export const createPlayback = (
   eAudioContext: EAudioContext.Instance,
   eAudioBuffer: EAudioBuffer.EAudioBuffer,
 ) =>
-  Effect.sync<Playback>(() => {
+  Effect.sync<AudioPlayback>(() => {
     const audioBufferImplHack = eAudioBuffer as EAudioBuffer.EAudioBuffer & {
       _audioBuffer: AudioBuffer
     }
@@ -27,7 +24,7 @@ export const createPlayback = (
 
     gainNode.connect(audioContext.destination)
 
-    return { bufferSource, gainNode }
+    return AudioPlayback.make({ bufferSource, gainNode })
   })
 
 export const createPlaybackInContext = (buffer: EAudioBuffer.EAudioBuffer) =>

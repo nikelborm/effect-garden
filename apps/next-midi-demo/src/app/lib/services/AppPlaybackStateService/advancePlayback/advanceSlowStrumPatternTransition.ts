@@ -4,20 +4,16 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
-import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
-  getAudioBufferDurationSeconds,
   helpGarbageCollectionOfPlayback,
 } from '../playbackNodes/index.ts'
-import type {
-  PlayingPattern,
-  PlayingSlowStrum,
-  SlowStrumPatternTransition,
-} from '../types/index.ts'
+import { PlayingPattern } from '../types/PlayingPattern.ts'
+import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
+import type { SlowStrumPatternTransition } from '../types/SlowStrumPatternTransition.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
@@ -50,12 +46,11 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
       )
       newPlayback.bufferSource.start(secondsSinceAudioContextInit)
     })
-    const durationSeconds = getAudioBufferDurationSeconds(audioBuffer)
-    return {
-      _tag: 'PlayingSlowStrum' as const,
+    return PlayingSlowStrum.make({
       playbackStartedAtSecond: secondsSinceAudioContextInit,
-      transitionQueue: [{ asset, playback: newPlayback, durationSeconds }],
-    } satisfies PlayingSlowStrum
+      asset,
+      playback: newPlayback,
+    })
   }
 
   // New pattern/accord: start loop immediately
@@ -71,9 +66,9 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
     )
     newPatternPlayback.bufferSource.start(secondsSinceAudioContextInit)
   })
-  return {
-    _tag: 'PlayingPattern' as const,
+  return PlayingPattern.make({
     playbackStartedAtSecond: secondsSinceAudioContextInit,
-    transitionQueue: [{ asset, playback: newPatternPlayback }],
-  } satisfies PlayingPattern
+    asset,
+    playback: newPatternPlayback,
+  })
 })

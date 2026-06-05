@@ -11,10 +11,12 @@ import {
   scheduleFadeOutOf,
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
-import type {
-  PatternPatternTransition,
-  PatternSilenceTransition,
-} from '../types/index.ts'
+import {
+  PatternTransitionElementWithScheduledCleanup,
+  PatternTransitionQueueElement,
+} from '../types/common.ts'
+import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
+import type { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
@@ -50,46 +52,45 @@ export const advancePatternSilenceTransition = Effect.fn(
         secondsSinceAudioContextInit,
       )
     })
+
     yield* current.cleanupFiberToolkit.cancelCleanup
     yield* scheduleFadeOutOf(current.playback, math)
-    return {
-      _tag: 'PatternPatternTransition' as const,
+    return PatternPatternTransition.make({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
-        {
+        PatternTransitionElementWithScheduledCleanup.make({
           ...current,
           cleanupFiberToolkit: yield* deps.makeCleanupFibers(
             math.secondsSinceNowUpUntilFadeoutEnds,
           ),
           fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-        },
-        {
+        }),
+        PatternTransitionQueueElement.make({
           asset,
           playback: yield* createScheduledNextPlayback(
             audioContext,
             audioBuffer,
             math,
           ),
-        },
+        }),
       ],
-    } satisfies PatternPatternTransition
+    })
   }
 
   // Fade already in progress — schedule new loop to start right after current ends
-  return {
-    _tag: 'PatternPatternTransition' as const,
+  return PatternPatternTransition.make({
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
     transitionQueue: [
       current,
-      {
+      PatternTransitionQueueElement.make({
         asset,
         playback: yield* createLoopScheduledAfterSingleShot(
           audioContext,
           audioBuffer,
           current.fadeoutEndsAtSecond,
         ),
-      },
+      }),
     ],
-  } satisfies PatternPatternTransition
+  })
 })

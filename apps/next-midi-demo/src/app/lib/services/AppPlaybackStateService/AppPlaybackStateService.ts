@@ -6,30 +6,13 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { AssetPointer } from '../../brandsAndDatas/AssetPointer.ts'
 import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
-import type { AppPlaybackState, Silence } from './types/index.ts'
-
-export type {
-  AppPlaybackState,
-  AudioPlayback,
-  PatternPatternPatternTransition,
-  PatternPatternSilenceTransition,
-  PatternPatternTransition,
-  PatternSilenceTransition,
-  PatternTransitionElementWithScheduledCleanup,
-  PatternTransitionQueueElement,
-  PlayingAppPlaybackStates,
-  PlayingPattern,
-  PlayingSlowStrum,
-  Silence,
-  SlowStrumPatternTransition,
-  SlowStrumTransitionQueueElement,
-} from './types/index.ts'
+import type { AppPlaybackState } from './types/index.ts'
+import { Silence } from './types/Silence.ts'
 
 const AudioContextLive = Layer.orDie(EAudioContext.layer())
 
@@ -41,9 +24,9 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
     scoped: Effect.gen(function* () {
       const selectedAssetState = yield* CurrentlySelectedAssetState
 
-      const stateRef = yield* SubscriptionRef.make<AppPlaybackState>({
-        _tag: 'Silence',
-      })
+      const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
+        Silence.make(),
+      )
 
       const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
         stateRef,
@@ -54,7 +37,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
           yield* cleanupAllPlaybacks(state)
 
-          return { _tag: 'Silence' } satisfies Silence
+          return Silence.make()
         }),
       ).pipe(Effect.tapErrorCause(Effect.logError))
 
