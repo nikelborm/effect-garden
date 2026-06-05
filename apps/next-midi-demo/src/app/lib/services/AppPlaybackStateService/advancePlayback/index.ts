@@ -6,6 +6,7 @@ import { advancePatternPatternTransition } from './advancePatternPatternTransiti
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
 import { advancePlayingPattern } from './advancePlayingPattern.ts'
 import { advancePlayingSlowStrum } from './advancePlayingSlowStrum.ts'
+import { advanceSilence } from './advanceSilence.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
@@ -19,7 +20,7 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
 ) {
   switch (oldState._tag) {
     case 'Silence':
-      return oldState
+      return yield* advanceSilence(oldState, signal, deps)
     case 'PlayingPattern':
       return yield* advancePlayingPattern(oldState, signal, deps)
     case 'PlayingSlowStrum':

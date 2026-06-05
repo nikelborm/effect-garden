@@ -34,7 +34,7 @@ export const Strength = Brand.refined<Strength>(
   is(s: unknown): s is Strength
 }
 
-export const defaultStrength = Strength(strengthsRawBase[0])
+export const defaultStrength = Strength(strengthsRawBase[1])
 
 export type StrengthOption = Option.Option<Strength>
 

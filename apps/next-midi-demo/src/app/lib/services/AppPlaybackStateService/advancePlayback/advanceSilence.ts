@@ -28,6 +28,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   signal: Signal,
   _deps: AdvancePlaybackDeps,
 ) {
+  yield* Effect.logWarning('signal wtf', { oldState, signal, _deps })
   if (StrengthData.models(signal)) {
     // even if it's not downloaded, it's fine to set different strength, while
     // it's silent, because no playback will be scheduled

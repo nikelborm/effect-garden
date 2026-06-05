@@ -28,24 +28,24 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Silence.make(),
       )
 
-      const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
-        stateRef,
-        Effect.fn(function* (state) {
-          yield* Effect.log('Switch play pause from currently selected')
-          const isStopped = state._tag === 'Silence'
-          if (isStopped) return yield* makeNewPlayingAssetState
+      // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
+      //   stateRef,
+      //   Effect.fn(function* (state) {
+      //     yield* Effect.log('Switch play pause from currently selected')
+      //     const isStopped = state._tag === 'Silence'
+      //     if (isStopped) return yield* makeNewPlayingAssetState
 
-          yield* cleanupAllPlaybacks(state)
+      //     yield* cleanupAllPlaybacks(state)
 
-          return Silence.make()
-        }),
-      ).pipe(Effect.tapErrorCause(Effect.logError))
+      //     return Silence.make()
+      //   }),
+      // ).pipe(Effect.tapErrorCause(Effect.logError))
 
-      yield* Effect.addFinalizer(() =>
-        Effect.map(stateRef.get, state =>
-          state._tag === 'Silence' ? Effect.void : cleanupAllPlaybacks(state),
-        ),
-      )
+      // yield* Effect.addFinalizer(() =>
+      //   Effect.map(stateRef.get, state =>
+      //     state._tag === 'Silence' ? Effect.void : cleanupAllPlaybacks(state),
+      //   ),
+      // )
 
       const makeCleanupFibers = makeCleanupFibersFactory(stateRef)
 
@@ -84,16 +84,16 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       //         } as const),
       // )
 
-      yield* selectedAssetState.changes.pipe(
-        Stream.tap(signal =>
-          SubscriptionRef.updateEffect(stateRef, state =>
-            advancePlayback(state, signal, { makeCleanupFibers }),
-          ),
-        ),
-        Stream.runDrain,
-        Effect.tapErrorCause(Effect.logError),
-        Effect.forkScoped,
-      )
+      // yield* selectedAssetState.changes.pipe(
+      //   Stream.tap(signal =>
+      //     SubscriptionRef.updateEffect(stateRef, state =>
+      //       advancePlayback(state, signal, { makeCleanupFibers }),
+      //     ),
+      //   ),
+      //   Stream.runDrain,
+      //   Effect.tapErrorCause(Effect.logError),
+      //   Effect.forkScoped,
+      // )
 
       // yield* stateRef.changes.pipe(
       //   Stream.filter(state => state._tag === 'PlayingSlowStrum'),
@@ -133,7 +133,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       return {
         playStopButtonPressableFlagChangesStream,
-        switchPlayPauseFromCurrentlySelected,
+        // switchPlayPauseFromCurrentlySelected,
         latestIsPlayingFlagStream,
         // тупо потому что не хочу усложнять себе работу
         playbackPublicInfoChangesStream: stateRef.changes,

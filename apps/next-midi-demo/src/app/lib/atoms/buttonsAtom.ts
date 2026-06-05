@@ -21,6 +21,7 @@ import {
   PatternParamButtonData,
 } from '../brandsAndDatas/Pattern.ts'
 import {
+  defaultStrength,
   type Strength,
   StrengthParamButtonData,
 } from '../brandsAndDatas/Strength.ts'
@@ -98,10 +99,6 @@ const AppLayer = ParamButtonServicesLayer.pipe(
 
 const runtime = Atom.runtime(AppLayer)
 
-// TODO: make getPressabilityChangesStream, getIsSelectedStream,
-// isPressedFlagChangesStream, isCurrentlyPlaying, getDownloadPercent accept a
-// ParamButtonData?
-
 // export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
 //   EFunction.pipe(
 //     accord,
@@ -158,13 +155,13 @@ const runtime = Atom.runtime(AppLayer)
 //     Stream.unwrap,
 //     s =>
 //       runtime.atom(s, {
-//         initialValue: strength !== 'm',
+//         initialValue: strength !== defaultStrength,
 //       }),
 //     Atom.withFallback(
-//       Atom.readable(() => Result.success(strength !== 'm', { waiting: true })),
+//       Atom.readable(() => Result.success(strength !== defaultStrength, { waiting: true })),
 //     ),
 //     Atom.withServerValue(
-//       EFunction.constant(Result.success(strength !== 'm', { waiting: true })),
+//       EFunction.constant(Result.success(strength !== defaultStrength, { waiting: true })),
 //     ),
 //   ),
 // )
@@ -198,20 +195,15 @@ export const isPatternSelectedAtom = Atom.family((pattern: Pattern) =>
     PatternParamButtonData.make,
     PatternParamButtonService.getIsSelectedStream,
     Stream.unwrap,
-    // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
     s =>
       runtime.atom(s, {
-        initialValue: pattern === defaultPattern,
+        initialValue: false,
       }),
     Atom.withFallback(
-      Atom.readable(() =>
-        Result.success(pattern === defaultPattern, { waiting: true }),
-      ),
+      Atom.readable(() => Result.success(false, { waiting: true })),
     ),
     Atom.withServerValue(
-      EFunction.constant(
-        Result.success(pattern === defaultPattern, { waiting: true }),
-      ),
+      EFunction.constant(Result.success(false, { waiting: true })),
     ),
   ),
 )
@@ -224,13 +216,17 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
     Stream.unwrap,
     s =>
       runtime.atom(s, {
-        initialValue: strength === 'm',
+        initialValue: strength === defaultStrength,
       }),
     Atom.withFallback(
-      Atom.readable(() => Result.success(strength === 'm', { waiting: true })),
+      Atom.readable(() =>
+        Result.success(strength === defaultStrength, { waiting: true }),
+      ),
     ),
     Atom.withServerValue(
-      EFunction.constant(Result.success(strength === 'm', { waiting: true })),
+      EFunction.constant(
+        Result.success(strength === defaultStrength, { waiting: true }),
+      ),
     ),
   ),
 )
