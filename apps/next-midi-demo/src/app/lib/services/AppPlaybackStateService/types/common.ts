@@ -3,79 +3,76 @@ import * as Fiber from 'effect/Fiber'
 import * as Schema from 'effect/Schema'
 
 import {
-  AssetPointerSchema,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../../../brandsAndDatas/AssetPointer.ts'
 
-export const AudioPlaybackSchema = Schema.Struct({
-  bufferSource: Schema.declare(
-    (u): u is AudioBufferSourceNode =>
-      typeof AudioBufferSourceNode !== 'undefined' &&
-      u instanceof AudioBufferSourceNode,
-    { identifier: 'AudioBufferSourceNode' },
-  ),
-  gainNode: Schema.declare(
-    (u): u is GainNode =>
-      typeof GainNode !== 'undefined' && u instanceof GainNode,
-    { identifier: 'GainNode' },
-  ),
-})
-export type AudioPlayback = Schema.Schema.Type<typeof AudioPlaybackSchema>
-
-export const CleanupFiberToolkitSchema = Schema.Struct({
-  cancelCleanup: Schema.declare(
-    (u): u is Effect.Effect<void> => Effect.isEffect(u),
-    { identifier: 'Effect<void>' },
-  ),
-  fiberWaitingSignalToStartGarbageCollection: Schema.declare(
-    (u): u is Fiber.RuntimeFiber<void> =>
-      Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
-    { identifier: 'Fiber.RuntimeFiber<void>' },
-  ),
-  fiberWaitingDelayToGiveGarbageCollectionSignal: Schema.declare(
-    (u): u is Fiber.RuntimeFiber<void> =>
-      Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
-    { identifier: 'Fiber.RuntimeFiber<void>' },
-  ),
-  cancelDelayedCleanupSignal: Schema.declare(
-    (u): u is Effect.Effect<void> => Effect.isEffect(u),
-    { identifier: 'Effect<void>' },
-  ),
-  cleanupImmediately: Schema.declare(
-    (u): u is Effect.Effect<void> => Effect.isEffect(u),
-    { identifier: 'Effect<void>' },
-  ),
-})
-export type CleanupFiberToolkit = Schema.Schema.Type<
-  typeof CleanupFiberToolkitSchema
->
-
-export const PatternTransitionQueueElementSchema = Schema.Struct({
-  asset: TaggedPatternPointer,
-  playback: AudioPlaybackSchema,
-})
-export type PatternTransitionQueueElement = Schema.Schema.Type<
-  typeof PatternTransitionQueueElementSchema
->
-
-export const PatternTransitionElementWithScheduledCleanupSchema = Schema.Struct(
+export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
+  'AudioPlayback',
   {
-    ...PatternTransitionQueueElementSchema.fields,
-    cleanupFiberToolkit: CleanupFiberToolkitSchema,
-    fadeoutStartsAtSecond: Schema.Number,
-    fadeoutEndsAtSecond: Schema.Number,
+    bufferSource: Schema.declare(
+      (u): u is AudioBufferSourceNode =>
+        typeof AudioBufferSourceNode !== 'undefined' &&
+        u instanceof AudioBufferSourceNode,
+      { identifier: 'AudioBufferSourceNode' },
+    ),
+    gainNode: Schema.declare(
+      (u): u is GainNode =>
+        typeof GainNode !== 'undefined' && u instanceof GainNode,
+      { identifier: 'GainNode' },
+    ),
   },
-)
-export type PatternTransitionElementWithScheduledCleanup = Schema.Schema.Type<
-  typeof PatternTransitionElementWithScheduledCleanupSchema
->
+) {}
 
-export const SlowStrumTransitionQueueElementSchema = Schema.Struct({
-  asset: TaggedSlowStrumPointer,
-  playback: AudioPlaybackSchema,
-  durationSeconds: Schema.Number,
-})
-export type SlowStrumTransitionQueueElement = Schema.Schema.Type<
-  typeof SlowStrumTransitionQueueElementSchema
->
+export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>()(
+  'CleanupFiberToolkit',
+  {
+    cancelCleanup: Schema.declare(
+      (u): u is Effect.Effect<void> => Effect.isEffect(u),
+      { identifier: 'Effect<void>' },
+    ),
+    fiberWaitingSignalToStartGarbageCollection: Schema.declare(
+      (u): u is Fiber.RuntimeFiber<void> =>
+        Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
+      { identifier: 'Fiber.RuntimeFiber<void>' },
+    ),
+    fiberWaitingDelayToGiveGarbageCollectionSignal: Schema.declare(
+      (u): u is Fiber.RuntimeFiber<void> =>
+        Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
+      { identifier: 'Fiber.RuntimeFiber<void>' },
+    ),
+    cancelDelayedCleanupSignal: Schema.declare(
+      (u): u is Effect.Effect<void> => Effect.isEffect(u),
+      { identifier: 'Effect<void>' },
+    ),
+    cleanupImmediately: Schema.declare(
+      (u): u is Effect.Effect<void> => Effect.isEffect(u),
+      { identifier: 'Effect<void>' },
+    ),
+  },
+) {}
+
+export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTransitionQueueElement>()(
+  'PatternTransitionQueueElement',
+  {
+    asset: TaggedPatternPointer,
+    playback: AudioPlayback,
+  },
+) {}
+
+export class PatternTransitionElementWithScheduledCleanup extends PatternTransitionQueueElement.extend<PatternTransitionElementWithScheduledCleanup>(
+  'PatternTransitionElementWithScheduledCleanup',
+)({
+  cleanupFiberToolkit: CleanupFiberToolkit,
+  fadeoutStartsAtSecond: Schema.Number,
+  fadeoutEndsAtSecond: Schema.Number,
+}) {}
+
+export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStrumTransitionQueueElement>()(
+  'SlowStrumTransitionQueueElement',
+  {
+    asset: TaggedSlowStrumPointer,
+    playback: AudioPlayback,
+    durationSeconds: Schema.Number,
+  },
+) {}

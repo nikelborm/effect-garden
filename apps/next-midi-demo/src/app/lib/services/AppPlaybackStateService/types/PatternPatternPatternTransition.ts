@@ -1,8 +1,8 @@
 import * as Schema from 'effect/Schema'
 
 import {
-  PatternTransitionElementWithScheduledCleanupSchema,
-  PatternTransitionQueueElementSchema,
+  PatternTransitionElementWithScheduledCleanup,
+  PatternTransitionQueueElement,
 } from './common.ts'
 
 export class PatternPatternPatternTransition extends Schema.TaggedClass<PatternPatternPatternTransition>()(
@@ -10,9 +10,9 @@ export class PatternPatternPatternTransition extends Schema.TaggedClass<PatternP
   {
     playbackStartedAtSecond: Schema.Number,
     transitionQueue: Schema.Tuple(
-      PatternTransitionElementWithScheduledCleanupSchema,
-      PatternTransitionElementWithScheduledCleanupSchema,
-      PatternTransitionQueueElementSchema,
+      PatternTransitionElementWithScheduledCleanup,
+      PatternTransitionElementWithScheduledCleanup,
+      PatternTransitionQueueElement,
     ),
   },
 ) {}
