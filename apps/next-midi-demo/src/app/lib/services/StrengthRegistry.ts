@@ -24,7 +24,7 @@ export class StrengthRegistry
         )
 
         return {
-          currentlySelectedStrength: selectedStrengthRef.get,
+          currentlySelectedStrength: selectedStrengthRef,
           allStrengths: Effect.succeed(allStrengths),
           selectedStrengthChanges,
           selectStrength: (strength: Strength) =>

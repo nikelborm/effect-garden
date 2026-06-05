@@ -22,7 +22,7 @@ export class AccordRegistry
       )
 
       return {
-        currentlySelectedAccord: currentAccordRef.get,
+        currentlySelectedAccord: currentAccordRef,
         allAccords: Effect.succeed(allAccords),
         selectedAccordChanges,
         selectAccord: (accord: Accord) =>

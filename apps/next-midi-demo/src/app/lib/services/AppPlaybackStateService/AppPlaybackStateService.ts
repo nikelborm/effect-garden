@@ -42,7 +42,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       // ).pipe(Effect.tapErrorCause(Effect.logError))
 
       // yield* Effect.addFinalizer(() =>
-      //   Effect.map(stateRef.get, state =>
+      //   Effect.map(stateRef, state =>
       //     state._tag === 'Silence' ? Effect.void : cleanupAllPlaybacks(state),
       //   ),
       // )

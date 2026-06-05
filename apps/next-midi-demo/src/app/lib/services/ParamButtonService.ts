@@ -36,7 +36,9 @@ import { StrengthRegistry } from './StrengthRegistry.ts'
 const makeParamButtonService = <
   TParamButtonId extends PatternData | AccordData | StrengthData,
   S,
-  Reg,
+  TRegistryInstance,
+  TRegistryId,
+  TBusId,
 >({
   registryTag,
   busTag,
@@ -46,12 +48,14 @@ const makeParamButtonService = <
   // isCurrentlyPlayingPredicate,
   // selectAction,
 }: {
-  readonly registryTag: Context.ReadonlyTag<any, Reg>
+  readonly registryTag: Context.ReadonlyTag<TRegistryId, TRegistryInstance>
   readonly busTag: Context.ReadonlyTag<
-    any,
+    TBusId,
     InputBusReaderHandle<TParamButtonId>
   >
-  readonly getSelectedChangesStream: (registry: Reg) => Stream.Stream<S>
+  readonly getSelectedChangesStream: (
+    registry: TRegistryInstance,
+  ) => Stream.Stream<S>
   readonly toCompareValue: (value: ParamButtonIdData<TParamButtonId>) => S
   readonly toLabel: (value: ParamButtonIdData<TParamButtonId>) => string
   // readonly isCurrentlyPlayingPredicate: (

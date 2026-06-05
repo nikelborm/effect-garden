@@ -1,4 +1,5 @@
 import * as EArray from 'effect/Array'
+import type * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
@@ -11,7 +12,7 @@ import type { PhysicalButtonIdData } from '../brandsAndDatas/PhysicalButton.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type {
   InputBusWriterHandle,
-  PhysicalButtonRegistration,
+  RegistrationRequest,
 } from './InputStreamBus.ts'
 
 export const assignPhysicalButtonGroupToRespectiveParamButtons = <
@@ -30,10 +31,9 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     never,
     TStreamR
   >,
-  inputBusWriterEffect: Effect.Effect<
-    InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>,
-    never,
-    TBusR
+  inputBusWriterEffect: Context.ReadonlyTag<
+    TBusR,
+    InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>
   >,
 ) =>
   Effect.gen(function* () {
@@ -46,7 +46,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
       )
 
     const registrations: ReadonlyArray<
-      PhysicalButtonRegistration<TPhysicalButtonId, TParamButtonId>
+      RegistrationRequest<TPhysicalButtonId, TParamButtonId>
     > = yield* Effect.all(
       EArray.zipWith(
         paramButtonIdsRepresentedByPhysicalButtonGroup,
@@ -73,18 +73,16 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     )
 
     yield* physicalButtonPressStream.pipe(
-      Stream.mapEffect(
-        ([physicalButtonId, state]) =>
-          Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId), {
-            onNone: () => Effect.void,
-            onSome: SubscriptionRef.set(state),
-          }),
-        { concurrency: 1 },
+      Stream.mapEffect(([physicalButtonId, state]) =>
+        Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId), {
+          onNone: () => Effect.void,
+          onSome: SubscriptionRef.set(state),
+        }),
       ),
       Stream.runDrain,
       Effect.forkScoped,
     )
 
     const inputBus = yield* inputBusWriterEffect
-    yield* inputBus.publish(registrations)
+    yield* inputBus.register(registrations)
   })

@@ -16,7 +16,6 @@ import {
   defaultAccord,
 } from '../brandsAndDatas/Accord.ts'
 import {
-  defaultPattern,
   type Pattern,
   PatternParamButtonData,
 } from '../brandsAndDatas/Pattern.ts'

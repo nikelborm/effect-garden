@@ -25,15 +25,15 @@ export class PatternRegistry
       )
 
       return {
-        currentlySelectedPattern: currentPatternRef.get,
+        currentlySelectedPattern: currentPatternRef,
         allPatterns: Effect.succeed(allPatterns),
         selectedPatternChanges,
         assertIsNone: Effect.filterOrDieMessage(
-          currentPatternRef.get,
+          currentPatternRef,
           Option.isNone,
           'Assertion failed: expected pattern to be not selected',
         ).pipe(Effect.asVoid),
-        getSomeOrDie: Effect.flatMap(currentPatternRef.get, patternOption =>
+        getSomeOrDie: Effect.flatMap(currentPatternRef, patternOption =>
           Option.isSome(patternOption)
             ? Effect.succeed(patternOption.value)
             : Effect.dieMessage(

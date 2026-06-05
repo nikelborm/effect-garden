@@ -59,7 +59,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       const getCurrentDownloadedBytes = (
         asset: AssetPointer,
       ): Effect.Effect<AssetSizeEstimation> =>
-        Effect.map(assetToSizeHashMapRef.get, getOrDefaultBy(asset))
+        Effect.map(assetToSizeHashMapRef, getOrDefaultBy(asset))
 
       const getCurrentDownloadedBytesStream = (
         asset: AssetPointer,

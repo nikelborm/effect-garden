@@ -18,6 +18,7 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
   signal: Signal,
   deps: AdvancePlaybackDeps,
 ) {
+  yield* Effect.log('advancePlayback', { oldState, signal, deps })
   switch (oldState._tag) {
     case 'Silence':
       return yield* advanceSilence(oldState, signal, deps)
@@ -32,7 +33,11 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
     // case 'PatternSilenceTransition':
     //   return yield* advancePatternSilenceTransition(oldState, signal, deps)
     default: {
-      yield* Effect.logError({ oldState, signal, deps })
+      yield* Effect.logError('Unhandled advancePlayback', {
+        oldState,
+        signal,
+        deps,
+      })
       return yield* Effect.dieMessage('Unhandled advancePlayback')
     }
   }
