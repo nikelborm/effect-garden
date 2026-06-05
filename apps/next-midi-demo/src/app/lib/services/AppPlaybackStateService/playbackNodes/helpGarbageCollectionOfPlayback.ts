@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { AudioPlayback } from '../types/index.ts'
+import type { AudioPlayback } from '../types/common.ts'
 
 export const helpGarbageCollectionOfPlayback = ({
   bufferSource,

@@ -12,11 +12,9 @@ import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createScheduledNextPlaybackInContext } from '../playbackNodes/createScheduledNextPlayback.ts'
 import { scheduleFadeOutOf } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
-import {
-  PatternPatternTransition,
-  PatternSilenceTransition,
-  type PlayingPattern,
-} from '../types/index.ts'
+import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
+import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
+import type { PlayingPattern } from '../types/PlayingPattern.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 

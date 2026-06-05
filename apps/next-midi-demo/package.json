@@ -52,6 +52,7 @@
   },
   "scripts": {
     "build": "next build --webpack",
+    "typecheck": "tsgo --noEmit --declaration false --declarationMap false",
     "dev": "next dev --experimental-https",
     "format": "biome format --write",
     "lint": "biome check",

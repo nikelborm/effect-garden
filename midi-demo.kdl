@@ -4,8 +4,8 @@ layout {
     pane {
       name "Next.js tsgo watch"
       cwd "./apps/next-midi-demo"
-      command "bunx"
-      args "tsgo" "--noEmit" "--watch" "--declaration" "false" "--declarationMap" "false" "--preserveWatchOutput" "false"
+      command "bun"
+      args "typecheck" "--watch" "--preserveWatchOutput" "false"
     }
     pane split_direction="horizontal" {
       pane {

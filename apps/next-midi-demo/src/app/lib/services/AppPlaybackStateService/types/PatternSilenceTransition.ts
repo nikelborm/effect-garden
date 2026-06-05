@@ -6,8 +6,8 @@ export class PatternSilenceTransition extends Schema.TaggedClass<PatternSilenceT
   'PatternSilenceTransition',
   {
     playbackStartedAtSecond: Schema.Number,
-    transitionQueue: Schema.Tuple(
-      PatternTransitionElementWithScheduledCleanup,
-    ),
+    transitionQueue: Schema.Tuple(PatternTransitionElementWithScheduledCleanup),
   },
-) {}
+) {
+  private declare '~brand~': never
+}

@@ -11,7 +11,11 @@ export class PlayingPattern extends Schema.TaggedClass<PlayingPattern>()(
     playback: AudioPlayback,
   },
 ) {
+  private declare '~brand~': never
+
   getDuration() {
     return this.playback.getDuration()
   }
+
+  // getLoopZone(playbackStartedAtSecond: number,): 1 | 2 | 3 {}
 }

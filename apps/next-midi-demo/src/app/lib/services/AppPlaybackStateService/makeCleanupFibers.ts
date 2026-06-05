@@ -4,7 +4,8 @@ import * as Fiber from 'effect/Fiber'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { getNewCleanedUpState } from './cleanupState.ts'
-import type { AppPlaybackState, CleanupFiberToolkit } from './types/index.ts'
+import { CleanupFiberToolkit } from './types/common.ts'
+import type { AppPlaybackState } from './types/index.ts'
 
 export const makeCleanupFibersFactory = (
   stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,
@@ -44,11 +45,11 @@ export const makeCleanupFibersFactory = (
       Effect.asVoid,
     )
 
-    return {
+    return CleanupFiberToolkit.make({
       cancelCleanup,
       fiberWaitingSignalToStartGarbageCollection,
       fiberWaitingDelayToGiveGarbageCollectionSignal,
       cancelDelayedCleanupSignal,
       cleanupImmediately,
-    } as const
+    })
   })

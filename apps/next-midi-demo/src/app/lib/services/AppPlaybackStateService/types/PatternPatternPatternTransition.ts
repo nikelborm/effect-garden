@@ -15,4 +15,6 @@ export class PatternPatternPatternTransition extends Schema.TaggedClass<PatternP
       PatternTransitionQueueElement,
     ),
   },
-) {}
+) {
+  private declare '~brand~': never
+}

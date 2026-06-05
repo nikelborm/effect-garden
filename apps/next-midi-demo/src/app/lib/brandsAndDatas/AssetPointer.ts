@@ -17,6 +17,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
     strength: StrengthSchema,
   },
 ) {
+  private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedPatternPointer =
     Schema.is(this)
 }
@@ -31,6 +32,7 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
     strength: StrengthSchema,
   },
 ) {
+  private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
     Schema.is(this)
 }

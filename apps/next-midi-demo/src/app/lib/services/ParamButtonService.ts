@@ -21,10 +21,8 @@ import {
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { streamAll } from '../helpers/streamAll.ts'
 import { AccordRegistry } from './AccordRegistry.ts'
-import {
-  AppPlaybackStateService,
-  type PlayingAppPlaybackStates,
-} from './AppPlaybackStateService/AppPlaybackStateService.ts'
+import { AppPlaybackStateService } from './AppPlaybackStateService/AppPlaybackStateService.ts'
+import type { PlayingAppPlaybackStates } from './AppPlaybackStateService/types/index.ts'
 import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import {
   AccordInputBus,

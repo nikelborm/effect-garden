@@ -11,4 +11,6 @@ export class PatternPatternSilenceTransition extends Schema.TaggedClass<PatternP
       PatternTransitionElementWithScheduledCleanup,
     ),
   },
-) {}
+) {
+  private declare '~brand~': never
+}

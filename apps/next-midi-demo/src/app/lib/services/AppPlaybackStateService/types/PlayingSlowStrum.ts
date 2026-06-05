@@ -11,6 +11,8 @@ export class PlayingSlowStrum extends Schema.TaggedClass<PlayingSlowStrum>()(
     playback: AudioPlayback,
   },
 ) {
+  private declare '~brand~': never
+
   getDuration() {
     return this.playback.getDuration()
   }

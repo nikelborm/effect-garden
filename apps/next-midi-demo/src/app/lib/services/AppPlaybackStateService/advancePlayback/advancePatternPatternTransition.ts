@@ -5,7 +5,6 @@ import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
-import type { AssetPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { maxLoudness } from '../constants.ts'
 import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
@@ -15,12 +14,14 @@ import {
 } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
 import {
-  PatternPatternPatternTransition,
-  PatternPatternSilenceTransition,
-  PatternPatternTransition,
-  PatternSilenceTransition,
-  PlayingPattern,
-} from '../types/index.ts'
+  PatternTransitionElementWithScheduledCleanup,
+  PatternTransitionQueueElement,
+} from '../types/common.ts'
+import { PatternPatternPatternTransition } from '../types/PatternPatternPatternTransition.ts'
+import { PatternPatternSilenceTransition } from '../types/PatternPatternSilenceTransition.ts'
+import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
+import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
+import { PlayingPattern } from '../types/PlayingPattern.ts'
 import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
@@ -60,14 +61,14 @@ export const advancePatternPatternTransition = Effect.fn(
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
-        {
+        PatternTransitionElementWithScheduledCleanup.make({
           ...latest,
           cleanupFiberToolkit: yield* deps.makeCleanupFibers(
             math.secondsSinceNowUpUntilFadeoutEnds,
           ),
           fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-        },
+        }),
       ],
     })
   }
@@ -89,7 +90,8 @@ export const advancePatternPatternTransition = Effect.fn(
     yield* helpGarbageCollectionOfPlayback(latest.playback)
     return new PlayingPattern({
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-      transitionQueue: [Struct.pick(current, 'asset', 'playback')],
+      asset: current.asset,
+      playback: current.playback,
     })
   }
 
@@ -106,21 +108,24 @@ export const advancePatternPatternTransition = Effect.fn(
       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
       transitionQueue: [
         current,
-        {
+        PatternTransitionElementWithScheduledCleanup.make({
           ...latest,
           fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
           fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
           cleanupFiberToolkit: yield* deps.makeCleanupFibers(
             math.secondsSinceNowUpUntilFadeoutEnds,
           ),
-        },
-        { asset, playback },
+        }),
+        PatternTransitionQueueElement.make({ asset, playback }),
       ],
     })
   }
 
   return new PatternPatternTransition({
     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-    transitionQueue: [current, { asset, playback }],
+    transitionQueue: [
+      current,
+      PatternTransitionQueueElement.make({ asset, playback }),
+    ],
   })
 })

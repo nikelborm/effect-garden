@@ -14,4 +14,6 @@ export class SlowStrumPatternTransition extends Schema.TaggedClass<SlowStrumPatt
       PatternTransitionQueueElement,
     ),
   },
-) {}
+) {
+  private declare '~brand~': never
+}

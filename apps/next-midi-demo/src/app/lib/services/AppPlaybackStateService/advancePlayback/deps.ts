@@ -1,6 +1,6 @@
 import type * as Effect from 'effect/Effect'
 
-import type { CleanupFiberToolkit } from '../types/index.ts'
+import type { CleanupFiberToolkit } from '../types/common.ts'
 
 export interface AdvancePlaybackDeps {
   readonly makeCleanupFibers: (

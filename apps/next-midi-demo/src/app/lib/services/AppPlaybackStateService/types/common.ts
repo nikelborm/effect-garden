@@ -23,6 +23,8 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
     ),
   },
 ) {
+  private declare '~brand~': never
+
   getDuration() {
     const buffer = this.bufferSource.buffer
     if (!buffer)
@@ -57,7 +59,9 @@ export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>
       { identifier: 'Effect<void>' },
     ),
   },
-) {}
+) {
+  private declare '~brand~': never
+}
 
 export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTransitionQueueElement>()(
   'PatternTransitionQueueElement',
@@ -65,7 +69,9 @@ export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTra
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
   },
-) {}
+) {
+  private declare '~brand~': never
+}
 
 export class PatternTransitionElementWithScheduledCleanup extends PatternTransitionQueueElement.extend<PatternTransitionElementWithScheduledCleanup>(
   'PatternTransitionElementWithScheduledCleanup',
@@ -82,4 +88,6 @@ export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStru
     playback: AudioPlayback,
     durationSeconds: Schema.Number,
   },
-) {}
+) {
+  private declare '~brand~': never
+}
