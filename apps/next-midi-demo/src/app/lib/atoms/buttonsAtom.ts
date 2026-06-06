@@ -76,9 +76,9 @@ const ParamButtonServicesLayer = Layer.mergeAll(
 )
 
 const AppLayer = ParamButtonServicesLayer.pipe(
-  Layer.provideMerge(BusLayer),
   Layer.provideMerge(AllButtonMappingServicesLayer),
   Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
+  Layer.provideMerge(BusLayer),
   Layer.provideMerge(AssetDownloadSchedulerLive),
   Layer.provideMerge(DownloadManager.Default),
   Layer.provideMerge(OpfsWritableHandleManager.Default),

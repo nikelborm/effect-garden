@@ -80,6 +80,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
         }),
       ),
       Stream.runDrain,
+      Effect.tapErrorCause(Effect.logError),
       Effect.forkScoped,
     )
 

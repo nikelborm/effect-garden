@@ -105,17 +105,19 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
   const pressesOnlyStream: PressesOnlyStream<TParamButtonId> =
     yield* newBusAdditionsStream().pipe(
       Stream.map(HashMap.entries),
-      Stream.flatMap(Stream.fromIterable),
-      Stream.flatMap(([paramButtonId, bus]) =>
-        pipe(
-          bus.paramPressedByPhysicalButtonSetStream,
-          Stream.map(set => HashSet.size(set) > 0),
-          Stream.sliding(2),
-          Stream.filter(
-            chunk => !Chunk.unsafeGet(chunk, 0) && Chunk.unsafeGet(chunk, 1),
+      Stream.flattenIterables,
+      Stream.flatMap(
+        ([paramButtonId, bus]) =>
+          pipe(
+            bus.paramPressedByPhysicalButtonSetStream,
+            Stream.map(set => HashSet.size(set) > 0),
+            Stream.sliding(2),
+            Stream.filter(
+              chunk => !Chunk.unsafeGet(chunk, 0) && Chunk.unsafeGet(chunk, 1),
+            ),
+            Stream.as(new ParamButtonIdData(paramButtonId)),
           ),
-          Stream.as(new ParamButtonIdData(paramButtonId)),
-        ),
+        { concurrency: 'unbounded' },
       ),
       Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
@@ -182,17 +184,26 @@ export type SupportedPhysicalButtonIds =
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
-  { scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>() },
+  {
+    accessors: true,
+    scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>(),
+  },
 ) {}
 
 export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
-  { scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>() },
+  {
+    accessors: true,
+    scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>(),
+  },
 ) {}
 
 export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
-  { scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>() },
+  {
+    accessors: true,
+    scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>(),
+  },
 ) {}
 
 export interface InputBusWriterHandle<

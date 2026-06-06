@@ -7,6 +7,11 @@ import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
+import {
+  AccordInputBus,
+  PatternInputBus,
+  StrengthInputBus,
+} from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
@@ -83,17 +88,22 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       //           ) as ReadonlyArray<AssetPointer>,
       //         } as const),
       // )
-
-      // yield* selectedAssetState.changes.pipe(
-      //   Stream.tap(signal =>
-      //     SubscriptionRef.updateEffect(stateRef, state =>
-      //       advancePlayback(state, signal, { makeCleanupFibers }),
-      //     ),
-      //   ),
-      //   Stream.runDrain,
-      //   Effect.tapErrorCause(Effect.logError),
-      //   Effect.forkScoped,
-      // )
+      yield* AccordInputBus.pressesOnlyStream.pipe(
+        Stream.unwrap,
+        Stream.merge(Stream.unwrap(PatternInputBus.pressesOnlyStream)),
+        Stream.merge(Stream.unwrap(StrengthInputBus.pressesOnlyStream)),
+        Stream.tap(signal =>
+          SubscriptionRef.updateEffect(stateRef, state =>
+            advancePlayback(state, signal.id, { makeCleanupFibers }).pipe(
+              Effect.tapErrorCause(Effect.logError),
+            ),
+          ),
+        ),
+        Stream.runDrain,
+        Effect.tapErrorCause(Effect.logError),
+        Effect.forkScoped,
+      )
+      // Stream.mergeAll([,], { concurrency: 'unbounded' })
 
       // yield* stateRef.changes.pipe(
       //   Stream.filter(state => state._tag === 'PlayingSlowStrum'),
