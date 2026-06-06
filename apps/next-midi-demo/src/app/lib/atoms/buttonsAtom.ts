@@ -46,6 +46,7 @@ import { PatternRegistry } from '../services/PatternRegistry.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
+import { TracingLive } from './tracing.ts'
 
 const BusLayer = Layer.mergeAll(
   AccordInputBus.Default,
@@ -91,6 +92,7 @@ const AppLayer = ParamButtonServicesLayer.pipe(
   Layer.provideMerge(PatternRegistry.Default),
   Layer.provideMerge(StrengthRegistry.Default),
   Layer.provideMerge(Logger.pretty),
+  Layer.provide(TracingLive),
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 

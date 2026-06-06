@@ -163,5 +163,5 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       ),
     ],
     { discard: true, concurrency: 'unbounded' },
-  )
+  ).pipe(Effect.forkScoped)
 }).pipe(Layer.scopedDiscard)
