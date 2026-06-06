@@ -173,7 +173,7 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
   }
 })
 
-export type SupportedInputs =
+export type SupportedPhysicalButtonIds =
   | KeyboardKeyData
   | NoteIdData
   | AccordData
@@ -182,17 +182,17 @@ export type SupportedInputs =
 
 export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
-  { scoped: makeInputBus<SupportedInputs, AccordData>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>() },
 ) {}
 
 export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
-  { scoped: makeInputBus<SupportedInputs, PatternData>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>() },
 ) {}
 
 export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
-  { scoped: makeInputBus<SupportedInputs, StrengthData>() },
+  { scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>() },
 ) {}
 
 export interface InputBusWriterHandle<

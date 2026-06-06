@@ -63,9 +63,7 @@ const AllButtonMappingServicesLayer = EFunction.pipe(
   // Buses and registries are provided here so AllButtonMappingServicesLayer is
   // self-contained. Effect's layer memoization ensures the same instances
   // are shared with ParamButtonService.
-  Layer.provideMerge(AccordInputBus.Default),
-  Layer.provideMerge(PatternInputBus.Default),
-  Layer.provideMerge(StrengthInputBus.Default),
+  Layer.provideMerge(BusLayer),
   Layer.provideMerge(AccordRegistry.Default),
   Layer.provideMerge(PatternRegistry.Default),
   Layer.provideMerge(StrengthRegistry.Default),
