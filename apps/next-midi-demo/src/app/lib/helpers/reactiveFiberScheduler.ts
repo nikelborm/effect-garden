@@ -1,6 +1,5 @@
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
-import * as EFunction from 'effect/Function'
 import * as Runtime from 'effect/Runtime'
 import * as Stream from 'effect/Stream'
 import * as SynchronizedRef from 'effect/SynchronizedRef'
@@ -40,10 +39,5 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
         }),
       )
 
-    EFunction.pipe(
-      stream,
-      Stream.tap(scheduleNew),
-      Stream.runDrain,
-      runForkScoped,
-    )
+    stream.pipe(Stream.tap(scheduleNew), Stream.runDrain, runForkScoped)
   })

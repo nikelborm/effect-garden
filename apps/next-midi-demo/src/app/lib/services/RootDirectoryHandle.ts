@@ -6,7 +6,12 @@ export class RootDirectoryHandle extends Effect.Service<RootDirectoryHandle>()(
   'next-midi-demo/RootDirectoryHandle',
   {
     effect: Effect.tryPromise({
-      try: () => navigator.storage.getDirectory(),
+      try: async () => {
+        console.time('RootDirectoryHandle')
+        const res = await navigator.storage.getDirectory()
+        console.timeEnd('RootDirectoryHandle')
+        return res
+      },
       catch: cause => new OPFSError({ operation: 'getRoot', cause }),
     }).pipe(
       Effect.orDie,

@@ -210,29 +210,36 @@ export type EntryInfo =
 export const listEntries = (
   dirHandle: FileSystemDirectoryHandle,
 ): Effect.Effect<readonly EntryInfo[], OPFSError> =>
-  Effect.gen(function* () {
-    const entries: EntryInfo[] = []
+  Effect.tryPromise({
+    try: async () => {
+      const entries: EntryInfo[] = []
 
-    yield* Effect.tryPromise({
-      try: async () => {
-        for await (const entry of dirHandle.values()) {
-          if (entry.kind === 'file') {
-            const fileHandle = entry as FileSystemFileHandle
-            const file = await fileHandle.getFile()
-            entries.push({ name: entry.name, kind: 'file', size: file.size })
-          } else {
-            entries.push({ name: entry.name, kind: 'directory' })
-          }
+      const fileSizes = []
+      for await (const entry of dirHandle.values()) {
+        if (entry.kind === 'file') {
+          const fileHandle = entry as FileSystemFileHandle
+          fileSizes.push(
+            fileHandle.getFile().then(file => {
+              entries.push({
+                name: entry.name,
+                kind: 'file',
+                size: file.size,
+              })
+            }),
+          )
+        } else {
+          entries.push({ name: entry.name, kind: 'directory' })
         }
-      },
-      catch: error =>
-        new OPFSError({
-          operation: 'listEntries',
-          cause: error,
-        }),
-    })
+      }
 
-    return entries
+      await Promise.all(fileSizes)
+      return entries
+    },
+    catch: error =>
+      new OPFSError({
+        operation: 'listEntries',
+        cause: error,
+      }),
   })
 
 /**

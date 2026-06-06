@@ -23,7 +23,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
     accessors: true,
     effect: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
+      console.time('LoadedAssetSizeEstimationMap')
 
+      // TODO: for initialization doesn't even need to be parsed from disk!
       const assetToSizeHashMapRef = yield* pipe(
         listEntries(rootDirectoryHandle),
         Effect.map(
@@ -48,6 +50,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         ),
         Effect.flatMap(SubscriptionRef.make),
       )
+
+      console.timeEnd('LoadedAssetSizeEstimationMap')
       const fallbackEstimationOption = Option.getOrElse<AssetSizeEstimation>(
         () => ({ size: 0, verifiedOnDisk: false }),
       )<AssetSizeEstimation>
