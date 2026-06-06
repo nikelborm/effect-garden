@@ -46,7 +46,6 @@ export class ParamButtonIdData<
   constructor(id: TId) {
     super({ id })
   }
-  static make = <TId extends TaggedReadonlyObject>(id: TId) => new this(id)
 
   static makeUnsafeFromData = (
     idData: TaggedReadonlyObject,

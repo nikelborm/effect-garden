@@ -114,7 +114,7 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
           Stream.filter(
             chunk => !Chunk.unsafeGet(chunk, 0) && Chunk.unsafeGet(chunk, 1),
           ),
-          Stream.as(ParamButtonIdData.make(paramButtonId)),
+          Stream.as(new ParamButtonIdData(paramButtonId)),
         ),
       ),
       Stream.broadcastDynamic({ capacity: 'unbounded' }),
