@@ -15,7 +15,7 @@
     "@effect/ai-google": "catalog:",
     "@effect/ai-openai": "^0.39.2",
     "@effect/cli": "catalog:",
-    "@effect/cluster": "^0.58.2",
+    "@effect/cluster": "^0.59.0",
     "@effect/experimental": "catalog:",
     "@effect/language-service": "catalog:",
     "@effect/opentelemetry": "catalog:",
