@@ -10,7 +10,7 @@
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
     "@effect/ai": "^0.36.0",
-    "@effect/ai-amazon-bedrock": "^0.15.0",
+    "@effect/ai-amazon-bedrock": "^0.16.0",
     "@effect/ai-anthropic": "^0.26.0",
     "@effect/ai-google": "catalog:",
     "@effect/ai-openai": "^0.40.0",
