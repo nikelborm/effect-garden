@@ -84,7 +84,7 @@ vars. Install it.
       out - demo of `drizzle-fp`)
    2. [next-midi-demo](./apps/next-midi-demo) (recommend checking out - demo of
       `effect-web-midi` and other audio stuff with effect. the juiciest part is
-      in [src/app/lib/services](./apps/next-midi-demo/src/app/lib/services))
+      in [app/services](./apps/next-midi-demo/app/services))
    3. Aside from the one above, in trellisform, there are also `api`, `backend`,
       `backend-better-auth-service`, `database-effect-schema`, `model`. But not
       much interesting in all of them. They're only at a prototyping stage rn.
