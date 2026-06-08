@@ -68,20 +68,19 @@
         "@base-ui/react": "catalog:",
         "@effect-atom/atom": "catalog:",
         "@effect-atom/atom-react": "catalog:",
-        "@effect/opentelemetry": "^0.63.0",
         "@evadev/effect-helpers": "workspace:^",
         "@fp-ts/optic": "catalog:",
-        "@opentelemetry/exporter-logs-otlp-http": "^0.218.0",
-        "@opentelemetry/exporter-logs-otlp-proto": "^0.218.0",
-        "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
-        "@opentelemetry/exporter-metrics-otlp-proto": "^0.218.0",
-        "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
-        "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
-        "@opentelemetry/otlp-exporter-base": "^0.218.0",
-        "@opentelemetry/sdk-logs": "^0.218.0",
-        "@opentelemetry/sdk-metrics": "^2.7.1",
-        "@opentelemetry/sdk-trace-base": "^2.7.1",
-        "@opentelemetry/sdk-trace-web": "^2.7.1",
+        "@opentelemetry/exporter-logs-otlp-http": "catalog:",
+        "@opentelemetry/exporter-logs-otlp-proto": "catalog:",
+        "@opentelemetry/exporter-metrics-otlp-http": "catalog:",
+        "@opentelemetry/exporter-metrics-otlp-proto": "catalog:",
+        "@opentelemetry/exporter-trace-otlp-http": "catalog:",
+        "@opentelemetry/exporter-trace-otlp-proto": "catalog:",
+        "@opentelemetry/otlp-exporter-base": "catalog:",
+        "@opentelemetry/sdk-logs": "catalog:",
+        "@opentelemetry/sdk-metrics": "catalog:",
+        "@opentelemetry/sdk-trace-base": "catalog:",
+        "@opentelemetry/sdk-trace-web": "catalog:",
         "@serwist/next": "catalog:",
         "@wyw-in-js/babel-preset": "catalog:",
         "effect-web-audio": "workspace:^",
@@ -108,6 +107,7 @@
         "typescript": "catalog:",
       },
       "peerDependencies": {
+        "@effect/opentelemetry": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-browser": "catalog:",
         "@effect/platform-bun": "catalog:",
@@ -959,13 +959,13 @@
         "@biomejs/biome": "catalog:",
         "@effect-atom/atom": "catalog:",
         "@effect-atom/atom-react": "catalog:",
-        "@effect/ai": "^0.35.0",
+        "@effect/ai": "^0.36.0",
         "@effect/ai-amazon-bedrock": "^0.15.0",
-        "@effect/ai-anthropic": "^0.25.0",
+        "@effect/ai-anthropic": "^0.26.0",
         "@effect/ai-google": "catalog:",
-        "@effect/ai-openai": "^0.39.2",
+        "@effect/ai-openai": "^0.40.0",
         "@effect/cli": "catalog:",
-        "@effect/cluster": "^0.58.2",
+        "@effect/cluster": "^0.59.0",
         "@effect/experimental": "catalog:",
         "@effect/language-service": "catalog:",
         "@effect/opentelemetry": "catalog:",
@@ -978,7 +978,7 @@
         "@effect/printer-ansi": "^0.49.0",
         "@effect/rpc": "^0.75.1",
         "@effect/sql": "catalog:",
-        "@effect/sql-clickhouse": "^0.48.0",
+        "@effect/sql-clickhouse": "^0.49.0",
         "@effect/sql-d1": "^0.49.0",
         "@effect/sql-drizzle": "catalog:",
         "@effect/sql-kysely": "^0.47.0",
@@ -1008,8 +1008,14 @@
         "@octokit/core": "catalog:",
         "@octokit/request-error": "catalog:",
         "@octokit/types": "catalog:",
+        "@opentelemetry/exporter-logs-otlp-http": "catalog:",
+        "@opentelemetry/exporter-logs-otlp-proto": "catalog:",
+        "@opentelemetry/exporter-metrics-otlp-http": "catalog:",
+        "@opentelemetry/exporter-metrics-otlp-proto": "catalog:",
         "@opentelemetry/exporter-trace-otlp-http": "catalog:",
         "@opentelemetry/exporter-trace-otlp-proto": "catalog:",
+        "@opentelemetry/otlp-exporter-base": "catalog:",
+        "@opentelemetry/sdk-logs": "catalog:",
         "@opentelemetry/sdk-metrics": "catalog:",
         "@opentelemetry/sdk-node": "catalog:",
         "@opentelemetry/sdk-trace-base": "catalog:",
@@ -1175,8 +1181,14 @@
     "@octokit/core": "^7.0.6",
     "@octokit/request-error": "^7.1.0",
     "@octokit/types": "^16.0.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-logs-otlp-proto": "^0.218.0",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.218.0",
+    "@opentelemetry/exporter-metrics-otlp-proto": "^0.218.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
+    "@opentelemetry/otlp-exporter-base": "^0.218.0",
+    "@opentelemetry/sdk-logs": "^0.218.0",
     "@opentelemetry/sdk-metrics": "^2.0.1",
     "@opentelemetry/sdk-node": "^0.218.0",
     "@opentelemetry/sdk-trace-base": "^2.0.1",
@@ -1471,19 +1483,19 @@
 
     "@effect-atom/atom-react": ["@effect-atom/atom-react@0.5.0", "", { "dependencies": { "@effect-atom/atom": "^0.5.0" }, "peerDependencies": { "effect": "^3.19", "react": ">=18 <20", "scheduler": "*" } }, "sha512-aFfjWi4rEJCqfM12Oi36/EKaDm/W6n4/N6yM5vL0t/QozKhJhK05rQL/GY4XMxlH2eqkQ4ih8jBQa3Yyp0Fiqw=="],
 
-    "@effect/ai": ["@effect/ai@0.35.0", "", { "dependencies": { "find-my-way-ts": "^0.1.6" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "@effect/rpc": "^0.75.0", "effect": "^3.21.0" } }, "sha512-VOYFBN/TpHC0sB5AhUGOEJzOTEnuo2bbDtQcDDsU7ffHaE8ZbqZj1CuSHgifbmqMaY9+xofsKMazQZ3jlZfPSw=="],
+    "@effect/ai": ["@effect/ai@0.36.0", "", { "dependencies": { "find-my-way-ts": "^0.1.6" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "effect": "^3.21.3" } }, "sha512-GDYSedxjEAvEovZr6x+ry1n1Mp0mWBLoMzPJGxxnLC3qjyLsIJ89Cvfr4+YijQ6et0osusHxeULzrFFSnLYJJA=="],
 
     "@effect/ai-amazon-bedrock": ["@effect/ai-amazon-bedrock@0.15.0", "", { "dependencies": { "@smithy/eventstream-codec": "^4.0.4", "@smithy/util-utf8": "^4.0.0", "aws4fetch": "^1.0.20", "gpt-tokenizer": "^2.9.0" }, "peerDependencies": { "@effect/ai": "^0.35.0", "@effect/ai-anthropic": "^0.25.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "effect": "^3.21.0" } }, "sha512-D8cPWoyCacU+uymb6Zuvs9MFzZQLEV/SOz/Jq8XA6+YkGlFthY7lFcVoFKAgpjQK+2YbDklS/Lnr25bISJexPQ=="],
 
-    "@effect/ai-anthropic": ["@effect/ai-anthropic@0.25.0", "", { "dependencies": { "@anthropic-ai/tokenizer": "^0.0.4" }, "peerDependencies": { "@effect/ai": "^0.35.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "effect": "^3.21.0" } }, "sha512-Qac2WUmi7qBHppu6uUdyA8Xa441IYXxfBirxe6YSibqVeMVam9uKqvTl0GnSaymHpPc/b0aXdbKUiFfMm3d2Ug=="],
+    "@effect/ai-anthropic": ["@effect/ai-anthropic@0.26.0", "", { "dependencies": { "@anthropic-ai/tokenizer": "^0.0.4" }, "peerDependencies": { "@effect/ai": "^0.36.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.1", "effect": "^3.21.3" } }, "sha512-XJXmELlPTJJTP5aSVbnMfdKu79zHVn5AThXAc9vw6qbcA0Vf+sc8HncwpCnVTd3nuupeUfH2lP3D86vjkcHLLw=="],
 
     "@effect/ai-google": ["@effect/ai-google@0.14.0", "", { "peerDependencies": { "@effect/ai": "^0.35.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "effect": "^3.21.0" } }, "sha512-lQG3T5wT31L9a1FuIr7IhYbC6dq0ClqXs3CqJKSiF0IMVpxC/2ZPREbhd5O4dKrT+6JyWmxP54Uv04DTt/0cJQ=="],
 
-    "@effect/ai-openai": ["@effect/ai-openai@0.39.2", "", { "dependencies": { "gpt-tokenizer": "^2.9.0" }, "peerDependencies": { "@effect/ai": "^0.35.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "effect": "^3.21.1" } }, "sha512-b+9pUgpeadRCFx6ozPq+E9Fd0jMd4BIEGkn+FWYe090/WhHluth/sCYYKI+ShytBbcwP6KBuw+gVQYaDAoGrkQ=="],
+    "@effect/ai-openai": ["@effect/ai-openai@0.40.0", "", { "dependencies": { "gpt-tokenizer": "^2.9.0" }, "peerDependencies": { "@effect/ai": "^0.36.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.1", "effect": "^3.21.3" } }, "sha512-3XkO/zeU16xQW4qjaKv1HqRhDW9PvmvztWTxFaGyxRgXzqTJkeQK4Q235FPStUAPvk7yPC3FlLC/0I6Wc6ILjA=="],
 
     "@effect/cli": ["@effect/cli@0.75.1", "", { "dependencies": { "ini": "^4.1.3", "toml": "^3.0.0", "yaml": "^2.5.0" }, "peerDependencies": { "@effect/platform": "^0.96.0", "@effect/printer": "^0.49.0", "@effect/printer-ansi": "^0.49.0", "effect": "^3.21.1" } }, "sha512-aDZ1OZzaFAb6NyBOrP+Bl52eICds5ERI9aa67LzloJELt5SCWeNwthtaEacBvvMkwVUcykJ+YHcGCkD1t47g8g=="],
 
-    "@effect/cluster": ["@effect/cluster@0.58.2", "", { "dependencies": { "kubernetes-types": "^1.30.0" }, "peerDependencies": { "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "@effect/sql": "^0.51.1", "@effect/workflow": "^0.18.0", "effect": "^3.21.2" } }, "sha512-oxQ3zUhXq0mJA7Y4TliALMP39Bx0LtAIxcqOW1Bdjh6uk+nG7kul/Puw80SwlcYGv3ul50SG+gvSRUTXB8d3JQ=="],
+    "@effect/cluster": ["@effect/cluster@0.59.0", "", { "dependencies": { "kubernetes-types": "^1.30.0" }, "peerDependencies": { "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "@effect/sql": "^0.51.1", "@effect/workflow": "^0.18.2", "effect": "^3.21.2" } }, "sha512-rxtJ0zlcdDDtn9wau0z/PFfwPP2FsYPB2/tSK4tT8DkTYQmACJ5AwRwZm3Ea83iL/gv3df63lRe94oMiS8bFfg=="],
 
     "@effect/experimental": ["@effect/experimental@0.60.0", "", { "dependencies": { "uuid": "^11.0.3" }, "peerDependencies": { "@effect/platform": "^0.96.0", "effect": "^3.21.0", "ioredis": "^5", "lmdb": "^3" }, "optionalPeers": ["ioredis", "lmdb"] }, "sha512-i5zIg7Xup2KgHyqHlYtkgqSE1bNzCL0GbbTQxrpIzKF0q/ebknOk/ox8B/gIq2vImjoEE81h/oxU+6i1NH210g=="],
 
@@ -1509,7 +1521,7 @@
 
     "@effect/sql": ["@effect/sql@0.51.1", "", { "dependencies": { "uuid": "^11.0.3" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.1", "effect": "^3.21.2" } }, "sha512-iPDAefrJcI0HcTk9keP9Gq8Pg08K1HmpnmZZt85AqyTcvorhoNsXDFiKBbPldfV2CortwVkacX8KjO9GPpSYCA=="],
 
-    "@effect/sql-clickhouse": ["@effect/sql-clickhouse@0.48.0", "", { "dependencies": { "@clickhouse/client": "^1.6.0" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "@effect/platform-node": "^0.106.0", "@effect/sql": "^0.51.0", "effect": "^3.21.0" } }, "sha512-TEWI6fpSOkeCiu7f8uvggaxTBmJOgfgpcpb7XcmqP2+PLFAUjpBRAJjm7wM5sn3GLjNPJnspMCOvcVWNeKRxiQ=="],
+    "@effect/sql-clickhouse": ["@effect/sql-clickhouse@0.49.0", "", { "dependencies": { "@clickhouse/client": "^1.6.0" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.1", "@effect/platform-node": "^0.107.0", "@effect/sql": "^0.51.1", "effect": "^3.21.2" } }, "sha512-p/FLs4VNh53hWF0Ql41E3XcFiPbQBr4w7vepQC1pmGiP0MxIhzml2uHqWHj00kHy3GOh/VLRTNHnCyXaYjPkqA=="],
 
     "@effect/sql-d1": ["@effect/sql-d1@0.49.0", "", { "dependencies": { "@cloudflare/workers-types": "^4.20250515.0" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "@effect/sql": "^0.51.0", "effect": "^3.21.0" } }, "sha512-pvJ5+a7VfVe9tcUrYy22Df2bne0zKliMn+/V5MJI++HyJvldGjQc85vFPRfwDhVKwKXzljWnaQD22y6MFsFyjA=="],
 
@@ -4289,7 +4301,19 @@
 
     "@cacheable/utils/keyv": ["keyv@5.6.0", "", { "dependencies": { "@keyv/serialize": "^1.1.1" } }, "sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw=="],
 
+    "@effect/ai-amazon-bedrock/@effect/ai": ["@effect/ai@0.35.0", "", { "dependencies": { "find-my-way-ts": "^0.1.6" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "@effect/rpc": "^0.75.0", "effect": "^3.21.0" } }, "sha512-VOYFBN/TpHC0sB5AhUGOEJzOTEnuo2bbDtQcDDsU7ffHaE8ZbqZj1CuSHgifbmqMaY9+xofsKMazQZ3jlZfPSw=="],
+
+    "@effect/ai-amazon-bedrock/@effect/ai-anthropic": ["@effect/ai-anthropic@0.25.0", "", { "dependencies": { "@anthropic-ai/tokenizer": "^0.0.4" }, "peerDependencies": { "@effect/ai": "^0.35.0", "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "effect": "^3.21.0" } }, "sha512-Qac2WUmi7qBHppu6uUdyA8Xa441IYXxfBirxe6YSibqVeMVam9uKqvTl0GnSaymHpPc/b0aXdbKUiFfMm3d2Ug=="],
+
+    "@effect/ai-google/@effect/ai": ["@effect/ai@0.35.0", "", { "dependencies": { "find-my-way-ts": "^0.1.6" }, "peerDependencies": { "@effect/experimental": "^0.60.0", "@effect/platform": "^0.96.0", "@effect/rpc": "^0.75.0", "effect": "^3.21.0" } }, "sha512-VOYFBN/TpHC0sB5AhUGOEJzOTEnuo2bbDtQcDDsU7ffHaE8ZbqZj1CuSHgifbmqMaY9+xofsKMazQZ3jlZfPSw=="],
+
+    "@effect/platform-bun/@effect/cluster": ["@effect/cluster@0.58.2", "", { "dependencies": { "kubernetes-types": "^1.30.0" }, "peerDependencies": { "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "@effect/sql": "^0.51.1", "@effect/workflow": "^0.18.0", "effect": "^3.21.2" } }, "sha512-oxQ3zUhXq0mJA7Y4TliALMP39Bx0LtAIxcqOW1Bdjh6uk+nG7kul/Puw80SwlcYGv3ul50SG+gvSRUTXB8d3JQ=="],
+
+    "@effect/platform-node/@effect/cluster": ["@effect/cluster@0.58.2", "", { "dependencies": { "kubernetes-types": "^1.30.0" }, "peerDependencies": { "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "@effect/sql": "^0.51.1", "@effect/workflow": "^0.18.0", "effect": "^3.21.2" } }, "sha512-oxQ3zUhXq0mJA7Y4TliALMP39Bx0LtAIxcqOW1Bdjh6uk+nG7kul/Puw80SwlcYGv3ul50SG+gvSRUTXB8d3JQ=="],
+
     "@effect/platform-node/undici": ["undici@7.25.0", "", {}, "sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ=="],
+
+    "@effect/platform-node-shared/@effect/cluster": ["@effect/cluster@0.58.2", "", { "dependencies": { "kubernetes-types": "^1.30.0" }, "peerDependencies": { "@effect/platform": "^0.96.1", "@effect/rpc": "^0.75.1", "@effect/sql": "^0.51.1", "@effect/workflow": "^0.18.0", "effect": "^3.21.2" } }, "sha512-oxQ3zUhXq0mJA7Y4TliALMP39Bx0LtAIxcqOW1Bdjh6uk+nG7kul/Puw80SwlcYGv3ul50SG+gvSRUTXB8d3JQ=="],
 
     "@effect/sql-drizzle/drizzle-orm": ["drizzle-orm@0.45.2", "", { "peerDependencies": { "@aws-sdk/client-rds-data": ">=3", "@cloudflare/workers-types": ">=4", "@electric-sql/pglite": ">=0.2.0", "@libsql/client": ">=0.10.0", "@libsql/client-wasm": ">=0.10.0", "@neondatabase/serverless": ">=0.10.0", "@op-engineering/op-sqlite": ">=2", "@opentelemetry/api": "^1.4.1", "@planetscale/database": ">=1.13", "@prisma/client": "*", "@tidbcloud/serverless": "*", "@types/better-sqlite3": "*", "@types/pg": "*", "@types/sql.js": "*", "@upstash/redis": ">=1.34.7", "@vercel/postgres": ">=0.8.0", "@xata.io/client": "*", "better-sqlite3": ">=7", "bun-types": "*", "expo-sqlite": ">=14.0.0", "gel": ">=2", "knex": "*", "kysely": "*", "mysql2": ">=2", "pg": ">=8", "postgres": ">=3", "sql.js": ">=1", "sqlite3": ">=5" }, "optionalPeers": ["@aws-sdk/client-rds-data", "@cloudflare/workers-types", "@electric-sql/pglite", "@libsql/client", "@libsql/client-wasm", "@neondatabase/serverless", "@op-engineering/op-sqlite", "@opentelemetry/api", "@planetscale/database", "@prisma/client", "@tidbcloud/serverless", "@types/better-sqlite3", "@types/pg", "@types/sql.js", "@upstash/redis", "@vercel/postgres", "@xata.io/client", "better-sqlite3", "bun-types", "expo-sqlite", "gel", "knex", "kysely", "mysql2", "pg", "postgres", "sql.js", "sqlite3"] }, "sha512-kY0BSaTNYWnoDMVoyY8uxmyHjpJW1geOmBMdSSicKo9CIIWkSxMIj2rkeSR51b8KAPB7m+qysjuHme5nKP+E5Q=="],
 
