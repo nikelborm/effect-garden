@@ -5,7 +5,7 @@ import { withYak } from 'next-yak/withYak'
 import { pipe } from 'effect/Function'
 
 const withSerwist = withSerwistInit({
-  swSrc: 'src/sw.ts',
+  swSrc: 'sw.ts',
   swDest: 'public/sw.js',
   disable: process.env.NODE_ENV === 'development',
 
