@@ -13,7 +13,7 @@
     "@effect/ai-amazon-bedrock": "^0.15.0",
     "@effect/ai-anthropic": "^0.26.0",
     "@effect/ai-google": "catalog:",
-    "@effect/ai-openai": "^0.39.2",
+    "@effect/ai-openai": "^0.40.0",
     "@effect/cli": "catalog:",
     "@effect/cluster": "^0.59.0",
     "@effect/experimental": "catalog:",
