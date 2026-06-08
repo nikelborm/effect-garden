@@ -28,7 +28,7 @@
     "@effect/printer-ansi": "^0.49.0",
     "@effect/rpc": "^0.75.1",
     "@effect/sql": "catalog:",
-    "@effect/sql-clickhouse": "^0.48.0",
+    "@effect/sql-clickhouse": "^0.49.0",
     "@effect/sql-d1": "^0.49.0",
     "@effect/sql-drizzle": "catalog:",
     "@effect/sql-kysely": "^0.47.0",
