@@ -5,7 +5,7 @@ import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
 
-import { MIDIDeviceConnectionEventsStringLogAtom } from './atoms/MIDIDeviceConnectionEventsStringLogAtom.ts'
+import { MIDIDeviceConnectionEventsStringLogAtom } from '../atoms/MIDIDeviceConnectionEventsStringLogAtom.ts'
 
 export const ConnectionEventsLog = () => {
   const text = Hooks.useAtomValue(MIDIDeviceConnectionEventsStringLogAtom)

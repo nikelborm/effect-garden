@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import { OPFSError } from '../opfs.ts'
+import { OPFSError } from './opfs.ts'
 
 export class RootDirectoryHandle extends Effect.Service<RootDirectoryHandle>()(
   'next-midi-demo/RootDirectoryHandle',

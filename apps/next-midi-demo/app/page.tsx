@@ -10,11 +10,11 @@ import * as Atom from '@effect-atom/atom/Atom'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Effect from 'effect/Effect'
 
-import { ConnectionEventsLog } from './lib/ConnectionEventsLog.tsx'
+import { ConnectionEventsLog } from './components/ConnectionEventsLog.tsx'
 // import { fetchAudioAsset, runnable } from './lib/dataFetcher.ts'
-import { MessageEventsLog } from './lib/MessageEventsLog.tsx'
-import { MIDIDeviceSelect } from './lib/MIDIDeviceSelect.tsx'
-import { MidiPadSlide } from './lib/MidiPadSlide.tsx'
+import { MessageEventsLog } from './components/MessageEventsLog.tsx'
+import { MIDIDeviceSelect } from './components/MIDIDeviceSelect.tsx'
+import { MidiPadSlide } from './components/MidiPadSlide.tsx'
 
 // const fetcherAtom = Atom.make(
 //   Effect.gen(function* () {

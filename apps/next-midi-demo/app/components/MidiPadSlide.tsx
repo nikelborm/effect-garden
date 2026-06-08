@@ -7,7 +7,7 @@ import { styled } from 'next-yak'
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 
-import { accordsAtom } from './atoms/accordsAtom.ts'
+import { accordsAtom } from '../atoms/accordsAtom.ts'
 import {
   accordButtonDownloadPercentAtom,
   // isAccordButtonCurrentlyPlayingAtom,
@@ -24,13 +24,13 @@ import {
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
   strengthButtonDownloadPercentAtom,
-} from './atoms/buttonsAtom.ts'
-import { patternsAtom } from './atoms/patternsAtom.ts'
-import { strengthsAtom } from './atoms/strengthAtom.ts'
-import type { Accord } from './brandsAndDatas/Accord.ts'
-import type { Pattern } from './brandsAndDatas/Pattern.ts'
-import type { Strength } from './brandsAndDatas/Strength.ts'
-import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from './constants.ts'
+} from '../atoms/buttonsAtom.ts'
+import { patternsAtom } from '../atoms/patternsAtom.ts'
+import { strengthsAtom } from '../atoms/strengthAtom.ts'
+import type { Accord } from '../brandsAndDatas/Accord.ts'
+import type { Pattern } from '../brandsAndDatas/Pattern.ts'
+import type { Strength } from '../brandsAndDatas/Strength.ts'
+import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from '../constants.ts'
 
 export const MidiPadSlide = ({
   selectedInputPortId,

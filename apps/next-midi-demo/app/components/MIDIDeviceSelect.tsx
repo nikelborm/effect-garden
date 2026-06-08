@@ -9,6 +9,10 @@ import * as EFunction from 'effect/Function'
 import * as EString from 'effect/String'
 
 import {
+  type CleanupPortType,
+  getPortsOfSpecificTypeAtom,
+} from '../atoms/portMapAtom.ts'
+import {
   ChevronUpDownSVG,
   SelectIcon,
   SelectItem,
@@ -24,11 +28,7 @@ import {
   SelectScrollUpArrow,
   SelectTrigger,
   SelectValue,
-} from '../../components/Select.tsx'
-import {
-  type CleanupPortType,
-  getPortsOfSpecificTypeAtom,
-} from './atoms/portMapAtom.ts'
+} from './Select.tsx'
 
 export const MIDIDeviceSelect = <
   TPortType extends MIDIPortType | undefined = MIDIPortType,

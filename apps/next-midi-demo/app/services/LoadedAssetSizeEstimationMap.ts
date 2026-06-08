@@ -14,7 +14,7 @@ import {
   getAssetFromLocalFileName,
   getLocalAssetFileName,
 } from '../helpers/audioAssetFileNameAndPath.ts'
-import { getFileSize, listEntries } from '../opfs.ts'
+import { getFileSize, listEntries } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(

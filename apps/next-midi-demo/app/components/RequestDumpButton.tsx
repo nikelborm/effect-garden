@@ -1,7 +1,7 @@
 import * as Result from '@effect-atom/atom/Result'
 import * as Cause from 'effect/Cause'
 
-import { useDumpRequester } from './useDumpRequester.ts'
+import { useDumpRequester } from '../useDumpRequester.ts'
 
 export const RequestDumpButton = () => {
   const { requestDump, dumpRequestState } = useDumpRequester()

@@ -4,7 +4,7 @@ import * as Effect from 'effect/Effect'
 
 import type { AssetPointer } from '../../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../../helpers/audioAssetFileNameAndPath.ts'
-import { getFileHandle, readFileBuffer } from '../../opfs.ts'
+import { getFileHandle, readFileBuffer } from '../opfs.ts'
 import { RootDirectoryHandle } from '../RootDirectoryHandle.ts'
 
 export const getAudioBufferOfAsset = Effect.fn('getAudioBufferOfAsset')(

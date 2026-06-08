@@ -3,8 +3,8 @@ import * as KeyedPool from 'effect/KeyedPool'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
-import { getFileHandle } from '../opfs.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
+import { getFileHandle } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager>()(

@@ -9,7 +9,7 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
-import { RootDirectoryHandle } from './services/RootDirectoryHandle.ts'
+import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 /**
  * Simple utility to format bytes as human-readable strings.
