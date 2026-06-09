@@ -1,8 +1,10 @@
-import type { EMIDIAccess } from 'effect-web-midi'
+import { EMIDIAccess } from 'effect-web-midi'
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as Parsing from 'effect-web-midi/Parsing'
 
 import * as Data from 'effect/Data'
+import * as Effect from 'effect/Effect'
+import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Stream from 'effect/Stream'
 
@@ -13,23 +15,39 @@ import {
 } from '../brandsAndDatas/MIDIValues.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 
+Effect.serviceOption
+
 export const makeMIDINoteButtonPressStream = (
   notesToFocusOn: Set<NoteId>,
 ): Stream.Stream<
   readonly [NotePhysicalButtonData, ButtonState.AllSimple],
   never,
-  EMIDIAccess.EMIDIAccess | SelectedMIDIInputService
+  SelectedMIDIInputService
 > =>
-  SelectedMIDIInputService.changes.pipe(
-    Stream.unwrap,
-    Stream.flatMap(
+  Effect.gen(function* () {
+    const accessOption = yield* Effect.serviceOption(EMIDIAccess.EMIDIAccess)
+    if (Option.isNone(accessOption)) return Stream.empty
+
+    const selectedMIDIInputService = yield* SelectedMIDIInputService
+
+    return Stream.flatMap(
+      selectedMIDIInputService.changes,
       inputId =>
-        inputId ? EMIDIInput.makeMessagesStreamById(inputId) : Stream.empty,
+        inputId
+          ? accessOption.value.pipe(
+              EMIDIAccess.getInputByIdInPipe(inputId),
+              Effect.catchTag('PortNotFound', () =>
+                Effect.dieMessage(
+                  'Assertion failed. Got nonexistent id from SelectedMIDIInputService.changes',
+                ),
+              ),
+              EMIDIInput.makeMessagesStream(),
+            )
+          : Stream.empty,
       { switch: true, concurrency: 1 },
-    ),
-    Stream.catchTag('PortNotFound', () =>
-      Stream.dieMessage('it should not be possible to pass invalid id'),
-    ),
+    )
+  }).pipe(
+    Stream.unwrap,
     Parsing.withParsedDataField,
     Stream.filter(
       Predicate.compose(

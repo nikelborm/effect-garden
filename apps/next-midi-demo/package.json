@@ -16,14 +16,12 @@
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@effect/opentelemetry": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
-  },
-  "dependencies": {
+    "effect": "catalog:",
     "@base-ui/react": "catalog:",
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",

@@ -1,6 +1,6 @@
 import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
-import { flow, pipe } from 'effect/Function'
+import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
 import * as Option from 'effect/Option'
@@ -33,15 +33,24 @@ interface Registration<TPhysicalButtonId extends TaggedReadonlyObject> {
   readonly physicalButtonId: TPhysicalButtonId
 }
 
-const makeParamSpecificBus = Effect.fn(function* <
-  TPhysicalButtonId extends TaggedReadonlyObject,
->(scope: Scope.Scope) {
+const makeParamSpecificBus = Effect.fn('makeParamSpecificBus')(function* <
+  TParamButtonId extends TaggedReadonlyObject,
+  TPhysicalButtonId extends TaggedReadonlyObject = TaggedReadonlyObject,
+>(paramButtonId: TParamButtonId) {
+  yield* Effect.annotateCurrentSpan({ paramButtonId })
   const registrationsQueue =
     yield* Queue.unbounded<Registration<TPhysicalButtonId>>()
 
   return {
-    add: (registration: Registration<TPhysicalButtonId>) =>
-      Effect.asVoid(registrationsQueue.offer(registration)),
+    add: Effect.fn('ParamSpecificBus.add')(function* (
+      registration: Registration<TPhysicalButtonId>,
+    ) {
+      yield* Effect.annotateCurrentSpan({
+        paramButtonId: paramButtonId,
+        physicalButtonId: registration.physicalButtonId,
+      })
+      yield* registrationsQueue.offer(registration)
+    }),
 
     paramPressedByPhysicalButtonSetStream: yield* pipe(
       Stream.fromQueue(registrationsQueue),
@@ -62,8 +71,10 @@ const makeParamSpecificBus = Effect.fn(function* <
       ),
       Stream.changes,
       Stream.rechunk(1),
+      Stream.withSpan('paramPressedByPhysicalButtonSetStream', {
+        attributes: { paramButtonId },
+      }),
       Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      Scope.extend(scope),
     ),
   }
 })
@@ -75,7 +86,7 @@ interface PerParamBus<TPhysicalButtonId extends TaggedReadonlyObject> {
   >
 }
 
-const makeInputBus = Effect.fn('makeInputBus')(function* <
+const makeInputBus = Effect.fnUntraced(function* <
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
 >(): Effect.fn.Return<
@@ -119,6 +130,7 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
           ),
         { concurrency: 'unbounded' },
       ),
+      Stream.withSpan('pressesOnlyStream'),
       Stream.broadcastDynamic({ capacity: 'unbounded' }),
     )
 
@@ -128,28 +140,34 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
       TParamButtonId
     >[],
   ) =>
-    SubscriptionRef.updateEffect(
-      inputMap,
-      Effect.fnUntraced(function* (existingInputs) {
-        let newMap = existingInputs
+    inputMap.pipe(
+      SubscriptionRef.updateEffect(
+        Effect.fnUntraced(function* (existingInputs) {
+          let newMap = existingInputs
 
-        for (const {
-          assignedToParamButtonId: { id: paramButtonId },
-          physicalButtonId: { id: physicalButtonId },
-          stateRef,
-        } of registrationsRequests) {
-          let bus = Option.getOrNull(HashMap.get(newMap, paramButtonId))
+          for (const {
+            assignedToParamButtonId: { id: paramButtonId },
+            physicalButtonId: { id: physicalButtonId },
+            stateRef,
+          } of registrationsRequests) {
+            let bus = Option.getOrNull(HashMap.get(newMap, paramButtonId))
 
-          if (!bus) {
-            bus = yield* makeParamSpecificBus<TPhysicalButtonId>(scope)
-            newMap = HashMap.set(newMap, paramButtonId, bus)
+            if (!bus) {
+              bus = yield* makeParamSpecificBus<
+                TParamButtonId,
+                TPhysicalButtonId
+              >(paramButtonId).pipe(Scope.extend(scope))
+
+              newMap = HashMap.set(newMap, paramButtonId, bus)
+            }
+
+            yield* bus.add({ physicalButtonId, stateRef })
           }
 
-          yield* bus.add({ physicalButtonId, stateRef })
-        }
-
-        return newMap
-      }),
+          return newMap
+        }),
+      ),
+      Effect.withSpan('InputBus.register'),
     )
 
   const getPressedByPhysicalButtonSetStream = (
@@ -159,20 +177,23 @@ const makeInputBus = Effect.fn('makeInputBus')(function* <
       Stream.filterMap(HashMap.get(paramButton.id)),
       Stream.take(1),
       Stream.flatMap(bus => bus.paramPressedByPhysicalButtonSetStream),
+      Stream.withSpan('paramPressedByPhysicalButtonSetStreamById', {
+        attributes: { paramButtonId: paramButton.id },
+      }),
     )
 
-  const isPressedStream = flow(
-    getPressedByPhysicalButtonSetStream,
-    Stream.map(set => HashSet.size(set) > 0),
-    Stream.changes,
-    Stream.rechunk(1),
-  )
+  const isPressedStream = (paramButton: ParamButtonIdData<TParamButtonId>) =>
+    pipe(
+      getPressedByPhysicalButtonSetStream(paramButton),
+      Stream.map(set => HashSet.size(set) > 0),
+      Stream.changes,
+      Stream.rechunk(1),
+      Stream.withSpan('isPressedStream', {
+        attributes: { paramButtonId: paramButton.id },
+      }),
+    )
 
-  return {
-    register,
-    isPressedStream,
-    pressesOnlyStream,
-  }
+  return { register, isPressedStream, pressesOnlyStream }
 })
 
 export type SupportedPhysicalButtonIds =
@@ -186,7 +207,10 @@ export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
   {
     accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>(),
+    scoped: Effect.withSpan(
+      makeInputBus<SupportedPhysicalButtonIds, AccordData>(),
+      'AccordInputBus.init',
+    ),
   },
 ) {}
 
@@ -194,7 +218,10 @@ export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
   {
     accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>(),
+    scoped: Effect.withSpan(
+      makeInputBus<SupportedPhysicalButtonIds, PatternData>(),
+      'PatternInputBus.init',
+    ),
   },
 ) {}
 
@@ -202,7 +229,10 @@ export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
   {
     accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>(),
+    scoped: Effect.withSpan(
+      makeInputBus<SupportedPhysicalButtonIds, StrengthData>(),
+      'StrengthInputBus.init',
+    ),
   },
 ) {}
 

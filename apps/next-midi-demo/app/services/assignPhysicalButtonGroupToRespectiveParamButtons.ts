@@ -1,6 +1,7 @@
 import * as EArray from 'effect/Array'
 import type * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import { flow } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
@@ -15,7 +16,9 @@ import type {
   RegistrationRequest,
 } from './InputStreamBus.ts'
 
-export const assignPhysicalButtonGroupToRespectiveParamButtons = <
+export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
+  'assignPhysicalButtonGroupToRespectiveParamButtons',
+)(function* <
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
   TStreamR,
@@ -35,55 +38,61 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = <
     TBusR,
     InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>
   >,
-) =>
-  Effect.gen(function* () {
-    if (
-      physicalButtonIdsRepresentingPhysicalButtonGroup.length !==
-      paramButtonIdsRepresentedByPhysicalButtonGroup.length
-    )
-      return yield* Effect.dieMessage(
-        'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
-      )
-
-    const registrations: ReadonlyArray<
-      RegistrationRequest<TPhysicalButtonId, TParamButtonId>
-    > = yield* Effect.all(
-      EArray.zipWith(
-        paramButtonIdsRepresentedByPhysicalButtonGroup,
-        physicalButtonIdsRepresentingPhysicalButtonGroup,
-        (assignedToParamButtonId, physicalButtonId) =>
-          Effect.map(
-            SubscriptionRef.make(
-              ButtonState.NotPressed as ButtonState.AllSimple,
-            ),
-            stateRef => ({
-              physicalButtonId,
-              assignedToParamButtonId,
-              stateRef,
-            }),
-          ),
-      ),
-      { concurrency: 'unbounded' },
+) {
+  if (
+    physicalButtonIdsRepresentingPhysicalButtonGroup.length !==
+    paramButtonIdsRepresentedByPhysicalButtonGroup.length
+  )
+    return yield* Effect.dieMessage(
+      'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
     )
 
-    const physicalButtonIdToRef = HashMap.make(
-      ...registrations.map(
-        reg => [reg.physicalButtonId, reg.stateRef] as const,
-      ),
-    )
+  const registrations: ReadonlyArray<
+    RegistrationRequest<TPhysicalButtonId, TParamButtonId>
+  > = yield* Effect.all(
+    EArray.zipWith(
+      paramButtonIdsRepresentedByPhysicalButtonGroup,
+      physicalButtonIdsRepresentingPhysicalButtonGroup,
+      (assignedToParamButtonId, physicalButtonId) =>
+        Effect.map(
+          SubscriptionRef.make<ButtonState.AllSimple>(ButtonState.NotPressed),
+          stateRef => ({
+            physicalButtonId,
+            assignedToParamButtonId,
+            stateRef,
+          }),
+        ),
+    ),
+    { concurrency: 'unbounded' },
+  )
 
-    yield* physicalButtonPressStream.pipe(
-      Stream.mapEffect(([physicalButtonId, state]) =>
-        Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId), {
-          onNone: () => Effect.void,
-          onSome: SubscriptionRef.set(state),
-        }),
-      ),
-      Stream.runDrain,
-      Effect.tapErrorCause(Effect.logError),
-      Effect.forkScoped,
-    )
+  const physicalButtonIdToRef = HashMap.make(
+    ...registrations.map(
+      reg => [reg.physicalButtonId.id, reg.stateRef] as const,
+    ),
+  )
 
-    const inputBus = yield* inputBusWriterEffect
-    yield* inputBus.register(registrations)
-  })
+  yield* physicalButtonPressStream.pipe(
+    Stream.mapEffect(([physicalButtonId, state]) =>
+      Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId.id), {
+        onNone: () => Effect.void,
+        onSome: flow(
+          SubscriptionRef.set(state),
+          Effect.withSpan('physicalButtonRefUpdate', {
+            attributes: {
+              state,
+              physicalButtonId: physicalButtonId.id,
+            },
+          }),
+        ),
+      }),
+    ),
+    Stream.withSpan('paramButtonStateRefUpdateStream'),
+    Stream.runDrain,
+    Effect.tapErrorCause(Effect.logError),
+    Effect.forkScoped,
+  )
+
+  const inputBus = yield* inputBusWriterEffect
+  yield* inputBus.register(registrations)
+})

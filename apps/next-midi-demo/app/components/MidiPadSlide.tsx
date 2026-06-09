@@ -3,6 +3,7 @@
 import { Button as BaseButton } from '@base-ui/react/button'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import { styled } from 'next-yak'
+import { useEffect, useState } from 'react'
 
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
@@ -32,11 +33,7 @@ import type { Pattern } from '../brandsAndDatas/Pattern.ts'
 import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from '../constants.ts'
 
-export const MidiPadSlide = ({
-  selectedInputPortId,
-}: {
-  selectedInputPortId: EMIDIInput.Id | null
-}) => {
+export const MidiPadSlide = () => {
   const res = Result.all({
     accords: Hooks.useAtomValue(accordsAtom),
     patterns: Hooks.useAtomValue(patternsAtom),
@@ -45,6 +42,7 @@ export const MidiPadSlide = ({
 
   if (!Result.isSuccess(res)) return 'wtf'
   const { accords, patterns, strengths } = res.value
+
   return (
     <ButtonGrid
       role="grid"

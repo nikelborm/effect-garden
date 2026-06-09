@@ -25,7 +25,11 @@ import {
   StrengthParamButtonData,
 } from '../brandsAndDatas/Strength.ts'
 import { AccordRegistry } from '../services/AccordRegistry.ts'
-import { AllButtonMappingLayer } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
+import {
+  KeyboardButtonMappingLayer,
+  MIDIPadButtonMappingLayer,
+  OnScreenButtonMappingLayer,
+} from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
@@ -48,55 +52,178 @@ import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.t
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { TracingLive } from './tracing.ts'
 
-const BusLayer = Layer.mergeAll(
-  AccordInputBus.Default,
-  PatternInputBus.Default,
-  StrengthInputBus.Default,
+const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
+  Layer.withSpan('AccordInputBus.Default'),
+)
+const PatternInputBusNoDeps = PatternInputBus.Default.pipe(
+  Layer.withSpan('PatternInputBus.Default'),
+)
+const StrengthInputBusNoDeps = StrengthInputBus.Default.pipe(
+  Layer.withSpan('StrengthInputBus.Default'),
 )
 
-const AllButtonMappingServicesLayer = EFunction.pipe(
-  AllButtonMappingLayer,
-  Layer.provideMerge(SelectedMIDIInputService.Default),
-  Layer.provideMerge(EMIDIAccess.layerSoftwareSynthSupported),
+const AllBusesNoDeps = Layer.mergeAll(
+  AccordInputBusNoDeps,
+  PatternInputBusNoDeps,
+  StrengthInputBusNoDeps,
+).pipe(Layer.withSpan('AllBusesNoDeps'))
+
+const AccordRegistryNoDeps = AccordRegistry.Default.pipe(
+  Layer.withSpan('AccordRegistry.Default'),
+)
+const PatternRegistryNoDeps = PatternRegistry.Default.pipe(
+  Layer.withSpan('PatternRegistry.Default'),
+)
+const StrengthRegistryNoDeps = StrengthRegistry.Default.pipe(
+  Layer.withSpan('StrengthRegistry.Default'),
+)
+
+const AllRegistriesNoDeps = Layer.mergeAll(
+  AccordRegistryNoDeps,
+  PatternRegistryNoDeps,
+  StrengthRegistryNoDeps,
+).pipe(Layer.withSpan('AllRegistriesNoDeps'))
+
+const AllRegistriesAndBusesNoDeps = Layer.mergeAll(
+  AllBusesNoDeps,
+  AllRegistriesNoDeps,
+).pipe(Layer.withSpan('AllRegistriesAndBusesNoDeps'))
+
+const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
   Layer.catchAll(err =>
-    Layer.effectDiscard(Effect.logError('MIDI access failed', err)),
+    Layer.effectDiscard(
+      Effect.logError(
+        `MIDI button to param button mapping failed because access wasn't granted and we cannot initialize pressure stream`,
+        err,
+      ),
+    ),
   ),
-  // Buses and registries are provided here so AllButtonMappingServicesLayer is
-  // self-contained. Effect's layer memoization ensures the same instances
-  // are shared with ParamButtonService.
-  Layer.provideMerge(BusLayer),
-  Layer.provideMerge(AccordRegistry.Default),
-  Layer.provideMerge(PatternRegistry.Default),
-  Layer.provideMerge(StrengthRegistry.Default),
+  Layer.withSpan('EMIDIAccess.layerSoftwareSynthSupported'),
 )
 
-const ParamButtonServicesLayer = Layer.mergeAll(
-  AccordParamButtonService.Default,
-  PatternParamButtonService.Default,
-  StrengthParamButtonService.Default,
+const SelectedMIDIInputWithAccessServiceNoDeps =
+  SelectedMIDIInputService.Default.pipe(
+    Layer.provideMerge(MIDIAccessNoDeps),
+    Layer.withSpan('SelectedMIDIInputWithAccessServiceNoDeps'),
+  )
+// background
+const KeyboardButtonMappingLayerNoDeps = KeyboardButtonMappingLayer.pipe(
+  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.withSpan('KeyboardButtonMappingLayerNoDeps'),
+)
+// background
+const MIDIPadButtonMappingLayerNoDeps = MIDIPadButtonMappingLayer.pipe(
+  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(SelectedMIDIInputWithAccessServiceNoDeps),
+  Layer.withSpan('MIDIPadButtonMappingLayerNoDeps'),
+)
+// background
+const OnScreenButtonMappingLayerNoDeps = OnScreenButtonMappingLayer.pipe(
+  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.withSpan('OnScreenButtonMappingLayerNoDeps'),
 )
 
-const AppLayer = ParamButtonServicesLayer.pipe(
-  Layer.provideMerge(AllButtonMappingServicesLayer),
-  Layer.provideMerge(AppPlaybackStateService.Default.pipe(Layer.orDie)),
-  Layer.provideMerge(BusLayer),
-  Layer.provideMerge(AssetDownloadSchedulerLive),
-  Layer.provideMerge(DownloadManager.Default),
-  Layer.provideMerge(OpfsWritableHandleManager.Default),
-  // Layer.provideMerge(BrowserHttpClient.layerXMLHttpRequest),
-  Layer.provideMerge(FetchHttpClient.layer),
-  Layer.provideMerge(CurrentlySelectedAssetState.Default),
-  Layer.provideMerge(LoadedAssetSizeEstimationMap.Default),
-  Layer.provideMerge(RootDirectoryHandle.Default),
-  Layer.provideMerge(AccordRegistry.Default),
-  Layer.provideMerge(PatternRegistry.Default),
-  Layer.provideMerge(StrengthRegistry.Default),
+// background
+const AllButtonMappingLayerNoDeps = Layer.mergeAll(
+  KeyboardButtonMappingLayerNoDeps,
+  MIDIPadButtonMappingLayerNoDeps,
+  OnScreenButtonMappingLayerNoDeps,
+).pipe(Layer.withSpan('AllButtonMappingLayerNoDeps'))
+
+const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
+  Layer.withSpan('RootDirectoryHandleNoDeps'),
+)
+
+const LoadedAssetSizeEstimationMapNoDeps =
+  LoadedAssetSizeEstimationMap.Default.pipe(
+    Layer.provide(RootDirectoryHandleNoDeps),
+    Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
+  )
+
+const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
+  Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+  Layer.provide(RootDirectoryHandleNoDeps),
+  Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
+)
+
+const CurrentlySelectedAssetStateNoDeps =
+  CurrentlySelectedAssetState.Default.pipe(
+    Layer.provide(AllRegistriesNoDeps),
+    Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+    Layer.withSpan('CurrentlySelectedAssetStateNoDeps'),
+  )
+
+const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
+  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(RootDirectoryHandleNoDeps),
+  Layer.provide(CurrentlySelectedAssetStateNoDeps),
+  Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+  Layer.withSpan('AppPlaybackStateServiceNoDeps'),
+)
+
+const DownloadManagerNoDeps = DownloadManager.Default.pipe(
+  Layer.provide(FetchHttpClient.layer),
+  Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+  Layer.provide(OpfsWritableHandleManagerNoDeps),
+  Layer.withSpan('DownloadManagerNoDeps'),
+)
+
+// background
+const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
+  Layer.provide(CurrentlySelectedAssetStateNoDeps),
+  Layer.provide(DownloadManagerNoDeps),
+  Layer.withSpan('AssetDownloadSchedulerNoDeps'),
+)
+
+const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
+  Layer.provide(AccordInputBusNoDeps),
+  Layer.provide(AccordRegistryNoDeps),
+  Layer.provide(CurrentlySelectedAssetStateNoDeps),
+  Layer.provide(AppPlaybackStateServiceNoDeps),
+  // Effect.provide(Layer.mergeAll()),
+  Layer.withSpan('AccordParamButtonServiceNoDeps'),
+)
+
+const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
+  Layer.provide(PatternInputBusNoDeps),
+  Layer.provide(PatternRegistryNoDeps),
+  Layer.provide(CurrentlySelectedAssetStateNoDeps),
+  Layer.provide(AppPlaybackStateServiceNoDeps),
+  Layer.withSpan('PatternParamButtonServiceNoDeps'),
+)
+
+const StrengthParamButtonServiceNoDeps =
+  StrengthParamButtonService.Default.pipe(
+    Layer.provide(StrengthInputBusNoDeps),
+    Layer.provide(StrengthRegistryNoDeps),
+    Layer.provide(CurrentlySelectedAssetStateNoDeps),
+    Layer.provide(AppPlaybackStateServiceNoDeps),
+    Layer.withSpan('StrengthParamButtonServiceNoDeps'),
+  )
+
+const ParamButtonServiceNoDeps = Layer.mergeAll(
+  AccordParamButtonServiceNoDeps,
+  PatternParamButtonServiceNoDeps,
+  StrengthParamButtonServiceNoDeps,
+).pipe(Layer.withSpan('ParamButtonServiceNoDeps'))
+
+const AppLayer = Layer.mergeAll(
+  ParamButtonServiceNoDeps,
+  AppPlaybackStateServiceNoDeps,
+  AllButtonMappingLayerNoDeps,
+  AssetDownloadSchedulerNoDeps,
+).pipe(
   Layer.provideMerge(Logger.pretty),
+  Layer.withSpan('AppLayer'),
+
   Layer.provide(TracingLive),
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 
+Atom.runtime.addGlobalLayer(TracingLive)
 const runtime = Atom.runtime(AppLayer)
+
+// runtime.
 
 // export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
 //   EFunction.pipe(

@@ -22,16 +22,58 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
   const downloadManager = yield* DownloadManager
   const allDownloadedRef = yield* Ref.make(false)
 
-  const executeLatestPlan = Effect.fn(
-    'AssetDownloadScheduler.executeLatestPlan',
-  )(function* (currentlySelectedAsset: AssetPointer) {
-    if (yield* allDownloadedRef) return
+  const makeLogWithPriorityTier =
+    (priorityTier: number) =>
+    (message: string, ...rest: ReadonlyArray<any>) =>
+      Effect.logDebug(`[TIER=${priorityTier}] ` + message, ...rest)
 
-    for (const priorityTier of [0, 1, 2, 3] as const) {
-      const logWithPriorityTier = (
-        message: string,
-        ...rest: ReadonlyArray<any>
-      ) => Effect.logDebug(`[TIER=${priorityTier}] ` + message, ...rest)
+  const downloadAttempt = Effect.fn('AssetDownloadScheduler.downloadAttempt')(
+    function* (priorityTier: number, simpleAsset: SimpleAssetPointer) {
+      const logWithPriorityTier = makeLogWithPriorityTier(priorityTier)
+      const asset: AssetPointer = complexifyAssetPointer(simpleAsset)
+      const attemptStart =
+        downloadManager.startOrContinueOrIgnoreCompletedCached(asset)
+
+      let result = yield* attemptStart
+
+      const log = (message: string) =>
+        logWithPriorityTier(message, {
+          downloadAttempt: Struct.pick(result, '_tag', 'message'),
+          asset,
+        })
+
+      yield* log(`Attempted to start asset download`)
+
+      while (result._tag === 'DownloadManagerAtMaximumCapacity') {
+        yield* log(
+          `Download manager at maximum capacity, waiting for free slot`,
+        )
+        yield* result.awaitFreeSlot
+        yield* log(`Free slot found. Repeating attempt`)
+        result = yield* attemptStart
+      }
+
+      if (result._tag === 'AssetAlreadyDownloaded') {
+        yield* log(`Asset already downloaded`)
+        return
+      }
+      yield* log(
+        `Downloading slot acquired. Download started. Awaiting completion`,
+      )
+      yield* result.awaitCompletion
+
+      yield* log(`Asset successfully downloaded`)
+
+      return
+    },
+  )
+
+  const downloadTier = Effect.fn('AssetDownloadScheduler.downloadTier')(
+    function* (
+      priorityTier: 0 | 1 | 2 | 3,
+      currentlySelectedAsset: AssetPointer,
+    ) {
+      const logWithPriorityTier = makeLogWithPriorityTier(priorityTier)
 
       const currentTierAssetsToDownload: SimpleAssetPointer[] =
         getNeighborMIDIPadButtons(
@@ -70,48 +112,21 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
       for (const assetToInterrupt of currentlyDownloadingAssetsIrrelevantForThisTier)
         yield* downloadManager.interruptOrIgnoreNotStarted(assetToInterrupt)
 
-      yield* Stream.mapEffect(
-        Stream.fromIterable(currentTierAssetsToDownload),
-        Effect.fn(function* (simpleAsset: SimpleAssetPointer) {
-          const asset: AssetPointer = complexifyAssetPointer(simpleAsset)
-          const attemptStart =
-            downloadManager.startOrContinueOrIgnoreCompletedCached(asset)
+      yield* Effect.forEach(
+        currentTierAssetsToDownload,
+        simpleAsset => downloadAttempt(priorityTier, simpleAsset),
+        { concurrency: MAX_PARALLEL_ASSET_DOWNLOADS, discard: true },
+      )
+    },
+  )
 
-          let result = yield* attemptStart
+  const executeLatestPlan = Effect.fn(
+    'AssetDownloadScheduler.executeLatestPlan',
+  )(function* (currentlySelectedAsset: AssetPointer) {
+    if (yield* allDownloadedRef) return
 
-          const log = (message: string) =>
-            logWithPriorityTier(message, {
-              downloadAttempt: Struct.pick(result, '_tag', 'message'),
-              asset,
-            })
-
-          yield* log(`Attempted to start asset download`)
-
-          while (result._tag === 'DownloadManagerAtMaximumCapacity') {
-            yield* log(
-              `Download manager at maximum capacity, waiting for free slot`,
-            )
-            yield* result.awaitFreeSlot
-            yield* log(`Free slot found. Repeating attempt`)
-            result = yield* attemptStart
-          }
-
-          if (result._tag === 'AssetAlreadyDownloaded') {
-            yield* log(`Asset already downloaded`)
-            return
-          }
-          yield* log(
-            `Downloading slot acquired. Download started. Awaiting completion`,
-          )
-          yield* result.awaitCompletion
-
-          yield* log(`Asset successfully downloaded`)
-
-          return
-        }),
-        { concurrency: MAX_PARALLEL_ASSET_DOWNLOADS, unordered: true },
-      ).pipe(Stream.runDrain)
-    }
+    for (const priorityTier of [0, 1, 2, 3] as const)
+      yield* downloadTier(priorityTier, currentlySelectedAsset)
 
     yield* Ref.set(allDownloadedRef, true)
   })

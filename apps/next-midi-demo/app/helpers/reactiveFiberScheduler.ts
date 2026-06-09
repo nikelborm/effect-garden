@@ -32,7 +32,7 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
     const scheduleNew = (a: StreamA) =>
       SynchronizedRef.updateEffect(
         planExecutionRef,
-        Effect.fn(function* (executionFiber) {
+        Effect.fnUntraced(function* (executionFiber) {
           if (executionFiber) yield* Fiber.interrupt(executionFiber)
 
           return runForkScoped(execute(a))

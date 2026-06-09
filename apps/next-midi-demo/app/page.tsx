@@ -5,7 +5,9 @@
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import { styled } from 'next-yak'
+import { useEffect, useState } from 'react'
 
+import { makeRunMain } from '@effect/platform/Runtime'
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Hooks from '@effect-atom/atom-react/Hooks'
 import * as Effect from 'effect/Effect'
@@ -29,22 +31,36 @@ import { MidiPadSlide } from './components/MidiPadSlide.tsx'
 //   }),
 // )
 
-const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
+// const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
+
+export const runMain = makeRunMain(({ fiber }) => {
+  addEventListener('beforeunload', () => {
+    fiber.unsafeInterruptAsFork(fiber.id())
+  })
+})
 
 export default function Home() {
-  const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
+  // const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
   // Hooks.useAtomMount(fetcherAtom)
+  const [state, setFlag] = useState(true)
+
+  useEffect(() => {
+    const id = setTimeout(() => setFlag(false), 10000)
+    return () => {
+      clearTimeout(id)
+    }
+  })
 
   return (
     <>
-      <MidiPadSlide selectedInputPortId={selectedId} />
-      <Separator />
+      {state ? <MidiPadSlide /> : null}
+      {/* <Separator />
       <Wrapper>
         <Header>Connection events</Header>
         <ConnectionEventsLog />
         <Separator />
         <Header>Message events</Header>
-        {/* <RequestDumpButton /> */}
+        <RequestDumpButton />
         Inputs:{' '}
         <MIDIDeviceSelect
           selectedIdAtom={selectedInputIdAtom}
@@ -52,7 +68,7 @@ export default function Home() {
         />
         <MessageEventsLog selectedId={selectedId} />
         <Separator />
-      </Wrapper>
+      </Wrapper> */}
     </>
   )
 }

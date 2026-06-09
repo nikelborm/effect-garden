@@ -1,6 +1,7 @@
 import { EMIDIAccess, type EMIDIInput } from 'effect-web-midi'
 
 import * as Effect from 'effect/Effect'
+import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -12,7 +13,18 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
       const selectedInputIdRef =
         yield* SubscriptionRef.make<EMIDIInput.Id | null>(null)
 
-      yield* EMIDIAccess.makeAllPortsStateChangesStreamInContext().pipe(
+      const access = yield* Effect.serviceOption(EMIDIAccess.EMIDIAccess)
+
+      if (Option.isNone(access))
+        return {
+          selectInput: () =>
+            Effect.dieMessage(
+              'MIDI access is not granted. Selecting input id is no-op',
+            ),
+          changes: Stream.succeed(null),
+        }
+
+      yield* EMIDIAccess.makeAllPortsStateChangesStream(access.value).pipe(
         Stream.tap(({ port, newState }) =>
           SubscriptionRef.update(selectedInputIdRef, selectedId =>
             port.id === selectedId && newState.ofDevice === 'disconnected'

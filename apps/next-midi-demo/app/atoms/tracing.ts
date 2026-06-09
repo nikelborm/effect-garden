@@ -11,6 +11,7 @@ import {
   BatchSpanProcessor,
   type BufferConfig,
   type ReadableSpan,
+  SimpleSpanProcessor,
   type SpanExporter,
 } from '@opentelemetry/sdk-trace-base'
 
@@ -74,6 +75,7 @@ export const TracingLive = Layer.unwrapEffect(
     return WebSdk.layer(() => ({
       resource: {
         serviceName: 'next-midi-demo-web-dev',
+        // serviceVersion: '12',
         // TODO infer serviceVersion from commit hash or from git tag or from release
       },
       logRecordProcessor: new BatchLogRecordProcessor(
@@ -87,13 +89,13 @@ export const TracingLive = Layer.unwrapEffect(
           maxQueueSize: 1024,
         },
       ),
-      spanProcessor: new ByteAwareBatchSpanProcessor(
+      spanProcessor: new BatchSpanProcessor(
         new OTLPTraceExporter({
           url: `/api/otel/traces`,
         }),
-        {
-          maxBatchBytes: 24_999,
-        },
+        // {
+        //   maxBatchBytes: 24_999,
+        // },
       ),
       // metricReader: new PeriodicExportingMetricReader({
       //   exporter: new ProtoOTLPMetricExporter({

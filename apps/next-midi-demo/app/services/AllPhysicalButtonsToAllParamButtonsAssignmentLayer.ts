@@ -77,7 +77,7 @@ const notesHandlingStrengthsSet = new Set(
   physicalNoteIdsHandlingStrengths.map(data => data.id.note),
 )
 
-export const AllButtonMappingLayer = Effect.gen(function* () {
+const paramButtonIds = Effect.gen(function* () {
   const params = yield* Effect.all([
     AccordRegistry.allAccords,
     PatternRegistry.allPatterns,
@@ -90,11 +90,18 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
       params[1].map(PatternParamButtonData.make),
       params[2].map(StrengthParamButtonData.make),
     ]
+  return { accordParamButtonIds, patternParamButtonIds, strengthParamButtonIds }
+}).pipe(Effect.cached, Effect.flatten)
+
+export const KeyboardButtonMappingLayer = Effect.gen(function* () {
+  const {
+    accordParamButtonIds,
+    patternParamButtonIds,
+    strengthParamButtonIds,
+  } = yield* paramButtonIds
 
   yield* Effect.all(
     [
-      // Keyboard
-
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalKeyIdsHandlingAccords,
         [...accordParamButtonIds, ...accordParamButtonIds],
@@ -115,9 +122,20 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingStrengthsSet),
         StrengthInputBus,
       ),
+    ],
+    { discard: true, concurrency: 'unbounded' },
+  ).pipe(Effect.forkScoped)
+}).pipe(Layer.scopedDiscard)
 
-      // MIDI Pad
+export const MIDIPadButtonMappingLayer = Effect.gen(function* () {
+  const {
+    accordParamButtonIds,
+    patternParamButtonIds,
+    strengthParamButtonIds,
+  } = yield* paramButtonIds
 
+  yield* Effect.all(
+    [
       // TODO: midi device selector
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalNoteIdsHandlingAccords,
@@ -137,9 +155,20 @@ export const AllButtonMappingLayer = Effect.gen(function* () {
         makeMIDINoteButtonPressStream(notesHandlingStrengthsSet),
         StrengthInputBus,
       ),
+    ],
+    { discard: true, concurrency: 'unbounded' },
+  ).pipe(Effect.forkScoped)
+}).pipe(Layer.scopedDiscard)
 
-      // On screen buttons
+export const OnScreenButtonMappingLayer = Effect.gen(function* () {
+  const {
+    accordParamButtonIds,
+    patternParamButtonIds,
+    strengthParamButtonIds,
+  } = yield* paramButtonIds
 
+  yield* Effect.all(
+    [
       // Since UI button ids are assigned manually, there's no better candidate
       // for their ids, than the entities they represent
 
