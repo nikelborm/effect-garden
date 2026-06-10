@@ -91,6 +91,8 @@ const userSchema = Schema.Struct({
 // the actual package.json's but rather added to JSON's at compile-time. As well
 // as validation them against actual directory names etc
 
+// TODO: make effect peer deps sorter put into prod deps for frontend or
+// end-apps, which bundle them into final build/binary
 export const SubPackageJsonSchema = Schema.Struct(
   {
     name: Schema.NonEmptyTrimmedString,

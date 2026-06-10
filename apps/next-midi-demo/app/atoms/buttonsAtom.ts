@@ -220,7 +220,6 @@ const AppLayer = Layer.mergeAll(
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 
-Atom.runtime.addGlobalLayer(TracingLive)
 const runtime = Atom.runtime(AppLayer)
 
 // runtime.

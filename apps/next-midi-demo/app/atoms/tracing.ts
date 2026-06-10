@@ -1,11 +1,10 @@
-// import { OTLPLogExporter as ProtoOTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto'
-// import { OTLPMetricExporter as ProtoOTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto'
-// import { OTLPTraceExporter as ProtoOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
-
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http'
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto/build/src/platform/browser'
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto/build/src/platform/browser'
+// import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http/build/esm/platform/browser'
+// import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http/build/esm/platform/browser'
 import { CompressionAlgorithm } from '@opentelemetry/otlp-exporter-base'
-import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs'
+import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs/build/esm/platform/browser'
+// import { OTLPMetricExporter as ProtoOTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto/build/src/platform/browser'
 // import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics'
 import {
   BatchSpanProcessor,
@@ -81,8 +80,7 @@ export const TracingLive = Layer.unwrapEffect(
       logRecordProcessor: new BatchLogRecordProcessor(
         new OTLPLogExporter({
           url: `/api/otel/logs`,
-
-          compression,
+          // compression,
         }),
         {
           maxExportBatchSize: 128,
@@ -90,9 +88,7 @@ export const TracingLive = Layer.unwrapEffect(
         },
       ),
       spanProcessor: new BatchSpanProcessor(
-        new OTLPTraceExporter({
-          url: `/api/otel/traces`,
-        }),
+        new OTLPTraceExporter({ url: `/api/otel/traces` }),
         // {
         //   maxBatchBytes: 24_999,
         // },

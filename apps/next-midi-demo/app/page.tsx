@@ -44,12 +44,12 @@ export default function Home() {
   // Hooks.useAtomMount(fetcherAtom)
   const [state, setFlag] = useState(true)
 
-  useEffect(() => {
-    const id = setTimeout(() => setFlag(false), 10000)
-    return () => {
-      clearTimeout(id)
-    }
-  })
+  // useEffect(() => {
+  //   const id = setTimeout(() => setFlag(false), 10000)
+  //   return () => {
+  //     clearTimeout(id)
+  //   }
+  // })
 
   return (
     <>
