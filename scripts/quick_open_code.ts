@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 
+import { dedupStreamHashedSimple } from '@evadev/effect-helpers'
+
 import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import * as Path from '@effect/platform/Path'
@@ -7,10 +9,8 @@ import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Ansi from '@effect/printer-ansi/Ansi'
 import * as Doc from '@effect/printer-ansi/AnsiDoc'
-import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
-import * as HashSet from 'effect/HashSet'
 import * as Stream from 'effect/Stream'
 
 const HOME = process.env['HOME'] ?? '/root'
@@ -78,12 +78,7 @@ const vscodeArgCandidates = Stream.mergeAll(
           // adds slash at the end
           .replace(/[^/]+$/, '$&/'),
   ),
-  Stream.mapAccum(HashSet.empty<string>(), (alreadyEmitted, transformed) =>
-    HashSet.has(alreadyEmitted, transformed)
-      ? [alreadyEmitted, Chunk.empty<string>()]
-      : [HashSet.add(alreadyEmitted, transformed), Chunk.make(transformed)],
-  ),
-  Stream.flattenChunks,
+  dedupStreamHashedSimple,
 )
 
 const fzfPrettyCandidates = Effect.map(Path.Path, path =>
