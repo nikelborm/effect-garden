@@ -1122,6 +1122,7 @@
       "name": "@evadev/scripts",
       "version": "0.1.0",
       "dependencies": {
+        "@effect/printer-ansi": "^0.49.0",
         "@evadev/effect-helpers": "workspace:^",
         "dotenv": "catalog:",
         "drizzle-kit": "catalog:",

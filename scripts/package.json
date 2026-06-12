@@ -19,6 +19,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "@effect/printer-ansi": "^0.49.0",
     "@evadev/effect-helpers": "workspace:^",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
