@@ -1,6 +1,10 @@
-#!/home/nikel/.local/share/mise/installs/bun/latest/bin/bun
+#!/usr/bin/env bun
+// if you have bun installed with mise, the above shebang might not always work
 
-// published to npm
+// I worked around it, by assigning the keyboard shortcut to a fixed path instead
+// kitty --single-instance /home/nikel/.local/share/mise/installs/bun/latest/bin/bun /home/nikel/projects/effect-garden/scripts/quick_open_code.ts
+
+// all of the dependencies are available on npm
 import { dedupStreamHashedSimple } from '@evadev/effect-helpers'
 import { prettyPrint } from 'effect-errors'
 
