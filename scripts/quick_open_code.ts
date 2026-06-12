@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/home/nikel/.local/share/mise/installs/bun/latest/bin/bun
 
 // published to npm
 import { dedupStreamHashedSimple } from '@evadev/effect-helpers'
