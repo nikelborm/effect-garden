@@ -61,8 +61,6 @@ export const REQUIRED_TOOLS = [
 
 export const checkDep = (name: string) =>
   Command.make('which', name).pipe(
-    Command.stdout('pipe'),
-    Command.stderr('pipe'),
     Command.exitCode,
     Effect.map(code => code === 0),
   )
@@ -70,16 +68,17 @@ export const checkDep = (name: string) =>
 export const find = (args: string) =>
   Command.streamLines(Command.make('bfs', PROJECTS_DIR, ...args.split(' ')))
 
+// SPACES around parentheses are important!!
 export const gitAndVsCodeDirPaths = find(
-  `-type d (${PRUNE_ARGS}) -prune -o -type d (-name .git -o -name .vscode) -prune -print`,
+  `-type d ( ${PRUNE_ARGS} ) -prune -o -type d ( -name .git -o -name .vscode ) -prune -print`,
 )
 
 export const packageJsonAndMiseTomlAndCodeWorkspacePaths = find(
-  `-type d (${PRUNE_ARGS} -o -name .git) -prune -o -type f (-name package.json -o -name mise.toml -o -name *.code-workspace)`,
+  `-type d ( ${PRUNE_ARGS} -o -name .git ) -prune -o -type f ( -name package.json -o -name mise.toml -o -name *.code-workspace ) -print`,
 )
 
 export const dirAndCodeWorkspacePathsInProjectsRoot = find(
-  '-maxdepth 1 -mindepth 1 (-type d -o -name *.code-workspace)',
+  '-maxdepth 1 -mindepth 1 ( -type d -o -name *.code-workspace )',
 )
 
 export const vscodeArgCandidates = Stream.mergeAll(
@@ -169,7 +168,7 @@ export const program = Effect.gen(function* () {
     '--delimiter= ',
     '--preview-window=50%',
     `--preview=${PREVIEW_CMD}`,
-  ).pipe(Command.stdout('pipe'), Command.stderr('inherit'), executor.start)
+  ).pipe(Command.stderr('inherit'), executor.start)
 
   const [fzfExitCode, selectedLine] = yield* Effect.all(
     [
