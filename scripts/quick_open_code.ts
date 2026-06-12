@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
 
+// published to npm
 import { dedupStreamHashedSimple } from '@evadev/effect-helpers'
+import { prettyPrint } from 'effect-errors'
 
 import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
@@ -102,6 +104,9 @@ const vscodeArgCandidates = Stream.mergeAll(
   dedupStreamHashedSimple,
 )
 
+const hyperlink = (uri: string, text: string) =>
+  `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
+
 const fzfPrettyCandidates = Effect.map(Path.Path, path =>
   Stream.map(vscodeArgCandidates, entry =>
     Doc.hcat([
@@ -123,7 +128,13 @@ const PREVIEW_CMD = `\
 path=${PROJECTS_DIR}/{2}
 if [ -d "$path" ]; then
   cd "$path"
-  "$HOME/.local/bin/print_first_existing_file" ${README_FILES.join(' ')} && echo
+  for file in ${README_FILES.join(' ')}; do
+    if [ -f "$file" ]; then
+      PAGER="" bat --style=plain --color=always "$file"
+      echo
+      break
+    fi
+  done
   echo
   eza -labgM --group-directories-first --no-time --octal-permissions \\
       --classify=always --icons=always --color-scale=size \\
@@ -133,10 +144,7 @@ else
   bat --style=plain --language=json --color=always "$path"
 fi`
 
-const hyperlink = (uri: string, text: string) =>
-  `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
-
-Effect.gen(function* () {
+export const program = Effect.gen(function* () {
   const depResults = yield* Effect.forEach(
     REQUIRED_TOOLS,
     tool => Effect.map(checkDep(tool.name), present => ({ ...tool, present })),
@@ -202,9 +210,19 @@ Effect.gen(function* () {
 
   return 0
 }).pipe(
-  Effect.provide(BunContext.layer),
   Effect.scoped,
-  BunRuntime.runMain({
+  Effect.provide(BunContext.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catchAll(e => {
+    console.error(prettyPrint(e))
+
+    return Effect.fail(e)
+  }),
+)
+
+if (import.meta.main)
+  BunRuntime.runMain(program, {
     teardown: (exit, onExit: (code: number) => void) => {
       onExit(
         !Exit.isSuccess(exit) || typeof exit.value !== 'number'
@@ -212,5 +230,4 @@ Effect.gen(function* () {
           : exit.value,
       )
     },
-  }),
-)
+  })
