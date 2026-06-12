@@ -41,10 +41,31 @@ const README_FILES = ['README', 'Readme', 'readme']
 
 const PRUNE_ARGS = PRUNE_DIRS.map(e => `-name ${e}`).join(' -o ')
 
+const REQUIRED_TOOLS = [
+  {
+    name: 'bfs',
+    hint: 'breadth-first find — https://github.com/tavianator/bfs, https://github.com/tavianator/bfs',
+  },
+  {
+    name: 'eza',
+    hint: 'modern ls replacement — https://github.com/eza-community/eza',
+  },
+  {
+    name: 'bat',
+    hint: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
+  },
+  { name: 'fzf', hint: 'fuzzy finder — https://github.com/junegunn/fzf' },
+] as const
+
+const checkDep = (name: string) =>
+  Command.make('which', name).pipe(
+    Command.stdout('pipe'),
+    Command.stderr('pipe'),
+    Command.exitCode,
+    Effect.map(code => code === 0),
+  )
+
 const find = (args: string) =>
-  // breadth first variant of find command
-  // https://terminaltrove.com/bfs/
-  // https://github.com/tavianator/bfs
   Command.streamLines(Command.make('bfs', PROJECTS_DIR, ...args.split(' ')))
 
 const gitAndVsCodeDirPaths = find(
@@ -116,6 +137,21 @@ const hyperlink = (uri: string, text: string) =>
   `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
 
 Effect.gen(function* () {
+  const depResults = yield* Effect.forEach(
+    REQUIRED_TOOLS,
+    tool => Effect.map(checkDep(tool.name), present => ({ ...tool, present })),
+    { concurrency: 'unbounded' },
+  )
+
+  const missingDeps = depResults.filter(r => !r.present)
+
+  if (missingDeps.length > 0) {
+    for (const { name, hint } of missingDeps)
+      yield* Effect.logError(`Missing required tool '${name}': ${hint}`)
+
+    return 1
+  }
+
   const executor = yield* CommandExecutor.CommandExecutor
   const path = yield* Path.Path
 
