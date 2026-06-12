@@ -15,12 +15,12 @@ import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import * as Stream from 'effect/Stream'
 
-const HOME = process.env['HOME'] ?? '/root'
-const PROJECTS_DIR = `${HOME}/projects`
-const DIR_ICON = ''
-const WORKSPACE_ICON = ''
+export const HOME = process.env['HOME'] ?? '/root'
+export const PROJECTS_DIR = `${HOME}/projects`
+export const DIR_ICON = ''
+export const WORKSPACE_ICON = ''
 
-const PRUNE_DIRS = [
+export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
   ['__test__', '__tests__', '.cache', '.cargo', '.claude', 'temporary', 'gen'],
   ['.expo', '.gradle', '.husky', '.idea', '.netlify', '.next', '.nx', '.specs'],
@@ -35,15 +35,15 @@ const PRUNE_DIRS = [
   ['firefox', 'mdn-content', 'base-ui'],
 ].flat()
 
-const README_FILES = ['README', 'Readme', 'readme']
+export const README_FILES = ['README', 'Readme', 'readme']
   .flatMap(r =>
     ['', 'ru', 'RU', 'en', 'EN'].map(ext => (ext ? r + '.' + ext : r)),
   )
   .flatMap(r => ['', 'md', 'txt'].map(ext => (ext ? r + '.' + ext : r)))
 
-const PRUNE_ARGS = PRUNE_DIRS.map(e => `-name ${e}`).join(' -o ')
+export const PRUNE_ARGS = PRUNE_DIRS.map(e => `-name ${e}`).join(' -o ')
 
-const REQUIRED_TOOLS = [
+export const REQUIRED_TOOLS = [
   {
     name: 'bfs',
     hint: 'breadth-first find — https://github.com/tavianator/bfs, https://github.com/tavianator/bfs',
@@ -59,7 +59,7 @@ const REQUIRED_TOOLS = [
   { name: 'fzf', hint: 'fuzzy finder — https://github.com/junegunn/fzf' },
 ] as const
 
-const checkDep = (name: string) =>
+export const checkDep = (name: string) =>
   Command.make('which', name).pipe(
     Command.stdout('pipe'),
     Command.stderr('pipe'),
@@ -67,22 +67,22 @@ const checkDep = (name: string) =>
     Effect.map(code => code === 0),
   )
 
-const find = (args: string) =>
+export const find = (args: string) =>
   Command.streamLines(Command.make('bfs', PROJECTS_DIR, ...args.split(' ')))
 
-const gitAndVsCodeDirPaths = find(
+export const gitAndVsCodeDirPaths = find(
   `-type d (${PRUNE_ARGS}) -prune -o -type d (-name .git -o -name .vscode) -prune -print`,
 )
 
-const packageJsonAndMiseTomlAndCodeWorkspacePaths = find(
+export const packageJsonAndMiseTomlAndCodeWorkspacePaths = find(
   `-type d (${PRUNE_ARGS} -o -name .git) -prune -o -type f (-name package.json -o -name mise.toml -o -name *.code-workspace)`,
 )
 
-const dirAndCodeWorkspacePathsInProjectsRoot = find(
+export const dirAndCodeWorkspacePathsInProjectsRoot = find(
   '-maxdepth 1 -mindepth 1 (-type d -o -name *.code-workspace)',
 )
 
-const vscodeArgCandidates = Stream.mergeAll(
+export const vscodeArgCandidates = Stream.mergeAll(
   [
     gitAndVsCodeDirPaths,
     packageJsonAndMiseTomlAndCodeWorkspacePaths,
@@ -104,10 +104,10 @@ const vscodeArgCandidates = Stream.mergeAll(
   dedupStreamHashedSimple,
 )
 
-const hyperlink = (uri: string, text: string) =>
+export const hyperlink = (uri: string, text: string) =>
   `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
 
-const fzfPrettyCandidates = Effect.map(Path.Path, path =>
+export const fzfPrettyCandidates = Effect.map(Path.Path, path =>
   Stream.map(vscodeArgCandidates, entry =>
     Doc.hcat([
       Doc.text(entry.endsWith('/') ? DIR_ICON : WORKSPACE_ICON),
@@ -124,7 +124,7 @@ const fzfPrettyCandidates = Effect.map(Path.Path, path =>
 
 // fzf replaces {2} with the raw relative path (second space-delimited field),
 // while the first icon is discarded.
-const PREVIEW_CMD = `\
+export const PREVIEW_CMD = `\
 path=${PROJECTS_DIR}/{2}
 if [ -d "$path" ]; then
   cd "$path"
@@ -216,7 +216,6 @@ export const program = Effect.gen(function* () {
   Effect.sandbox,
   Effect.catchAll(e => {
     console.error(prettyPrint(e))
-
     return Effect.fail(e)
   }),
 )
