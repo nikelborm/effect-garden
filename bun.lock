@@ -1133,6 +1133,7 @@
         "effect-errors": "catalog:",
         "smol-toml": "catalog:",
         "sort-package-json": "catalog:",
+        "tslib": "^2.8.1",
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",

@@ -31,7 +31,8 @@
     "drizzle-kit": "catalog:",
     "effect-errors": "catalog:",
     "smol-toml": "catalog:",
-    "sort-package-json": "catalog:"
+    "sort-package-json": "catalog:",
+    "tslib": "^2.8.1"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/scripts#readme",
   "bugs": {

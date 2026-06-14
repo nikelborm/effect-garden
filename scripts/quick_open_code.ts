@@ -193,12 +193,16 @@ const AppLayer = Layer.merge(
   BunPath.layer,
 )
 
+const beforeProgramCreated = performance.now()
+
 export const program = Effect.gen(function* () {
+  const astBefore = performance.now()
   if (yield* areSomeDependenciesMissing) return 1
+  const asaFTER = performance.now()
 
   const executor = yield* CommandExecutor.CommandExecutor
-
-  const [fzfExitCode, selectedLine] = yield* Command.make(
+  const beforeFzfStarted = performance.now()
+  const fzfProcess = yield* Command.make(
     'fzf',
     '--ansi',
     '--delimiter= ',
@@ -212,17 +216,27 @@ export const program = Effect.gen(function* () {
         'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
       ),
     ),
-    Effect.flatMap(process =>
-      Effect.all(
-        [
-          process.exitCode,
-          process.stdout.pipe(Stream.decodeText(), Stream.mkString),
-          Stream.run(Stream.encodeText(fzfPrettyCandidates), process.stdin),
-        ],
-        { concurrency: 'unbounded' },
-      ),
-    ),
   )
+
+  const afterFzfStarted = performance.now()
+
+  const [fzfExitCode, selectedLine] = yield* Effect.all(
+    [
+      fzfProcess.exitCode,
+      fzfProcess.stdout.pipe(Stream.decodeText(), Stream.mkString),
+      Stream.run(Stream.encodeText(fzfPrettyCandidates), fzfProcess.stdin),
+    ],
+    { concurrency: 'unbounded' },
+  )
+  const afterFzfExited = performance.now()
+
+  yield* Effect.log({
+    beforeProgramCreated,
+    effectsBullshit: beforeFzfStarted - beforeProgramCreated,
+    fzfStartTime: afterFzfStarted - beforeFzfStarted,
+    fzfRuntimeDuration: afterFzfExited - afterFzfStarted,
+    PREFLIght: asaFTER - astBefore,
+  })
 
   if (fzfExitCode === 130) {
     yield* Effect.log('fzf canceled by user')
