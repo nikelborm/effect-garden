@@ -196,9 +196,9 @@ const AppLayer = Layer.merge(
 const beforeProgramCreated = performance.now()
 
 export const program = Effect.gen(function* () {
-  const astBefore = performance.now()
+  const checkBefore = performance.now()
   if (yield* areSomeDependenciesMissing) return 1
-  const asaFTER = performance.now()
+  const checkAfter = performance.now()
 
   const executor = yield* CommandExecutor.CommandExecutor
   const beforeFzfStarted = performance.now()
@@ -232,10 +232,10 @@ export const program = Effect.gen(function* () {
 
   yield* Effect.log({
     beforeProgramCreated,
-    effectsBullshit: beforeFzfStarted - beforeProgramCreated,
+    effectInit: beforeFzfStarted - beforeProgramCreated,
+    checkDuration: checkAfter - checkBefore,
     fzfStartTime: afterFzfStarted - beforeFzfStarted,
     fzfRuntimeDuration: afterFzfExited - afterFzfStarted,
-    PREFLIght: asaFTER - astBefore,
   })
 
   if (fzfExitCode === 130) {
