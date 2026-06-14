@@ -157,6 +157,9 @@ const CatalogEntry = Schema.Struct({
           ...decodedSelf,
           cached: yield* Effect.catchAll(
             fs.readFileString(localSchemstoreSchemaFile),
+            // TODO: verify that NotFound is the actual error that's thrown
+            // because I also found a case where its thrown by CommandExecutor,
+            // when the binary to call is not found in PATH
             error =>
               error._tag === 'SystemError' &&
               error.reason === 'NotFound' &&

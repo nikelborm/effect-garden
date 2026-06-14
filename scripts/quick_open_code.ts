@@ -10,19 +10,30 @@ import { prettyPrint } from 'effect-errors'
 
 import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
+import type { PlatformError } from '@effect/platform/Error'
 import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
+import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
+import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
+import * as BunPath from '@effect/platform-bun/BunPath'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Ansi from '@effect/printer-ansi/Ansi'
 import * as Doc from '@effect/printer-ansi/AnsiDoc'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
+import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 
 export const HOME = process.env['HOME'] ?? '/root'
 export const PROJECTS_DIR = `${HOME}/projects`
 export const DIR_ICON = ''
 export const WORKSPACE_ICON = ''
+
+const logErrorMessageOnNotFoundError =
+  (message: string) =>
+  <A extends PlatformError>(error: A) =>
+    error._tag === 'SystemError' && error.reason === 'NotFound'
+      ? Effect.logError(message)
+      : Effect.void
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -47,30 +58,55 @@ export const README_FILES = ['README', 'Readme', 'readme']
 
 export const PRUNE_ARGS = PRUNE_DIRS.map(e => `-name ${e}`).join(' -o ')
 
-export const REQUIRED_TOOLS = [
-  {
-    name: 'bfs',
-    hint: 'breadth-first find — https://github.com/tavianator/bfs, https://github.com/tavianator/bfs',
-  },
-  {
-    name: 'eza',
-    hint: 'modern ls replacement — https://github.com/eza-community/eza',
-  },
-  {
-    name: 'bat',
-    hint: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
-  },
-  { name: 'fzf', hint: 'fuzzy finder — https://github.com/junegunn/fzf' },
-] as const
+// TODO: add error message queue, so that it doesn't mess with fzf's on screen output
 
-export const checkDep = (name: string) =>
-  Command.make('which', name).pipe(
-    Command.exitCode,
-    Effect.map(code => code === 0),
+const areSomeDependenciesMissing = Effect.gen(function* () {
+  const depResults = yield* Effect.forEach(
+    Object.entries({
+      eza: 'modern ls replacement — https://github.com/eza-community/eza',
+      bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
+    }),
+    ([name, hint]) =>
+      Command.make('which', name).pipe(
+        Command.exitCode,
+        Effect.map(code => ({ name, hint, isPresent: code === 0 })),
+      ),
+    { concurrency: 'unbounded' },
   )
 
-export const find = (args: string) =>
-  Command.streamLines(Command.make('bfs', PROJECTS_DIR, ...args.split(' ')))
+  const missingDeps = depResults.filter(r => !r.isPresent)
+
+  if (missingDeps.length > 0) {
+    for (const { name, hint } of missingDeps)
+      yield* Effect.logError(`Missing required tool '${name}': ${hint}`)
+
+    return true
+  }
+
+  return false
+})
+
+export const find = (args: string) => {
+  const stream = (main: string, message: string) =>
+    Command.make(main, PROJECTS_DIR, ...args.split(' ')).pipe(
+      Command.streamLines,
+      Stream.tapError(logErrorMessageOnNotFoundError(message)),
+    )
+
+  return stream(
+    'bfs',
+    'Breadth-first finder (`bfs` binary) is not found. Read more here: https://github.com/tavianator/bfs, https://terminaltrove.com/bfs/. The script will attempt to fallback to find',
+  ).pipe(
+    Stream.catchAll(error =>
+      error._tag === 'SystemError' && error.reason === 'NotFound'
+        ? stream(
+            'find',
+            '`find` binary is not found. Read more here: https://www.man7.org/linux/man-pages/man1/find.1.html',
+          )
+        : Stream.fail(error),
+    ),
+  )
+}
 
 // SPACES around parentheses are important!!
 export const gitAndVsCodeDirPaths = find(
@@ -147,40 +183,40 @@ else
   bat --style=plain --language=json --color=always "$path"
 fi`
 
+const AppLayer = Layer.merge(
+  BunCommandExecutor.layer.pipe(Layer.provide(BunFileSystem.layer)),
+  BunPath.layer,
+)
+
 export const program = Effect.gen(function* () {
-  const depResults = yield* Effect.forEach(
-    REQUIRED_TOOLS,
-    tool => Effect.map(checkDep(tool.name), present => ({ ...tool, present })),
-    { concurrency: 'unbounded' },
-  )
-
-  const missingDeps = depResults.filter(r => !r.present)
-
-  if (missingDeps.length > 0) {
-    for (const { name, hint } of missingDeps)
-      yield* Effect.logError(`Missing required tool '${name}': ${hint}`)
-
-    return 1
-  }
+  if (yield* areSomeDependenciesMissing) return 1
 
   const executor = yield* CommandExecutor.CommandExecutor
-  const path = yield* Path.Path
 
-  const fzfProcess = yield* Command.make(
+  const [fzfExitCode, selectedLine] = yield* Command.make(
     'fzf',
     '--ansi',
     '--delimiter= ',
     '--preview-window=50%',
     `--preview=${PREVIEW_CMD}`,
-  ).pipe(Command.stderr('inherit'), executor.start)
-
-  const [fzfExitCode, selectedLine] = yield* Effect.all(
-    [
-      fzfProcess.exitCode,
-      fzfProcess.stdout.pipe(Stream.decodeText(), Stream.mkString),
-      Stream.run(Stream.encodeText(fzfPrettyCandidates), fzfProcess.stdin),
-    ],
-    { concurrency: 'unbounded' },
+  ).pipe(
+    Command.stderr('inherit'),
+    executor.start,
+    Effect.tapError(
+      logErrorMessageOnNotFoundError(
+        'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
+      ),
+    ),
+    Effect.flatMap(process =>
+      Effect.all(
+        [
+          process.exitCode,
+          process.stdout.pipe(Stream.decodeText(), Stream.mkString),
+          Stream.run(Stream.encodeText(fzfPrettyCandidates), process.stdin),
+        ],
+        { concurrency: 'unbounded' },
+      ),
+    ),
   )
 
   if (fzfExitCode === 130) {
@@ -198,10 +234,21 @@ export const program = Effect.gen(function* () {
     return 1
   }
 
+  const path = yield* Path.Path
+
   const vscodeLauncherExitCode = yield* Command.make(
     'code',
     path.join(PROJECTS_DIR, relativePath),
-  ).pipe(Command.stdout('inherit'), Command.stderr('inherit'), Command.exitCode)
+  ).pipe(
+    Command.stdout('inherit'),
+    Command.stderr('inherit'),
+    Command.exitCode,
+    Effect.tapError(
+      logErrorMessageOnNotFoundError(
+        'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
+      ),
+    ),
+  )
 
   if (vscodeLauncherExitCode !== 0) {
     yield* Effect.logError(
@@ -214,7 +261,7 @@ export const program = Effect.gen(function* () {
   return 0
 }).pipe(
   Effect.scoped,
-  Effect.provide(BunContext.layer),
+  Effect.provide(AppLayer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catchAll(e => {
