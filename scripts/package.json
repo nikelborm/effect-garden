@@ -44,7 +44,7 @@
     "directory": "scripts"
   },
   "scripts": {
-    "build": "tsgo"
+    "build": "tsgo && rollup -c rollup.config.mts && chmod +x dist/minified/*"
   },
   "author": {
     "name": "nikelborm",
