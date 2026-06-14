@@ -5,7 +5,7 @@ import terser from '@rollup/plugin-terser'
 import type { RollupOptions } from 'rollup'
 
 export default {
-  input: ['dist/quick_open_code.js', 'dist/cleanup.js'],
+  input: ['dist/cleanup.js'],
   output: {
     dir: 'dist/minified',
     format: 'es',
