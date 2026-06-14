@@ -28,12 +28,15 @@ export const PROJECTS_DIR = `${HOME}/projects`
 export const DIR_ICON = ''
 export const WORKSPACE_ICON = ''
 
+const matchNotFound = <R, L>(error: PlatformError, onNotFound: R, other: L) =>
+  error._tag === 'SystemError' && error.reason === 'NotFound'
+    ? onNotFound
+    : other
+
 const logErrorMessageOnNotFoundError =
   (message: string) =>
   <A extends PlatformError>(error: A) =>
-    error._tag === 'SystemError' && error.reason === 'NotFound'
-      ? Effect.logError(message)
-      : Effect.void
+    matchNotFound(error, Effect.logError(message), Effect.void)
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -98,12 +101,14 @@ export const find = (args: string) => {
     'Breadth-first finder (`bfs` binary) is not found. Read more here: https://github.com/tavianator/bfs, https://terminaltrove.com/bfs/. The script will attempt to fallback to find',
   ).pipe(
     Stream.catchAll(error =>
-      error._tag === 'SystemError' && error.reason === 'NotFound'
-        ? stream(
-            'find',
-            '`find` binary is not found. Read more here: https://www.man7.org/linux/man-pages/man1/find.1.html',
-          )
-        : Stream.fail(error),
+      matchNotFound(
+        error,
+        stream(
+          'find',
+          '`find` binary is not found. Read more here: https://www.man7.org/linux/man-pages/man1/find.1.html',
+        ),
+        Stream.fail(error),
+      ),
     ),
   )
 }
