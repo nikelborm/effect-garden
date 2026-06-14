@@ -18,6 +18,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "@evadev/effect-helpers": "workspace:^",
     "@octokit/core": "catalog:",
     "@octokit/request-error": "catalog:",
     "@total-typescript/ts-reset": "catalog:",

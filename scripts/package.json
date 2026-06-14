@@ -6,8 +6,14 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "@rollup/plugin-commonjs": "catalog:",
+    "@rollup/plugin-json": "catalog:",
+    "@rollup/plugin-node-resolve": "catalog:",
+    "@rollup/plugin-terser": "catalog:",
     "@types/bun": "catalog:",
     "@typescript/native-preview": "catalog:",
+    "rollup": "catalog:",
+    "rollup-plugin-visualizer": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -16,10 +22,10 @@
     "@effect/cli": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
+    "@effect/printer-ansi": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
-    "@effect/printer-ansi": "^0.49.0",
     "@evadev/effect-helpers": "workspace:^",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
