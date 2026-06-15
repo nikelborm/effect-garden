@@ -20,7 +20,9 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedPatternPointer =
     Schema.is(this)
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
@@ -36,7 +38,9 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
   private declare '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
     Schema.is(this)
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
 
 export type SlowStrumPointer = Omit<TaggedSlowStrumPointer, '_tag'>

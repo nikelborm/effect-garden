@@ -19,13 +19,10 @@ import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { Silence } from './types/Silence.ts'
 
-const AudioContextLive = Layer.orDie(EAudioContext.layer())
-
 export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     accessors: true,
-    dependencies: [AudioContextLive],
     scoped: Effect.gen(function* () {
       const selectedAssetState = yield* CurrentlySelectedAssetState
 

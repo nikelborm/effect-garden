@@ -10,5 +10,7 @@ export class PatternSilenceTransition extends Schema.TaggedClass<PatternSilenceT
   },
 ) {
   private declare '~brand~': never
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }

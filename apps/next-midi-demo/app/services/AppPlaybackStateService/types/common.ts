@@ -23,7 +23,9 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
     ),
   },
 ) {
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
   private declare '~brand~': never
 
   getDuration() {
@@ -62,7 +64,9 @@ export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>
   },
 ) {
   private declare '~brand~': never
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
 
 export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTransitionQueueElement>()(
@@ -73,7 +77,9 @@ export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTra
   },
 ) {
   private declare '~brand~': never
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
 
 export class PatternTransitionElementWithScheduledCleanup extends PatternTransitionQueueElement.extend<PatternTransitionElementWithScheduledCleanup>(
@@ -83,7 +89,9 @@ export class PatternTransitionElementWithScheduledCleanup extends PatternTransit
   fadeoutStartsAtSecond: Schema.Number,
   fadeoutEndsAtSecond: Schema.Number,
 }) {
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
 
 export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStrumTransitionQueueElement>()(
@@ -95,5 +103,7 @@ export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStru
   },
 ) {
   private declare '~brand~': never
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }

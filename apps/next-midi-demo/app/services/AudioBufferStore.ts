@@ -22,12 +22,12 @@ export class AudioBufferStore extends Context.Tag(
   static Live = Effect.gen(this, function* () {
     const audioContext = yield* EAudioContext.EAudioContext
     const rootDirectoryHandle = yield* RootDirectoryHandle
-    const loadedAssetSizeEstimationMap = yield* LoadedAssetSizeEstimationMap
+    const estimationMap = yield* LoadedAssetSizeEstimationMap
 
     const getByAsset = Effect.fn('AudioBufferStore.getByAsset')(function* (
       pointer: AssetPointer,
     ) {
-      yield* loadedAssetSizeEstimationMap.assertFinished(pointer)
+      yield* estimationMap.assertFinished(pointer)
 
       const assetFileHandle = yield* getFileHandle({
         dirHandle: rootDirectoryHandle,

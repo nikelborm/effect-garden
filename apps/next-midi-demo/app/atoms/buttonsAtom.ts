@@ -1,3 +1,4 @@
+import { EAudioContext } from 'effect-web-audio'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
@@ -34,6 +35,7 @@ import {
 } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
+import { AudioBufferStore } from '../services/AudioBufferStore.ts'
 import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
 import {
@@ -139,6 +141,7 @@ const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
 const LoadedAssetSizeEstimationMapNoDeps =
   LoadedAssetSizeEstimationMap.Default.pipe(
     Layer.provide(RootDirectoryHandleNoDeps),
+    Layer.provide(AllRegistriesNoDeps),
     Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
   )
 
@@ -155,11 +158,19 @@ const CurrentlySelectedAssetStateNoDeps =
     Layer.withSpan('CurrentlySelectedAssetStateNoDeps'),
   )
 
-const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
-  Layer.provide(AllRegistriesAndBusesNoDeps),
+const AudioContextLive = Layer.orDie(EAudioContext.layer())
+
+const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
+  Layer.provide(AudioContextLive),
   Layer.provide(RootDirectoryHandleNoDeps),
-  Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+)
+
+const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
+  Layer.provide(AudioContextLive),
+  Layer.provide(AudioBufferStoreNoDeps),
+  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.withSpan('AppPlaybackStateServiceNoDeps'),
 )
 

@@ -41,6 +41,9 @@
   },
   "linter": {
     "rules": {
+      "complexity": {
+        "noThisInStatic": "off"
+      },
       "suspicious": {
         "noExplicitAny": "off",
         "useIterableCallbackReturn": "info"

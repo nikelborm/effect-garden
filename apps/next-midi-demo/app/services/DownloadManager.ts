@@ -48,6 +48,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
             awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
           }
 
+        // TODO: ensure waits past initial fetch
         if (yield* estimationMap.areAllBytesFetched(asset))
           return {
             _tag: 'AssetAlreadyDownloaded' as const,
@@ -110,11 +111,10 @@ const downloadAsset = Effect.fn('downloadAsset')(function* (
 
   yield* Effect.gen(function* () {
     const { appendDataToTheEndOfFile } = yield* opfs.getWriter(asset)
-    const currentBytes = yield* estimationMap.getCurrentDownloadedBytes(asset)
+    const currentBytes = yield* estimationMap.awaitVerifiedOnDiskBytes(asset)
 
-    return Stream.tap(
-      getStreamOfRemoteAsset(asset, currentBytes.size),
-      byteArray => appendDataToTheEndOfFile(byteArray.buffer),
+    return Stream.tap(getStreamOfRemoteAsset(asset, currentBytes), byteArray =>
+      appendDataToTheEndOfFile(byteArray.buffer),
     )
   }).pipe(
     Effect.tapErrorCause(cause =>

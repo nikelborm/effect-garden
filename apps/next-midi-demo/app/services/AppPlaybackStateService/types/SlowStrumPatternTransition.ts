@@ -16,5 +16,7 @@ export class SlowStrumPatternTransition extends Schema.TaggedClass<SlowStrumPatt
   },
 ) {
   private declare '~brand~': never
-  static override make = super.make.bind(this)
+  static {
+    this.make = this.make.bind(this)
+  }
 }
