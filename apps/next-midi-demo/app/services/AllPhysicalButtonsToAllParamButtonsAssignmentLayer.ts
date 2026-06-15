@@ -125,7 +125,7 @@ export const KeyboardButtonMappingLayer = Effect.gen(function* () {
     ],
     { discard: true, concurrency: 'unbounded' },
   ).pipe(Effect.forkScoped)
-}).pipe(Layer.scopedDiscard)
+}).pipe(Effect.withSpan('KeyboardButtonMappingLayer.init'), Layer.scopedDiscard)
 
 export const MIDIPadButtonMappingLayer = Effect.gen(function* () {
   const {
@@ -158,7 +158,7 @@ export const MIDIPadButtonMappingLayer = Effect.gen(function* () {
     ],
     { discard: true, concurrency: 'unbounded' },
   ).pipe(Effect.forkScoped)
-}).pipe(Layer.scopedDiscard)
+}).pipe(Effect.withSpan('MIDIPadButtonMappingLayer.init'), Layer.scopedDiscard)
 
 export const OnScreenButtonMappingLayer = Effect.gen(function* () {
   const {
@@ -193,4 +193,4 @@ export const OnScreenButtonMappingLayer = Effect.gen(function* () {
     ],
     { discard: true, concurrency: 'unbounded' },
   ).pipe(Effect.forkScoped)
-}).pipe(Layer.scopedDiscard)
+}).pipe(Effect.withSpan('OnScreenButtonMappingLayer.init'), Layer.scopedDiscard)
