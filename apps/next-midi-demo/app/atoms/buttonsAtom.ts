@@ -234,21 +234,17 @@ export const testAtom = builtRuntime.atom(() =>
     const scope = innerRuntime.context.unsafeMap.get(
       Scope.Scope.key,
     ) as Scope.CloseableScope
-    //   | undefined
-
-    yield* Effect.log('runtime dissassebler in place')
 
     yield* Effect.sync(() => {
       global.window.addEventListener(
         'beforeunload',
-        event => {
+        () => {
+          // There's zero actual guarantees it will work, but we are small
+          // people, we're happy with what we have and doing our best when we
+          // can
           somebodyKillMe?.forceFlush()
 
           console.log(Effect.runSyncExit(Scope.close(scope, Exit.void)))
-          console.log('Runtime dissassemble attempted')
-          event.preventDefault()
-          event.returnValue = 'asdasd'
-          return true
         },
         { once: true },
       )
