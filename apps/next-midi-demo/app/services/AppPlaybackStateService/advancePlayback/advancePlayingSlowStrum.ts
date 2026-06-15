@@ -4,8 +4,8 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopScheduledAfterSingleShot,
   createOneshotPlayback,
@@ -23,6 +23,7 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
     signal: Signal,
     deps: AdvancePlaybackDeps,
   ) {
+    const audioBufferStore = yield* AudioBufferStore
     // const audioContext = yield* EAudioContext.EAudioContext
     // const [current] = oldState.transitionQueue
 
@@ -33,7 +34,7 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
     //   const secondsSinceAudioContextInit =
     //     yield* EAudioContext.currentTime(audioContext)
     //   yield* helpGarbageCollectionOfPlayback(current.playback)
-    //   const audioBuffer = yield* getAudioBufferOfAsset(asset)
+    //   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
     //   const newPlayback = yield* createOneshotPlayback(
     //     audioContext,
     //     audioBuffer,
@@ -55,7 +56,7 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
     // // Pattern was selected while slow strum is playing → schedule loop to start after slow strum ends
     // const slowStrumEndsAtSecond =
     //   oldState.playbackStartedAtSecond + current.durationSeconds
-    // const audioBuffer = yield* getAudioBufferOfAsset(asset)
+    // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
     // const newPatternPlayback = yield* createLoopScheduledAfterSingleShot(
     //   audioContext,
     //   audioBuffer,

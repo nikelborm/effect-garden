@@ -10,11 +10,11 @@ import {
 import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
 import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
 import { AccordRegistry } from '../../AccordRegistry.ts'
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { LoadedAssetSizeEstimationMap } from '../../LoadedAssetSizeEstimationMap.ts'
 import { PatternRegistry } from '../../PatternRegistry.ts'
 import { StrengthRegistry } from '../../StrengthRegistry.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
 import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
 import { PlayingPattern } from '../types/PlayingPattern.ts'
@@ -28,6 +28,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   signal: Signal,
   _deps: AdvancePlaybackDeps,
 ) {
+  const audioBufferStore = yield* AudioBufferStore
   if (StrengthData.models(signal)) {
     // even if it's not downloaded, it's fine to set different strength, while
     // it's silent, because no playback will be scheduled
@@ -52,9 +53,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
     asset = TaggedSlowStrumPointer.make({ ...signal, strength })
   }
 
-  yield* LoadedAssetSizeEstimationMap.assertFinished(asset)
-
-  const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  const audioBuffer = yield* audioBufferStore.getByAsset(asset)
 
   const playbackStartedAtSecond = yield* EAudioContext.currentTimeFromContext
 

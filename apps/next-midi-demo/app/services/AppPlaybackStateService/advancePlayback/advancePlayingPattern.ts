@@ -7,8 +7,8 @@ import { TaggedPatternPointer } from '../../../brandsAndDatas/AssetPointer.ts'
 import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
 import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
 import { AccordRegistry } from '../../AccordRegistry.ts'
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { StrengthRegistry } from '../../StrengthRegistry.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import { createScheduledNextPlaybackInContext } from '../playbackNodes/createScheduledNextPlayback.ts'
 import { scheduleFadeOutOf } from '../playbackNodes/index.ts'
 import { calcTimingsMath } from '../timingMath.ts'
@@ -28,6 +28,7 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
     signal: Signal,
     deps: AdvancePlaybackDeps,
   ) {
+    const audioBufferStore = yield* AudioBufferStore
     if (AccordData.models(signal) && signal.accord === oldState.asset.accord)
       return oldState
 
@@ -68,7 +69,7 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
         strength: yield* StrengthRegistry.currentlySelectedStrength,
       })
 
-      const audioBuffer = yield* getAudioBufferOfAsset(asset)
+      const audioBuffer = yield* audioBufferStore.getByAsset(asset)
 
       const math = calcTimingsMath(
         oldState.playbackStartedAtSecond,

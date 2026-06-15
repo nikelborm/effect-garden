@@ -4,7 +4,6 @@ import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 
 import { maxLoudness } from '../constants.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopScheduledAfterSingleShot,
   createScheduledNextPlayback,
@@ -28,6 +27,7 @@ export const advancePatternSilenceTransition = Effect.fn(
   deps: AdvancePlaybackDeps,
 ) {
   // const audioContext = yield* EAudioContext.EAudioContext
+  // const audioBufferStore = yield* AudioBufferStore
 
   // const [current] = oldState.transitionQueue
 
@@ -39,7 +39,7 @@ export const advancePatternSilenceTransition = Effect.fn(
   //   oldState.playbackStartedAtSecond,
   //   secondsSinceAudioContextInit,
   // )
-  // const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
 
   // if (math.fitsIntoBufferOfClosestTransition) {
   //   // Cancel the scheduled silence and redirect current loop into a transition to new loop

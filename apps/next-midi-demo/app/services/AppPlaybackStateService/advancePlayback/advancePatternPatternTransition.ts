@@ -6,7 +6,6 @@ import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
 import { maxLoudness } from '../constants.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createScheduledNextPlayback,
   helpGarbageCollectionOfPlayback,
@@ -32,6 +31,7 @@ export const advancePatternPatternTransition = Effect.fn(
   signal: Signal,
   deps: AdvancePlaybackDeps,
 ) {
+  // const audioBufferStore = yield* AudioBufferStore
   // const [current, latest] = oldState.transitionQueue
 
   // if (Equal.equals(latest.asset, asset)) return oldState
@@ -95,7 +95,7 @@ export const advancePatternPatternTransition = Effect.fn(
   //   })
   // }
 
-  // const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
   // const playback = yield* createScheduledNextPlayback(
   //   audioContext,
   //   audioBuffer,

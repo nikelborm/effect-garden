@@ -4,8 +4,8 @@ import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Option from 'effect/Option'
 
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import { getAudioBufferOfAsset } from '../getAudioBufferOfAsset.ts'
 import {
   createLoopingPlayback,
   createOneshotPlayback,
@@ -24,6 +24,7 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
   signal: Signal,
   deps: AdvancePlaybackDeps,
 ) {
+  // const audioBufferStore = yield* AudioBufferStore
   // const audioContext = yield* EAudioContext.EAudioContext
   // const [slowStrum, queuedPattern] = oldState.transitionQueue
 
@@ -37,7 +38,7 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
 
   // if (Option.isNone(asset.pattern)) {
   //   // Pattern deselected again — start a new slow strum immediately
-  //   const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  //   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
   //   const newPlayback = yield* createOneshotPlayback(audioContext, audioBuffer)
   //   yield* Effect.sync(() => {
   //     newPlayback.gainNode.gain.setValueAtTime(
@@ -54,7 +55,7 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
   // }
 
   // // New pattern/accord: start loop immediately
-  // const audioBuffer = yield* getAudioBufferOfAsset(asset)
+  // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
   // const newPatternPlayback = yield* createLoopingPlayback(
   //   audioContext,
   //   audioBuffer,
