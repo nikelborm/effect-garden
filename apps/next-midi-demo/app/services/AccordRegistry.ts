@@ -28,7 +28,7 @@ export class AccordRegistry
         selectAccord: (accord: Accord) =>
           SubscriptionRef.set(currentAccordRef, accord),
       }
-    }),
+    }).pipe(Effect.withSpan('AccordRegistry.init')),
   })
   implements IAccordRegistry {}
 

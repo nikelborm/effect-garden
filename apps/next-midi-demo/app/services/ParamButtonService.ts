@@ -193,7 +193,7 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
       // isCurrentlyPlayingPredicate: (pb, accord) =>
       //   pb.currentAsset.accord === accord,
       // selectAction: (reg, param) => reg.selectAccord(param.id.accord),
-    }),
+    }).pipe(Effect.withSpan('AccordParamButtonService.init')),
   },
 ) {}
 
@@ -213,7 +213,7 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
       // isCurrentlyPlayingPredicate: (pb, pattern) =>
       //   Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
       // selectAction: (reg, param) => reg.switchPattern(param.id.pattern),
-    }),
+    }).pipe(Effect.withSpan('PatternParamButtonService.init')),
   },
 ) {}
 
@@ -233,6 +233,6 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
       // isCurrentlyPlayingPredicate: (pb, strength) =>
       //   pb.currentAsset.strength === strength,
       // selectAction: (reg, param) => reg.selectStrength(param.id.strength),
-    }),
+    }).pipe(Effect.withSpan('StrengthParamButtonService.init')),
   },
 ) {}

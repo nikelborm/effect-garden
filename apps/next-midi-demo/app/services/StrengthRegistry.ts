@@ -30,7 +30,7 @@ export class StrengthRegistry
           selectStrength: (strength: Strength) =>
             SubscriptionRef.set(selectedStrengthRef, strength),
         }
-      }),
+      }).pipe(Effect.withSpan('StrengthRegistry.init')),
     },
   )
   implements IStrengthRegistry {}

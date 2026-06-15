@@ -4,9 +4,11 @@ import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as Atom from '@effect-atom/atom/Atom'
 import * as Result from '@effect-atom/atom/Result'
 import * as Effect from 'effect/Effect'
+import * as Exit from 'effect/Exit'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
+import * as Scope from 'effect/Scope'
 // import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
 
@@ -50,7 +52,7 @@ import { PatternRegistry } from '../services/PatternRegistry.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 import { StrengthRegistry } from '../services/StrengthRegistry.ts'
-import { TracingLive } from './tracing.ts'
+import { somebodyKillMe, TracingLive } from './tracing.ts'
 
 const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
   Layer.withSpan('AccordInputBus.Default'),
@@ -207,7 +209,7 @@ const ParamButtonServiceNoDeps = Layer.mergeAll(
   StrengthParamButtonServiceNoDeps,
 ).pipe(Layer.withSpan('ParamButtonServiceNoDeps'))
 
-const AppLayer = Layer.mergeAll(
+export const AppLayer = Layer.mergeAll(
   ParamButtonServiceNoDeps,
   AppPlaybackStateServiceNoDeps,
   AllButtonMappingLayerNoDeps,
@@ -220,7 +222,39 @@ const AppLayer = Layer.mergeAll(
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 
-const runtime = Atom.runtime(AppLayer)
+const builtRuntime = Atom.runtime(AppLayer)
+
+// BrowserRuntime.runMain
+export const testAtom = builtRuntime.atom(() =>
+  Effect.gen(function* () {
+    // const scope = (yield* Effect.scope) as Scope.CloseableScope
+
+    const innerRuntime = yield* Effect.runtime()
+
+    const scope = innerRuntime.context.unsafeMap.get(
+      Scope.Scope.key,
+    ) as Scope.CloseableScope
+    //   | undefined
+
+    yield* Effect.log('runtime dissassebler in place')
+
+    yield* Effect.sync(() => {
+      global.window.addEventListener(
+        'beforeunload',
+        event => {
+          somebodyKillMe?.forceFlush()
+
+          console.log(Effect.runSyncExit(Scope.close(scope, Exit.void)))
+          console.log('Runtime dissassemble attempted')
+          event.preventDefault()
+          event.returnValue = 'asdasd'
+          return true
+        },
+        { once: true },
+      )
+    })
+  }),
+)
 
 // runtime.
 
@@ -298,7 +332,7 @@ export const isAccordSelectedAtom = Atom.family((accord: Accord) =>
     AccordParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: accord === defaultAccord,
       }),
     Atom.withFallback(
@@ -321,7 +355,7 @@ export const isPatternSelectedAtom = Atom.family((pattern: Pattern) =>
     PatternParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: false,
       }),
     Atom.withFallback(
@@ -340,7 +374,7 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
     StrengthParamButtonService.getIsSelectedStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: strength === defaultStrength,
       }),
     Atom.withFallback(
@@ -363,7 +397,7 @@ export const isAccordPressedAtom = Atom.family((accord: Accord) =>
     AccordParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: false,
       }),
     Atom.withFallback(
@@ -382,7 +416,7 @@ export const isPatternPressedAtom = Atom.family((pattern: Pattern) =>
     PatternParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: false,
       }),
     Atom.withFallback(
@@ -401,7 +435,7 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
     StrengthParamButtonService.isPressedFlagChangesStream,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: false,
       }),
     Atom.withFallback(
@@ -480,7 +514,7 @@ export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
     AccordParamButtonService.getDownloadPercent,
     Stream.unwrap,
     s =>
-      runtime.atom(s, {
+      builtRuntime.atom(s, {
         initialValue: 0,
       }),
     Atom.withFallback(
@@ -500,7 +534,7 @@ export const patternButtonDownloadPercentAtom = Atom.family(
       PatternParamButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
-        runtime.atom(s, {
+        builtRuntime.atom(s, {
           initialValue: 0,
         }),
       Atom.withFallback(
@@ -520,7 +554,7 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
       StrengthParamButtonService.getDownloadPercent,
       Stream.unwrap,
       s =>
-        runtime.atom(s, {
+        builtRuntime.atom(s, {
           initialValue: 0,
         }),
       Atom.withFallback(
@@ -536,7 +570,7 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
   AppPlaybackStateService.playStopButtonPressableFlagChangesStream,
   Stream.unwrap,
   s =>
-    runtime.atom(s, {
+    builtRuntime.atom(s, {
       initialValue: false,
     }),
   Atom.withFallback(

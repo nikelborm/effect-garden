@@ -148,6 +148,6 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         // тупо потому что не хочу усложнять себе работу
         playbackPublicInfoChangesStream: stateRef.changes,
       }
-    }).pipe(Effect.orDie),
+    }).pipe(Effect.withSpan('AppPlaybackStateService.init'), Effect.orDie),
   },
 ) {}

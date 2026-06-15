@@ -61,7 +61,7 @@ export class PatternRegistry
             }),
           ),
       }
-    }),
+    }).pipe(Effect.withSpan('PatternRegistry.init')),
   })
   implements IPatternRegistry {}
 

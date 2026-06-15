@@ -68,6 +68,7 @@
         "@base-ui/react": "catalog:",
         "@effect-atom/atom": "catalog:",
         "@effect-atom/atom-react": "catalog:",
+        "@effect/experimental": "catalog:",
         "@evadev/effect-helpers": "workspace:^",
         "@fp-ts/optic": "catalog:",
         "@opentelemetry/exporter-logs-otlp-grpc": "catalog:",

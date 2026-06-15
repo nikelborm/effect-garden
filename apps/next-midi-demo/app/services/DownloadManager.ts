@@ -91,7 +91,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
         startOrContinueOrIgnoreCompletedCached,
         interruptOrIgnoreNotStarted,
       }
-    }),
+    }).pipe(Effect.withSpan('DownloadManager.init')),
   },
 ) {}
 

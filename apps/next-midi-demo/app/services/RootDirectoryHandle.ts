@@ -14,6 +14,7 @@ export class RootDirectoryHandle extends Effect.Service<RootDirectoryHandle>()(
       },
       catch: cause => new OPFSError({ operation: 'getRoot', cause }),
     }).pipe(
+      Effect.withSpan('RootDirectoryHandle.init'),
       Effect.orDie,
       Effect.tapDefect(defectCause =>
         Effect.logError('Defect while getting root OPFS handle', defectCause),

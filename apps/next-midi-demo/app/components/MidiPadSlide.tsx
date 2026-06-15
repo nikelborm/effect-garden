@@ -25,6 +25,7 @@ import {
   isStrengthSelectedAtom,
   patternButtonDownloadPercentAtom,
   strengthButtonDownloadPercentAtom,
+  testAtom,
 } from '../atoms/buttonsAtom.ts'
 import { patternsAtom } from '../atoms/patternsAtom.ts'
 import { strengthsAtom } from '../atoms/strengthAtom.ts'
@@ -39,6 +40,8 @@ export const MidiPadSlide = () => {
     patterns: Hooks.useAtomValue(patternsAtom),
     strengths: Hooks.useAtomValue(strengthsAtom),
   })
+
+  Hooks.useAtomMount(testAtom)
 
   if (!Result.isSuccess(res)) return 'wtf'
   const { accords, patterns, strengths } = res.value

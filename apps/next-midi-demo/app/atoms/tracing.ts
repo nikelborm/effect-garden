@@ -10,7 +10,6 @@ import {
   BatchSpanProcessor,
   type BufferConfig,
   type ReadableSpan,
-  SimpleSpanProcessor,
   type SpanExporter,
 } from '@opentelemetry/sdk-trace-base'
 
@@ -60,7 +59,14 @@ export class ByteAwareBatchSpanProcessor extends BatchSpanProcessor {
   }
 }
 
-export const TracingLive = Layer.unwrapEffect(
+// Effect's layer shutdown is async. Browser doesn't allow awaiting any async
+// work on page unload. There's no way to wait, until all of the layers
+// finalize, close their scopes, and then finally submit their lifetime spans.
+// So we just give up. And we cannot move into service worker either, because we
+// need audioContext which is available only on the main thread (page's context)
+export let somebodyKillMe: OTLPTraceExporter | undefined
+
+export const TracingLive = Layer.unwrapScoped(
   Effect.gen(function* () {
     // const AXIOM_API_KEY = yield* Config.redacted('AXIOM_API_KEY');
 
@@ -88,7 +94,8 @@ export const TracingLive = Layer.unwrapEffect(
         },
       ),
       spanProcessor: new BatchSpanProcessor(
-        new OTLPTraceExporter({ url: `/api/otel/traces` }),
+        // biome-ignore lint/suspicious/noAssignInExpressions: fuck you
+        (somebodyKillMe = new OTLPTraceExporter({ url: `/api/otel/traces` })),
         // {
         //   maxBatchBytes: 24_999,
         // },

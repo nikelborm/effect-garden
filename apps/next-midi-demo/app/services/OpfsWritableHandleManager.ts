@@ -61,6 +61,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             ),
           ),
       }
-    }),
+    }).pipe(Effect.withSpan('OpfsWritableHandleManager.init')),
   },
 ) {}

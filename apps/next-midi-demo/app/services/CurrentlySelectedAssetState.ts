@@ -86,6 +86,6 @@ export class CurrentlySelectedAssetState extends Effect.Service<CurrentlySelecte
         getPatchedAssetFetchingCompletionStatusChangesStream,
         changes: selectedAssetChangesStream,
       }
-    }),
+    }).pipe(Effect.withSpan('CurrentlySelectedAssetState.init')),
   },
 ) {}

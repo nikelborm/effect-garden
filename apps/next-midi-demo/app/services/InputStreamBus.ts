@@ -207,9 +207,8 @@ export class AccordInputBus extends Effect.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
   {
     accessors: true,
-    scoped: Effect.withSpan(
-      makeInputBus<SupportedPhysicalButtonIds, AccordData>(),
-      'AccordInputBus.init',
+    scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>().pipe(
+      Effect.withSpan('AccordInputBus.init'),
     ),
   },
 ) {}
@@ -218,9 +217,8 @@ export class PatternInputBus extends Effect.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
   {
     accessors: true,
-    scoped: Effect.withSpan(
-      makeInputBus<SupportedPhysicalButtonIds, PatternData>(),
-      'PatternInputBus.init',
+    scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>().pipe(
+      Effect.withSpan('PatternInputBus.init'),
     ),
   },
 ) {}
@@ -229,9 +227,8 @@ export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
   {
     accessors: true,
-    scoped: Effect.withSpan(
-      makeInputBus<SupportedPhysicalButtonIds, StrengthData>(),
-      'StrengthInputBus.init',
+    scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>().pipe(
+      Effect.withSpan('StrengthInputBus.init'),
     ),
   },
 ) {}

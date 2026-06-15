@@ -164,7 +164,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         getAssetFetchingCompletionStatusChangesStream,
         getAssetFetchingCompletionStatus,
       }
-    }),
+    }).pipe(Effect.withSpan('LoadedAssetSizeEstimationMap.init')),
   },
 ) {}
 

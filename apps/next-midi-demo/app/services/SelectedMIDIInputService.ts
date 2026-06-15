@@ -6,7 +6,7 @@ import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputService>()(
-  'SelectedMIDIInputService',
+  'next-midi-demo/SelectedMIDIInputService',
   {
     accessors: true,
     scoped: Effect.gen(function* () {
@@ -49,6 +49,6 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
 
         changes,
       }
-    }),
+    }).pipe(Effect.withSpan('SelectedMIDIInputService.init')),
   },
 ) {}
