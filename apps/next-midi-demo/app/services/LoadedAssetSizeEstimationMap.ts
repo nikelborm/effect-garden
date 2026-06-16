@@ -1,6 +1,6 @@
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import { flow, type LazyArg, pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
@@ -34,8 +34,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       ])
 
       const makeEmptyAssetToSizeHashMap = (
-        defaultEstimate: LazyArg<AssetSizeEstimation>,
-      ) =>
+        defaultEstimate: AbsentEstimation,
+      ): AssetToSizeHashMap =>
         pipe(
           Iterable.cartesian(accords, strengths),
           Iterable.flatMap(([accord, strength]) =>
@@ -46,14 +46,17 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
               ),
             ),
           ),
-          Iterable.map(asset => [asset, defaultEstimate()] as const),
+          Iterable.map(
+            (asset): AssetToSizeHashMapEntry => [
+              asset,
+              Data.struct(defaultEstimate),
+            ],
+          ),
           HashMap.fromIterable,
         )
 
       const assetToSizeHashMapRef = yield* SubscriptionRef.make(
-        makeEmptyAssetToSizeHashMap(() =>
-          Data.struct({ status: 'unknownWhileFetchingInitial' }),
-        ),
+        makeEmptyAssetToSizeHashMap({ status: 'unknownWhileFetchingInitial' }),
       )
 
       yield* pipe(
@@ -64,38 +67,19 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             Iterable.filterMap(({ name, size }) =>
               Option.map(
                 getAssetFromLocalFileName(name),
-                asset =>
-                  [
-                    asset,
-                    Data.struct({
-                      size,
-                      status: 'verifiedOnDisk',
-                    }) satisfies AssetSizeEstimation,
-                  ] as const,
+                (asset): AssetToSizeHashMapEntry => [
+                  asset,
+                  Data.struct({ size, status: 'verifiedOnDisk' }),
+                ],
               ),
             ),
             HashMap.fromIterable,
-            presentOnDiskOverrides =>
-              SubscriptionRef.update(
-                assetToSizeHashMapRef,
-                HashMap.union(
-                  HashMap.union(
-                    makeEmptyAssetToSizeHashMap(() =>
-                      Data.struct({ status: 'absentOnDisk' }),
-                    ),
-                    presentOnDiskOverrides,
-                  ),
-                ),
-              ).pipe(
-                Effect.andThen(
-                  Effect.log(
-                    'received verified',
-                    HashMap.toEntries(presentOnDiskOverrides).filter(
-                      ([ass]) => ass.accord === 'C' && ass.strength === 'm',
-                    ),
-                  ),
-                ),
+            overrides =>
+              HashMap.union(
+                makeEmptyAssetToSizeHashMap({ status: 'absentOnDisk' }),
+                overrides,
               ),
+            map => SubscriptionRef.set(assetToSizeHashMapRef, map),
           ),
         ),
         Effect.orDie,
@@ -144,6 +128,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           assetToSizeHashMapRef,
           HashMap.modifyAt(
             asset,
+            // I conciously avoid modify, and choose getOrThrow instead to
+            // enforce invariant, which HashMap.modify doesn't inforce because
+            // it just Option.map's over the value
             flow(Option.getOrThrow, update, Data.struct, Option.some),
           ),
         )
@@ -248,6 +235,7 @@ export type AssetCompletionStatus = NotFinished | AlmostFinished | Finished
 
 export interface AssetToSizeHashMap
   extends HashMap.HashMap<AssetPointer, AssetSizeEstimation> {}
+export type AssetToSizeHashMapEntry = [AssetPointer, AssetSizeEstimation]
 
 export interface AbsentEstimation {
   readonly status: AbsentStatus
