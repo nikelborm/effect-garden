@@ -98,6 +98,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
 const downloadRemainingAssetPart = Effect.fn(
   'DownloadManager.downloadRemainingAssetPart',
 )(function* (asset: AssetPointer) {
+  yield* Effect.annotateCurrentSpan({ asset })
   const opfs = yield* OpfsWritableHandleManager
   const remoteAssetURL = new URL(
     getRemoteAssetPath(asset),
@@ -109,20 +110,35 @@ const downloadRemainingAssetPart = Effect.fn(
   const estimationMap = yield* LoadedAssetSizeEstimationMap
 
   yield* Effect.gen(function* () {
+    const meta = yield* Schedule.CurrentIterationMetadata
+    yield* Effect.annotateCurrentSpan({ asset, attemptIndex: meta.recurrence })
     const { appendDataToTheEndOfFile } = yield* opfs.getWriter(asset)
     const currentBytes = yield* estimationMap.awaitVerifiedOnDiskBytes(asset)
 
-    return Stream.tap(getStreamOfRemoteAsset(asset, currentBytes), byteArray =>
-      appendDataToTheEndOfFile(byteArray.buffer),
+    return getStreamOfRemoteAsset(asset, currentBytes).pipe(
+      Stream.tap(byteArray => appendDataToTheEndOfFile(byteArray.buffer)),
+      Stream.withSpan('DownloadManager.assetDownloadingAttemptLocalStream', {
+        attributes: { asset, attemptIndex: meta.recurrence },
+      }),
     )
   }).pipe(
+    Effect.withSpan('DownloadManager.downloadAssetAttemptInit'),
     Effect.tapErrorCause(cause =>
       Effect.logError('Failure while downloading asset: ', cause),
     ),
+    // unwrapScoped is used to ensure that opfs.getWriter's scope is tied to the
+    // scope of the stream, so that if http connection is interrupted, it will
+    // properly close
     Stream.unwrapScoped,
+    Stream.withSpan('DownloadManager.assetDownloadingAttemptStream', {
+      attributes: { asset },
+    }),
     Stream.retry(
       Schedule.intersect(Schedule.recurs(3), Schedule.exponential('1 second')),
     ),
+    Stream.withSpan('DownloadManager.assetDownloadStream', {
+      attributes: { asset },
+    }),
     Stream.orDie,
     Stream.runDrain,
   )

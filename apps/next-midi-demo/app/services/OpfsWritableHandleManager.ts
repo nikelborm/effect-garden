@@ -17,7 +17,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
 
       const acquireWritable = Effect.fn(
-        'OpfsWritableHandleManager.acquireWritable',
+        'OpfsWritableHandleManager.pool.acquireWritable',
       )(function* (asset: AssetPointer) {
         yield* Effect.annotateCurrentSpan({ asset })
 
@@ -75,18 +75,23 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
 
       const pool = yield* KeyedPool.make({ size: 1, acquire: acquireWritable })
 
-      const getWriter = (selector: AssetPointer) =>
-        pool.get(selector).pipe(
+      const getWriter = (asset: AssetPointer) =>
+        pool.get(asset).pipe(
           Effect.acquireRelease(Struct.get('close')),
           Effect.acquireRelease(() =>
             Effect.log(
-              `OPFS writer finalizer for accord=${selector.accord} ${
-                selector.pattern ? `pattern=${selector.pattern}` : `         `
-              } strength=${selector.strength} ran`,
+              `OPFS writer finalizer for accord=${asset.accord} ${
+                asset.pattern ? `pattern=${asset.pattern}` : `         `
+              } strength=${asset.strength} ran`,
             ),
           ),
           Effect.map(Struct.omit('close')),
-          Effect.withSpanScoped('OpfsWritableHandleManager.lifetime'),
+Effect.withSpan('OpfsWritableHandleManager.acquireWritable', {
+            attributes: { asset },
+          }),
+          Effect.withSpanScoped('OpfsWritableHandle.lifetime', {
+            attributes: { asset },
+          }),
         )
 
       return { getWriter }
