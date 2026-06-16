@@ -1,5 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as KeyedPool from 'effect/KeyedPool'
+import * as Struct from 'effect/Struct'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
@@ -24,12 +25,14 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             })
 
             const file = yield* Effect.promise(() => fileHandle.getFile())
+            const size = file.size
+            yield* estimationMap.setVerified(pointer, size)
 
             const writablePointingAtTheEnd = yield* Effect.promise(async () => {
               const writable = await fileHandle.createWritable({
                 keepExistingData: true,
               })
-              await writable.seek(file.size)
+              await writable.seek(size)
               return writable
             })
 
@@ -37,14 +40,15 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
               appendDataToTheEndOfFile: (data: ArrayBuffer) =>
                 Effect.zipRight(
                   Effect.promise(() => writablePointingAtTheEnd.write(data)),
-                  estimationMap.increaseUnverifiedAssetSize(
+                  estimationMap.increaseAndUnverifyAssetSize(
                     pointer,
                     data.byteLength,
                   ),
                 ),
-              close: Effect.promise(() =>
-                writablePointingAtTheEnd.close(),
-              ).pipe(Effect.andThen(estimationMap.verify(pointer))),
+              close: Effect.zipRight(
+                Effect.promise(() => writablePointingAtTheEnd.close()),
+                estimationMap.verify(pointer),
+              ),
             }
           },
         ),
@@ -53,12 +57,15 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
       return {
         getWriter: (selector: AssetPointer) =>
           pool.get(selector).pipe(
-            Effect.acquireRelease(e => e.close),
+            Effect.acquireRelease(Struct.get('close')),
             Effect.acquireRelease(() =>
               Effect.log(
-                `OPFS writer finalizer for accord=${selector.accord} ${selector.pattern ? `pattern=${selector.pattern}` : `         `} strength=${selector.strength} ran`,
+                `OPFS writer finalizer for accord=${selector.accord} ${
+                  selector.pattern ? `pattern=${selector.pattern}` : `         `
+                } strength=${selector.strength} ran`,
               ),
             ),
+            Effect.map(Struct.omit('close')),
           ),
       }
     }).pipe(Effect.withSpan('OpfsWritableHandleManager.init')),

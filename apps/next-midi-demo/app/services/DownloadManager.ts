@@ -48,8 +48,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
             awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
           }
 
-        // TODO: ensure waits past initial fetch
-        if (yield* estimationMap.areAllBytesFetched(asset))
+        if (yield* estimationMap.areAllBytesFetchedAwaitVerified(asset))
           return {
             _tag: 'AssetAlreadyDownloaded' as const,
             message: `All bytes to fetch the asset have been received, although might not have been written`,
@@ -67,7 +66,7 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
             ),
           }
 
-        downloadAssetFiber = run(asset, downloadAsset(asset), {
+        downloadAssetFiber = run(asset, downloadRemainingAssetPart(asset), {
           onlyIfMissing: true,
         })
 
@@ -96,9 +95,9 @@ export class DownloadManager extends Effect.Service<DownloadManager>()(
   },
 ) {}
 
-const downloadAsset = Effect.fn('downloadAsset')(function* (
-  asset: AssetPointer,
-) {
+const downloadRemainingAssetPart = Effect.fn(
+  'DownloadManager.downloadRemainingAssetPart',
+)(function* (asset: AssetPointer) {
   const opfs = yield* OpfsWritableHandleManager
   const remoteAssetURL = new URL(
     getRemoteAssetPath(asset),
@@ -144,4 +143,8 @@ export const getStreamOfRemoteAsset = (
       HttpClientError.ResponseError,
       never
     >
-  }).pipe(Effect.withSpan('getStreamOfRemoteAsset'), Stream.unwrap)
+  }).pipe(
+    Effect.withSpan('DownloadManager.getStreamOfRemoteAsset'),
+    Stream.unwrap,
+    Stream.withSpan('RemoteAssetContent'),
+  )

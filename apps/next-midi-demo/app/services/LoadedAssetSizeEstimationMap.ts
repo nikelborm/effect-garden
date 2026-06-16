@@ -113,7 +113,8 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           Stream.map(getOrThrowBy(asset)),
           Stream.filter(
             (estimate): estimate is PresentEstimation =>
-              estimate.status === 'verifiedOnDisk',
+              estimate.status === 'verifiedOnDisk' ||
+              estimate.status === 'absentOnDisk',
           ),
           Stream.take(1),
           Stream.runHead,
@@ -135,7 +136,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           ),
         )
 
-      const increaseUnverifiedAssetSize = (
+      const increaseAndUnverifyAssetSize = (
         asset: AssetPointer,
         bytesDownloaded: number,
       ) =>
@@ -149,6 +150,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             size: estimation.size + bytesDownloaded,
           }
         })
+
+      const setVerified = (asset: AssetPointer, size: number) =>
+        modifyMapAt(asset, () => ({ status: 'inProgressWriter', size }))
 
       const verify = (asset: AssetPointer) =>
         modifyMapAt(asset, estimation => {
@@ -186,14 +190,22 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           mapCurrentFetchedBytesToCompletionStatus,
         )
 
+      const areAllBytesFetchedAwaitVerified = (
+        asset: AssetPointer,
+      ): Effect.Effect<boolean> => {
+        return Effect.succeed(true)
+      }
+
       const areAllBytesFetched = flow(
         getAssetFetchingCompletionStatus,
         Effect.map(({ status }) => status !== 'not finished'),
       )
 
       return {
-        increaseUnverifiedAssetSize,
+        increaseAndUnverifyAssetSize,
         verify,
+        setVerified,
+        areAllBytesFetchedAwaitVerified,
         awaitVerifiedOnDiskBytes,
         areAllBytesFetched,
         getCurrentDownloadedBytes,
