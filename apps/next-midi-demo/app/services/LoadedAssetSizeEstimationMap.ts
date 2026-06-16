@@ -34,7 +34,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       ])
 
       const makeEmptyAssetToSizeHashMap = (
-        defaultEstimate: AbsentEstimation,
+        defaultEstimate: ZeroLikeEstimation,
       ): AssetToSizeHashMap =>
         pipe(
           Iterable.cartesian(accords, strengths),
@@ -46,17 +46,12 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
               ),
             ),
           ),
-          Iterable.map(
-            (asset): AssetToSizeHashMapEntry => [
-              asset,
-              Data.struct(defaultEstimate),
-            ],
-          ),
+          Iterable.map(asset => [asset, defaultEstimate] as const),
           HashMap.fromIterable,
         )
 
       const assetToSizeHashMapRef = yield* SubscriptionRef.make(
-        makeEmptyAssetToSizeHashMap({ status: 'unknownWhileFetchingInitial' }),
+        makeEmptyAssetToSizeHashMap(UndeterminedEstimation),
       )
 
       yield* pipe(
@@ -69,14 +64,14 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
                 getAssetFromLocalFileName(name),
                 (asset): AssetToSizeHashMapEntry => [
                   asset,
-                  Data.struct({ size, status: 'verifiedOnDisk' }),
+                  new VerifiedPresentOnDiskEstimation(size),
                 ],
               ),
             ),
             HashMap.fromIterable,
             overrides =>
               HashMap.union(
-                makeEmptyAssetToSizeHashMap({ status: 'absentOnDisk' }),
+                makeEmptyAssetToSizeHashMap(VerifiedAbsentOnDiskEstimation),
                 overrides,
               ),
             map => SubscriptionRef.set(assetToSizeHashMapRef, map),
@@ -108,18 +103,21 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           Stream.changes,
         )
 
-      const awaitVerifiedOnDiskBytes = (asset: AssetPointer) =>
+      const awaitVerified = (asset: AssetPointer) =>
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(getOrThrowBy(asset)),
-          Stream.filter(
-            (estimate): estimate is PresentEstimation =>
-              estimate.status === 'verifiedOnDisk' ||
-              estimate.status === 'absentOnDisk',
-          ),
+          Stream.filter(isVerified),
           Stream.take(1),
           Stream.runHead,
-          Effect.map(flow(Option.getOrThrow, ({ size }) => size)),
+          Effect.map(Option.getOrThrow),
         )
+
+      const awaitVerifiedOnDiskBytes = flow(
+        awaitVerified,
+        Effect.map(estimate =>
+          estimate.status === 'verifiedAbsentOnDisk' ? 0 : estimate.size,
+        ),
+      )
 
       const modifyMapAt = (
         asset: AssetPointer,
@@ -129,10 +127,10 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           assetToSizeHashMapRef,
           HashMap.modifyAt(
             asset,
-            // I conciously avoid modify, and choose getOrThrow instead to
+            // I consciously avoid modify, and choose getOrThrow instead to
             // enforce invariant, which HashMap.modify doesn't inforce because
             // it just Option.map's over the value
-            flow(Option.getOrThrow, update, Data.struct, Option.some),
+            flow(Option.getOrThrow, update, Option.some),
           ),
         )
 
@@ -145,14 +143,13 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             throw new Error(
               'Assertion failed: Cannot increase the size of absent asset',
             )
-          return {
-            status: 'inProgressWriter',
-            size: estimation.size + bytesDownloaded,
-          }
+          return new InProgressWriteEstimation(
+            estimation.size + bytesDownloaded,
+          )
         })
 
       const setVerified = (asset: AssetPointer, size: number) =>
-        modifyMapAt(asset, () => ({ status: 'inProgressWriter', size }))
+        modifyMapAt(asset, () => new InProgressWriteEstimation(size))
 
       const verify = (asset: AssetPointer) =>
         modifyMapAt(asset, estimation => {
@@ -160,7 +157,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             throw new Error(
               'Assertion failed: Cannot verify size of absent asset',
             )
-          return { status: 'verifiedOnDisk', size: estimation.size }
+          return new VerifiedPresentOnDiskEstimation(estimation.size)
         })
 
       const mapCurrentFetchedBytesToCompletionStatus = (
@@ -190,11 +187,14 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           mapCurrentFetchedBytesToCompletionStatus,
         )
 
-      const areAllBytesFetchedAwaitVerified = (
-        asset: AssetPointer,
-      ): Effect.Effect<boolean> => {
-        return Effect.succeed(true)
-      }
+      const areAllBytesFetchedAwaitVerified = flow(
+        awaitVerified,
+        Effect.map(
+          estimation =>
+            estimation.status === 'verifiedPresentOnDisk' &&
+            estimation.size === ASSET_SIZE_BYTES,
+        ),
+      )
 
       const areAllBytesFetched = flow(
         getAssetFetchingCompletionStatus,
@@ -249,19 +249,58 @@ export interface AssetToSizeHashMap
   extends HashMap.HashMap<AssetPointer, AssetSizeEstimation> {}
 export type AssetToSizeHashMapEntry = [AssetPointer, AssetSizeEstimation]
 
-export interface AbsentEstimation {
-  readonly status: AbsentStatus
+export const VerifiedAbsentOnDiskEstimation = Data.struct({
+  status: 'verifiedAbsentOnDisk',
+} as const)
+export type VerifiedAbsentOnDiskEstimation =
+  typeof VerifiedAbsentOnDiskEstimation
+
+export const UndeterminedEstimation = Data.struct({
+  status: 'unknownWhileFetchingInitial',
+} as const)
+export type UndeterminedEstimation = typeof UndeterminedEstimation
+
+export class InProgressWriteEstimation extends Data.Class<{
+  status: 'inProgressWriter'
+  size: number
+}> {
+  constructor(size: number) {
+    super({ status: 'inProgressWriter', size })
+  }
 }
-export interface PresentEstimation {
-  readonly size: number
-  readonly status: PresentStatus
+
+export class VerifiedPresentOnDiskEstimation extends Data.Class<{
+  status: 'verifiedPresentOnDisk'
+  size: number
+}> {
+  constructor(size: number) {
+    super({ status: 'verifiedPresentOnDisk', size })
+  }
 }
 
-export type AssetSizeEstimation = AbsentEstimation | PresentEstimation
+export type VerifiedEstimation =
+  | VerifiedPresentOnDiskEstimation
+  | VerifiedAbsentOnDiskEstimation
 
-const isAbsentOrUnknown = (a: AssetSizeEstimation): a is AbsentEstimation =>
-  a.status === 'absentOnDisk' || a.status === 'unknownWhileFetchingInitial'
-export type PresentStatus = 'verifiedOnDisk' | 'inProgressWriter'
-export type AbsentStatus = 'unknownWhileFetchingInitial' | 'absentOnDisk'
+export type FilePresentEstimation =
+  | InProgressWriteEstimation
+  | VerifiedPresentOnDiskEstimation
 
-export type AssetEstimationStatus = PresentStatus | AbsentStatus
+export type ZeroLikeEstimation =
+  | VerifiedAbsentOnDiskEstimation
+  | UndeterminedEstimation
+
+export type AssetSizeEstimation =
+  | VerifiedAbsentOnDiskEstimation
+  | UndeterminedEstimation
+  | InProgressWriteEstimation
+  | VerifiedPresentOnDiskEstimation
+
+const isAbsentOrUnknown = (a: AssetSizeEstimation): a is ZeroLikeEstimation =>
+  a.status === 'verifiedAbsentOnDisk' ||
+  a.status === 'unknownWhileFetchingInitial'
+
+const isVerified = (a: AssetSizeEstimation): a is VerifiedEstimation =>
+  a.status === 'verifiedPresentOnDisk' || a.status === 'verifiedAbsentOnDisk'
+
+export type AssetEstimationStatus = AssetSizeEstimation['status']
