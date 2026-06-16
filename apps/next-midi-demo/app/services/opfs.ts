@@ -185,7 +185,11 @@ export const getFileHandle = (opts: {
         path: opts.fileName,
         cause: error,
       }),
-  })
+  }).pipe(
+    Effect.withSpan('OPFS.getFileHandle', {
+      attributes: { fileName: opts.fileName, create: opts.create ?? false },
+    }),
+  )
 
 /**
  * Information about a file system entry.
@@ -240,7 +244,7 @@ export const listEntries = (
         operation: 'listEntries',
         cause: error,
       }),
-  })
+  }).pipe(Effect.withSpan('OPFS.listEntries'))
 
 /**
  * Result of printing a directory tree.

@@ -144,7 +144,11 @@ export const getStreamOfRemoteAsset = (
       never
     >
   }).pipe(
-    Effect.withSpan('DownloadManager.getStreamOfRemoteAsset'),
+    Effect.withSpan('DownloadManager.getStreamOfRemoteAsset', {
+      attributes: { asset, resumeFromByte: resumeFromByte ?? null },
+    }),
     Stream.unwrap,
-    Stream.withSpan('RemoteAssetContent'),
+    Stream.withSpan('DownloadManager.remoteAssetContentStream', {
+      attributes: { asset, resumeFromByte: resumeFromByte ?? null },
+    }),
   )

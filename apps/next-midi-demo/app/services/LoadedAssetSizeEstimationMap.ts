@@ -54,7 +54,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         makeEmptyAssetToSizeHashMap(UndeterminedEstimation),
       )
 
-      yield* pipe(
+      const initialDataFulfillmentEffect = pipe(
         listEntries(rootDirectoryHandle),
         Effect.flatMap(
           flow(
@@ -84,8 +84,10 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             defectCause,
           ),
         ),
-        Effect.forkScoped,
+        Effect.withSpan('LoadedAssetSizeEstimationMap.initialDataFulfillment'),
       )
+
+      yield* Effect.forkScoped(initialDataFulfillmentEffect)
 
       const getOrThrowBy = (asset: AssetPointer) => (map: AssetToSizeHashMap) =>
         map.pipe(HashMap.get(asset), Option.getOrThrow)
@@ -101,6 +103,10 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         assetToSizeHashMapRef.changes.pipe(
           Stream.map(getOrThrowBy(asset)),
           Stream.changes,
+          Stream.withSpan(
+            'LoadedAssetSizeEstimationMap.currentDownloadedBytesStream',
+            { attributes: { asset } },
+          ),
         )
 
       const awaitVerified = (asset: AssetPointer) =>
@@ -110,6 +116,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           Stream.take(1),
           Stream.runHead,
           Effect.map(Option.getOrThrow),
+          Effect.withSpan('LoadedAssetSizeEstimationMap.awaitVerified', {
+            attributes: { asset },
+          }),
         )
 
       const awaitVerifiedOnDiskBytes = flow(
@@ -123,15 +132,23 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         asset: AssetPointer,
         update: (estimation: AssetSizeEstimation) => AssetSizeEstimation,
       ) =>
-        SubscriptionRef.update(
-          assetToSizeHashMapRef,
-          HashMap.modifyAt(
-            asset,
-            // I consciously avoid modify, and choose getOrThrow instead to
-            // enforce invariant, which HashMap.modify doesn't inforce because
-            // it just Option.map's over the value
-            flow(Option.getOrThrow, update, Option.some),
+        assetToSizeHashMapRef.pipe(
+          SubscriptionRef.updateAndGet(
+            HashMap.modifyAt(
+              asset,
+              // I deliberately avoid HashMap.modify, and choose Option.getOrThrow
+              // approach instead to enforce invariant, which isn't inforced in
+              // the other, which just Option.map's over the value
+              flow(Option.getOrThrow, update, Option.some),
+            ),
           ),
+          Effect.tap(newMap =>
+            Effect.annotateLogs(Effect.log('Modified estimationMap'), {
+              newValue: HashMap.unsafeGet(newMap, asset),
+              asset,
+            }),
+          ),
+          Effect.asVoid,
         )
 
       const increaseAndUnverifyAssetSize = (
@@ -149,7 +166,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
         })
 
       const setVerified = (asset: AssetPointer, size: number) =>
-        modifyMapAt(asset, () => new InProgressWriteEstimation(size))
+        modifyMapAt(asset, () => new VerifiedPresentOnDiskEstimation(size))
 
       const verify = (asset: AssetPointer) =>
         modifyMapAt(asset, estimation => {
