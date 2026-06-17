@@ -2,13 +2,13 @@ import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Mailbox from 'effect/Mailbox'
+import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
-import { makeAssetPointerMapFactory } from '../helpers/makeAssetPointerMap.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import {
   closeWritable,
@@ -27,18 +27,29 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
     scoped: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
-      const makeAssetPointerMap = yield* makeAssetPointerMapFactory
-      const assetToSemaphoreMap = makeAssetPointerMap(() =>
-        Effect.unsafeMakeSemaphore(1),
+      const assetToSemaphoreMapRef = yield* Ref.make(
+        HashMap.empty<AssetPointer, Effect.Semaphore>(),
       )
 
       const acquireScopedWritePermit = (asset: AssetPointer) =>
-        assetToSemaphoreMap.pipe(
-          HashMap.unsafeGet(asset),
-          semaphore =>
+        assetToSemaphoreMapRef.pipe(
+          Ref.modify(map => {
+            const attempt = HashMap.get(map, asset)
+            const semaphore = Option.getOrElse(attempt, () =>
+              Effect.unsafeMakeSemaphore(1),
+            )
+            const replacement = Option.match(attempt, {
+              onSome: () => map,
+              onNone: () => HashMap.set(map, asset, semaphore),
+            })
+
+            return [semaphore, replacement]
+          }),
+          Effect.flatMap(semaphore =>
             Effect.acquireRelease(semaphore.take(1), () =>
               semaphore.release(1),
             ),
+          ),
           Effect.asVoid,
         )
 

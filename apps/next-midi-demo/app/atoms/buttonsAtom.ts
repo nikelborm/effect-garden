@@ -170,7 +170,6 @@ const LoadedAssetSizeEstimationMapNoDeps =
 const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
-  Layer.provide(AllRegistriesNoDeps),
   Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
