@@ -38,12 +38,15 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             const semaphore = Option.getOrElse(attempt, () =>
               Effect.unsafeMakeSemaphore(1),
             )
-            const replacement = Option.match(attempt, {
-              onSome: () => map,
-              onNone: () => HashMap.set(map, asset, semaphore),
-            })
-
-            return [semaphore, replacement]
+            return [
+              // effect's success
+              semaphore,
+              // new ref value
+              Option.match(attempt, {
+                onSome: () => map,
+                onNone: () => HashMap.set(map, asset, semaphore),
+              }),
+            ]
           }),
           Effect.flatMap(semaphore =>
             Effect.acquireRelease(semaphore.take(1), () =>
@@ -58,6 +61,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           yield* Effect.annotateCurrentSpan({ asset })
           yield* acquireScopedWritePermit(asset)
           const fileName = getLocalAssetFileName(asset)
+          yield* Effect.annotateCurrentSpan({ fileName })
 
           const fileHandle = yield* getFileHandle({
             dirHandle: rootDirectoryHandle,
@@ -65,34 +69,45 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             create: true,
           })
 
-          const file = yield* getFile(fileHandle)
+          const file = yield* getFile(fileHandle).pipe(
+            Effect.annotateSpans({ asset, fileName }),
+          )
 
           yield* estimationMap.setVerified(asset, file.size)
 
           const writablePointingAtTheEnd = yield* pipe(
             createWritable(fileHandle),
             Effect.tap(writable => seek(writable, file.size)),
-            Effect.withSpan('makeWritablePointingAtTheEnd'),
+            Effect.withSpan('makeWritablePointingAtTheEnd', {
+              attributes: { asset, fileName },
+            }),
           )
 
           const mailbox = yield* Mailbox.make<
             Uint8Array<ArrayBuffer>,
             OPFSError
           >()
+          const span = yield* Effect.currentParentSpan
 
           const writerFiber = yield* Mailbox.toStream(mailbox).pipe(
             Stream.mapEffect(data =>
-              Effect.zip(
-                write(writablePointingAtTheEnd, data),
-                estimationMap.increaseAndUnverifyAssetSize(
-                  asset,
-                  data.byteLength,
+              write(writablePointingAtTheEnd, data).pipe(
+                Effect.zip(
+                  estimationMap.increaseAndUnverifyAssetSize(
+                    asset,
+                    data.byteLength,
+                  ),
                 ),
+                Effect.withSpan('appendData', {
+                  attributes: { asset, fileName },
+                }),
               ),
             ),
             Stream.runDrain,
             Effect.tapErrorCause(cause => mailbox.failCause(cause)),
             Effect.uninterruptible,
+            Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
+            Effect.withParentSpan(span),
             // What are implications of not using Effect.forkScoped here? I want
             // to ensure that the data would be written, but Effect.forkScoped
             // might trigger the interruption of drain operation when the stream
@@ -106,6 +121,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             closeWritable(writablePointingAtTheEnd),
             Effect.tapError(error => Ref.set(closeErrorOptionRef, error)),
             Effect.ignoreLogged,
+            Effect.annotateSpans({ asset, fileName }),
           )
 
           yield* Effect.addFinalizer(_exit =>
