@@ -1,6 +1,4 @@
-/** biome-ignore-all lint/complexity/useLiteralKeys: incompatibility with TS */
-
-import { flow, pipe } from 'effect/Function'
+import { flow } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 

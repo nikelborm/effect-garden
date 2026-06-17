@@ -7,9 +7,9 @@ export const isData = (idData: TaggedReadonlyObject) =>
   typeof idData === 'object' &&
   idData !== null &&
   '_tag' in idData &&
-  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
+  // biome-ignore lint/complexity/useLiteralKeys: false positive. conflicts with typescript
   typeof idData['_tag'] === 'string' &&
-  // biome-ignore lint/complexity/useLiteralKeys: fuck you, biome. when the fuck will you start being compatible with typescript??
+  // biome-ignore lint/complexity/useLiteralKeys: false positive. conflicts with typescript
   idData['_tag'] !== '' &&
   Hash.symbol in idData &&
   Equal.symbol in idData

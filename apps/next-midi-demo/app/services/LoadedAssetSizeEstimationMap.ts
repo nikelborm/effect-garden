@@ -7,18 +7,12 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import {
-  type AssetPointer,
-  TaggedPatternPointer,
-  TaggedSlowStrumPointer,
-} from '../brandsAndDatas/AssetPointer.ts'
+import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
 import { getAssetFromLocalFileName } from '../helpers/audioAssetFileNameAndPath.ts'
-import { AccordRegistry } from './AccordRegistry.ts'
+import { makeAssetPointerMapFactory } from '../helpers/makeAssetPointerMap.ts'
 import { listEntries } from './opfs.ts'
-import { PatternRegistry } from './PatternRegistry.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
-import { StrengthRegistry } from './StrengthRegistry.ts'
 
 export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
   'next-midi-demo/LoadedAssetSizeEstimationMap',
@@ -27,31 +21,13 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
     scoped: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
-      const [accords, patterns, strengths] = yield* Effect.all([
-        AccordRegistry.allAccords,
-        PatternRegistry.allPatterns,
-        StrengthRegistry.allStrengths,
-      ])
-
-      const makeEmptyAssetToSizeHashMap = (
-        defaultEstimate: ZeroLikeEstimation,
-      ): AssetToSizeHashMap =>
-        pipe(
-          Iterable.cartesian(accords, strengths),
-          Iterable.flatMap(([accord, strength]) =>
-            Iterable.appendAll(
-              Iterable.of(TaggedSlowStrumPointer.make({ accord, strength })),
-              Iterable.map(patterns, pattern =>
-                TaggedPatternPointer.make({ pattern, accord, strength }),
-              ),
-            ),
-          ),
-          Iterable.map(asset => [asset, defaultEstimate] as const),
-          HashMap.fromIterable,
-        )
+      const makeEmptyAssetToSizeHashMap =
+        // TODO: report biome bug
+        // biome-ignore format: bug in biome. should not remove parentheses
+        (yield* makeAssetPointerMapFactory)<AssetSizeEstimation>
 
       const assetToSizeHashMapRef = yield* SubscriptionRef.make(
-        makeEmptyAssetToSizeHashMap(UndeterminedEstimation),
+        makeEmptyAssetToSizeHashMap(() => UndeterminedEstimation),
       )
 
       const initialDataFulfillmentEffect = pipe(
@@ -71,7 +47,9 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
             HashMap.fromIterable,
             overrides =>
               HashMap.union(
-                makeEmptyAssetToSizeHashMap(VerifiedAbsentOnDiskEstimation),
+                makeEmptyAssetToSizeHashMap(
+                  () => VerifiedAbsentOnDiskEstimation,
+                ),
                 overrides,
               ),
             map => SubscriptionRef.set(assetToSizeHashMapRef, map),

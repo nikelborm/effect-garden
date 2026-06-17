@@ -94,7 +94,7 @@ export const TracingLive = Layer.unwrapScoped(
         },
       ),
       spanProcessor: new BatchSpanProcessor(
-        // biome-ignore lint/suspicious/noAssignInExpressions: fuck you
+        // biome-ignore lint/suspicious/noAssignInExpressions: intentional
         (somebodyKillMe = new OTLPTraceExporter({ url: `/api/otel/traces` })),
         // {
         //   maxBatchBytes: 24_999,

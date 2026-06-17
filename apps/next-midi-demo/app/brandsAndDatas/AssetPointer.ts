@@ -1,5 +1,3 @@
-/** biome-ignore-all lint/complexity/useLiteralKeys: incompatibility with TS */
-
 import { AbsentProperty } from '@evadev/effect-helpers'
 
 import * as Option from 'effect/Option'

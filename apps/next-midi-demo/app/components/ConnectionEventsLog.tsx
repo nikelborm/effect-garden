@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 'use client'
 
 import * as Result from '@effect-atom/atom/Result'
