@@ -58,40 +58,52 @@ import { somebodyKillMe, TracingLive } from './tracing.ts'
 
 const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
   Layer.withSpan('AccordInputBus.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 const PatternInputBusNoDeps = PatternInputBus.Default.pipe(
   Layer.withSpan('PatternInputBus.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 const StrengthInputBusNoDeps = StrengthInputBus.Default.pipe(
   Layer.withSpan('StrengthInputBus.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const AllBusesNoDeps = Layer.mergeAll(
   AccordInputBusNoDeps,
   PatternInputBusNoDeps,
   StrengthInputBusNoDeps,
-).pipe(Layer.withSpan('AllBusesNoDeps'))
+).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.ensureRequirementsType<never>())
 
 const AccordRegistryNoDeps = AccordRegistry.Default.pipe(
   Layer.withSpan('AccordRegistry.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 const PatternRegistryNoDeps = PatternRegistry.Default.pipe(
   Layer.withSpan('PatternRegistry.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 const StrengthRegistryNoDeps = StrengthRegistry.Default.pipe(
   Layer.withSpan('StrengthRegistry.Default'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const AllRegistriesNoDeps = Layer.mergeAll(
   AccordRegistryNoDeps,
   PatternRegistryNoDeps,
   StrengthRegistryNoDeps,
-).pipe(Layer.withSpan('AllRegistriesNoDeps'))
+).pipe(
+  Layer.withSpan('AllRegistriesNoDeps'),
+  Layer.ensureRequirementsType<never>(),
+)
 
 const AllRegistriesAndBusesNoDeps = Layer.mergeAll(
   AllBusesNoDeps,
   AllRegistriesNoDeps,
-).pipe(Layer.withSpan('AllRegistriesAndBusesNoDeps'))
+).pipe(
+  Layer.withSpan('AllRegistriesAndBusesNoDeps'),
+  Layer.ensureRequirementsType<never>(),
+)
 
 const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
   Layer.catchAll(err =>
@@ -103,28 +115,33 @@ const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
     ),
   ),
   Layer.withSpan('EMIDIAccess.layerSoftwareSynthSupported'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const SelectedMIDIInputWithAccessServiceNoDeps =
   SelectedMIDIInputService.Default.pipe(
     Layer.provideMerge(MIDIAccessNoDeps),
     Layer.withSpan('SelectedMIDIInputWithAccessServiceNoDeps'),
+    Layer.ensureRequirementsType<never>(),
   )
 // background
 const KeyboardButtonMappingLayerNoDeps = KeyboardButtonMappingLayer.pipe(
   Layer.provide(AllRegistriesAndBusesNoDeps),
   Layer.withSpan('KeyboardButtonMappingLayerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 // background
 const MIDIPadButtonMappingLayerNoDeps = MIDIPadButtonMappingLayer.pipe(
   Layer.provide(AllRegistriesAndBusesNoDeps),
   Layer.provide(SelectedMIDIInputWithAccessServiceNoDeps),
   Layer.withSpan('MIDIPadButtonMappingLayerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 // background
 const OnScreenButtonMappingLayerNoDeps = OnScreenButtonMappingLayer.pipe(
   Layer.provide(AllRegistriesAndBusesNoDeps),
   Layer.withSpan('OnScreenButtonMappingLayerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 // background
@@ -132,10 +149,14 @@ const AllButtonMappingLayerNoDeps = Layer.mergeAll(
   KeyboardButtonMappingLayerNoDeps,
   MIDIPadButtonMappingLayerNoDeps,
   OnScreenButtonMappingLayerNoDeps,
-).pipe(Layer.withSpan('AllButtonMappingLayerNoDeps'))
+).pipe(
+  Layer.withSpan('AllButtonMappingLayerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
+)
 
 const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
   Layer.withSpan('RootDirectoryHandleNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const LoadedAssetSizeEstimationMapNoDeps =
@@ -143,12 +164,15 @@ const LoadedAssetSizeEstimationMapNoDeps =
     Layer.provide(RootDirectoryHandleNoDeps),
     Layer.provide(AllRegistriesNoDeps),
     Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
+    Layer.ensureRequirementsType<never>(),
   )
 
 const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
+  Layer.provide(AllRegistriesNoDeps),
   Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const CurrentlySelectedAssetStateNoDeps =
@@ -156,14 +180,19 @@ const CurrentlySelectedAssetStateNoDeps =
     Layer.provide(AllRegistriesNoDeps),
     Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
     Layer.withSpan('CurrentlySelectedAssetStateNoDeps'),
+    Layer.ensureRequirementsType<never>(),
   )
 
-const AudioContextLive = Layer.orDie(EAudioContext.layer())
+const AudioContextLive = EAudioContext.layer().pipe(
+  Layer.orDie,
+  Layer.ensureRequirementsType<never>(),
+)
 
 const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
   Layer.provide(AudioContextLive),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
@@ -172,6 +201,7 @@ const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
   Layer.provide(AllRegistriesAndBusesNoDeps),
   Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.withSpan('AppPlaybackStateServiceNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const DownloadManagerNoDeps = DownloadManager.Default.pipe(
@@ -179,6 +209,7 @@ const DownloadManagerNoDeps = DownloadManager.Default.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(OpfsWritableHandleManagerNoDeps),
   Layer.withSpan('DownloadManagerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 // background
@@ -186,6 +217,7 @@ const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
   Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(DownloadManagerNoDeps),
   Layer.withSpan('AssetDownloadSchedulerNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
@@ -193,8 +225,8 @@ const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
   Layer.provide(AccordRegistryNoDeps),
   Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
-  // Effect.provide(Layer.mergeAll()),
   Layer.withSpan('AccordParamButtonServiceNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
@@ -203,6 +235,7 @@ const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
   Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('PatternParamButtonServiceNoDeps'),
+  Layer.ensureRequirementsType<never>(),
 )
 
 const StrengthParamButtonServiceNoDeps =
@@ -212,13 +245,17 @@ const StrengthParamButtonServiceNoDeps =
     Layer.provide(CurrentlySelectedAssetStateNoDeps),
     Layer.provide(AppPlaybackStateServiceNoDeps),
     Layer.withSpan('StrengthParamButtonServiceNoDeps'),
+    Layer.ensureRequirementsType<never>(),
   )
 
 const ParamButtonServiceNoDeps = Layer.mergeAll(
   AccordParamButtonServiceNoDeps,
   PatternParamButtonServiceNoDeps,
   StrengthParamButtonServiceNoDeps,
-).pipe(Layer.withSpan('ParamButtonServiceNoDeps'))
+).pipe(
+  Layer.withSpan('ParamButtonServiceNoDeps'),
+  Layer.ensureRequirementsType<never>(),
+)
 
 export const AppLayer = Layer.mergeAll(
   ParamButtonServiceNoDeps,
@@ -230,6 +267,7 @@ export const AppLayer = Layer.mergeAll(
   Layer.withSpan('AppLayer'),
 
   Layer.provide(TracingLive),
+  Layer.ensureRequirementsType<never>(),
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 

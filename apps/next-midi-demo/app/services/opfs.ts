@@ -163,6 +163,63 @@ export const getDirHandle = (opts?: {
     return currentHandle
   })
 
+export const getFile = (fileHandle: FileSystemFileHandle) =>
+  Effect.tryPromise({
+    try: () => fileHandle.getFile(),
+    catch: cause =>
+      new OPFSError({
+        operation: 'fileHandle.getFile',
+        cause,
+      }),
+  }).pipe(Effect.withSpan('OPFS.fileHandle.getFile'))
+
+export const createWritable = (fileHandle: FileSystemFileHandle) =>
+  Effect.tryPromise({
+    try: () => fileHandle.createWritable({ keepExistingData: true }),
+    catch: cause =>
+      new OPFSError({
+        operation: 'fileHandle.createWritable',
+        cause,
+      }),
+  }).pipe(Effect.withSpan('OPFS.fileHandle.createWritable'))
+
+export const seek = (writable: FileSystemWritableFileStream, point: number) =>
+  Effect.tryPromise({
+    try: () => writable.seek(point),
+    catch: cause =>
+      new OPFSError({
+        operation: 'writable.seek',
+        cause,
+      }),
+  }).pipe(Effect.withSpan('OPFS.writable.seek'))
+
+export const write = (
+  writable: FileSystemWritableFileStream,
+  data: Uint8Array<ArrayBuffer>,
+) =>
+  Effect.tryPromise({
+    try: () => writable.write(data),
+    catch: error =>
+      new OPFSError({
+        operation: 'writable.write',
+        cause: error,
+      }),
+  }).pipe(
+    Effect.withSpan('OPFS.writable.write', {
+      attributes: { sizeToAdd: data.byteLength },
+    }),
+  )
+
+export const closeWritable = (writable: FileSystemWritableFileStream) =>
+  Effect.tryPromise({
+    try: () => writable.close(),
+    catch: error =>
+      new OPFSError({
+        operation: 'writable.close',
+        cause: error,
+      }),
+  }).pipe(Effect.withSpan('OPFS.writable.close'))
+
 /**
  * Gets a file handle for the given path within a directory.
  */
