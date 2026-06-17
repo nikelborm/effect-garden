@@ -73,7 +73,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   )
 
   yield* physicalButtonPressStream.pipe(
-    Stream.mapEffect(([physicalButtonId, state]) =>
+    Stream.runForEach(([physicalButtonId, state]) =>
       Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId.id), {
         onNone: () => Effect.void,
         onSome: flow(
@@ -87,8 +87,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
         ),
       }),
     ),
-    Stream.withSpan('paramButtonStateRefUpdateStream'),
-    Stream.runDrain,
+    Effect.withSpan('paramButtonStateRefUpdateFiber.lifetime'),
     Effect.tapErrorCause(Effect.logError),
     Effect.forkScoped,
   )

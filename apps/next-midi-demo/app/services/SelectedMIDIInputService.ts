@@ -25,14 +25,13 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
         }
 
       yield* EMIDIAccess.makeAllPortsStateChangesStream(access.value).pipe(
-        Stream.tap(({ port, newState }) =>
+        Stream.runForEach(({ port, newState }) =>
           SubscriptionRef.update(selectedInputIdRef, selectedId =>
             port.id === selectedId && newState.ofDevice === 'disconnected'
               ? null
               : selectedId,
           ),
         ),
-        Stream.runDrain,
         Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )

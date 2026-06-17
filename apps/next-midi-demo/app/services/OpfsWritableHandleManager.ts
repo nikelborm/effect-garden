@@ -90,7 +90,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           const span = yield* Effect.currentParentSpan
 
           const writerFiber = yield* Mailbox.toStream(mailbox).pipe(
-            Stream.mapEffect(data =>
+            Stream.runForEach(data =>
               write(writablePointingAtTheEnd, data).pipe(
                 Effect.zip(
                   estimationMap.increaseAndUnverifyAssetSize(
@@ -103,7 +103,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
                 }),
               ),
             ),
-            Stream.runDrain,
             Effect.tapErrorCause(cause => mailbox.failCause(cause)),
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),

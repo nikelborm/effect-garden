@@ -89,14 +89,13 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.unwrap,
         Stream.merge(Stream.unwrap(PatternInputBus.pressesOnlyStream)),
         Stream.merge(Stream.unwrap(StrengthInputBus.pressesOnlyStream)),
-        Stream.tap(signal =>
+        Stream.runForEach(signal =>
           SubscriptionRef.updateEffect(stateRef, state =>
             advancePlayback(state, signal.id, { makeCleanupFibers }).pipe(
               Effect.tapErrorCause(Effect.logError),
             ),
           ),
         ),
-        Stream.runDrain,
         Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )

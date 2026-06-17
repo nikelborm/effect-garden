@@ -4,15 +4,15 @@ import * as Runtime from 'effect/Runtime'
 import * as Stream from 'effect/Stream'
 import * as SynchronizedRef from 'effect/SynchronizedRef'
 
-export const reactivelySchedule = <StreamA, StreamR, EffectR>(
-  stream: Stream.Stream<StreamA, never, StreamR>,
-  execute: (a: StreamA) => Effect.Effect<any, never, EffectR>,
+export const reactivelySchedule = <TStreamA, TStreamR, TEffectR>(
+  stream: Stream.Stream<TStreamA, never, TStreamR>,
+  execute: (a: TStreamA) => Effect.Effect<any, never, TEffectR>,
 ) =>
   Effect.gen(function* () {
-    const runtime = yield* Effect.runtime<StreamR | EffectR>()
+    const runtime = yield* Effect.runtime<TStreamR | TEffectR>()
     const scope = yield* Effect.scope
     const runFork = <A, E>(
-      effect: Effect.Effect<A, E, StreamR | EffectR>,
+      effect: Effect.Effect<A, E, TStreamR | TEffectR>,
       options?: Runtime.RunForkOptions | undefined,
     ) =>
       Runtime.runFork(
@@ -22,14 +22,14 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
       )
 
     const runForkScoped = <A, E>(
-      effect: Effect.Effect<A, E, StreamR | EffectR>,
+      effect: Effect.Effect<A, E, TStreamR | TEffectR>,
       options?: Omit<Runtime.RunForkOptions, 'scope'> | undefined,
     ) => runFork(effect, { ...options, scope })
 
     const planExecutionRef =
       yield* SynchronizedRef.make<null | Fiber.RuntimeFiber<void, never>>(null)
 
-    const scheduleNew = (a: StreamA) =>
+    const scheduleNew = (a: TStreamA) =>
       SynchronizedRef.updateEffect(
         planExecutionRef,
         Effect.fnUntraced(function* (executionFiber) {
@@ -39,5 +39,5 @@ export const reactivelySchedule = <StreamA, StreamR, EffectR>(
         }),
       )
 
-    stream.pipe(Stream.tap(scheduleNew), Stream.runDrain, runForkScoped)
+    stream.pipe(Stream.runForEach(scheduleNew), runForkScoped)
   })
