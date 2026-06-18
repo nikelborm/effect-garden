@@ -10,7 +10,6 @@ import * as Ref from 'effect/Ref'
 import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
 import * as Tracer from 'effect/Tracer'
-import * as Tuple from 'effect/Tuple'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
@@ -90,8 +89,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
 
           const mailbox = yield* Mailbox.make<Uint8Array<ArrayBuffer>>()
 
-          const closingDeferred =
-            yield* Deferred.make<Exit.Exit<void, OPFSError>>()
           const writerDeferred =
             yield* Deferred.make<Exit.Exit<void, OPFSError>>()
 
@@ -130,81 +127,77 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             Effect.forkDaemon,
           )
 
-          const closeWritableAndPreserveError = pipe(
-            closeWritable(writablePointingAtTheEnd),
-            Effect.exit,
-            Effect.intoDeferred(closingDeferred),
-            Effect.annotateSpans({ asset, fileName }),
-          )
+          // Memoized via Effect.cached so it can be driven from BOTH the sink's
+          // normal completion path AND the scope finalizer (interruption
+          // safety-net) while its side effects run exactly once.
+          const finalize = yield* Effect.cached(
+            Effect.gen(function* () {
+              yield* mailbox.end // graceful: writer drains the rest, then exits
+              const writerExit = yield* Deferred.await(writerDeferred)
+              const closeExit = yield* Effect.exit(
+                closeWritable(writablePointingAtTheEnd),
+              )
 
-          yield* Effect.addFinalizer(_exit =>
-            pipe(
-              Effect.all([
-                mailbox.end, // graceful
-                Deferred.await(writerDeferred),
-                closeWritableAndPreserveError,
-                estimationMap.verify(asset),
-                Effect.log(
-                  `OPFS writer finalizer for accord=${asset.accord} ${
-                    asset.pattern ? `pattern=${asset.pattern}` : `         `
-                  } strength=${asset.strength} ran`,
-                ),
-              ]),
+              const causeOption = Option.zipWith(
+                Exit.causeOption(writerExit),
+                Exit.causeOption(closeExit),
+                Cause.sequential,
+              ).pipe(
+                Option.orElse(() => Exit.causeOption(closeExit)),
+                Option.orElse(() => Exit.causeOption(writerExit)),
+              )
+
+              // Only trust the on-disk file when nothing failed. After a write
+              // error the file may be torn, so it must not be marked verified.
+              if (Option.isNone(causeOption)) yield* estimationMap.verify(asset)
+
+              return causeOption
+            }).pipe(
+              // Uninterruptible so that, once started, it always closes the
+              // writable and writes a real result into the cached Deferred. An
+              // interrupt mid-run would otherwise poison the memo, and the
+              // safety-net finalizer would await a close that never happened.
+              Effect.uninterruptible,
               Effect.withSpan('OpfsWritableHandle.close', {
                 attributes: { fileName, asset },
               }),
             ),
           )
 
-          const lockingAwaitOptionCause = Effect.zipWith(
-            Deferred.await(writerDeferred),
-            Deferred.await(closingDeferred),
-            (...exits) => Tuple.map(exits, Exit.causeOption),
-            { concurrent: true },
-          ).pipe(
-            Effect.map(([wroteCauseOption, closedCauseOption]) =>
-              Option.zipWith(
-                wroteCauseOption,
-                closedCauseOption,
-                (wrote, closed) => Cause.sequential(wrote, closed),
-              ).pipe(
-                Option.orElse(() => closedCauseOption),
-                Option.orElse(() => wroteCauseOption),
+          const finalizeAndSurface = Effect.flatMap(
+            finalize,
+            Option.match({
+              onNone: () => Effect.void,
+              onSome: Effect.failCause,
+            }),
+          )
+
+          yield* Effect.addFinalizer(() =>
+            finalize.pipe(
+              Effect.flatMap(
+                Option.match({
+                  onNone: () => Effect.void,
+                  onSome: cause =>
+                    Effect.logError(
+                      'OPFS writer finalizer (interruption safety-net) observed a write/close error',
+                      cause,
+                    ),
+                }),
               ),
+              Effect.withSpan('OpfsWritableHandle.finalizer', {
+                attributes: { fileName, asset },
+              }),
             ),
           )
 
-          const bothDeferredsCompleted = Effect.zipWith(
-            Deferred.poll(writerDeferred),
-            Deferred.poll(closingDeferred),
-            (writerExitOption, closingExitOption) =>
-              Option.isSome(Option.all([writerExitOption, closingExitOption])),
-            { concurrent: true },
-          )
-
-          const errSink = Sink.dropUntilEffect(
-            () => bothDeferredsCompleted,
-          ).pipe(
-            Sink.flatMap(e =>
-              lockingAwaitOptionCause.pipe(
-                Effect.map(
-                  Option.match({
-                    onNone: () => Sink.drain,
-                    onSome: Sink.failCause,
-                  }),
-                ),
-                Sink.unwrap,
-              ),
-            ),
-          )
-
-          return Sink.zipLeft(
-            errSink,
+          return Sink.zipRight(
             // biome-ignore lint/suspicious/useIterableCallbackReturn: false positive
             Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
-              Effect.asVoid(mailbox.offer(data)),
+              Effect.flatMap(mailbox.offer(data), accepted =>
+                accepted ? Effect.void : finalizeAndSurface,
+              ),
             ),
-            { concurrent: true },
+            Sink.fromEffect(finalizeAndSurface),
           )
         }).pipe(
           Effect.withSpan('OpfsWritableHandleManager.acquireFileSink'),
