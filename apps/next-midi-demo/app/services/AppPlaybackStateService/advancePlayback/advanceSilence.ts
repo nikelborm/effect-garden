@@ -71,14 +71,6 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   })
 
   return TaggedPatternPointer.models(asset)
-    ? new PlayingPattern({
-        playback,
-        asset,
-        playbackStartedAtSecond,
-      })
-    : new PlayingSlowStrum({
-        playback,
-        asset,
-        playbackStartedAtSecond,
-      })
+    ? new PlayingPattern({ playback, asset, playbackStartedAtSecond })
+    : new PlayingSlowStrum({ playback, asset, playbackStartedAtSecond })
 })
