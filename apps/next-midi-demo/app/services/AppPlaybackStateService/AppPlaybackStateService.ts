@@ -15,7 +15,7 @@ import {
 import { advancePlayback } from './advancePlayback/index.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
-import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
+// import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { Silence } from './types/Silence.ts'
 

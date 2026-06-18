@@ -9,6 +9,7 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
+import * as Tracer from 'effect/Tracer'
 import * as Tuple from 'effect/Tuple'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
@@ -94,8 +95,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           const writerDeffered =
             yield* Deferred.make<Exit.Exit<void, OPFSError>>()
 
-          const span = yield* Effect.currentParentSpan.pipe(Effect.orDie)
-
           yield* Mailbox.toStream(mailbox).pipe(
             Stream.runForEach(data =>
               write(writablePointingAtTheEnd, data).pipe(
@@ -115,7 +114,14 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             Effect.intoDeferred(writerDeffered),
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
-            Effect.withParentSpan(span),
+            self =>
+              Effect.flatMap(
+                Effect.serviceOption(Tracer.ParentSpan),
+                Option.match({
+                  onNone: () => self,
+                  onSome: span => Effect.withParentSpan(self, span),
+                }),
+              ),
             // I want to ensure that the data would be written, and the write
             // operation outlives the scope to ensure the data's written.
             // Effect.forkScoped might trigger the interruption of drain
@@ -128,7 +134,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             closeWritable(writablePointingAtTheEnd),
             Effect.exit,
             Effect.intoDeferred(closingDeferred),
-            Effect.ignoreLogged,
             Effect.annotateSpans({ asset, fileName }),
           )
 
@@ -151,7 +156,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             ),
           )
 
-          const errSink = Effect.zipWith(
+          const lockingAwaitOptionCause = Effect.zipWith(
             Deferred.await(writerDeffered),
             Deferred.await(closingDeferred),
             (...exits) => Tuple.map(exits, Exit.causeOption),
@@ -165,13 +170,32 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
               ).pipe(
                 Option.orElse(() => closedCauseOption),
                 Option.orElse(() => wroteCauseOption),
-                Option.match({
-                  onNone: () => Sink.drain,
-                  onSome: Sink.failCause,
-                }),
               ),
             ),
-            Sink.unwrap,
+          )
+
+          const bothDeferredsCompleted = Effect.zipWith(
+            Deferred.poll(writerDeffered),
+            Deferred.poll(closingDeferred),
+            (writerExitOption, closingExitOption) =>
+              Option.isSome(Option.all([writerExitOption, closingExitOption])),
+            { concurrent: true },
+          )
+
+          const errSink = Sink.dropUntilEffect(
+            () => bothDeferredsCompleted,
+          ).pipe(
+            Sink.flatMap(e =>
+              lockingAwaitOptionCause.pipe(
+                Effect.map(
+                  Option.match({
+                    onNone: () => Sink.drain,
+                    onSome: Sink.failCause,
+                  }),
+                ),
+                Sink.unwrap,
+              ),
+            ),
           )
 
           return Sink.zipLeft(
