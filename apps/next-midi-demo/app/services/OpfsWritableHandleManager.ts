@@ -92,7 +92,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
 
           const closingDeferred =
             yield* Deferred.make<Exit.Exit<void, OPFSError>>()
-          const writerDeffered =
+          const writerDeferred =
             yield* Deferred.make<Exit.Exit<void, OPFSError>>()
 
           yield* Mailbox.toStream(mailbox).pipe(
@@ -111,7 +111,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             ),
             Effect.tapErrorCause(() => mailbox.shutdown), // forceful
             Effect.exit,
-            Effect.intoDeferred(writerDeffered),
+            Effect.intoDeferred(writerDeferred),
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
             self =>
@@ -141,7 +141,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             pipe(
               Effect.all([
                 mailbox.end, // graceful
-                Deferred.await(writerDeffered),
+                Deferred.await(writerDeferred),
                 closeWritableAndPreserveError,
                 estimationMap.verify(asset),
                 Effect.log(
@@ -157,7 +157,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           )
 
           const lockingAwaitOptionCause = Effect.zipWith(
-            Deferred.await(writerDeffered),
+            Deferred.await(writerDeferred),
             Deferred.await(closingDeferred),
             (...exits) => Tuple.map(exits, Exit.causeOption),
             { concurrent: true },
@@ -175,7 +175,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           )
 
           const bothDeferredsCompleted = Effect.zipWith(
-            Deferred.poll(writerDeffered),
+            Deferred.poll(writerDeferred),
             Deferred.poll(closingDeferred),
             (writerExitOption, closingExitOption) =>
               Option.isSome(Option.all([writerExitOption, closingExitOption])),
