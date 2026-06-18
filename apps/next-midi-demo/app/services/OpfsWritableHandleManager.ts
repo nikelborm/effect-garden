@@ -1,4 +1,7 @@
+import * as Cause from 'effect/Cause'
+import * as Deferred from 'effect/Deferred'
 import * as Effect from 'effect/Effect'
+import * as Exit from 'effect/Exit'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Mailbox from 'effect/Mailbox'
@@ -6,6 +9,7 @@ import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
+import * as Tuple from 'effect/Tuple'
 
 import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
@@ -83,13 +87,16 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             }),
           )
 
-          const mailbox = yield* Mailbox.make<
-            Uint8Array<ArrayBuffer>,
-            OPFSError
-          >()
-          const span = yield* Effect.currentParentSpan
+          const mailbox = yield* Mailbox.make<Uint8Array<ArrayBuffer>>()
 
-          const writerFiber = yield* Mailbox.toStream(mailbox).pipe(
+          const closingDeferred =
+            yield* Deferred.make<Exit.Exit<void, OPFSError>>()
+          const writerDeffered =
+            yield* Deferred.make<Exit.Exit<void, OPFSError>>()
+
+          const span = yield* Effect.currentParentSpan.pipe(Effect.orDie)
+
+          yield* Mailbox.toStream(mailbox).pipe(
             Stream.runForEach(data =>
               write(writablePointingAtTheEnd, data).pipe(
                 Effect.zip(
@@ -103,7 +110,9 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
                 }),
               ),
             ),
-            Effect.tapErrorCause(cause => mailbox.failCause(cause)),
+            Effect.tapErrorCause(() => mailbox.shutdown), // forceful
+            Effect.exit,
+            Effect.intoDeferred(writerDeffered),
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
             Effect.withParentSpan(span),
@@ -114,11 +123,10 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             Effect.forkDaemon,
           )
 
-          const closeErrorOptionRef = yield* Ref.make<OPFSError | null>(null)
-
           const closeWritableAndPreserveError = pipe(
             closeWritable(writablePointingAtTheEnd),
-            Effect.tapError(error => Ref.set(closeErrorOptionRef, error)),
+            Effect.exit,
+            Effect.intoDeferred(closingDeferred),
             Effect.ignoreLogged,
             Effect.annotateSpans({ asset, fileName }),
           )
@@ -126,12 +134,8 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           yield* Effect.addFinalizer(_exit =>
             pipe(
               Effect.all([
-                Effect.flatMap(mailbox.end, isNotAlreadyDone =>
-                  isNotAlreadyDone
-                    ? Effect.ignoreLogged(mailbox.await)
-                    : Effect.void,
-                ),
-                writerFiber.await,
+                mailbox.end, // graceful
+                Deferred.await(writerDeffered),
                 closeWritableAndPreserveError,
                 estimationMap.verify(asset),
                 Effect.log(
@@ -146,24 +150,36 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             ),
           )
 
-          // TODO: make final error exposed to the Sink user
-          Sink.unwrap(
-            Effect.gen(function* () {
-              const closeErrorOption = yield* closeErrorOptionRef
-              Sink.failCause
-              return Sink.drain
-            }),
+          const errSink = Effect.zipWith(
+            Deferred.await(writerDeffered),
+            Deferred.await(closingDeferred),
+            (...exits) => Tuple.map(exits, Exit.causeOption),
+            { concurrent: true },
+          ).pipe(
+            Effect.map(([wroteCauseOption, closedCauseOption]) =>
+              Option.zipWith(
+                wroteCauseOption,
+                closedCauseOption,
+                (wrote, closed) => Cause.sequential(wrote, closed),
+              ).pipe(
+                Option.orElse(() => closedCauseOption),
+                Option.orElse(() => wroteCauseOption),
+                Option.match({
+                  onNone: () => Sink.drain,
+                  onSome: Sink.failCause,
+                }),
+              ),
+            ),
+            Sink.unwrap,
           )
 
-          // biome-ignore lint/suspicious/useIterableCallbackReturn: false positive
-          return Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
-            Effect.flatMap(mailbox.offer(data), offeredSuccessfully =>
-              offeredSuccessfully
-                ? Effect.void
-                : Effect.dieMessage(
-                    'Cannot consume more elements. The Sink is finalized',
-                  ),
+          return Sink.zipLeft(
+            errSink,
+            // biome-ignore lint/suspicious/useIterableCallbackReturn: false positive
+            Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
+              Effect.asVoid(mailbox.offer(data)),
             ),
+            { concurrent: true },
           )
         }).pipe(
           Effect.withSpan('OpfsWritableHandleManager.acquireFileSink'),
