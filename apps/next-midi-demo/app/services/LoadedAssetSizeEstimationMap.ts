@@ -22,7 +22,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
       const makeEmptyAssetToSizeHashMap =
-        // TODO: report biome bug
+        // TODO: await https://github.com/biomejs/biome/issues/10697
         // biome-ignore format: bug in biome. should not remove parentheses
         (yield* makeAssetPointerMapFactory)<AssetSizeEstimation>
 
