@@ -116,10 +116,11 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
             Effect.withParentSpan(span),
-            // What are implications of not using Effect.forkScoped here? I want
-            // to ensure that the data would be written, but Effect.forkScoped
-            // might trigger the interruption of drain operation when the stream
-            // that is drained into the current sink finishes
+            // I want to ensure that the data would be written, and the write
+            // operation outlives the scope to ensure the data's written.
+            // Effect.forkScoped might trigger the interruption of drain
+            // operation when the stream that is drained into the current sink
+            // finishes. And I want to avoid that.
             Effect.forkDaemon,
           )
 
