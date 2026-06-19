@@ -6,7 +6,7 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-    "@typescript/native-preview": "catalog:",
+
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -25,8 +25,8 @@
     "directory": "ideas/effect-schema-i18n"
   },
   "scripts": {
-    "build": "tsgo",
-    "dev": "tsgo --watch"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "author": {
     "name": "nikelborm",

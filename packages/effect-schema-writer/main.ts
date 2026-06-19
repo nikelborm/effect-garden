@@ -269,7 +269,7 @@ Schema.Unknown.pipe(
 )
 
 await $`bunx biome format --fix`
-await $`bunx tsgo --noEmit`
+await $`bunx tsc --noEmit`
 
 const { MainSchema } = await import('./generated/experiment1_sample_schema.ts')
 

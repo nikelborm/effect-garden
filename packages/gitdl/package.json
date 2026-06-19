@@ -11,7 +11,7 @@
     "@rollup/plugin-json": "catalog:",
     "@rollup/plugin-node-resolve": "catalog:",
     "@rollup/plugin-terser": "catalog:",
-    "@typescript/native-preview": "catalog:",
+
     "@vitest/coverage-v8": "catalog:",
     "rollup": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
@@ -71,7 +71,7 @@
     "scratchpad": "node --use-strict --env-file=.env ./scratchpad.ts",
     "start": "node --env-file=.env ./gitdl.ts",
     "test": "vitest --typecheck --watch",
-    "test-jsr": "tsgo && jsr publish --dry-run",
+    "test-jsr": "tsc && jsr publish --dry-run",
     "test-once": "vitest --run",
     "watch-docs": "find src/ cli.ts index.ts errors.ts ./scripts/generate_docs.sh | entr -can ./scripts/generate_docs.sh"
   },

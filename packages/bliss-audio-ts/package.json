@@ -11,7 +11,7 @@
     "@stryker-mutator/core": "catalog:",
     "@stryker-mutator/instrumenter": "catalog:",
     "@stryker-mutator/vitest-runner": "catalog:",
-    "@typescript/native-preview": "catalog:",
+
     "numpy-ts": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -35,14 +35,14 @@
     "build": "bun build:ts && bun build:native",
     "build:native": "cd native && cargo build --release",
     "build:native-debug": "cd native && cargo build",
-    "build:ts": "tsgo",
+    "build:ts": "tsc",
     "format": "bun format:ts && bun format:native",
     "format:native": "cd native && cargo fmt",
     "format:ts": "biome check --write --unsafe .",
     "prepack": "rm -rf dist dist-types && bun build:ts",
     "test": "bun --bun run vitest",
     "test:stryker": "bun --bun run stryker run stryker.conf.js",
-    "typecheck": "tsgo --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "author": {
     "name": "nikelborm",

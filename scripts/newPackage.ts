@@ -41,8 +41,6 @@ export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
     'js/ts.preferences.importModuleSpecifierEnding': 'js',
     'js/ts.preferences.preferTypeOnlyAutoImports': true,
     'prettier.jsxSingleQuote': true,
-    'typescript.native-preview.tsdk':
-      './node_modules/@typescript/native-preview',
     'prettier.singleQuote': true,
   }
 })
@@ -75,9 +73,9 @@ const packageJson = (config: { name: string; description: string }) =>
     description: config.description,
     license: 'MIT',
     scripts: {
-      build: 'tsgo',
-      prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tsgo',
-      dev: 'tsgo --watch --preserveWatchOutput false',
+      build: 'tsc',
+      prepack: 'rm -rf dist dist-types && ./node_modules/.bin/tsc',
+      dev: 'tsc --watch --preserveWatchOutput false',
     },
     files: [
       'dist-types',
@@ -98,7 +96,6 @@ const packageJson = (config: { name: string; description: string }) =>
       '@evadev/tsconfig': 'workspace:^',
       '@effect/language-service': 'catalog:',
       'ts-namespace-import': 'catalog:',
-      '@typescript/native-preview': 'catalog:',
       'ts-patch': 'catalog:',
       typescript: 'catalog:',
     },

@@ -8,7 +8,7 @@
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:",
+
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:",

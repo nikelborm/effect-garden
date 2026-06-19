@@ -10,7 +10,6 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@typescript/native-preview": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -72,7 +71,7 @@
     "lint": "biome check",
     "max": "cd ../../; bun max",
     "start": "next start",
-    "typecheck": "tsgo --noEmit --declaration false --declarationMap false"
+    "typecheck": "tsc --noEmit --declaration false --declarationMap false"
   },
   "author": {
     "name": "nikelborm",

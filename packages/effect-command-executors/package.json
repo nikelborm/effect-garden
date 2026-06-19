@@ -6,7 +6,7 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-    "@typescript/native-preview": "catalog:",
+
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -34,9 +34,9 @@
     "directory": "packages/effect-command-executors"
   },
   "scripts": {
-    "build": "tsgo",
-    "dev": "tsgo --watch --preserveWatchOutput false",
-    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsgo"
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput false",
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
   },
   "author": {
     "name": "nikelborm",

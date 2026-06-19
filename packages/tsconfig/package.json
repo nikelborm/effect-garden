@@ -5,7 +5,7 @@
   "description": "My relatively strict tsconfig just how I like it",
   "dependencies": {
     "@effect/language-service": "catalog:",
-    "@typescript/native-preview": "catalog:",
+    "typescript": "catalog:",
     "ts-namespace-import": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/tsconfig#readme",

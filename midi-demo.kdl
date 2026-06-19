@@ -2,7 +2,7 @@ pane_frames false
 layout {
   pane split_direction="vertical" {
     pane {
-      name "Next.js tsgo watch"
+      name "Next.js tsc watch"
       cwd "./apps/next-midi-demo"
       command "bun"
       args "typecheck" "--watch" "--preserveWatchOutput" "false"
@@ -15,19 +15,19 @@ layout {
         args "dev"
       }
       pane {
-        name "Web MIDI tsgo watch"
+        name "Web MIDI tsc watch"
         cwd "./packages/effect-web-midi"
         command "bun"
         args "dev"
       }
       pane {
-        name "Web MediaCapture tsgo watch"
+        name "Web MediaCapture tsc watch"
         cwd "./packages/effect-web-mediacapture-streams"
         command "bun"
         args "dev"
       }
       pane {
-        name "Web Audio tsgo watch"
+        name "Web Audio tsc watch"
         cwd "./packages/effect-web-audio"
         command "bun"
         args "dev"

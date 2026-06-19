@@ -10,7 +10,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@types/vscode": "catalog:",
-    "@typescript/native-preview": "catalog:",
+
     "@vscode/vsce": "catalog:",
     "esbuild": "catalog:",
     "ts-namespace-import": "catalog:",
