@@ -1,6 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-import { TaggedPatternPointer } from '../../../brandsAndDatas/AssetPointer.ts'
+import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioPlayback } from './common.ts'
 
 export class PlayingPattern extends Schema.TaggedClass<PlayingPattern>()(

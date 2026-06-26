@@ -14,16 +14,11 @@ import {
 import { PlayingPattern } from '../types/PlayingPattern.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
 import type { SlowStrumPatternTransition } from '../types/SlowStrumPatternTransition.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
 export const advanceSlowStrumPatternTransition = Effect.fn(
   'advanceSlowStrumPatternTransition',
-)(function* (
-  oldState: SlowStrumPatternTransition,
-  signal: Signal,
-  deps: AdvancePlaybackDeps,
-) {
+)(function* (oldState: SlowStrumPatternTransition, signal: Signal) {
   // const audioBufferStore = yield* AudioBufferStore
   // const audioContext = yield* EAudioContext.EAudioContext
   // const [slowStrum, queuedPattern] = oldState.transitionQueue
@@ -73,6 +68,6 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
   //   playback: newPatternPlayback,
   // })
 
-  yield* Effect.logError({ oldState, signal, deps })
+  yield* Effect.logError({ oldState, signal })
   return yield* Effect.dieMessage('not implemented')
 })

@@ -2,30 +2,33 @@ import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import { AccordData, AccordParamButtonData } from '../brandsAndDatas/Accord.ts'
-import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
-import { KeyboardKeyPhysicalButtonData } from '../brandsAndDatas/KeyboardKey.ts'
-import { NotePhysicalButtonData } from '../brandsAndDatas/MIDIValues.ts'
 import {
+  AccordData,
+  AccordParamButtonData,
+  AllAccords,
+} from '../domain/Accord.ts'
+import { DOMPhysicalButtonData } from '../domain/DOMButton.ts'
+import { KeyboardKeyPhysicalButtonData } from '../domain/KeyboardKey.ts'
+import { NotePhysicalButtonData } from '../domain/MIDIValues.ts'
+import {
+  AllPatterns,
   PatternData,
   PatternParamButtonData,
-} from '../brandsAndDatas/Pattern.ts'
+} from '../domain/Pattern.ts'
 import {
+  AllStrengths,
   StrengthData,
   StrengthParamButtonData,
-} from '../brandsAndDatas/Strength.ts'
+} from '../domain/Strength.ts'
 import { makeKeyboardButtonPressStateStreamOfSomeKeys } from '../helpers/makeKeyboardButtonPressStateStreamOfSomeKeys.ts'
 import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPressStream.ts'
 import { makeParamButtonTouchStateStream } from '../helpers/makeParamButtonTouchStateStream.ts'
-import { AccordRegistry } from './AccordRegistry.ts'
 import { assignPhysicalButtonGroupToRespectiveParamButtons } from './assignPhysicalButtonGroupToRespectiveParamButtons.ts'
 import {
   AccordInputBus,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
-import { PatternRegistry } from './PatternRegistry.ts'
-import { StrengthRegistry } from './StrengthRegistry.ts'
 
 const makePhysicalNoteDatas = (notes: Iterable<number>) =>
   Array.from(notes, NotePhysicalButtonData.makeUnsafe)
@@ -77,21 +80,19 @@ const notesHandlingStrengthsSet = new Set(
   physicalNoteIdsHandlingStrengths.map(data => data.id.note),
 )
 
-const paramButtonIds = Effect.gen(function* () {
-  const params = yield* Effect.all([
-    AccordRegistry.allAccords,
-    PatternRegistry.allPatterns,
-    StrengthRegistry.allStrengths,
-  ])
-
-  const [accordParamButtonIds, patternParamButtonIds, strengthParamButtonIds] =
-    [
-      params[0].map(AccordParamButtonData.make),
-      params[1].map(PatternParamButtonData.make),
-      params[2].map(StrengthParamButtonData.make),
-    ]
-  return { accordParamButtonIds, patternParamButtonIds, strengthParamButtonIds }
-}).pipe(Effect.cached, Effect.flatten)
+const paramButtonIds = Effect.all({
+  AllAccords,
+  AllPatterns,
+  AllStrengths,
+}).pipe(
+  Effect.map(_ => ({
+    accordParamButtonIds: _.AllAccords.map(AccordParamButtonData.make),
+    patternParamButtonIds: _.AllPatterns.map(PatternParamButtonData.make),
+    strengthParamButtonIds: _.AllStrengths.map(StrengthParamButtonData.make),
+  })),
+  Effect.cached,
+  Effect.flatten,
+)
 
 export const KeyboardButtonMappingLayer = Effect.gen(function* () {
   const {

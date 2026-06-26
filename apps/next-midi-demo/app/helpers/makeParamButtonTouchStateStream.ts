@@ -8,15 +8,11 @@ import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import type { AccordData } from '../brandsAndDatas/Accord.ts'
-import {
-  type AllSimple,
-  NotPressed,
-  Pressed,
-} from '../brandsAndDatas/ButtonState.ts'
-import { DOMPhysicalButtonData } from '../brandsAndDatas/DOMButton.ts'
-import type { PatternData } from '../brandsAndDatas/Pattern.ts'
-import type { StrengthData } from '../brandsAndDatas/Strength.ts'
+import type { AccordData } from '../domain/Accord.ts'
+import { type AllSimple, NotPressed, Pressed } from '../domain/ButtonState.ts'
+import { DOMPhysicalButtonData } from '../domain/DOMButton.ts'
+import type { PatternData } from '../domain/Pattern.ts'
+import type { StrengthData } from '../domain/Strength.ts'
 
 export const makeParamButtonTouchStateStream = <
   const TKey extends string,

@@ -7,9 +7,9 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import { ButtonState } from '../brandsAndDatas/index.ts'
-import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import type { PhysicalButtonIdData } from '../brandsAndDatas/PhysicalButton.ts'
+import * as ButtonState from '../domain/ButtonState.ts'
+import type { ParamButtonIdData } from '../domain/ParamButton.ts'
+import type { PhysicalButtonIdData } from '../domain/PhysicalButton.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type {
   InputBusWriterHandle,

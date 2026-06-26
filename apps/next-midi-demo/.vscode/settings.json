@@ -13,7 +13,5 @@
   "prettier.jsxSingleQuote": true,
   "prettier.singleQuote": true,
   "typescript.native-preview.tsdk": "./node_modules/@typescript/native-preview",
-  "editor.tokenColorCustomizations": {
-    
-  }
+  "editor.tokenColorCustomizations": {}
 }

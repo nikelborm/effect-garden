@@ -5,7 +5,7 @@ import * as Schema from 'effect/Schema'
 import {
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../../../brandsAndDatas/AssetPointer.ts'
+} from '../../../domain/AssetPointer.ts'
 
 export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   'AudioPlayback',
@@ -82,12 +82,17 @@ export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTra
   }
 }
 
-export class PatternTransitionElementWithScheduledCleanup extends PatternTransitionQueueElement.extend<PatternTransitionElementWithScheduledCleanup>(
-  'PatternTransitionElementWithScheduledCleanup',
+// The most-recently-added (incoming) element of a transition queue. It is not
+// yet scheduled for cleanup, but it DOES already know its own fade-in window —
+// the raw slot seconds it was scheduled against (gain ramps min->max across
+// [fadeInStartsAtSecond, fadeInEndsAtSecond]; it is fully audible / "live" at
+// fadeInEndsAtSecond). Storing these raw values lets a later input recompute
+// whether we can still reschedule this element vs. must append a new one.
+export class ScheduledPatternTransitionQueueElement extends PatternTransitionQueueElement.extend<ScheduledPatternTransitionQueueElement>(
+  'ScheduledPatternTransitionQueueElement',
 )({
-  cleanupFiberToolkit: CleanupFiberToolkit,
-  fadeoutStartsAtSecond: Schema.Number,
-  fadeoutEndsAtSecond: Schema.Number,
+  fadeInStartsAtSecond: Schema.Number,
+  fadeInEndsAtSecond: Schema.Number,
 }) {
   static {
     this.make = this.make.bind(this)

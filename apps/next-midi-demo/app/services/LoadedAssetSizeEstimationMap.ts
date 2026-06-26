@@ -7,8 +7,8 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
 import { ASSET_SIZE_BYTES } from '../constants.ts'
+import type { AssetPointer } from '../domain/AssetPointer.ts'
 import { getAssetFromLocalFileName } from '../helpers/audioAssetFileNameAndPath.ts'
 import { makeAssetPointerMapFactory } from '../helpers/makeAssetPointerMap.ts'
 import { listEntries } from './opfs.ts'
@@ -22,7 +22,7 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
       const makeEmptyAssetToSizeHashMap =
-        // TODO: await https://github.com/biomejs/biome/issues/10697
+        // TODO: await https://github.com/biomejs/biome/pull/10747
         // biome-ignore format: bug in biome. should not remove parentheses
         (yield* makeAssetPointerMapFactory)<AssetSizeEstimation>
 

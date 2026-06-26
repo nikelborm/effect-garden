@@ -1,7 +1,7 @@
 import * as Schema from 'effect/Schema'
 
 import {
-  PatternTransitionQueueElement,
+  ScheduledPatternTransitionQueueElement,
   SlowStrumTransitionQueueElement,
 } from './common.ts'
 
@@ -11,7 +11,7 @@ export class SlowStrumPatternTransition extends Schema.TaggedClass<SlowStrumPatt
     playbackStartedAtSecond: Schema.Number,
     transitionQueue: Schema.Tuple(
       SlowStrumTransitionQueueElement,
-      PatternTransitionQueueElement,
+      ScheduledPatternTransitionQueueElement,
     ),
   },
 ) {

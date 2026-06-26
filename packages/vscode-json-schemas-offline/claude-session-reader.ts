@@ -7,14 +7,17 @@ import * as Logger from 'effect/Logger'
 
 import {
   type AssistantMessage,
+  type ClaudeSessionMessage,
   decodeClaudeSession,
   decodeClaudeSessionLine,
 } from './claude-session-reader-schema.ts'
 
 // TODO: Test recursively on other `.jsonl` files in that folder.
 
+// const sessionPath =
+//   '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
 const sessionPath =
-  '/home/nikel/.claude/projects/-home-nikel-projects-extension-json-schema-offline/87a06be2-4efb-4342-85d9-dd06f80a52e7.jsonl'
+  '/home/nikel/.claude/projects/-home-nikel-projects-effect-garden-apps-next-midi-demo/1a917f98-450a-4fee-9d56-6708b2856d56.jsonl'
 
 // TODO: maybe make PR into https://github.com/effect-anything/session-mind
 
@@ -41,15 +44,38 @@ await Effect.gen(function* () {
   )
   const validated = yield* decodeClaudeSession(parsed)
 
+  const isMessageOfSpecificType =
+    <const T extends IClaudeSessionMessage['type']>(type: T) =>
+    <M extends IClaudeSessionMessage>(message: M): message is M & { type: T } =>
+      message.type === type
+
+  const isNotMessageOfSpecificType =
+    <const T extends IClaudeSessionMessage['type']>(type: T) =>
+    <M extends IClaudeSessionMessage>(
+      message: M,
+    ): message is M & { type: Exclude<IClaudeSessionMessage['type'], T> } =>
+      message.type !== type
+
+  type IClaudeSessionMessage = (typeof ClaudeSessionMessage)['Type']
+
   yield* Console.log(
     validated
+      // .filter(e => isMessageOfSpecificType('system')(e))
       .filter(
-        (e): e is (typeof AssistantMessage)['Type'] => e.type === 'assistant',
+        e =>
+          isNotMessageOfSpecificType('ai-title')(e) &&
+          isNotMessageOfSpecificType('system')(e) &&
+          isNotMessageOfSpecificType('mode')(e) &&
+          isNotMessageOfSpecificType('permission-mode')(e) &&
+          isNotMessageOfSpecificType('file-history-snapshot')(e) &&
+          isNotMessageOfSpecificType('last-prompt')(e) &&
+          isNotMessageOfSpecificType('queue-operation')(e),
       )
-      .flatMap(e => e.message.content)
-      .filter(e => e.type === 'tool_use' && e.name === 'Bash')
-      .map(e => e.input)
-      .map(e => `$ ${e.command}\n  ${e.description}\n`)
+      // .filter(
+      //   (e): e is (typeof AssistantMessage)['Type'] =>
+      //     e.type === 'file-history-snapshot',
+      // )
+      .map(e => JSON.stringify(e, null, 2))
       .join('\n'),
   )
 }).pipe(

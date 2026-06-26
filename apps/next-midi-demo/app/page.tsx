@@ -33,12 +33,6 @@ import { MidiPadSlide } from './components/MidiPadSlide.tsx'
 
 // const selectedInputIdAtom = Atom.make(null as EMIDIInput.Id | null)
 
-export const runMain = makeRunMain(({ fiber }) => {
-  addEventListener('beforeunload', () => {
-    fiber.unsafeInterruptAsFork(fiber.id())
-  })
-})
-
 export default function Home() {
   // const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
   // Hooks.useAtomMount(fetcherAtom)

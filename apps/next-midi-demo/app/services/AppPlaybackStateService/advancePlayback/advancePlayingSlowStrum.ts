@@ -14,15 +14,10 @@ import {
 import { PatternTransitionQueueElement } from '../types/common.ts'
 import type { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
 import { SlowStrumPatternTransition } from '../types/SlowStrumPatternTransition.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
 export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
-  function* (
-    oldState: PlayingSlowStrum,
-    signal: Signal,
-    deps: AdvancePlaybackDeps,
-  ) {
+  function* (oldState: PlayingSlowStrum, signal: Signal) {
     const audioBufferStore = yield* AudioBufferStore
     // const audioContext = yield* EAudioContext.EAudioContext
     // const [current] = oldState.transitionQueue
@@ -73,7 +68,7 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
     //   ],
     // })
 
-    yield* Effect.logError({ oldState, signal, deps })
+    yield* Effect.logError({ oldState, signal })
     return yield* Effect.dieMessage('not implemented')
   },
 )

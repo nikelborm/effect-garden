@@ -2,11 +2,11 @@ import * as Data from 'effect/Data'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../brandsAndDatas/index.ts'
+import * as ButtonState from '../domain/ButtonState.ts'
 import {
   type KeyboardKey,
   KeyboardKeyPhysicalButtonData,
-} from '../brandsAndDatas/KeyboardKey.ts'
+} from '../domain/KeyboardKey.ts'
 
 export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
   keysToFocusOn: Set<KeyboardKey>,

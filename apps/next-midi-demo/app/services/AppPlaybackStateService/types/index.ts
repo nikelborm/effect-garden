@@ -3,6 +3,7 @@ import * as Schema from 'effect/Schema'
 import { PatternPatternPatternTransition } from './PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransition } from './PatternPatternSilenceTransition.ts'
 import { PatternPatternTransition } from './PatternPatternTransition.ts'
+import { PatternSilencePatternTransition } from './PatternSilencePatternTransition.ts'
 import { PatternSilenceTransition } from './PatternSilenceTransition.ts'
 import { PlayingPattern } from './PlayingPattern.ts'
 import { PlayingSlowStrum } from './PlayingSlowStrum.ts'
@@ -13,6 +14,7 @@ export const PlayingAppPlaybackStates = Schema.Union(
   PatternPatternPatternTransition,
   PatternPatternSilenceTransition,
   PatternPatternTransition,
+  PatternSilencePatternTransition,
   PatternSilenceTransition,
   PlayingPattern,
   PlayingSlowStrum,

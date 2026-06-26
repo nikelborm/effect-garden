@@ -6,13 +6,15 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import { CurrentlySelectedAssetState } from '../CurrentlySelectedAssetState.ts'
+import { defaultAccord } from '../../domain/Accord.ts'
+import { defaultStrength } from '../../domain/Strength.ts'
 import {
   AccordInputBus,
   PatternInputBus,
   StrengthInputBus,
 } from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
+import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
@@ -24,10 +26,8 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
   {
     accessors: true,
     scoped: Effect.gen(function* () {
-      const selectedAssetState = yield* CurrentlySelectedAssetState
-
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
-        Silence.make(),
+        Silence.make({ accord: defaultAccord, strength: defaultStrength }),
       )
 
       // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
@@ -58,19 +58,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
       )
 
-      const playStopButtonPressableFlagChangesStream = yield* EFunction.pipe(
-        latestIsPlayingFlagStream,
-        Stream.flatMap(
-          isPlaying =>
-            isPlaying
-              ? Stream.succeed(true)
-              : selectedAssetState.isFinishedDownloadCompletelyFlagChangesStream,
-          { switch: true, concurrency: 1 },
-        ),
-        Stream.changes,
-        Stream.rechunk(1),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
-      )
+      // STUB: download-gating lived in CurrentlySelectedAssetState, now deleted.
+      // Assume assets are downloaded, so the play/stop button is always
+      // pressable. Real inference-from-playback comes later.
+      const playStopButtonPressableFlagChangesStream = yield* Stream.succeed(
+        true,
+      ).pipe(Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }))
 
       // const _playbackPublicInfoChangesStream = Stream.map(
       //   stateRef.changes,
@@ -91,11 +84,13 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         Stream.merge(Stream.unwrap(StrengthInputBus.pressesOnlyStream)),
         Stream.runForEach(signal =>
           SubscriptionRef.updateEffect(stateRef, state =>
-            advancePlayback(state, signal.id, { makeCleanupFibers }).pipe(
+            advancePlayback(state, signal.id).pipe(
+              Effect.provideService(CleanupFiberMaker, makeCleanupFibers),
               Effect.tapErrorCause(Effect.logError),
             ),
           ),
         ),
+
         Effect.tapErrorCause(Effect.logError),
         Effect.forkScoped,
       )

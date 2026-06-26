@@ -6,50 +6,41 @@ import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../../../brandsAndDatas/AssetPointer.ts'
-import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
-import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
-import { AccordRegistry } from '../../AccordRegistry.ts'
+} from '../../../domain/AssetPointer.ts'
+import { PatternData } from '../../../domain/Pattern.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { PatternRegistry } from '../../PatternRegistry.ts'
-import { StrengthRegistry } from '../../StrengthRegistry.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
 import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
 import { PlayingPattern } from '../types/PlayingPattern.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import type { Silence } from '../types/Silence.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
+import { Silence } from '../types/Silence.ts'
 import type { Signal } from './signal.ts'
 
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
   oldState: Silence,
   signal: Signal,
-  _deps: AdvancePlaybackDeps,
 ) {
   const audioBufferStore = yield* AudioBufferStore
-  if (StrengthData.models(signal)) {
-    // even if it's not downloaded, it's fine to set different strength, while
-    // it's silent, because no playback will be scheduled
-    yield* StrengthRegistry.selectStrength(signal.strength)
-    return oldState
-  }
 
-  const strength = yield* StrengthRegistry.currentlySelectedStrength
+  // While silent we can freely change the strength — no playback is scheduled,
+  // we just remember the new base selection.
+  if (StrengthData.models(signal))
+    return Silence.make({ accord: oldState.accord, strength: signal.strength })
 
   let asset: AssetPointer
   if (PatternData.models(signal)) {
-    yield* PatternRegistry.replaceNoneOrDieIfPresent(signal.pattern)
-
     asset = TaggedPatternPointer.make({
-      ...signal,
-      accord: yield* AccordRegistry.currentlySelectedAccord,
-      strength,
+      pattern: signal.pattern,
+      accord: oldState.accord,
+      strength: oldState.strength,
     })
   } else {
-    yield* AccordRegistry.selectAccord(signal.accord)
-
-    asset = TaggedSlowStrumPointer.make({ ...signal, strength })
+    asset = TaggedSlowStrumPointer.make({
+      accord: signal.accord,
+      strength: oldState.strength,
+    })
   }
 
   const audioBuffer = yield* audioBufferStore.getByAsset(asset)

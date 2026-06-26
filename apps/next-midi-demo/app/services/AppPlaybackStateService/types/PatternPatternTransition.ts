@@ -1,18 +1,12 @@
 import * as Schema from 'effect/Schema'
 
-import {
-  PatternTransitionElementWithScheduledCleanup,
-  PatternTransitionQueueElement,
-} from './common.ts'
+import { FadingOutLoopPlayback, IncomingLoopFadingIn } from './loopElements.ts'
 
 export class PatternPatternTransition extends Schema.TaggedClass<PatternPatternTransition>()(
   'PatternPatternTransition',
   {
     playbackStartedAtSecond: Schema.Number,
-    transitionQueue: Schema.Tuple(
-      PatternTransitionElementWithScheduledCleanup,
-      PatternTransitionQueueElement,
-    ),
+    transitionQueue: Schema.Tuple(FadingOutLoopPlayback, IncomingLoopFadingIn),
   },
 ) {
   private declare '~brand~': never

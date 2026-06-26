@@ -1,98 +1,83 @@
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
-import * as Option from 'effect/Option'
 
-import { maxLoudness } from '../constants.ts'
-import {
-  createLoopScheduledAfterSingleShot,
-  createScheduledNextPlayback,
-  scheduleFadeOutOf,
-} from '../playbackNodes/index.ts'
-import { calcTimingsMath } from '../timingMath.ts'
-import {
-  PatternTransitionElementWithScheduledCleanup,
-  PatternTransitionQueueElement,
-} from '../types/common.ts'
+import { AccordData } from '../../../domain/Accord.ts'
+import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
+import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
-import type { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
+import { PatternSilencePatternTransition } from '../types/PatternSilencePatternTransition.ts'
+import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
+import { PlayingPattern } from '../types/PlayingPattern.ts'
 import type { Signal } from './signal.ts'
 
 export const advancePatternSilenceTransition = Effect.fn(
   'advancePatternSilenceTransition',
-)(function* (
-  oldState: PatternSilenceTransition,
-  signal: Signal,
-  deps: AdvancePlaybackDeps,
-) {
-  // const audioContext = yield* EAudioContext.EAudioContext
-  // const audioBufferStore = yield* AudioBufferStore
+)(function* (oldState: PatternSilenceTransition, signal: Signal) {
+  // Strength just updates the base selection carried towards silence.
+  if (StrengthData.models(signal))
+    return new PatternSilenceTransition({
+      playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+      accord: oldState.accord,
+      strength: signal.strength,
+      transitionQueue: oldState.transitionQueue,
+    })
 
-  // const [current] = oldState.transitionQueue
+  // From a (scheduled) silence, an accord press means "slow strum". Slow strums
+  // are deferred for now — die honestly rather than pretend.
+  if (AccordData.models(signal))
+    return yield* Effect.dieMessage(
+      'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+    )
 
-  // if (Option.isNone(asset.pattern)) return oldState
+  const [current] = oldState.transitionQueue
+  const now = yield* EAudioContext.currentTimeFromContext
 
-  // const secondsSinceAudioContextInit =
-  //   yield* EAudioContext.currentTime(audioContext)
-  // const math = calcTimingsMath(
-  //   oldState.playbackStartedAtSecond,
-  //   secondsSinceAudioContextInit,
-  // )
-  // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
+  // Green zone = we still have buffer time before the fade-out begins, so we can
+  // safely cancel/redirect it. Red zone = the fade has effectively started.
+  const isInGreenZone =
+    now <= current.fadeoutStartsAtSecond - schedulingSafeBufferInSeconds
 
-  // if (math.fitsIntoBufferOfClosestTransition) {
-  //   // Cancel the scheduled silence and redirect current loop into a transition to new loop
-  //   yield* Effect.sync(() => {
-  //     current.playback.gainNode.gain.cancelScheduledValues(
-  //       secondsSinceAudioContextInit,
-  //     )
-  //     current.playback.gainNode.gain.setValueAtTime(
-  //       maxLoudness,
-  //       secondsSinceAudioContextInit,
-  //     )
-  //   })
+  const isSamePattern = signal.pattern === current.asset.pattern
 
-  //   yield* current.cleanupFiberToolkit.cancelCleanup
-  //   yield* scheduleFadeOutOf(current.playback, math)
-  //   return PatternPatternTransition.make({
-  //     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //     transitionQueue: [
-  //       PatternTransitionElementWithScheduledCleanup.make({
-  //         ...current,
-  //         cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-  //           math.secondsSinceNowUpUntilFadeoutEnds,
-  //         ),
-  //         fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-  //         fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-  //       }),
-  //       PatternTransitionQueueElement.make({
-  //         asset,
-  //         playback: yield* createScheduledNextPlayback(
-  //           audioContext,
-  //           audioBuffer,
-  //           math,
-  //         ),
-  //       }),
-  //     ],
-  //   })
-  // }
+  if (isSamePattern) {
+    if (!isInGreenZone)
+      return yield* Effect.dieMessage(
+        're-press of the same pattern during active fade-out: not yet handled',
+      )
 
-  // // Fade already in progress — schedule new loop to start right after current ends
-  // return PatternPatternTransition.make({
-  //   playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //   transitionQueue: [
-  //     current,
-  //     PatternTransitionQueueElement.make({
-  //       asset,
-  //       playback: yield* createLoopScheduledAfterSingleShot(
-  //         audioContext,
-  //         audioBuffer,
-  //         current.fadeoutEndsAtSecond,
-  //       ),
-  //     }),
-  //   ],
-  // })
-  yield* Effect.logError({ oldState, signal, deps })
-  return yield* Effect.dieMessage('not implemented')
+    // Same pattern, still time: cancel the scheduled silence and keep playing.
+    const revived = yield* current.cancelFadeoutAndRestore()
+    return new PlayingPattern({
+      playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+      asset: revived.asset,
+      playback: revived.playback,
+    })
+  }
+
+  // Different pattern pressed. Either way a new loop rolls in (a short
+  // roll-over) on the next tick while `current` keeps the fade it already has;
+  // `current`'s existing cleanup fiber collapses the result to PlayingPattern.
+  const asset = TaggedPatternPointer.make({
+    pattern: signal.pattern,
+    accord: oldState.accord,
+    strength: oldState.strength,
+  })
+  const incoming = yield* current.scheduleNextLoop(asset)
+
+  // Green: `current`'s fade hasn't begun, so its (stopping) fade-out doubles as
+  // a clean crossfade into the new loop — a normal loop->loop transition.
+  if (isInGreenZone)
+    return PatternPatternTransition.make({
+      playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+      transitionQueue: [current, incoming],
+    })
+
+  // Red: `current` is already fading out to silence and we can't take it back.
+  // It finishes dying while the new loop rolls in — a pattern->silence->pattern.
+  return PatternSilencePatternTransition.make({
+    playbackStartedAtSecond: oldState.playbackStartedAtSecond,
+    transitionQueue: [current, incoming],
+  })
 })
