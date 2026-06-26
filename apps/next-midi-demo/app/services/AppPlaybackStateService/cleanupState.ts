@@ -1,65 +1,85 @@
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 
-import { helpGarbageCollectionOfPlayback } from './playbackNodes/index.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import { PatternPatternTransition } from './types/PatternPatternTransition.ts'
-import { PatternSilenceTransition } from './types/PatternSilenceTransition.ts'
-import { PlayingPattern } from './types/PlayingPattern.ts'
-import { Silence } from './types/Silence.ts'
+import {
+  FullLoopQueue,
+  LoopBoundPlayback,
+  LoopRolloverHandoverQueue,
+  LoopSilenceHandoverQueue,
+} from './types/LoopBoundPlayback.ts'
+import {
+  LoopFadingToSilenceQueue,
+  SilenceBoundPlayback,
+  TwoLoopsFadingToSilenceQueue,
+} from './types/SilenceBoundPlayback.ts'
 
+// Collapse whatever state is CURRENT by exactly one level when a cleanup fiber
+// fires, GC-ing the OLDEST queue element. Each element owns its own disposal /
+// reclassification (`.dispose()` / `.becomeLive()`), so element construction has
+// a single home and this only decides the queue-shape collapse. The collapse is
+// purely positional (always the oldest = queue[0]), so multi-fiber states drop
+// correctly regardless of which fiber fires first.
 export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
-  function* (
-    stateRightBeforeCleanup: AppPlaybackState,
-  ): Effect.fn.Return<AppPlaybackState> {
+  function* (state: AppPlaybackState): Effect.fn.Return<AppPlaybackState> {
     yield* Effect.logTrace('Playback cleanup')
 
-    if (stateRightBeforeCleanup._tag === 'PatternPatternTransition') {
-      const [old, target] = stateRightBeforeCleanup.transitionQueue
-      yield* helpGarbageCollectionOfPlayback(old.playback)
-      return PlayingPattern.make({
-        playbackStartedAtSecond:
-          stateRightBeforeCleanup.playbackStartedAtSecond,
-        ...target,
+    if (state._tag === 'SilenceBoundPlayback') {
+      const q = state.transitionQueue
+      // [FadingOut, FadingOut] -> [FadingOut]: the oldest stop-fade finished.
+      if (Schema.is(TwoLoopsFadingToSilenceQueue)(q)) {
+        yield* q[0].dispose()
+        return SilenceBoundPlayback.make({
+          accord: state.accord,
+          strength: state.strength,
+          playbackStartedAtSecond: state.playbackStartedAtSecond,
+          transitionQueue: [q[1]],
+        })
+      }
+      // [FadingOut] -> []: the last loop finished; we are now pure silence with no
+      // playing grid, so playbackStartedAtSecond drops away.
+      if (Schema.is(LoopFadingToSilenceQueue)(q)) {
+        yield* q[0].dispose()
+        return SilenceBoundPlayback.make({
+          accord: state.accord,
+          strength: state.strength,
+          transitionQueue: [],
+        })
+      }
+      // [] pure silence: no fiber to have fired.
+      return state
+    }
+
+    const q = state.transitionQueue
+    // [FadingOut, FadingOut, Incoming] -> [FadingOut, Incoming]: oldest gone. The
+    // ternary only narrows the surviving fade's type onto the right handover
+    // union member (roll-over vs to-silence).
+    if (Schema.is(FullLoopQueue)(q)) {
+      const [, middle, incoming] = q
+      yield* q[0].dispose()
+      return LoopBoundPlayback.make({
+        playbackStartedAtSecond: state.playbackStartedAtSecond,
+        transitionQueue:
+          middle._tag ===
+          'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
+            ? [middle, incoming]
+            : [middle, incoming],
       })
     }
-
-    if (stateRightBeforeCleanup._tag === 'PatternPatternPatternTransition') {
-      const [oldest, middle, target] = stateRightBeforeCleanup.transitionQueue
-      yield* helpGarbageCollectionOfPlayback(oldest.playback)
-      return PatternPatternTransition.make({
-        playbackStartedAtSecond:
-          stateRightBeforeCleanup.playbackStartedAtSecond,
-        transitionQueue: [middle, target],
+    // [FadingOut, Incoming] -> [Playing]: the outgoing loop is gone and the
+    // incoming one is now the live loop.
+    if (
+      Schema.is(LoopRolloverHandoverQueue)(q) ||
+      Schema.is(LoopSilenceHandoverQueue)(q)
+    ) {
+      yield* q[0].dispose()
+      return LoopBoundPlayback.make({
+        playbackStartedAtSecond: state.playbackStartedAtSecond,
+        transitionQueue: [q[1].becomeLive()],
       })
     }
-
-    if (stateRightBeforeCleanup._tag === 'SlowStrumPatternTransition') {
-      const [slowStrum, loop] = stateRightBeforeCleanup.transitionQueue
-      yield* helpGarbageCollectionOfPlayback(slowStrum.playback)
-      return PlayingPattern.make({
-        playbackStartedAtSecond:
-          stateRightBeforeCleanup.playbackStartedAtSecond +
-          slowStrum.durationSeconds,
-        ...loop,
-      })
-    }
-
-    if (stateRightBeforeCleanup._tag === 'PatternSilenceTransition') {
-      const [fading] = stateRightBeforeCleanup.transitionQueue
-      yield* helpGarbageCollectionOfPlayback(fading.playback)
-      return Silence.make()
-    }
-
-    if (stateRightBeforeCleanup._tag === 'PatternPatternSilenceTransition') {
-      const [oldest, fading] = stateRightBeforeCleanup.transitionQueue
-      yield* helpGarbageCollectionOfPlayback(oldest.playback)
-      return PatternSilenceTransition.make({
-        playbackStartedAtSecond:
-          stateRightBeforeCleanup.playbackStartedAtSecond,
-        transitionQueue: [fading],
-      })
-    }
-
-    return stateRightBeforeCleanup
+    // [Playing], [PlayingSlowStrum], [SlowStrum, ScheduledPattern]: terminal /
+    // deferred shapes with no cleanup fiber to fire.
+    return state
   },
 )

@@ -1,9 +1,7 @@
 import * as Atom from '@effect-atom/atom/Atom'
 
-import { StrengthRegistry } from '../services/StrengthRegistry.ts'
+import { AllStrengths } from '../domain/Strength.ts'
 
-const runtime = Atom.runtime(StrengthRegistry.Default)
+const runtime = Atom.runtime(AllStrengths.Default)
 
-export const strengthsAtom = runtime.atom(StrengthRegistry.allStrengths)
-
-export const setActiveStrengthAtom = runtime.fn(StrengthRegistry.selectStrength)
+export const strengthsAtom = runtime.atom(AllStrengths)

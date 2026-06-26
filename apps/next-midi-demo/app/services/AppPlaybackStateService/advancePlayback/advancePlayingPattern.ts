@@ -1,105 +1,50 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 
-import { AccordData } from '../../../brandsAndDatas/Accord.ts'
-import { TaggedPatternPointer } from '../../../brandsAndDatas/AssetPointer.ts'
-import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
-import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
-import { AccordRegistry } from '../../AccordRegistry.ts'
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { StrengthRegistry } from '../../StrengthRegistry.ts'
-import { createScheduledNextPlaybackInContext } from '../playbackNodes/createScheduledNextPlayback.ts'
-import { scheduleFadeOutOf } from '../playbackNodes/index.ts'
-import { calcTimingsMath } from '../timingMath.ts'
-import {
-  PatternTransitionElementWithScheduledCleanup,
-  PatternTransitionQueueElement,
-} from '../types/common.ts'
-import { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
-import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
-import type { PlayingPattern } from '../types/PlayingPattern.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
+import { AccordData } from '../../../domain/Accord.ts'
+import { PatternData } from '../../../domain/Pattern.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
+import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
+import type { PlayingLoopPlayback } from '../types/loopElements.ts'
+import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
 
+// A single loop is sounding at full volume (queue = [playing]). Mirrors the
+// trusted advancePlayingPattern.spec.txt.
 export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
-  function* (
-    oldState: PlayingPattern,
-    signal: Signal,
-    deps: AdvancePlaybackDeps,
-  ) {
-    const audioBufferStore = yield* AudioBufferStore
-    if (AccordData.models(signal) && signal.accord === oldState.asset.accord)
-      return oldState
+  function* (playing: PlayingLoopPlayback, signal: Signal) {
+    const stay = LoopBoundPlayback.make({
+      playbackStartedAtSecond: playing.playbackStartedAtSecond,
+      transitionQueue: [playing],
+    })
 
+    // Re-selecting the accord/strength already playing — nothing changes.
+    if (AccordData.models(signal) && signal.accord === playing.asset.accord)
+      return stay
     if (
       StrengthData.models(signal) &&
-      signal.strength === oldState.asset.strength
+      signal.strength === playing.asset.strength
     )
-      return oldState
+      return stay
 
-    if (PatternData.models(signal)) {
-      if (signal.pattern === oldState.asset.pattern) {
-        // Pattern was deselected while loop was playing — fade out to silence
-        const math = calcTimingsMath(
-          oldState.playbackStartedAtSecond,
-          yield* EAudioContext.currentTimeFromContext,
-        )
-
-        yield* scheduleFadeOutOf(oldState.playback, math)
-
-        return new PatternSilenceTransition({
-          playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-          transitionQueue: [
-            PatternTransitionElementWithScheduledCleanup.make({
-              ...oldState,
-              cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-                math.secondsSinceNowUpUntilFadeoutEnds,
-              ),
-              fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-              fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-            }),
-          ],
-        })
-      }
-
-      const asset = TaggedPatternPointer.make({
-        ...signal,
-        accord: yield* AccordRegistry.currentlySelectedAccord,
-        strength: yield* StrengthRegistry.currentlySelectedStrength,
+    // Pattern deselected while its loop plays — fade out to silence (long fade).
+    if (PatternData.models(signal) && signal.pattern === playing.asset.pattern)
+      return SilenceBoundPlayback.make({
+        playbackStartedAtSecond: playing.playbackStartedAtSecond,
+        accord: playing.asset.accord,
+        strength: playing.asset.strength,
+        transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
       })
 
-      const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-
-      const math = calcTimingsMath(
-        oldState.playbackStartedAtSecond,
-        yield* EAudioContext.currentTimeFromContext,
-      )
-
-      yield* scheduleFadeOutOf(oldState.playback, math)
-
-      return new PatternPatternTransition({
-        playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-        transitionQueue: [
-          PatternTransitionElementWithScheduledCleanup.make({
-            ...oldState,
-            cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-              math.secondsSinceNowUpUntilFadeoutEnds,
-            ),
-            fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-            fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-          }),
-          PatternTransitionQueueElement.make({
-            asset,
-            playback: yield* createScheduledNextPlaybackInContext(
-              audioBuffer,
-              math,
-            ),
-          }),
-        ],
-      })
-    }
-    yield* Effect.logError({ oldState, signal, deps })
-    return yield* Effect.dieMessage('Unhandled case in advancePlayingPattern')
+    // Otherwise switch to a new pattern/variant: the live loop rolls over on the
+    // next tick while the new loop fades in.
+    const asset = desiredAssetFromSignal(signal, playing.asset)
+    return LoopBoundPlayback.make({
+      playbackStartedAtSecond: playing.playbackStartedAtSecond,
+      transitionQueue: [
+        yield* playing.beginShortFadeoutBeforeAnotherLoop(),
+        yield* playing.scheduleNextLoop(asset),
+      ],
+    })
   },
 )

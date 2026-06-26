@@ -1,6 +1,6 @@
-import { accordSet } from '../brandsAndDatas/Accord.ts'
-import { patternSomeSet } from '../brandsAndDatas/Pattern.ts'
-import { strengthSet } from '../brandsAndDatas/Strength.ts'
+import { accordSet } from '../domain/Accord.ts'
+import { patternSomeSet } from '../domain/Pattern.ts'
+import { strengthSet } from '../domain/Strength.ts'
 import { neighborFactory } from './neighborFactory.ts'
 
 export const getNeighborMIDIPadButtons = neighborFactory([

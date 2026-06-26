@@ -11,7 +11,7 @@ import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
 import * as Tracer from 'effect/Tracer'
 
-import type { AssetPointer } from '../brandsAndDatas/AssetPointer.ts'
+import type { AssetPointer } from '../domain/AssetPointer.ts'
 import { getLocalAssetFileName } from '../helpers/audioAssetFileNameAndPath.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import {
@@ -38,15 +38,15 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
       const acquireScopedWritePermit = (asset: AssetPointer) =>
         assetToSemaphoreMapRef.pipe(
           Ref.modify(map => {
-            const attempt = HashMap.get(map, asset)
-            const semaphore = Option.getOrElse(attempt, () =>
+            const existingSemaphoreOption = HashMap.get(map, asset)
+            const semaphore = Option.getOrElse(existingSemaphoreOption, () =>
               Effect.unsafeMakeSemaphore(1),
             )
             return [
               // effect's success
               semaphore,
               // new ref value
-              Option.match(attempt, {
+              Option.match(existingSemaphoreOption, {
                 onSome: () => map,
                 onNone: () => HashMap.set(map, asset, semaphore),
               }),

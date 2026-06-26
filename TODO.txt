@@ -81,3 +81,9 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
 9. make mechanism to easily escape wrapper library and operate on the raw
 object, as well as a mechanism to make batching operations that garanteed to be
 synchronous and executed sequentially
+10. make size estimator both transactional and single instance locked. So that
+added estimations from failed opfs operations can be rolled back. would be
+helpful to add locks on estimation increasers, as increase cannot be done from
+multiple parallel places at once anyway.
+11. make some shit uninterruptible (at least in scheduling, there should be no
+half applied scheduling operations)

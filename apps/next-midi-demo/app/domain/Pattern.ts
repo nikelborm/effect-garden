@@ -1,7 +1,9 @@
 import * as Brand from 'effect/Brand'
+import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
 import * as Iterable from 'effect/Iterable'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
@@ -76,3 +78,13 @@ export const patternSomeSet: Set<PatternOption> = new Set(
     Option.none<Pattern>(),
   ),
 )
+
+export class AllPatterns extends Context.Tag('next-midi-demo/AllPatterns')<
+  AllPatterns,
+  AllPatternTuple
+>() {
+  static readonly Default: Layer.Layer<AllPatterns> = Layer.succeed(
+    this,
+    allPatterns,
+  )
+}

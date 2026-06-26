@@ -6,56 +6,49 @@ import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../../../brandsAndDatas/AssetPointer.ts'
-import { PatternData } from '../../../brandsAndDatas/Pattern.ts'
-import { StrengthData } from '../../../brandsAndDatas/Strength.ts'
-import { AccordRegistry } from '../../AccordRegistry.ts'
+} from '../../../domain/AssetPointer.ts'
+import { PatternData } from '../../../domain/Pattern.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { PatternRegistry } from '../../PatternRegistry.ts'
-import { StrengthRegistry } from '../../StrengthRegistry.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
 import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
-import { PlayingPattern } from '../types/PlayingPattern.ts'
+import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
+import { PlayingLoopPlayback } from '../types/loopElements.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import type { Silence } from '../types/Silence.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
+import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import type { Signal } from './signal.ts'
 
+// Pure silence (queue = []). The carried base accord+strength are passed in.
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
-  oldState: Silence,
+  accord: SilenceBoundPlayback['accord'],
+  strength: SilenceBoundPlayback['strength'],
   signal: Signal,
-  _deps: AdvancePlaybackDeps,
 ) {
-  const audioBufferStore = yield* AudioBufferStore
-  if (StrengthData.models(signal)) {
-    // even if it's not downloaded, it's fine to set different strength, while
-    // it's silent, because no playback will be scheduled
-    yield* StrengthRegistry.selectStrength(signal.strength)
-    return oldState
-  }
+  // While silent we can freely change the strength — no playback is scheduled,
+  // we just remember the new base selection.
+  if (StrengthData.models(signal))
+    return SilenceBoundPlayback.make({
+      accord,
+      strength: signal.strength,
+      transitionQueue: [],
+    })
 
-  const strength = yield* StrengthRegistry.currentlySelectedStrength
+  const audioBufferStore = yield* AudioBufferStore
 
   let asset: AssetPointer
   if (PatternData.models(signal)) {
-    yield* PatternRegistry.replaceNoneOrDieIfPresent(signal.pattern)
-
     asset = TaggedPatternPointer.make({
-      ...signal,
-      accord: yield* AccordRegistry.currentlySelectedAccord,
+      pattern: signal.pattern,
+      accord,
       strength,
     })
   } else {
-    yield* AccordRegistry.selectAccord(signal.accord)
-
-    asset = TaggedSlowStrumPointer.make({ ...signal, strength })
+    asset = TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
   }
 
   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-
   const playbackStartedAtSecond = yield* EAudioContext.currentTimeFromContext
-
   const playback = yield* (
     PatternData.models(signal)
       ? createLoopingPlaybackInContext
@@ -70,7 +63,19 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
     playback.bufferSource.start(playbackStartedAtSecond)
   })
 
-  return TaggedPatternPointer.models(asset)
-    ? new PlayingPattern({ playback, asset, playbackStartedAtSecond })
-    : new PlayingSlowStrum({ playback, asset, playbackStartedAtSecond })
+  // Branch (rather than a ternary inside the tuple) so the single element lands
+  // on the right one-element queue union member.
+  if (TaggedPatternPointer.models(asset))
+    return LoopBoundPlayback.make({
+      playbackStartedAtSecond,
+      transitionQueue: [
+        PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond }),
+      ],
+    })
+  return LoopBoundPlayback.make({
+    playbackStartedAtSecond,
+    transitionQueue: [
+      PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond }),
+    ],
+  })
 })

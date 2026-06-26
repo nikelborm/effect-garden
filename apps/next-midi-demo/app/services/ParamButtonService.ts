@@ -1,97 +1,72 @@
 import type * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
-import * as Equal from 'effect/Equal'
-import * as EFunction from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import {
-  type AccordData,
-  AccordParamButtonData,
-} from '../brandsAndDatas/Accord.ts'
-import type { ParamButtonIdData } from '../brandsAndDatas/ParamButton.ts'
-import {
-  type PatternData,
-  PatternParamButtonData,
-} from '../brandsAndDatas/Pattern.ts'
-import {
-  type StrengthData,
-  StrengthParamButtonData,
-} from '../brandsAndDatas/Strength.ts'
-import { ASSET_SIZE_BYTES } from '../constants.ts'
-import { streamAll } from '../helpers/streamAll.ts'
-import { AccordRegistry } from './AccordRegistry.ts'
+import type { AccordData } from '../domain/Accord.ts'
+import type { SimpleAssetPointer } from '../domain/AssetPointer.ts'
+import type { ParamButtonIdData } from '../domain/ParamButton.ts'
+import type { PatternData } from '../domain/Pattern.ts'
+import type { StrengthData } from '../domain/Strength.ts'
 import { AppPlaybackStateService } from './AppPlaybackStateService/AppPlaybackStateService.ts'
-import type { PlayingAppPlaybackStates } from './AppPlaybackStateService/types/index.ts'
-import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
+import {
+  inferPlaying,
+  inferSelection,
+} from './AppPlaybackStateService/inferSelection.ts'
 import {
   AccordInputBus,
   type InputBusReaderHandle,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
-import { PatternRegistry } from './PatternRegistry.ts'
-import { StrengthRegistry } from './StrengthRegistry.ts'
 
 const makeParamButtonService = <
   TParamButtonId extends PatternData | AccordData | StrengthData,
-  S,
-  TRegistryInstance,
-  TRegistryId,
   TBusId,
 >({
-  registryTag,
   busTag,
-  getSelectedChangesStream,
-  toCompareValue,
-  toLabel,
-  // isCurrentlyPlayingPredicate,
-  // selectAction,
+  matches,
 }: {
-  readonly registryTag: Context.ReadonlyTag<TRegistryId, TRegistryInstance>
   readonly busTag: Context.ReadonlyTag<
     TBusId,
     InputBusReaderHandle<TParamButtonId>
   >
-  readonly getSelectedChangesStream: (
-    registry: TRegistryInstance,
-  ) => Stream.Stream<S>
-  readonly toCompareValue: (value: ParamButtonIdData<TParamButtonId>) => S
-  readonly toLabel: (value: ParamButtonIdData<TParamButtonId>) => string
-  // readonly isCurrentlyPlayingPredicate: (
-  //   pb: PlayingAppPlaybackStates,
-  //   value: ParamButtonIdData<TParamButtonId>,
-  // ) => boolean
-  // readonly selectAction: (
-  //   registry: Reg,
-  //   value: ParamButtonIdData<TParamButtonId>,
-  // ) => Effect.Effect<void>
+  // Does this button's value correspond to the given (selected or playing)
+  // asset? The per-kind field comparison (accord / pattern / strength).
+  readonly matches: (
+    asset: SimpleAssetPointer,
+    value: ParamButtonIdData<TParamButtonId>,
+  ) => boolean
 }) =>
   Effect.gen(function* () {
-    const [appPlaybackState, currentlySelectedAssetState, registry, bus] =
-      yield* Effect.all(
-        [
-          AppPlaybackStateService,
-          CurrentlySelectedAssetState,
-          registryTag,
-          busTag,
-        ],
-        { concurrency: 'unbounded' },
+    const bus = yield* busTag
+    const appPlaybackState = yield* AppPlaybackStateService
+
+    // Both flags derive from the single playback state — the state machine is
+    // the source of truth (no more registries). "Selected" = the latest
+    // scheduled asset; "playing" = whatever is actually sounding right now.
+    const selectionChangesStream =
+      appPlaybackState.playbackPublicInfoChangesStream.pipe(
+        Stream.map(inferSelection),
+      )
+    const playingChangesStream =
+      appPlaybackState.playbackPublicInfoChangesStream.pipe(
+        Stream.map(inferPlaying),
       )
 
-    const selectedChangesStream = getSelectedChangesStream(registry)
+    // const selectedChangesStream = getSelectedChangesStream(registry)
 
-    const getIsSelectedStream = (value: ParamButtonIdData<TParamButtonId>) =>
-      selectedChangesStream.pipe(
-        Stream.map(Equal.equals(toCompareValue(value))),
-        Stream.changes,
-        Stream.rechunk(1),
-        Stream.tap(isSelected =>
-          Effect.log(
-            `${toLabel(value)} is ${isSelected ? '' : 'not '}selected`,
-          ),
-        ),
-      )
+    // const getIsSelectedStream = (value: ParamButtonIdData<TParamButtonId>) =>
+    //   selectedChangesStream.pipe(
+    //     Stream.map(Equal.equals(toCompareValue(value))),
+    //     Stream.changes,
+    //     Stream.rechunk(1),
+    //     Stream.tap(isSelected =>
+    //       Effect.log(
+    //         `${toLabel(value)} is ${isSelected ? '' : 'not '}selected`,
+    //       ),
+    //     ),
+    //   )
 
     // const getPressabilityChangesStream = (
     //   value: ParamButtonIdData<TParamButtonId>,
@@ -127,23 +102,23 @@ const makeParamButtonService = <
     //     ),
     //   )
 
-    const getDownloadPercent = (value: ParamButtonIdData<TParamButtonId>) =>
-      currentlySelectedAssetState
-        .getPatchedAssetFetchingCompletionStatusChangesStream(value.id)
-        .pipe(
-          Stream.map(s =>
-            s.status === 'not finished'
-              ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
-              : s.status === 'almost finished: fetched, but not written'
-                ? 99
-                : 100,
-          ),
-          Stream.changes,
-          Stream.rechunk(1),
-          Stream.tap(percent =>
-            Effect.log(`${toLabel(value)} download percent=${percent}`),
-          ),
-        )
+    // const getDownloadPercent = (value: ParamButtonIdData<TParamButtonId>) =>
+    //   currentlySelectedAssetState
+    //     .getPatchedAssetFetchingCompletionStatusChangesStream(value.id)
+    //     .pipe(
+    //       Stream.map(s =>
+    //         s.status === 'not finished'
+    //           ? Math.floor((s.currentBytes / ASSET_SIZE_BYTES) * 100)
+    //           : s.status === 'almost finished: fetched, but not written'
+    //             ? 99
+    //             : 100,
+    //       ),
+    //       Stream.changes,
+    //       Stream.rechunk(1),
+    //       Stream.tap(percent =>
+    //         Effect.log(`${toLabel(value)} download percent=${percent}`),
+    //       ),
+    //     )
 
     // const validPressesOnlyStream = yield* bus.pressesOnlyStream.pipe(
     //   // Do we need { switch: true, concurrency: 1 } in flatMap? Seems like we
@@ -169,10 +144,33 @@ const makeParamButtonService = <
     //   Effect.forkScoped,
     // )
 
+    const getIsSelectedStream = (value: ParamButtonIdData<TParamButtonId>) =>
+      selectionChangesStream.pipe(
+        Stream.map(selection => matches(selection, value)),
+        Stream.changes,
+        Stream.rechunk(1),
+      )
+
+    const getIsPlayingStream = (value: ParamButtonIdData<TParamButtonId>) =>
+      playingChangesStream.pipe(
+        Stream.map(
+          Option.match({
+            onNone: () => false,
+            onSome: playing => matches(playing, value),
+          }),
+        ),
+        Stream.changes,
+        Stream.rechunk(1),
+      )
+
+    // STUB: download progress. Under the "all assets are downloaded" assumption
+    // this is genuinely always complete, not a placeholder for inference.
+    const getDownloadPercent = (_value: ParamButtonIdData<TParamButtonId>) =>
+      Stream.make(100)
+
     return {
       getIsSelectedStream,
-      // getPressabilityChangesStream,
-      // isCurrentlyPlaying,
+      getIsPlayingStream,
       getDownloadPercent,
       isPressedFlagChangesStream: (value: ParamButtonIdData<TParamButtonId>) =>
         bus.isPressedStream(value),
@@ -184,15 +182,8 @@ export class AccordParamButtonService extends Effect.Service<AccordParamButtonSe
   {
     accessors: true,
     scoped: makeParamButtonService({
-      registryTag: AccordRegistry,
       busTag: AccordInputBus,
-      getSelectedChangesStream: reg =>
-        reg.selectedAccordChanges.pipe(Stream.map(AccordParamButtonData.make)),
-      toCompareValue: EFunction.identity<AccordParamButtonData>,
-      toLabel: accord => `Accord ${accord.id.accord.padEnd(2)}`,
-      // isCurrentlyPlayingPredicate: (pb, accord) =>
-      //   pb.currentAsset.accord === accord,
-      // selectAction: (reg, param) => reg.selectAccord(param.id.accord),
+      matches: (asset, value) => asset.accord === value.id.accord,
     }).pipe(Effect.withSpan('AccordParamButtonService.init')),
   },
 ) {}
@@ -202,17 +193,9 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
   {
     accessors: true,
     scoped: makeParamButtonService({
-      registryTag: PatternRegistry,
       busTag: PatternInputBus,
-      getSelectedChangesStream: reg =>
-        reg.selectedPatternChanges.pipe(
-          Stream.map(Option.map(PatternParamButtonData.make)),
-        ),
-      toCompareValue: Option.some<PatternParamButtonData>,
-      toLabel: pattern => `Pattern ${pattern.id.pattern}`,
-      // isCurrentlyPlayingPredicate: (pb, pattern) =>
-      //   Equal.equals(pb.currentAsset.pattern, Option.some(pattern)),
-      // selectAction: (reg, param) => reg.switchPattern(param.id.pattern),
+      matches: (asset, value) =>
+        Option.exists(asset.pattern, pattern => pattern === value.id.pattern),
     }).pipe(Effect.withSpan('PatternParamButtonService.init')),
   },
 ) {}
@@ -222,17 +205,8 @@ export class StrengthParamButtonService extends Effect.Service<StrengthParamButt
   {
     accessors: true,
     scoped: makeParamButtonService({
-      registryTag: StrengthRegistry,
       busTag: StrengthInputBus,
-      getSelectedChangesStream: reg =>
-        reg.selectedStrengthChanges.pipe(
-          Stream.map(StrengthParamButtonData.make),
-        ),
-      toCompareValue: EFunction.identity<StrengthParamButtonData>,
-      toLabel: strength => `Strength ${strength.id.strength}`,
-      // isCurrentlyPlayingPredicate: (pb, strength) =>
-      //   pb.currentAsset.strength === strength,
-      // selectAction: (reg, param) => reg.selectStrength(param.id.strength),
+      matches: (asset, value) => asset.strength === value.id.strength,
     }).pipe(Effect.withSpan('StrengthParamButtonService.init')),
   },
 ) {}

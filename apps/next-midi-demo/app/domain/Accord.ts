@@ -1,6 +1,8 @@
 import * as Brand from 'effect/Brand'
+import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
+import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
@@ -70,3 +72,13 @@ export type UnbrandedAccord<TAccord extends Accord> =
 
 export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
   accord as UnbrandedAccord<TAccord>
+
+export class AllAccords extends Context.Tag('next-midi-demo/AllAccords')<
+  AllAccords,
+  AllAccordTuple
+>() {
+  static readonly Default: Layer.Layer<AllAccords> = Layer.succeed(
+    this,
+    allAccords,
+  )
+}

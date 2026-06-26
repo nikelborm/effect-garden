@@ -29,10 +29,10 @@ import {
 } from '../atoms/buttonsAtom.ts'
 import { patternsAtom } from '../atoms/patternsAtom.ts'
 import { strengthsAtom } from '../atoms/strengthAtom.ts'
-import type { Accord } from '../brandsAndDatas/Accord.ts'
-import type { Pattern } from '../brandsAndDatas/Pattern.ts'
-import type { Strength } from '../brandsAndDatas/Strength.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from '../constants.ts'
+import type { Accord } from '../domain/Accord.ts'
+import type { Pattern } from '../domain/Pattern.ts'
+import type { Strength } from '../domain/Strength.ts'
 
 export const MidiPadSlide = () => {
   const res = Result.all({

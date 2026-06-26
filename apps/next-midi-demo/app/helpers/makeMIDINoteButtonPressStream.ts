@@ -8,11 +8,8 @@ import * as Option from 'effect/Option'
 import * as Predicate from 'effect/Predicate'
 import * as Stream from 'effect/Stream'
 
-import { ButtonState } from '../brandsAndDatas/index.ts'
-import {
-  type NoteId,
-  NotePhysicalButtonData,
-} from '../brandsAndDatas/MIDIValues.ts'
+import * as ButtonState from '../domain/ButtonState.ts'
+import { type NoteId, NotePhysicalButtonData } from '../domain/MIDIValues.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
 
 Effect.serviceOption
