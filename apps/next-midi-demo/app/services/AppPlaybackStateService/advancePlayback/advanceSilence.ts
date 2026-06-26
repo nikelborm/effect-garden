@@ -36,16 +36,13 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
 
   const audioBufferStore = yield* AudioBufferStore
 
-  let asset: AssetPointer
-  if (PatternData.models(signal)) {
-    asset = TaggedPatternPointer.make({
-      pattern: signal.pattern,
-      accord,
-      strength,
-    })
-  } else {
-    asset = TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
-  }
+  const asset: AssetPointer = PatternData.models(signal)
+    ? TaggedPatternPointer.make({
+        pattern: signal.pattern,
+        accord,
+        strength,
+      })
+    : TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
 
   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
   const playbackStartedAtSecond = yield* EAudioContext.currentTimeFromContext
@@ -63,19 +60,10 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
     playback.bufferSource.start(playbackStartedAtSecond)
   })
 
-  // Branch (rather than a ternary inside the tuple) so the single element lands
-  // on the right one-element queue union member.
-  if (TaggedPatternPointer.models(asset))
-    return LoopBoundPlayback.make({
-      playbackStartedAtSecond,
-      transitionQueue: [
-        PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond }),
-      ],
-    })
   return LoopBoundPlayback.make({
     playbackStartedAtSecond,
-    transitionQueue: [
-      PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond }),
-    ],
+    transitionQueue: TaggedPatternPointer.models(asset)
+      ? [PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond })]
+      : [PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond })],
   })
 })
