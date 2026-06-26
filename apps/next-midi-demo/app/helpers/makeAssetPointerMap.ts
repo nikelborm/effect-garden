@@ -3,20 +3,20 @@ import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 
+import { AllAccords } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../brandsAndDatas/AssetPointer.ts'
-import { AccordRegistry } from '../services/AccordRegistry.ts'
-import { PatternRegistry } from '../services/PatternRegistry.ts'
-import { StrengthRegistry } from '../services/StrengthRegistry.ts'
+} from '../domain/AssetPointer.ts'
+import { AllPatterns } from '../domain/Pattern.ts'
+import { AllStrengths } from '../domain/Strength.ts'
 
 export const makeAssetPointerMapFactory = Effect.gen(function* () {
   const [accords, patterns, strengths] = yield* Effect.all([
-    AccordRegistry.allAccords,
-    PatternRegistry.allPatterns,
-    StrengthRegistry.allStrengths,
+    AllAccords,
+    AllPatterns,
+    AllStrengths,
   ])
 
   return <TValue>(

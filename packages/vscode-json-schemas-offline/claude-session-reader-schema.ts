@@ -12,7 +12,10 @@ import {
   NonNegativeInt,
   Null,
   NullOr,
+  NumberFromString,
   optionalWith,
+  Positive,
+  Record,
   type Schema,
   String as String$,
   StringFromBase64,
@@ -102,26 +105,34 @@ export const TextContent = Struct({
   text: NonEmptyTrimmedString,
 }).annotations({ title: 'TextContent' })
 
+const toolName = Literal('ExitPlanMode', 'TaskCreate', 'TaskUpdate', 'TaskList')
+
 export const ToolReference = Struct({
   type: Literal('tool_reference'),
-  tool_name: Literal('ExitPlanMode'),
+  tool_name: toolName,
 }).annotations({ title: 'ToolReference' })
 
-export const ToolResultContent = Struct({
-  type: Literal('tool_result'),
-  tool_use_id: NonEmptyTrimmedString,
-}).pipe(
-  extend(
-    Union(
-      Struct({
-        content: NonEmptyString,
-        is_error: optionalWith(Boolean$, { exact: true }),
-      }),
-      Struct({ content: Array$(Union(TextContent, ToolReference)) }),
+export const ToolResultContent = Union(
+  Struct({
+    type: Literal('text'),
+    text: NonEmptyTrimmedString,
+  }).pipe(annotations({ title: 'ToolResultContentText' })),
+  Struct({
+    type: Literal('tool_result'),
+    tool_use_id: NonEmptyTrimmedString,
+  }).pipe(
+    extend(
+      Union(
+        Struct({
+          content: NonEmptyString,
+          is_error: optionalWith(Boolean$, { exact: true }),
+        }),
+        Struct({ content: Array$(Union(/* TextContent, */ ToolReference)) }),
+      ),
     ),
+    annotations({ title: 'ToolResultContentStandard' }),
   ),
-  annotations({ title: 'ToolResultContent' }),
-)
+).pipe(annotations({ title: 'ToolResultContent' }))
 
 export const AiTitleMessage = Struct({
   type: Literal('ai-title'),
@@ -138,6 +149,62 @@ export const ThinkingContent = Struct({
 export const DirectCaller = Struct({ type: Literal('direct') }).annotations({
   title: 'DirectCaller',
 })
+
+export const questions = NonEmptyArray(
+  Struct({
+    question: NonEmptyTrimmedString,
+    header: NonEmptyTrimmedString,
+    multiSelect: Boolean$,
+    options: NonEmptyArray(
+      Struct({
+        label: NonEmptyTrimmedString,
+        description: NonEmptyTrimmedString,
+        preview: optionalWith(NonEmptyTrimmedString, { exact: true }),
+      }),
+    ),
+  }),
+)
+
+export const AskUserQuestionToolUseContent = Struct({
+  type: Literal('tool_use'),
+  id: NonEmptyTrimmedString,
+  name: Literal('AskUserQuestion'),
+  input: Struct({
+    questions,
+  }),
+  caller: DirectCaller,
+}).annotations({ title: 'AskUserQuestionToolUseContent' })
+
+export const TaskCreateToolUseContent = Struct({
+  type: Literal('tool_use'),
+  id: NonEmptyTrimmedString,
+  name: Literal('TaskCreate'),
+  input: Struct({
+    subject: NonEmptyTrimmedString,
+    description: NonEmptyTrimmedString,
+    activeForm: NonEmptyTrimmedString,
+  }),
+  caller: DirectCaller,
+}).annotations({ title: 'TaskCreateToolUseContent' })
+
+const taskStatus = Literal('pending', 'in_progress', 'completed')
+
+export const TaskUpdateToolUseContent = Struct({
+  type: Literal('tool_use'),
+  id: NonEmptyTrimmedString,
+  name: Literal('TaskUpdate'),
+  input: Struct({
+    taskId: NumberFromString,
+    addBlockedBy: optionalWith(NonEmptyArray(NumberFromString), {
+      exact: true,
+    }),
+    status: optionalWith(taskStatus, { exact: true }),
+    description: optionalWith(NonEmptyTrimmedString, { exact: true }),
+    subject: optionalWith(NonEmptyTrimmedString, { exact: true }),
+    activeForm: optionalWith(NonEmptyTrimmedString, { exact: true }),
+  }),
+  caller: DirectCaller,
+}).annotations({ title: 'TaskUpdateToolUseContent' })
 
 export const AgentToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -178,6 +245,42 @@ export const StructuredPatch = Struct({
   newLines: NonNegativeInt,
   lines: NonEmptyArray(NonEmptyString),
 }).annotations({ title: 'StructuredPatch' })
+
+export const AskUserQuestionToolUseResult = Struct({
+  questions,
+  answers: Record({
+    key: NonEmptyTrimmedString,
+    value: NonEmptyTrimmedString,
+  }),
+  annotations: optionalWith(
+    Record({
+      key: NonEmptyTrimmedString,
+      value: Struct({
+        notes: NonEmptyTrimmedString,
+      }),
+    }),
+    { exact: true },
+  ),
+}).annotations({ title: 'AskUserQuestionToolUseResult' })
+
+export const TaskCreateToolUseResult = Struct({
+  task: Struct({ id: NumberFromString, subject: NonEmptyTrimmedString }),
+}).annotations({ title: 'TaskCreateToolUseResult' })
+
+export const TaskUpdateToolUseResult = Struct({
+  taskId: NumberFromString,
+  success: Boolean$,
+  updatedFields: NonEmptyArray(
+    Literal('status', 'blockedBy', 'description', 'subject', 'activeForm'),
+  ),
+  statusChange: optionalWith(
+    Struct({
+      from: taskStatus,
+      to: taskStatus,
+    }),
+    { exact: true },
+  ),
+}).annotations({ title: 'TaskUpdateToolUseResult' })
 
 export const EditToolUseResult = Struct({
   type: optionalWith(Literal('create', 'update'), { exact: true }),
@@ -220,7 +323,7 @@ export const BashToolUseContent = Struct({
   id: NonEmptyTrimmedString,
   name: Literal('Bash'),
   input: Struct({
-    command: NonEmptyTrimmedString,
+    command: NonEmptyString,
     description: NonEmptyTrimmedString,
     timeout: optionalWith(NonNegativeInt, { exact: true }),
   }),
@@ -265,6 +368,9 @@ export const AssistantMessageContent = Union(
   TextContent,
   AgentToolUseContent,
   WriteToolUseContent,
+  TaskCreateToolUseContent,
+  TaskUpdateToolUseContent,
+  AskUserQuestionToolUseContent,
   ReadToolUseContent,
   EditToolUseContent,
   BashToolUseContent,
@@ -272,24 +378,31 @@ export const AssistantMessageContent = Union(
   ToolSearchToolUseContent,
 ).annotations({ title: 'AssistantMessageContent' })
 
+const UsualAssistantMessage = Struct({
+  type: Literal('message'),
+  id: NonEmptyTrimmedString,
+  model: NonEmptyTrimmedString,
+  role: Literal('assistant'),
+  stop_reason: Literal('tool_use', 'end_turn'),
+  stop_sequence: Null,
+  stop_details: Null,
+  usage: Usage,
+  content: Array$(AssistantMessageContent),
+  diagnostics: NullOr(
+    Struct({
+      cache_miss_reason: Struct({
+        type: Literal('tools_changed', 'system_changed'),
+        cache_missed_input_tokens: Positive,
+      }),
+    }),
+  ),
+}).annotations({ title: 'UsualAssistantMessage' })
+
 export const AssistantMessage = Struct({
   type: Literal('assistant'),
   requestId: optionalWith(NonEmptyTrimmedString, { exact: true }),
   isApiErrorMessage: optionalWith(Boolean$, { exact: true }),
-  message: Union(
-    DumbAssistantMessage,
-    Struct({
-      type: Literal('message'),
-      id: NonEmptyTrimmedString,
-      model: NonEmptyTrimmedString,
-      role: Literal('assistant'),
-      stop_reason: Literal('tool_use', 'end_turn'),
-      stop_sequence: Null,
-      stop_details: Null,
-      usage: Usage,
-      content: Array$(AssistantMessageContent),
-    }).annotations({ title: 'UsualAssistantMessage' }),
-  ),
+  message: Union(DumbAssistantMessage, UsualAssistantMessage),
   ...CommonShitStructFields,
 }).annotations({ title: 'AssistantMessage' })
 
@@ -310,8 +423,14 @@ export const FileHistorySnapshotMessage = Struct({
   isSnapshotUpdate: Boolean$,
 }).annotations({ title: 'FileHistorySnapshotMessage' })
 
+export const TuiModeMessage = Struct({
+  type: Literal('mode'),
+  mode: Literal('normal'),
+  sessionId: UUID,
+}).annotations({ title: 'TuiModeMessage' })
+
 export const ToolSearchToolUseResult = Struct({
-  matches: Tuple(Literal('ExitPlanMode')),
+  matches: NonEmptyArray(toolName),
   query: NonEmptyTrimmedString,
   total_deferred_tools: NonNegativeInt,
 }).annotations({ title: 'ToolSearchToolUseResult' })
@@ -347,6 +466,9 @@ export const ToolUseResult = Union(
   AgentToolUseResult,
   ToolSearchToolUseResult,
   BashToolUseResult,
+  AskUserQuestionToolUseResult,
+  TaskCreateToolUseResult,
+  TaskUpdateToolUseResult,
   EditToolUseResult,
   ReadToolUseResult,
   PlanToolUseResult,
@@ -363,9 +485,33 @@ export const UserMessage = Struct({
   toolUseResult: optionalWith(Union(ToolUseResult, NonEmptyTrimmedString), {
     exact: true,
   }),
-  permissionMode: optionalWith(Literal('plan', 'acceptEdits'), { exact: true }),
+  permissionMode: optionalWith(Literal('plan', 'acceptEdits', 'default'), {
+    exact: true,
+  }),
+  isVisibleInTranscriptOnly: optionalWith(Boolean$, {
+    exact: true,
+  }),
+  isCompactSummary: optionalWith(Boolean$, {
+    exact: true,
+  }),
   ...CommonShitStructFields,
 }).annotations({ title: 'UserMessage' })
+
+export const InterruptionUserMessage = Struct({
+  type: Literal('user'),
+  promptId: UUID,
+  message: Struct({
+    role: Literal('user'),
+    content: Tuple(
+      Struct({
+        type: Literal('text'),
+        text: Literal('[Request interrupted by user]'),
+      }),
+    ),
+  }),
+  interruptedMessageId: NonEmptyTrimmedString,
+  ...CommonShitStructFields,
+}).annotations({ title: 'InterruptionUserMessage' })
 
 export const DefferedToolUseDeltaAttachment = Struct({
   type: Literal('deferred_tools_delta'),
@@ -373,13 +519,27 @@ export const DefferedToolUseDeltaAttachment = Struct({
   addedLines: Array$(NonEmptyTrimmedString),
   removedNames: Array$(NonEmptyTrimmedString),
   readdedNames: Array$(NonEmptyTrimmedString),
+  pendingMcpServers: optionalWith(Array$(NonEmptyTrimmedString), {
+    exact: true,
+  }),
 }).annotations({ title: 'DefferedToolUseDeltaAttachment' })
+
+export const AgentListingDeltaAttachment = Struct({
+  type: Literal('agent_listing_delta'),
+  addedTypes: Array$(NonEmptyTrimmedString),
+  addedLines: Array$(NonEmptyTrimmedString),
+  removedTypes: Array$(NonEmptyTrimmedString),
+
+  isInitial: Boolean$,
+  showConcurrencyNote: Boolean$,
+}).annotations({ title: 'AgentListingDeltaAttachment' })
 
 export const SkillListingAttachment = Struct({
   type: Literal('skill_listing'),
   content: NonEmptyTrimmedString,
   skillCount: NonNegativeInt,
   isInitial: Boolean$,
+  names: Array$(NonEmptyTrimmedString),
 }).annotations({ title: 'SkillListingAttachment' })
 
 export const McpInstructionsDeltaAttachment = Struct({
@@ -388,6 +548,34 @@ export const McpInstructionsDeltaAttachment = Struct({
   addedBlocks: Array$(NonEmptyTrimmedString),
   removedNames: Array$(NonEmptyTrimmedString),
 }).annotations({ title: 'McpInstructionsDeltaAttachment' })
+
+export const FileAttachment = Struct({
+  type: Literal('file'),
+  filename: NonEmptyTrimmedString,
+  displayPath: NonEmptyTrimmedString,
+  content: Struct({
+    type: Literal('text'),
+    file: Struct({
+      filePath: NonEmptyTrimmedString,
+      content: String$,
+      numLines: NonNegativeInt,
+      startLine: NonNegativeInt,
+      totalLines: NonNegativeInt,
+    }),
+  }),
+}).annotations({ title: 'FileAttachment' })
+
+export const CompactFileReferenceAttachment = Struct({
+  type: Literal('compact_file_reference'),
+  filename: NonEmptyTrimmedString,
+  displayPath: NonEmptyTrimmedString,
+}).annotations({ title: 'CompactFileReferenceAttachment' })
+
+export const QueuedCommandAttachment = Struct({
+  type: Literal('queued_command'),
+  prompt: NonEmptyTrimmedString,
+  commandMode: Literal('prompt'),
+}).annotations({ title: 'QueuedCommandAttachment' })
 
 export const PlanModeAttachment = Struct({
   type: Literal('plan_mode'),
@@ -412,11 +600,15 @@ export const TaskReminderAttachment = Struct({
 export const EditedTextFileAttachment = Struct({
   type: Literal('edited_text_file'),
   filename: NonEmptyTrimmedString,
-  snippet: NonEmptyTrimmedString,
+  snippet: String$,
 }).annotations({ title: 'EditedTextFileAttachment' })
 
 export const Attachment = Union(
   DefferedToolUseDeltaAttachment,
+  AgentListingDeltaAttachment,
+  FileAttachment,
+  CompactFileReferenceAttachment,
+  QueuedCommandAttachment,
   TaskReminderAttachment,
   SkillListingAttachment,
   EditedTextFileAttachment,
@@ -437,6 +629,14 @@ export const LastPromptMessage = Struct({
   leafUuid: UUID,
   sessionId: UUID,
 }).annotations({ title: 'LastPromptMessage' })
+
+export const QueueOperationMessage = Struct({
+  type: Literal('queue-operation'),
+  operation: Literal('enqueue', 'remove'),
+  timestamp: DateFromString,
+  sessionId: UUID,
+  content: optionalWith(String$, { exact: true }),
+}).annotations({ title: 'QueueOperationMessage' })
 
 export const AgentNameMessage = Struct({
   type: Literal('agent-name'),
@@ -464,6 +664,29 @@ export const SystemMessage = Struct({
         content: NonEmptyTrimmedString,
         level: Literal('info'),
       }),
+      Struct({
+        subtype: Literal('compact_boundary'),
+        content: NonEmptyTrimmedString,
+        level: Literal('info'),
+        logicalParentUuid: UUID,
+        compactMetadata: Struct({
+          trigger: Literal('manual'),
+          preTokens: Positive,
+          durationMs: Positive,
+          preCompactDiscoveredTools: NonEmptyArray(toolName),
+          preservedSegment: Struct({
+            headUuid: UUID,
+            anchorUuid: UUID,
+            tailUuid: UUID,
+          }),
+          preservedMessages: Struct({
+            anchorUuid: UUID,
+            uuids: NonEmptyArray(UUID),
+            allUuids: NonEmptyArray(UUID),
+          }),
+          postTokens: Positive,
+        }),
+      }),
     ),
   ),
   annotations({ title: 'SystemMessage' }),
@@ -471,8 +694,11 @@ export const SystemMessage = Struct({
 
 export const ClaudeSessionMessage = Union(
   PermissionModeMessage,
+  TuiModeMessage,
   FileHistorySnapshotMessage,
   UserMessage,
+  InterruptionUserMessage,
+  QueueOperationMessage,
   SystemMessage,
   AgentNameMessage,
   AttachmentMessage,

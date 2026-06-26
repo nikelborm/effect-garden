@@ -49,7 +49,7 @@ export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
 
 export const biomeDefaultConfig = {
   // TODO: use the schema url from the main biome.jsonc
-  $schema: 'https://biomejs.dev/schemas/2.4.15/schema.json',
+  $schema: 'https://biomejs.dev/schemas/2.4.16/schema.json',
   extends: '//',
 }
 

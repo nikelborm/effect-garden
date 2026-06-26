@@ -1,9 +1,7 @@
 import * as Atom from '@effect-atom/atom/Atom'
 
-import { AccordRegistry } from '../services/AccordRegistry.ts'
+import { AllAccords } from '../domain/Accord.ts'
 
-const runtime = Atom.runtime(AccordRegistry.Default)
+const runtime = Atom.runtime(AllAccords.Default)
 
-export const accordsAtom = runtime.atom(AccordRegistry.allAccords)
-
-export const setActiveAccordAtom = runtime.fn(AccordRegistry.selectAccord)
+export const accordsAtom = runtime.atom(AllAccords)

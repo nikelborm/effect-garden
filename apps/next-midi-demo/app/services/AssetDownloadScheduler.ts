@@ -1,24 +1,25 @@
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
+import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
+import { defaultAccord } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   complexifyAssetPointer,
   type SimpleAssetPointer,
   simplifyAssetPointer,
-} from '../brandsAndDatas/AssetPointer.ts'
-import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
+} from '../domain/AssetPointer.ts'
+import { defaultStrength } from '../domain/Strength.ts'
 import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
-import { CurrentlySelectedAssetState } from './CurrentlySelectedAssetState.ts'
 import { DownloadManager } from './DownloadManager.ts'
 
 export const AssetDownloadSchedulerLive = Effect.gen(function* () {
-  const currentlySelectedAsset = yield* CurrentlySelectedAssetState
   const downloadManager = yield* DownloadManager
   const allDownloadedRef = yield* Ref.make(false)
 
@@ -131,9 +132,17 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
     yield* Ref.set(allDownloadedRef, true)
   })
 
+  // STUB: selection inference from playback state is deferred. Schedule
+  // downloads around a fixed default asset for now.
+  const stubSelectedAsset = complexifyAssetPointer({
+    accord: defaultAccord,
+    pattern: Option.none(),
+    strength: defaultStrength,
+  })
+
   yield* reactivelySchedule(
-    Stream.tap(currentlySelectedAsset.changes, e =>
-      Effect.log('reactively scheduled download', e),
+    Stream.tap(Stream.succeed(stubSelectedAsset), e =>
+      Effect.log('reactively scheduled download (stub)', e),
     ),
     executeLatestPlan,
   )

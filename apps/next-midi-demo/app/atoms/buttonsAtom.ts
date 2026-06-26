@@ -16,18 +16,20 @@ import * as Stream from 'effect/Stream'
 import {
   type Accord,
   AccordParamButtonData,
+  AllAccords,
   defaultAccord,
-} from '../brandsAndDatas/Accord.ts'
+} from '../domain/Accord.ts'
 import {
+  AllPatterns,
   type Pattern,
   PatternParamButtonData,
-} from '../brandsAndDatas/Pattern.ts'
+} from '../domain/Pattern.ts'
 import {
+  AllStrengths,
   defaultStrength,
   type Strength,
   StrengthParamButtonData,
-} from '../brandsAndDatas/Strength.ts'
-import { AccordRegistry } from '../services/AccordRegistry.ts'
+} from '../domain/Strength.ts'
 import {
   KeyboardButtonMappingLayer,
   MIDIPadButtonMappingLayer,
@@ -36,7 +38,6 @@ import {
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
 import { AudioBufferStore } from '../services/AudioBufferStore.ts'
-import { CurrentlySelectedAssetState } from '../services/CurrentlySelectedAssetState.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
 import {
   AccordInputBus,
@@ -50,10 +51,8 @@ import {
   PatternParamButtonService,
   StrengthParamButtonService,
 } from '../services/ParamButtonService.ts'
-import { PatternRegistry } from '../services/PatternRegistry.ts'
 import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
-import { StrengthRegistry } from '../services/StrengthRegistry.ts'
 import { somebodyKillMe, TracingLive } from './tracing.ts'
 
 const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
@@ -75,33 +74,27 @@ const AllBusesNoDeps = Layer.mergeAll(
   StrengthInputBusNoDeps,
 ).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.ensureRequirementsType<never>())
 
-const AccordRegistryNoDeps = AccordRegistry.Default.pipe(
-  Layer.withSpan('AccordRegistry.Default'),
+const AllAccordsNoDeps = AllAccords.Default.pipe(
   Layer.ensureRequirementsType<never>(),
 )
-const PatternRegistryNoDeps = PatternRegistry.Default.pipe(
-  Layer.withSpan('PatternRegistry.Default'),
+const AllPatternsNoDeps = AllPatterns.Default.pipe(
   Layer.ensureRequirementsType<never>(),
 )
-const StrengthRegistryNoDeps = StrengthRegistry.Default.pipe(
-  Layer.withSpan('StrengthRegistry.Default'),
+const AllStrengthsNoDeps = AllStrengths.Default.pipe(
   Layer.ensureRequirementsType<never>(),
 )
 
-const AllRegistriesNoDeps = Layer.mergeAll(
-  AccordRegistryNoDeps,
-  PatternRegistryNoDeps,
-  StrengthRegistryNoDeps,
-).pipe(
-  Layer.withSpan('AllRegistriesNoDeps'),
-  Layer.ensureRequirementsType<never>(),
-)
+const AllConstantsNoDeps = Layer.mergeAll(
+  AllAccordsNoDeps,
+  AllPatternsNoDeps,
+  AllStrengthsNoDeps,
+).pipe(Layer.ensureRequirementsType<never>())
 
-const AllRegistriesAndBusesNoDeps = Layer.mergeAll(
+const AllConstantsAndBusesNoDeps = Layer.mergeAll(
   AllBusesNoDeps,
-  AllRegistriesNoDeps,
+  AllConstantsNoDeps,
 ).pipe(
-  Layer.withSpan('AllRegistriesAndBusesNoDeps'),
+  Layer.withSpan('AllConstantsAndBusesNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
 
@@ -126,20 +119,20 @@ const SelectedMIDIInputWithAccessServiceNoDeps =
   )
 // background
 const KeyboardButtonMappingLayerNoDeps = KeyboardButtonMappingLayer.pipe(
-  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.withSpan('KeyboardButtonMappingLayerNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
 // background
 const MIDIPadButtonMappingLayerNoDeps = MIDIPadButtonMappingLayer.pipe(
-  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.provide(SelectedMIDIInputWithAccessServiceNoDeps),
   Layer.withSpan('MIDIPadButtonMappingLayerNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
 // background
 const OnScreenButtonMappingLayerNoDeps = OnScreenButtonMappingLayer.pipe(
-  Layer.provide(AllRegistriesAndBusesNoDeps),
+  Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.withSpan('OnScreenButtonMappingLayerNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
@@ -162,7 +155,7 @@ const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
 const LoadedAssetSizeEstimationMapNoDeps =
   LoadedAssetSizeEstimationMap.Default.pipe(
     Layer.provide(RootDirectoryHandleNoDeps),
-    Layer.provide(AllRegistriesNoDeps),
+    Layer.provide(AllConstantsNoDeps),
     Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
     Layer.ensureRequirementsType<never>(),
   )
@@ -173,14 +166,6 @@ const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
   Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
-
-const CurrentlySelectedAssetStateNoDeps =
-  CurrentlySelectedAssetState.Default.pipe(
-    Layer.provide(AllRegistriesNoDeps),
-    Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
-    Layer.withSpan('CurrentlySelectedAssetStateNoDeps'),
-    Layer.ensureRequirementsType<never>(),
-  )
 
 const AudioContextLive = EAudioContext.layer().pipe(
   Layer.orDie,
@@ -197,8 +182,7 @@ const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
   Layer.provide(AudioContextLive),
   Layer.provide(AudioBufferStoreNoDeps),
-  Layer.provide(AllRegistriesAndBusesNoDeps),
-  Layer.provide(CurrentlySelectedAssetStateNoDeps),
+  Layer.provide(AllBusesNoDeps),
   Layer.withSpan('AppPlaybackStateServiceNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )
@@ -213,7 +197,6 @@ const DownloadManagerNoDeps = DownloadManager.Default.pipe(
 
 // background
 const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
-  Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(DownloadManagerNoDeps),
   Layer.withSpan('AssetDownloadSchedulerNoDeps'),
   Layer.ensureRequirementsType<never>(),
@@ -221,8 +204,6 @@ const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
 
 const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
   Layer.provide(AccordInputBusNoDeps),
-  Layer.provide(AccordRegistryNoDeps),
-  Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('AccordParamButtonServiceNoDeps'),
   Layer.ensureRequirementsType<never>(),
@@ -230,8 +211,6 @@ const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
 
 const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
   Layer.provide(PatternInputBusNoDeps),
-  Layer.provide(PatternRegistryNoDeps),
-  Layer.provide(CurrentlySelectedAssetStateNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('PatternParamButtonServiceNoDeps'),
   Layer.ensureRequirementsType<never>(),
@@ -240,8 +219,6 @@ const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
 const StrengthParamButtonServiceNoDeps =
   StrengthParamButtonService.Default.pipe(
     Layer.provide(StrengthInputBusNoDeps),
-    Layer.provide(StrengthRegistryNoDeps),
-    Layer.provide(CurrentlySelectedAssetStateNoDeps),
     Layer.provide(AppPlaybackStateServiceNoDeps),
     Layer.withSpan('StrengthParamButtonServiceNoDeps'),
     Layer.ensureRequirementsType<never>(),
@@ -332,19 +309,18 @@ export const testAtom = builtRuntime.atom(() =>
 //     PatternParamButtonData.make,
 //     PatternParamButtonService.getPressabilityChangesStream,
 //     Stream.unwrap,
-//     // TODO patterns are no longer selected by default, so shouldn't compare to anything "default"
 //     s =>
 //       runtime.atom(s, {
-//         initialValue: pattern !== defaultPattern,
+//         initialValue: Option.isSome(pattern),
 //       }),
 //     Atom.withFallback(
 //       Atom.readable(() =>
-//         Result.success(pattern !== defaultPattern, { waiting: true }),
+//         Result.success(Option.isSome(pattern), { waiting: true }),
 //       ),
 //     ),
 //     Atom.withServerValue(
 //       EFunction.constant(
-//         Result.success(pattern !== defaultPattern, { waiting: true }),
+//         Result.success(Option.isSome(pattern), { waiting: true }),
 //       ),
 //     ),
 //   ),
@@ -491,65 +467,68 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
   ),
 )
 
-// export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
-//   (accord: Accord) =>
-//     EFunction.pipe(
-//       accord,
-//       AccordParamButtonData.make,
-//       AccordParamButtonService.isCurrentlyPlaying,
-//       Stream.unwrap,
-//       s =>
-//         runtime.atom(s, {
-//           initialValue: false,
-//         }),
-//       Atom.withFallback(
-//         Atom.readable(() => Result.success(false, { waiting: true })),
-//       ),
-//       Atom.withServerValue(
-//         EFunction.constant(Result.success(false, { waiting: true })),
-//       ),
-//     ),
-// )
+// "Currently playing" = this button's value is part of whatever is actually
+// sounding right now (a loop stays playing while it fades out). Initial state
+// is Silence, so nothing plays yet.
+export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
+  (accord: Accord) =>
+    EFunction.pipe(
+      accord,
+      AccordParamButtonData.make,
+      AccordParamButtonService.getIsPlayingStream,
+      Stream.unwrap,
+      s =>
+        builtRuntime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
+)
 
-// export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
-//   (pattern: Pattern) =>
-//     EFunction.pipe(
-//       pattern,
-//       PatternParamButtonData.make,
-//       PatternParamButtonService.isCurrentlyPlaying,
-//       Stream.unwrap,
-//       s =>
-//         runtime.atom(s, {
-//           initialValue: false,
-//         }),
-//       Atom.withFallback(
-//         Atom.readable(() => Result.success(false, { waiting: true })),
-//       ),
-//       Atom.withServerValue(
-//         EFunction.constant(Result.success(false, { waiting: true })),
-//       ),
-//     ),
-// )
+export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
+  (pattern: Pattern) =>
+    EFunction.pipe(
+      pattern,
+      PatternParamButtonData.make,
+      PatternParamButtonService.getIsPlayingStream,
+      Stream.unwrap,
+      s =>
+        builtRuntime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
+)
 
-// export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
-//   (strength: Strength) =>
-//     EFunction.pipe(
-//       strength,
-//       StrengthParamButtonData.make,
-//       StrengthParamButtonService.isCurrentlyPlaying,
-//       Stream.unwrap,
-//       s =>
-//         runtime.atom(s, {
-//           initialValue: false,
-//         }),
-//       Atom.withFallback(
-//         Atom.readable(() => Result.success(false, { waiting: true })),
-//       ),
-//       Atom.withServerValue(
-//         EFunction.constant(Result.success(false, { waiting: true })),
-//       ),
-//     ),
-// )
+export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
+  (strength: Strength) =>
+    EFunction.pipe(
+      strength,
+      StrengthParamButtonData.make,
+      StrengthParamButtonService.getIsPlayingStream,
+      Stream.unwrap,
+      s =>
+        builtRuntime.atom(s, {
+          initialValue: false,
+        }),
+      Atom.withFallback(
+        Atom.readable(() => Result.success(false, { waiting: true })),
+      ),
+      Atom.withServerValue(
+        EFunction.constant(Result.success(false, { waiting: true })),
+      ),
+    ),
+)
 
 export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
   EFunction.pipe(

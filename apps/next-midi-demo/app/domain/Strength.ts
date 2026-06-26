@@ -1,6 +1,8 @@
 import * as Brand from 'effect/Brand'
+import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import type * as Either from 'effect/Either'
+import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
@@ -72,3 +74,13 @@ export type UnbrandedStrength<TStrength extends Strength> =
 export const UnbrandedStrength = <TStrength extends Strength>(
   strength: TStrength,
 ) => strength as UnbrandedStrength<TStrength>
+
+export class AllStrengths extends Context.Tag('next-midi-demo/AllStrengths')<
+  AllStrengths,
+  AllStrengthTuple
+>() {
+  static readonly Default: Layer.Layer<AllStrengths> = Layer.succeed(
+    this,
+    allStrengths,
+  )
+}

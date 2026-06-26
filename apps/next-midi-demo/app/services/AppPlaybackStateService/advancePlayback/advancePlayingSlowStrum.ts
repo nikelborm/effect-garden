@@ -1,79 +1,18 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
-import * as Equal from 'effect/Equal'
-import * as Option from 'effect/Option'
 
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import {
-  createLoopScheduledAfterSingleShot,
-  createOneshotPlayback,
-  helpGarbageCollectionOfPlayback,
-} from '../playbackNodes/index.ts'
-import { PatternTransitionQueueElement } from '../types/common.ts'
 import type { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import { SlowStrumPatternTransition } from '../types/SlowStrumPatternTransition.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
 import type { Signal } from './signal.ts'
 
+// A slow strum is sounding (queue = [strum]). Slow strums are the deferred
+// "monster": an interrupting strum regrids the whole tick grid, which is unsolved.
+// For now any input during a slow strum dies. The prior reference implementation
+// (interrupt-and-restart / schedule-loop-after-strum) lives in git history and in
+// the midi_scheduling_findings memory.
 export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
-  function* (
-    oldState: PlayingSlowStrum,
-    signal: Signal,
-    deps: AdvancePlaybackDeps,
-  ) {
-    const audioBufferStore = yield* AudioBufferStore
-    // const audioContext = yield* EAudioContext.EAudioContext
-    // const [current] = oldState.transitionQueue
-
-    // if (Equal.equals(current.asset, asset)) return oldState
-
-    // if (Option.isNone(asset.pattern)) {
-    //   // Different accord/strength → interrupt immediately, start new slow strum
-    //   const secondsSinceAudioContextInit =
-    //     yield* EAudioContext.currentTime(audioContext)
-    //   yield* helpGarbageCollectionOfPlayback(current.playback)
-    //   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-    //   const newPlayback = yield* createOneshotPlayback(
-    //     audioContext,
-    //     audioBuffer,
-    //   )
-    //   yield* Effect.sync(() => {
-    //     newPlayback.gainNode.gain.setValueAtTime(
-    //       maxLoudness,
-    //       asEarlyAsPossibleInSeconds,
-    //     )
-    //     newPlayback.bufferSource.start(secondsSinceAudioContextInit)
-    //   })
-    //   return PlayingSlowStrum.make({
-    //     playbackStartedAtSecond: secondsSinceAudioContextInit,
-    //     asset,
-    //     playback: newPlayback,
-    //   })
-    // }
-
-    // // Pattern was selected while slow strum is playing → schedule loop to start after slow strum ends
-    // const slowStrumEndsAtSecond =
-    //   oldState.playbackStartedAtSecond + current.durationSeconds
-    // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-    // const newPatternPlayback = yield* createLoopScheduledAfterSingleShot(
-    //   audioContext,
-    //   audioBuffer,
-    //   slowStrumEndsAtSecond,
-    // )
-    // return SlowStrumPatternTransition.make({
-    //   playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-    //   transitionQueue: [
-    //     current,
-    //     PatternTransitionQueueElement.make({
-    //       asset,
-    //       playback: newPatternPlayback,
-    //     }),
-    //   ],
-    // })
-
-    yield* Effect.logError({ oldState, signal, deps })
-    return yield* Effect.dieMessage('not implemented')
+  function* (strum: PlayingSlowStrum, signal: Signal) {
+    yield* Effect.logError({ strum, signal })
+    return yield* Effect.dieMessage(
+      'slow strums are deferred (PlayingSlowStrum)',
+    )
   },
 )

@@ -2,132 +2,108 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
-import * as Option from 'effect/Option'
-import * as Struct from 'effect/Struct'
 
-import { maxLoudness } from '../constants.ts'
-import {
-  createScheduledNextPlayback,
-  helpGarbageCollectionOfPlayback,
-  scheduleFadeOutOf,
-} from '../playbackNodes/index.ts'
-import { calcTimingsMath } from '../timingMath.ts'
-import {
-  PatternTransitionElementWithScheduledCleanup,
-  PatternTransitionQueueElement,
-} from '../types/common.ts'
-import { PatternPatternPatternTransition } from '../types/PatternPatternPatternTransition.ts'
-import { PatternPatternSilenceTransition } from '../types/PatternPatternSilenceTransition.ts'
-import type { PatternPatternTransition } from '../types/PatternPatternTransition.ts'
-import { PatternSilenceTransition } from '../types/PatternSilenceTransition.ts'
-import { PlayingPattern } from '../types/PlayingPattern.ts'
-import type { AdvancePlaybackDeps } from './deps.ts'
+import { AccordData } from '../../../domain/Accord.ts'
+import { PatternData } from '../../../domain/Pattern.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
+import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
+import type {
+  IncomingLoopFadingIn,
+  LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
+} from '../types/loopElements.ts'
+import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
 
+// A second input arrived while a loop->loop ROLL-OVER is still queued:
+//   queue = [current (short roll-over fade), incoming (fading in)].
+// `incoming.asset` is the destination; `incoming.fadeIn*` say when its crossfade
+// commits. GREEN (still safely before it commits): cancel / reschedule `incoming`
+// cleanly. RED (the crossfade has effectively begun): we can't take `incoming`
+// back, so we promote it to a fading-out element and append a third — `current`
+// keeps its own fade + cleanup untouched.
 export const advancePatternPatternTransition = Effect.fn(
   'advancePatternPatternTransition',
 )(function* (
-  oldState: PatternPatternTransition,
+  current: LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
+  incoming: IncomingLoopFadingIn,
   signal: Signal,
-  deps: AdvancePlaybackDeps,
 ) {
-  // const audioBufferStore = yield* AudioBufferStore
-  // const [current, latest] = oldState.transitionQueue
+  // Re-selecting the destination's own accord/strength changes nothing.
+  if (
+    (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||
+    (StrengthData.models(signal) && signal.strength === incoming.asset.strength)
+  )
+    return LoopBoundPlayback.make({
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      transitionQueue: [current, incoming],
+    })
 
-  // if (Equal.equals(latest.asset, asset)) return oldState
+  const now = yield* EAudioContext.currentTimeFromContext
 
-  // const audioContext = yield* EAudioContext.EAudioContext
+  // Green = still buffer time before `incoming`'s fade-in commits.
+  const isInGreenZone =
+    now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
-  // const secondsSinceAudioContextInit =
-  //   yield* EAudioContext.currentTimeFromContext
+  // Pressing the destination pattern again toggles it off -> head to silence.
+  if (PatternData.models(signal) && signal.pattern === incoming.asset.pattern) {
+    if (isInGreenZone) {
+      // Drop the incoming loop entirely; `current` keeps fading out to silence.
+      yield* incoming.drop()
+      return SilenceBoundPlayback.make({
+        playbackStartedAtSecond: current.playbackStartedAtSecond,
+        accord: incoming.asset.accord,
+        strength: incoming.asset.strength,
+        transitionQueue: [current],
+      })
+    }
+    // Red: `incoming` is already coming up — fade it out too (SHORT fade — the
+    // preserved roll-over inconsistency; see midi_scheduling_findings). Both
+    // loops now fade to silence; `current` untouched on its original slot/fiber.
+    return SilenceBoundPlayback.make({
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      accord: incoming.asset.accord,
+      strength: incoming.asset.strength,
+      transitionQueue: [current, yield* incoming.promoteToFadingOut()],
+    })
+  }
 
-  // const math = calcTimingsMath(
-  //   oldState.playbackStartedAtSecond,
-  //   secondsSinceAudioContextInit,
-  // )
+  const desiredAsset = desiredAssetFromSignal(signal, incoming.asset)
 
-  // if (Option.isNone(asset.pattern)) {
-  //   if (math.fitsIntoBufferOfClosestTransition) {
-  //     // Pattern deselected before transition — cancel latest, keep current fading to silence
-  //     yield* helpGarbageCollectionOfPlayback(latest.playback)
-  //     return new PatternSilenceTransition({
-  //       playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //       transitionQueue: [current],
-  //     })
-  //   }
-  //   // Transition already in progress — latest is fading in; schedule its fade-out too
-  //   yield* scheduleFadeOutOf(latest.playback, math)
-  //   return new PatternPatternSilenceTransition({
-  //     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //     transitionQueue: [
-  //       current,
-  //       PatternTransitionElementWithScheduledCleanup.make({
-  //         ...latest,
-  //         cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-  //           math.secondsSinceNowUpUntilFadeoutEnds,
-  //         ),
-  //         fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-  //         fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-  //       }),
-  //     ],
-  //   })
-  // }
+  // Heading back to the loop currently fading out. In the green zone we can still
+  // cancel the switch outright and keep playing it.
+  if (isInGreenZone && Equal.equals(desiredAsset, current.asset)) {
+    const revived = yield* current.cancelFadeoutAndRestore()
+    yield* incoming.drop()
+    return LoopBoundPlayback.make({
+      playbackStartedAtSecond: revived.playbackStartedAtSecond,
+      transitionQueue: [revived],
+    })
+  }
 
-  // if (
-  //   math.fitsIntoBufferOfClosestTransition &&
-  //   Equal.equals(current.asset, asset)
-  // ) {
-  //   yield* Effect.sync(() => {
-  //     current.playback.gainNode.gain.cancelScheduledValues(
-  //       secondsSinceAudioContextInit,
-  //     )
-  //     current.playback.gainNode.gain.setValueAtTime(
-  //       maxLoudness,
-  //       secondsSinceAudioContextInit,
-  //     )
-  //   })
-  //   yield* current.cleanupFiberToolkit.cancelCleanup
-  //   yield* helpGarbageCollectionOfPlayback(latest.playback)
-  //   return new PlayingPattern({
-  //     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //     asset: current.asset,
-  //     playback: current.playback,
-  //   })
-  // }
+  if (!isInGreenZone) {
+    // Red: `incoming` is committed — append the new loop as a third element,
+    // promoting `incoming` to fade out. `current` is left exactly as-is.
+    return LoopBoundPlayback.make({
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      transitionQueue: [
+        current,
+        yield* incoming.promoteToFadingOut(),
+        yield* current.scheduleNextLoop(desiredAsset),
+      ],
+    })
+  }
 
-  // const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-  // const playback = yield* createScheduledNextPlayback(
-  //   audioContext,
-  //   audioBuffer,
-  //   math,
-  // )
-
-  // if (!math.fitsIntoBufferOfClosestTransition) {
-  //   yield* scheduleFadeOutOf(latest.playback, math)
-  //   return new PatternPatternPatternTransition({
-  //     playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //     transitionQueue: [
-  //       current,
-  //       PatternTransitionElementWithScheduledCleanup.make({
-  //         ...latest,
-  //         fadeoutStartsAtSecond: math.playbackFadeoutStartsAt,
-  //         fadeoutEndsAtSecond: math.playbackFadeoutEndsAt,
-  //         cleanupFiberToolkit: yield* deps.makeCleanupFibers(
-  //           math.secondsSinceNowUpUntilFadeoutEnds,
-  //         ),
-  //       }),
-  //       PatternTransitionQueueElement.make({ asset, playback }),
-  //     ],
-  //   })
-  // }
-
-  // return new PatternPatternTransition({
-  //   playbackStartedAtSecond: oldState.playbackStartedAtSecond,
-  //   transitionQueue: [
-  //     current,
-  //     PatternTransitionQueueElement.make({ asset, playback }),
-  //   ],
-  // })
-  yield* Effect.logError({ oldState, signal, deps })
-  return yield* Effect.dieMessage('not implemented')
+  // Green: retarget the incoming loop. Re-anchor `current`'s fade-out onto a fresh
+  // slot (it shared a slot with the now-discarded `incoming`) and fade in the new
+  // loop there instead.
+  yield* incoming.drop()
+  return LoopBoundPlayback.make({
+    playbackStartedAtSecond: current.playbackStartedAtSecond,
+    transitionQueue: [
+      yield* current.reanchorFadeoutOnto(),
+      yield* current.scheduleNextLoop(desiredAsset),
+    ],
+  })
 })

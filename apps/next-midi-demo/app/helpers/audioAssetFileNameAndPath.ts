@@ -2,14 +2,14 @@ import { flow } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
-import { Accord, type UnbrandedAccord } from '../brandsAndDatas/Accord.ts'
+import { Accord, type UnbrandedAccord } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../brandsAndDatas/AssetPointer.ts'
-import { Pattern, UnbrandedPattern } from '../brandsAndDatas/Pattern.ts'
-import { Strength, UnbrandedStrength } from '../brandsAndDatas/Strength.ts'
+} from '../domain/AssetPointer.ts'
+import { Pattern, UnbrandedPattern } from '../domain/Pattern.ts'
+import { Strength, UnbrandedStrength } from '../domain/Strength.ts'
 import type { StringToArray } from './StringToArray.ts'
 
 const getPaddedAccord = <const TAccord extends Accord>(accord: TAccord) =>

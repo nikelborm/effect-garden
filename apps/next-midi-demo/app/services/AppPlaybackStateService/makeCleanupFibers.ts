@@ -17,9 +17,6 @@ export const makeCleanupFibersFactory = (
 
     const fiberWaitingSignalToStartGarbageCollection = yield* stateRef.pipe(
       SubscriptionRef.updateEffect(getNewCleanedUpState),
-      (
-        stateRef as object as { semaphore: Effect.Semaphore }
-      ).semaphore.withPermits(1),
       latch.whenOpen,
       Effect.forkDaemon,
     )
