@@ -31,10 +31,7 @@ export const advancePatternSilencePatternTransition = Effect.fn(
     (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||
     (StrengthData.models(signal) && signal.strength === incoming.asset.strength)
   )
-    return LoopBoundPlayback.make({
-      playbackStartedAtSecond: dying.playbackStartedAtSecond,
-      transitionQueue: [dying, incoming],
-    })
+    return oldState
 
   const now = yield* EAudioContext.currentTimeFromContext
 
