@@ -3,8 +3,10 @@ import * as Effect from 'effect/Effect'
 import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import type { PlayingLoopPlayback } from '../types/loopElements.ts'
+import {
+  LoopBoundPlayback,
+  type PlayingLoopState,
+} from '../types/LoopBoundPlayback.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
@@ -12,20 +14,16 @@ import type { Signal } from './signal.ts'
 // A single loop is sounding at full volume (queue = [playing]). Mirrors the
 // trusted advancePlayingPattern.spec.txt.
 export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
-  function* (playing: PlayingLoopPlayback, signal: Signal) {
-    const stay = LoopBoundPlayback.make({
-      playbackStartedAtSecond: playing.playbackStartedAtSecond,
-      transitionQueue: [playing],
-    })
+  function* (oldState: PlayingLoopState, signal: Signal) {
+    const [playing] = oldState.transitionQueue
 
     // Re-selecting the accord/strength already playing — nothing changes.
-    if (AccordData.models(signal) && signal.accord === playing.asset.accord)
-      return stay
     if (
-      StrengthData.models(signal) &&
-      signal.strength === playing.asset.strength
+      (AccordData.models(signal) && signal.accord === playing.asset.accord) ||
+      (StrengthData.models(signal) &&
+        signal.strength === playing.asset.strength)
     )
-      return stay
+      return oldState
 
     // Pattern deselected while its loop plays — fade out to silence (long fade).
     if (PatternData.models(signal) && signal.pattern === playing.asset.pattern)

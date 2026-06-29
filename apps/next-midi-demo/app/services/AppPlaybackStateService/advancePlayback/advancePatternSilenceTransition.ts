@@ -7,21 +7,21 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import type { FadingOutLoopPlayback } from '../types/loopElements.ts'
-import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import {
+  type LoopFadingToSilenceState,
+  SilenceBoundPlayback,
+} from '../types/SilenceBoundPlayback.ts'
 import type { Signal } from './signal.ts'
 
 // One loop is fading out to silence (queue = [current]); accord+strength are the
-// carried base selection (they can diverge from `current.asset` once the user
-// changes strength mid-fade, which is why they are passed in).
+// carried base selection on oldState (they can diverge from `current.asset` once
+// the user changes strength mid-fade, which is why oldState carries them).
 export const advancePatternSilenceTransition = Effect.fn(
   'advancePatternSilenceTransition',
-)(function* (
-  current: FadingOutLoopPlayback,
-  accord: SilenceBoundPlayback['accord'],
-  strength: SilenceBoundPlayback['strength'],
-  signal: Signal,
-) {
+)(function* (oldState: LoopFadingToSilenceState, signal: Signal) {
+  const { accord, strength } = oldState
+  const [current] = oldState.transitionQueue
+
   // Strength just updates the base selection carried towards silence.
   if (StrengthData.models(signal))
     return SilenceBoundPlayback.make({

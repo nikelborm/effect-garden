@@ -4,8 +4,10 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import type { FadingOutLoopPlayback } from '../types/loopElements.ts'
-import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import {
+  SilenceBoundPlayback,
+  type TwoLoopsFadingToSilenceState,
+} from '../types/SilenceBoundPlayback.ts'
 import type { Signal } from './signal.ts'
 
 // Two loops fading out to silence (queue = [oldest, fading]); accord+strength are
@@ -17,13 +19,10 @@ import type { Signal } from './signal.ts'
 // dies, since slow strums are deferred. See midi_scheduling_findings_2026_06_25.
 export const advancePatternPatternSilenceTransition = Effect.fn(
   'advancePatternPatternSilenceTransition',
-)(function* (
-  oldest: FadingOutLoopPlayback,
-  fading: FadingOutLoopPlayback,
-  accord: SilenceBoundPlayback['accord'],
-  strength: SilenceBoundPlayback['strength'],
-  signal: Signal,
-) {
+)(function* (oldState: TwoLoopsFadingToSilenceState, signal: Signal) {
+  const { accord, strength } = oldState
+  const [oldest, fading] = oldState.transitionQueue
+
   // Strength just updates the base selection carried towards silence.
   if (StrengthData.models(signal))
     return SilenceBoundPlayback.make({

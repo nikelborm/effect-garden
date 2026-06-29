@@ -16,15 +16,19 @@ import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPl
 import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
 import { PlayingLoopPlayback } from '../types/loopElements.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import {
+  type PureSilenceState,
+  SilenceBoundPlayback,
+} from '../types/SilenceBoundPlayback.ts'
 import type { Signal } from './signal.ts'
 
-// Pure silence (queue = []). The carried base accord+strength are passed in.
+// Pure silence (queue = []). The carried base accord+strength ride on oldState.
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
-  accord: SilenceBoundPlayback['accord'],
-  strength: SilenceBoundPlayback['strength'],
+  oldState: PureSilenceState,
   signal: Signal,
 ) {
+  const { accord, strength } = oldState
+
   // While silent we can freely change the strength — no playback is scheduled,
   // we just remember the new base selection.
   if (StrengthData.models(signal))

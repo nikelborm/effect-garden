@@ -7,11 +7,10 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import type {
-  IncomingLoopFadingIn,
-  LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
-} from '../types/loopElements.ts'
+import {
+  LoopBoundPlayback,
+  type LoopRolloverHandoverState,
+} from '../types/LoopBoundPlayback.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
@@ -25,11 +24,9 @@ import type { Signal } from './signal.ts'
 // keeps its own fade + cleanup untouched.
 export const advancePatternPatternTransition = Effect.fn(
   'advancePatternPatternTransition',
-)(function* (
-  current: LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
-  incoming: IncomingLoopFadingIn,
-  signal: Signal,
-) {
+)(function* (oldState: LoopRolloverHandoverState, signal: Signal) {
+  const [current, incoming] = oldState.transitionQueue
+
   // Re-selecting the destination's own accord/strength changes nothing.
   if (
     (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||

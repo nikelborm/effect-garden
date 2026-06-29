@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
+import type { PlayingSlowStrumState } from '../types/LoopBoundPlayback.ts'
 import type { Signal } from './signal.ts'
 
 // A slow strum is sounding (queue = [strum]). Slow strums are the deferred
@@ -9,7 +9,8 @@ import type { Signal } from './signal.ts'
 // (interrupt-and-restart / schedule-loop-after-strum) lives in git history and in
 // the midi_scheduling_findings memory.
 export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
-  function* (strum: PlayingSlowStrum, signal: Signal) {
+  function* (oldState: PlayingSlowStrumState, signal: Signal) {
+    const [strum] = oldState.transitionQueue
     yield* Effect.logError({ strum, signal })
     return yield* Effect.dieMessage(
       'slow strums are deferred (PlayingSlowStrum)',

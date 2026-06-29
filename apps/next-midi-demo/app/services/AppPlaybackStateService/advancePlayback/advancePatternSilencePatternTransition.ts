@@ -7,11 +7,10 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import type {
-  IncomingLoopFadingIn,
-  LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
-} from '../types/loopElements.ts'
+import {
+  LoopBoundPlayback,
+  type LoopSilenceHandoverState,
+} from '../types/LoopBoundPlayback.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
@@ -24,11 +23,9 @@ import type { Signal } from './signal.ts'
 // committed yet, but `dying` keeps its independent silence slot throughout.
 export const advancePatternSilencePatternTransition = Effect.fn(
   'advancePatternSilencePatternTransition',
-)(function* (
-  dying: LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
-  incoming: IncomingLoopFadingIn,
-  signal: Signal,
-) {
+)(function* (oldState: LoopSilenceHandoverState, signal: Signal) {
+  const [dying, incoming] = oldState.transitionQueue
+
   // Re-selecting the destination's own accord/strength changes nothing.
   if (
     (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||
