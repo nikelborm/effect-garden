@@ -353,6 +353,4 @@ export const FadingOutLoopPlayback = Schema.Union(
   LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
   LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
 )
-export type FadingOutLoopPlayback = Schema.Schema.Type<
-  typeof FadingOutLoopPlayback
->
+export type FadingOutLoopPlayback = typeof FadingOutLoopPlayback.Type

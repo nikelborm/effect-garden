@@ -29,7 +29,7 @@ export const SilenceBoundQueue = Schema.Union(
   LoopFadingToSilenceQueue,
   TwoLoopsFadingToSilenceQueue,
 )
-export type SilenceBoundQueue = Schema.Schema.Type<typeof SilenceBoundQueue>
+export type SilenceBoundQueue = typeof SilenceBoundQueue.Type
 
 export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlayback>()(
   'SilenceBoundPlayback',
@@ -47,4 +47,16 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
   static {
     this.make = this.make.bind(this)
   }
+}
+
+// A SilenceBoundPlayback narrowed to one queue scenario — what each small advancer
+// receives as its whole oldState (see ./advancePlayback/queueIs.ts).
+export interface PureSilenceState extends SilenceBoundPlayback {
+  readonly transitionQueue: typeof PureSilenceQueue.Type
+}
+export interface LoopFadingToSilenceState extends SilenceBoundPlayback {
+  readonly transitionQueue: typeof LoopFadingToSilenceQueue.Type
+}
+export interface TwoLoopsFadingToSilenceState extends SilenceBoundPlayback {
+  readonly transitionQueue: typeof TwoLoopsFadingToSilenceQueue.Type
 }

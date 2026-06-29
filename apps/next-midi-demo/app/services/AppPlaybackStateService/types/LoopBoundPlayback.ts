@@ -64,7 +64,7 @@ export const LoopBoundQueue = Schema.Union(
   PlayingSlowStrumQueue,
   SlowStrumHandoverQueue,
 )
-export type LoopBoundQueue = Schema.Schema.Type<typeof LoopBoundQueue>
+export type LoopBoundQueue = typeof LoopBoundQueue.Type
 
 export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
   'LoopBoundPlayback',
@@ -77,4 +77,25 @@ export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
   static {
     this.make = this.make.bind(this)
   }
+}
+
+// A LoopBoundPlayback narrowed to one queue scenario — what each small advancer
+// receives as its whole oldState (see ./advancePlayback/queueIs.ts).
+export interface PlayingLoopState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof PlayingLoopQueue.Type
+}
+export interface LoopRolloverHandoverState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof LoopRolloverHandoverQueue.Type
+}
+export interface LoopSilenceHandoverState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof LoopSilenceHandoverQueue.Type
+}
+export interface FullLoopState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof FullLoopQueue.Type
+}
+export interface PlayingSlowStrumState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof PlayingSlowStrumQueue.Type
+}
+export interface SlowStrumHandoverState extends LoopBoundPlayback {
+  readonly transitionQueue: typeof SlowStrumHandoverQueue.Type
 }

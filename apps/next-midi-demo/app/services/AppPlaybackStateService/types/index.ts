@@ -10,4 +10,4 @@ export const AppPlaybackState = Schema.Union(
   LoopBoundPlayback,
   SilenceBoundPlayback,
 )
-export type AppPlaybackState = Schema.Schema.Type<typeof AppPlaybackState>
+export type AppPlaybackState = typeof AppPlaybackState.Type
