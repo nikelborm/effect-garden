@@ -171,7 +171,7 @@ export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlaybac
   'DisposedLoopPlayback',
   {},
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -186,7 +186,7 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -228,7 +228,7 @@ export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingI
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -283,7 +283,7 @@ export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Sche
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -320,7 +320,7 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }

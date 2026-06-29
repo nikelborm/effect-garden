@@ -11,7 +11,7 @@ export class PlayingSlowStrum extends Schema.TaggedClass<PlayingSlowStrum>()(
     playback: AudioPlayback,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }

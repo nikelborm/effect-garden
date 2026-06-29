@@ -14,6 +14,8 @@
     "babel-plugin-react-compiler": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
+    "vitest": "catalog:",
+    "@effect/vitest": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {

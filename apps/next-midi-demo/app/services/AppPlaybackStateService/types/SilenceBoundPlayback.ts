@@ -43,7 +43,7 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
     transitionQueue: SilenceBoundQueue,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
