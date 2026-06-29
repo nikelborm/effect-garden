@@ -993,6 +993,8 @@ const sortPackageJsonEffect = Effect.gen(function* () {
   }
 })
 
+// TODO: stop automatically putting things like @effect/vitest into peer deps (dev only)
+
 const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const {

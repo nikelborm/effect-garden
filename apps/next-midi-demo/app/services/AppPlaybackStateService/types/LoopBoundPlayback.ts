@@ -73,7 +73,7 @@ export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
     transitionQueue: LoopBoundQueue,
   },
 ) {
-  private declare '~brand~': never
+  protected declare '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
