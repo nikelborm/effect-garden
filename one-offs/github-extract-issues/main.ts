@@ -118,7 +118,6 @@ const saveIssuesWithCommentsToLocalMdFile = (repo: RepoArgs) =>
 const getIssuesWithCommentsFromAPI = (repo: RepoArgs) =>
   Effect.flatMap(
     OctokitLayer.repo(repo).issues({ state: 'all', excludePulls: true }),
-    // biome-ignore lint/suspicious/useIterableCallbackReturn: <It's fine in Effect>
     Effect.forEach(
       issue =>
         Effect.map(
