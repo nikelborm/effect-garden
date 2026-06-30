@@ -191,7 +191,6 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           )
 
           return Sink.zipRight(
-            // biome-ignore lint/suspicious/useIterableCallbackReturn: false positive
             Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
               Effect.flatMap(mailbox.offer(data), accepted =>
                 accepted ? Effect.void : finalizeAndSurface,
