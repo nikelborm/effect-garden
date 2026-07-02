@@ -1,5 +1,3 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 
 import {
@@ -10,16 +8,14 @@ import {
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import { createLoopingPlaybackInContext } from '../playbackNodes/createLoopingPlayback.ts'
-import { createOneshotPlaybackInContext } from '../playbackNodes/createOneshotPlayback.ts'
 import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import { PlayingLoopPlayback } from '../types/loopElements.ts'
+import { getAudioNow, PlayingLoopPlayback } from '../types/loopElements.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
 import {
   type PureSilenceState,
   SilenceBoundPlayback,
 } from '../types/SilenceBoundPlayback.ts'
+import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { Signal } from './signal.ts'
 
 // Pure silence (queue = []). The carried base accord+strength ride on oldState.
@@ -49,19 +45,11 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
     : TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
 
   const audioBuffer = yield* audioBufferStore.getByAsset(asset)
-  const playbackStartedAtSecond = yield* EAudioContext.currentTimeFromContext
-  const playback = yield* (
-    PatternData.models(signal)
-      ? createLoopingPlaybackInContext
-      : createOneshotPlaybackInContext
-  )(audioBuffer)
+  const playbackStartedAtSecond = yield* getAudioNow
 
-  yield* Effect.sync(() => {
-    playback.gainNode.gain.setValueAtTime(
-      maxLoudness,
-      asEarlyAsPossibleInSeconds,
-    )
-    playback.bufferSource.start(playbackStartedAtSecond)
+  const playback = yield* StartFreshPlayback.run(audioBuffer, {
+    isLooping: PatternData.models(signal),
+    startAtSecond: playbackStartedAtSecond,
   })
 
   return LoopBoundPlayback.make({

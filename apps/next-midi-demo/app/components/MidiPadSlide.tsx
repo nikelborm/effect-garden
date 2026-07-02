@@ -1,9 +1,7 @@
 'use client'
 
 import { Button as BaseButton } from '@base-ui/react/button'
-import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import { styled } from 'next-yak'
-import { useEffect, useState } from 'react'
 
 import * as Result from '@effect-atom/atom/Result'
 import * as Hooks from '@effect-atom/atom-react/Hooks'

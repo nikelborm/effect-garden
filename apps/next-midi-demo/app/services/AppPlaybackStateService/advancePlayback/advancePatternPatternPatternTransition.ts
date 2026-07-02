@@ -1,5 +1,3 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 
 import { AccordData } from '../../../domain/Accord.ts'
@@ -10,6 +8,7 @@ import {
   type FullLoopState,
   LoopBoundPlayback,
 } from '../types/LoopBoundPlayback.ts'
+import { getAudioNow } from '../types/loopElements.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
@@ -35,7 +34,7 @@ export const advancePatternPatternPatternTransition = Effect.fn(
   )
     return oldState
 
-  const now = yield* EAudioContext.currentTimeFromContext
+  const now = yield* getAudioNow
 
   // Green = still buffer time before `incoming`'s fade-in commits, so we can
   // still drop or re-target it without ever growing the queue past 3.

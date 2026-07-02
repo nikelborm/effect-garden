@@ -71,7 +71,7 @@
     "build": "next build --webpack",
     "dev": "next dev --experimental-https",
     "format": "biome format --write",
-    "lint": "cd ../../; bun lint",
+    "lint": "oxlint --fix --quiet && biome check --write --unsafe",
     "max": "cd ../../; bun max",
     "start": "next start",
     "typecheck": "tsgo --noEmit --declaration false --declarationMap false"
