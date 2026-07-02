@@ -73,7 +73,7 @@ export const TracingLive = Layer.unwrapScoped(
     // TODO: maybe infer from NODE_ENV?
     // Example: `dev` dataset
     // const dataset = yield* Config.nonEmptyString('OTEL_DATASET_NAME');
-    const compression = CompressionAlgorithm.GZIP
+    const _compression = CompressionAlgorithm.GZIP
 
     // https://api.axiom.co for the US region, and
     // https://api.eu.axiom.co for the EU region

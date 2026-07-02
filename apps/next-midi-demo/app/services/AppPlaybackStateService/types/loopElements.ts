@@ -1,5 +1,3 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 import { apply } from 'effect/Function'
 import * as Schema from 'effect/Schema'
@@ -7,12 +5,14 @@ import * as Schema from 'effect/Schema'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
-import { fadeToSilenceTimeInSeconds, maxLoudness } from '../constants.ts'
-import { createScheduledNextPlaybackInContext } from '../playbackNodes/createScheduledNextPlayback.ts'
+import { fadeToSilenceTimeInSeconds } from '../constants.ts'
 import {
-  helpGarbageCollectionOfPlayback,
-  scheduleFadeOutOf,
-} from '../playbackNodes/index.ts'
+  DisposePlayback,
+  GetAudioNow,
+  RestoreFullVolume,
+  ScheduleFadeOut,
+  ScheduleIncomingLoop,
+} from '../webAudioSideEffects/index.ts'
 import { chosenSlot, zoneAt } from '../zones.ts'
 import { AudioPlayback, CleanupFiberToolkit } from './common.ts'
 
@@ -34,6 +34,12 @@ import { AudioPlayback, CleanupFiberToolkit } from './common.ts'
 // land on the same Slot in practice; the 30ms scheduling safety buffer makes the
 // zone decision stable across that window. If crossfades ever audibly drift,
 // this is the place to thread a single shared `now`.
+//
+// Every actual WebAudio touch below goes through a Context.Tag from
+// ../webAudioSideEffects/ instead of calling the scheduler/audioContext
+// directly — that's the requirement each of these Effects (and therefore each
+// element method that composes them) carries in its `R` channel, and the seam
+// tests provide spy layers against instead of a real AudioContext.
 
 interface FadingOutLoopFields {
   readonly asset: TaggedPatternPointer
@@ -42,19 +48,11 @@ interface FadingOutLoopFields {
   readonly cleanupFiberToolkit: CleanupFiberToolkit
 }
 
-// Restore a fading loop to full volume right now, wiping any scheduled ramp.
-const restoreToFullVolume = (playback: AudioPlayback, now: number) =>
-  Effect.sync(() => {
-    playback.gainNode.gain.cancelScheduledValues(now)
-    playback.gainNode.gain.setValueAtTime(maxLoudness, now)
-  })
+export const getAudioNow = GetAudioNow.run()
 
 // Stop & GC the underlying nodes, yielding the terminal sentinel.
 const disposeOf = (playback: AudioPlayback) =>
-  Effect.as(
-    helpGarbageCollectionOfPlayback(playback),
-    DisposedLoopPlayback.make({}),
-  )
+  Effect.as(DisposePlayback.run(playback), DisposedLoopPlayback.make({}))
 
 // Schedule the near-instant roll-over fade-out on the next free tick and arm the
 // cleanup fiber that collapses the queue once this loop is gone.
@@ -64,9 +62,9 @@ const scheduleRolloverFadeout = (
   playbackStartedAtSecond: number,
 ) =>
   Effect.gen(function* () {
-    const now = yield* EAudioContext.currentTimeFromContext
+    const now = yield* getAudioNow
     const slot = chosenSlot(zoneAt(playbackStartedAtSecond, now))
-    yield* scheduleFadeOutOf(playback, slot)
+    yield* ScheduleFadeOut.run(playback, slot)
     const cleanupFiberToolkit = yield* Effect.flatMap(
       CleanupFiberMaker,
       apply(slot.fadeoutEndsAtSecond - now),
@@ -88,11 +86,11 @@ const scheduleSilenceFadeout = (
   playbackStartedAtSecond: number,
 ) =>
   Effect.gen(function* () {
-    const now = yield* EAudioContext.currentTimeFromContext
+    const now = yield* getAudioNow
     const slot = chosenSlot(
       zoneAt(playbackStartedAtSecond, now, fadeToSilenceTimeInSeconds),
     )
-    yield* scheduleFadeOutOf(playback, slot)
+    yield* ScheduleFadeOut.run(playback, slot)
     const cleanupFiberToolkit = yield* Effect.flatMap(
       CleanupFiberMaker,
       apply(slot.fadeoutEndsAtSecond - now),
@@ -117,10 +115,10 @@ const scheduleIncomingLoop = (
 ) =>
   Effect.gen(function* () {
     const audioBuffer = yield* (yield* AudioBufferStore).getByAsset(asset)
-    const now = yield* EAudioContext.currentTimeFromContext
+    const now = yield* getAudioNow
     const zone = zoneAt(playbackStartedAtSecond, now)
     const slot = chosenSlot(zone)
-    const playback = yield* createScheduledNextPlaybackInContext(audioBuffer, {
+    const playback = yield* ScheduleIncomingLoop.run(audioBuffer, {
       startAtSecond: now,
       bufferPhaseOffsetSeconds: zone.bufferPhaseOffsetSeconds,
       slot,
@@ -139,8 +137,8 @@ const scheduleIncomingLoop = (
 // can't leave a stale cleanup fiber behind.
 const reviveToPlaying = (el: FadingOutLoopFields) =>
   Effect.gen(function* () {
-    const now = yield* EAudioContext.currentTimeFromContext
-    yield* restoreToFullVolume(el.playback, now)
+    const now = yield* getAudioNow
+    yield* RestoreFullVolume.run(el.playback, now)
     yield* el.cleanupFiberToolkit.cancelCleanup
     return PlayingLoopPlayback.make({
       asset: el.asset,
@@ -154,9 +152,9 @@ const reviveToPlaying = (el: FadingOutLoopFields) =>
 // cleanup fiber. Used when the user retargets mid-transition.
 const reanchorToRollover = (el: FadingOutLoopFields) =>
   Effect.gen(function* () {
-    const now = yield* EAudioContext.currentTimeFromContext
+    const now = yield* getAudioNow
     yield* el.cleanupFiberToolkit.cancelCleanup
-    yield* restoreToFullVolume(el.playback, now)
+    yield* RestoreFullVolume.run(el.playback, now)
     return yield* scheduleRolloverFadeout(
       el.playback,
       el.asset,

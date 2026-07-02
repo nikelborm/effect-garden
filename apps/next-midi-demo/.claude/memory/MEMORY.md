@@ -15,6 +15,6 @@ These memories live **inside the repo** (`apps/next-midi-demo/.claude/memory/`) 
 - [feedback_project_memory_location](feedback_project_memory_location.md) — Save next-midi-demo memories here in the repo, not in home ~/.claude
 - [feedback_accumulation_patterns](feedback_accumulation_patterns.md) — Use discriminated union state machine Maps, not parallel arrays; labeled loops; dieMessage for invariants
 - [feedback_use_bun](feedback_use_bun.md) — Use bun, not npm, in the effect-garden repo
-- [feedback_yolo_formatting](feedback_yolo_formatting.md) — Don't fuss over lint; just `bun run lint` (whole-repo format) and move on
+- [feedback_yolo_formatting](feedback_yolo_formatting.md) — After `bun run lint`, never check if failures are pre-existing (no git-stash diffing) — typecheck is the only gate
 - [feedback_schema_type_accessor](feedback_schema_type_accessor.md) — Prefer `typeof S.Type` over `Schema.Schema.Type<typeof S>`
 - [feedback_prefer_interface_over_type](feedback_prefer_interface_over_type.md) — Prefer `interface` (with extends) over `type =`; reserve `type` for unions/tuples/literals

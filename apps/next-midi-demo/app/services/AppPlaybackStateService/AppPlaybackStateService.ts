@@ -1,8 +1,4 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
-import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -15,7 +11,6 @@ import {
 } from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
-import { cleanupAllPlaybacks } from './cleanupAllPlaybacks.ts'
 import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'

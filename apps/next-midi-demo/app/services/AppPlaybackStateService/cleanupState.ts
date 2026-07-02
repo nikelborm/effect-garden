@@ -13,15 +13,19 @@ import {
   SilenceBoundPlayback,
   TwoLoopsFadingToSilenceQueue,
 } from './types/SilenceBoundPlayback.ts'
+import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
 // Collapse whatever state is CURRENT by exactly one level when a cleanup fiber
 // fires, GC-ing the OLDEST queue element. Each element owns its own disposal /
 // reclassification (`.dispose()` / `.becomeLive()`), so element construction has
 // a single home and this only decides the queue-shape collapse. The collapse is
 // purely positional (always the oldest = queue[0]), so multi-fiber states drop
-// correctly regardless of which fiber fires first.
+// correctly regardless of which fiber fires first; `.dispose()` is the only
+// side effect here, requiring DisposePlayback from context.
 export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
-  function* (state: AppPlaybackState): Effect.fn.Return<AppPlaybackState> {
+  function* (
+    state: AppPlaybackState,
+  ): Effect.fn.Return<AppPlaybackState, never, DisposePlayback> {
     yield* Effect.logTrace('Playback cleanup')
 
     if (state._tag === 'SilenceBoundPlayback') {

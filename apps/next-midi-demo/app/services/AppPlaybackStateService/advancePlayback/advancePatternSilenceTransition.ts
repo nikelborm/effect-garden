@@ -1,5 +1,3 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 
 import { AccordData } from '../../../domain/Accord.ts'
@@ -7,6 +5,7 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
+import { getAudioNow } from '../types/loopElements.ts'
 import {
   type LoopFadingToSilenceState,
   SilenceBoundPlayback,
@@ -38,7 +37,7 @@ export const advancePatternSilenceTransition = Effect.fn(
       'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
     )
 
-  const now = yield* EAudioContext.currentTimeFromContext
+  const now = yield* getAudioNow
 
   // Green zone = still buffer time before the fade-out begins, so we can safely
   // cancel/redirect it. Red zone = the fade has effectively started.

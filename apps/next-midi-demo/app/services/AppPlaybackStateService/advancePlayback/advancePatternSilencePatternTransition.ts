@@ -1,5 +1,3 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 
@@ -11,6 +9,7 @@ import {
   LoopBoundPlayback,
   type LoopSilenceHandoverState,
 } from '../types/LoopBoundPlayback.ts'
+import { getAudioNow } from '../types/loopElements.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { Signal } from './signal.ts'
@@ -33,7 +32,7 @@ export const advancePatternSilencePatternTransition = Effect.fn(
   )
     return oldState
 
-  const now = yield* EAudioContext.currentTimeFromContext
+  const now = yield* getAudioNow
 
   // Green = still buffer time before `incoming`'s roll-over commits.
   const isInGreenZone =

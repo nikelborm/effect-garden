@@ -36,6 +36,14 @@ import {
   OnScreenButtonMappingLayer,
 } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
 import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
+import {
+  DisposePlayback,
+  GetAudioNow,
+  RestoreFullVolume,
+  ScheduleFadeOut,
+  ScheduleIncomingLoop,
+  StartFreshPlayback,
+} from '../services/AppPlaybackStateService/webAudioSideEffects/index.ts'
 import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
 import { AudioBufferStore } from '../services/AudioBufferStore.ts'
 import { DownloadManager } from '../services/DownloadManager.ts'
@@ -179,10 +187,28 @@ const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
   Layer.ensureRequirementsType<never>(),
 )
 
+// Every WebAudio side effect the playback state machine
+// (AppPlaybackStateService/types/loopElements.ts + advancePlayback/) can
+// perform, each scoped to at most one playback. Tests provide their own
+// per-tag spy layers instead of this one.
+const WebAudioSideEffectsNoDeps = Layer.mergeAll(
+  DisposePlayback.Live,
+  GetAudioNow.Live,
+  RestoreFullVolume.Live,
+  ScheduleFadeOut.Live,
+  ScheduleIncomingLoop.Live,
+  StartFreshPlayback.Live,
+).pipe(
+  Layer.provide(AudioContextLive),
+  Layer.withSpan('WebAudioSideEffectsNoDeps'),
+  Layer.ensureRequirementsType<never>(),
+)
+
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
   Layer.provide(AudioContextLive),
   Layer.provide(AudioBufferStoreNoDeps),
   Layer.provide(AllBusesNoDeps),
+  Layer.provide(WebAudioSideEffectsNoDeps),
   Layer.withSpan('AppPlaybackStateServiceNoDeps'),
   Layer.ensureRequirementsType<never>(),
 )

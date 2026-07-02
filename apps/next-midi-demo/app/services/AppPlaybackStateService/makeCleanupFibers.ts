@@ -6,13 +6,14 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { getNewCleanedUpState } from './cleanupState.ts'
 import { CleanupFiberToolkit } from './types/common.ts'
 import type { AppPlaybackState } from './types/index.ts'
+import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
 export const makeCleanupFibersFactory = (
   stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,
 ) =>
   Effect.fn('makeCleanupFibers')(function* (
     delayForSeconds: number,
-  ): Effect.fn.Return<CleanupFiberToolkit> {
+  ): Effect.fn.Return<CleanupFiberToolkit, never, DisposePlayback> {
     const latch = yield* Effect.makeLatch()
 
     const fiberWaitingSignalToStartGarbageCollection = yield* stateRef.pipe(
