@@ -26,7 +26,7 @@ export const advancePatternPatternSilenceTransition = Effect.fn(
   // Strength just updates the base selection carried towards silence.
   if (StrengthData.models(signal))
     return SilenceBoundPlayback.make({
-      playbackStartedAtSecond: oldest.playbackStartedAtSecond,
+      // playbackStartedAtSecond: oldest.playbackStartedAtSecond,
       accord,
       strength: signal.strength,
       transitionQueue: [oldest, fading],

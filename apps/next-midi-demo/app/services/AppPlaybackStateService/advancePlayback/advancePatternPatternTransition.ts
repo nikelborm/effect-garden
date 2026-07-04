@@ -45,7 +45,7 @@ export const advancePatternPatternTransition = Effect.fn(
       // Drop the incoming loop entirely; `current` keeps fading out to silence.
       yield* incoming.drop()
       return SilenceBoundPlayback.make({
-        playbackStartedAtSecond: current.playbackStartedAtSecond,
+        // playbackStartedAtSecond: current.playbackStartedAtSecond,
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [current],
@@ -55,7 +55,7 @@ export const advancePatternPatternTransition = Effect.fn(
     // preserved roll-over inconsistency; see midi_scheduling_findings). Both
     // loops now fade to silence; `current` untouched on its original slot/fiber.
     return SilenceBoundPlayback.make({
-      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      // playbackStartedAtSecond: current.playbackStartedAtSecond,
       accord: incoming.asset.accord,
       strength: incoming.asset.strength,
       transitionQueue: [current, yield* incoming.promoteToFadingOut()],

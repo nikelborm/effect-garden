@@ -45,7 +45,7 @@ export const advancePatternSilencePatternTransition = Effect.fn(
       // Drop the incoming loop; `dying` keeps fading out to silence alone.
       yield* incoming.drop()
       return SilenceBoundPlayback.make({
-        playbackStartedAtSecond: dying.playbackStartedAtSecond,
+        // playbackStartedAtSecond: dying.playbackStartedAtSecond,
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [dying],
@@ -54,7 +54,7 @@ export const advancePatternSilencePatternTransition = Effect.fn(
     // Red: `incoming` is committed — fade it out to silence too (the LONG stopping
     // fade). Both loops now fade to silence; `dying` is untouched.
     return SilenceBoundPlayback.make({
-      playbackStartedAtSecond: dying.playbackStartedAtSecond,
+      // playbackStartedAtSecond: dying.playbackStartedAtSecond,
       accord: incoming.asset.accord,
       strength: incoming.asset.strength,
       transitionQueue: [dying, yield* incoming.promoteToFadeToSilence()],

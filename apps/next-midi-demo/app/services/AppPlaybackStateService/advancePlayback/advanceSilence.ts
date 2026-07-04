@@ -34,8 +34,6 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
       transitionQueue: [],
     })
 
-  const audioBufferStore = yield* AudioBufferStore
-
   const asset: AssetPointer = PatternData.models(signal)
     ? TaggedPatternPointer.make({
         pattern: signal.pattern,
@@ -44,7 +42,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
       })
     : TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
 
-  const audioBuffer = yield* audioBufferStore.getByAsset(asset)
+  const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
   const playbackStartedAtSecond = yield* getAudioNow
 
   const playback = yield* StartFreshPlayback.run(audioBuffer, {

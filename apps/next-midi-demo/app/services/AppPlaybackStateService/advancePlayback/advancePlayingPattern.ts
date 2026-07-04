@@ -28,7 +28,7 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
     // Pattern deselected while its loop plays — fade out to silence (long fade).
     if (PatternData.models(signal) && signal.pattern === playing.asset.pattern)
       return SilenceBoundPlayback.make({
-        playbackStartedAtSecond: playing.playbackStartedAtSecond,
+        // playbackStartedAtSecond: playing.playbackStartedAtSecond,
         accord: playing.asset.accord,
         strength: playing.asset.strength,
         transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
