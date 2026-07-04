@@ -41,4 +41,9 @@ export class AudioBufferStore extends Context.Tag(
 
     return { getByAsset }
   }).pipe(Layer.effect(this))
+
+  static getByAsset = (
+    pointer: AssetPointer,
+  ): Effect.Effect<EAudioBuffer, never, AudioBufferStore> =>
+    Effect.flatMap(this, store => store.getByAsset(pointer))
 }

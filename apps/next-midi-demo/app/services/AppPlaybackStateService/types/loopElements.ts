@@ -114,7 +114,7 @@ const scheduleIncomingLoop = (
   asset: TaggedPatternPointer,
 ) =>
   Effect.gen(function* () {
-    const audioBuffer = yield* (yield* AudioBufferStore).getByAsset(asset)
+    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
     const now = yield* getAudioNow
     const zone = zoneAt(playbackStartedAtSecond, now)
     const slot = chosenSlot(zone)

@@ -48,7 +48,7 @@ export const advancePatternPatternPatternTransition = Effect.fn(
       // fading out to silence on their own slots/fibers.
       yield* incoming.drop()
       return SilenceBoundPlayback.make({
-        playbackStartedAtSecond: oldest.playbackStartedAtSecond,
+        // playbackStartedAtSecond: oldest.playbackStartedAtSecond,
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [oldest, middle],

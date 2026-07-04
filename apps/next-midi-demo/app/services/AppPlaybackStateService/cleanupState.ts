@@ -36,7 +36,7 @@ export const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(
         return SilenceBoundPlayback.make({
           accord: state.accord,
           strength: state.strength,
-          playbackStartedAtSecond: state.playbackStartedAtSecond,
+          // playbackStartedAtSecond: state.playbackStartedAtSecond,
           transitionQueue: [q[1]],
         })
       }

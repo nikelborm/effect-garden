@@ -39,7 +39,7 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
     strength: StrengthSchema,
     // grid origin of the fading loop(s); absent in pure silence (no playback,
     // therefore no grid).
-    playbackStartedAtSecond: Schema.optional(Schema.Number),
+    // playbackStartedAtSecond: Schema.optional(Schema.Number),
     transitionQueue: SilenceBoundQueue,
   },
 ) {
