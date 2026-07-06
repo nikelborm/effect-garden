@@ -18,26 +18,28 @@ import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTran
 import { queueIs } from './queueIs.ts'
 import type { Signal } from './signal.ts'
 
-// Destination is a sounding loop. Pattern-match the queue shape with `queueIs`
-// over each named tuple schema and hand the WHOLE oldState (narrowed to that one
-// scenario) to the small advancer that owns it. The short- vs long-fade handover
-// split lets the roll-over and the to-silence handovers keep their own advancers.
 export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
   oldState: LoopBoundPlayback,
   signal: Signal,
 ) {
   if (queueIs(PlayingLoopQueue)(oldState))
     return yield* advancePlayingPattern(oldState, signal)
+
   if (queueIs(LoopRolloverHandoverQueue)(oldState))
     return yield* advancePatternPatternTransition(oldState, signal)
+
   if (queueIs(LoopSilenceHandoverQueue)(oldState))
     return yield* advancePatternSilencePatternTransition(oldState, signal)
+
   if (queueIs(FullLoopQueue)(oldState))
     return yield* advancePatternPatternPatternTransition(oldState, signal)
+
   if (queueIs(PlayingSlowStrumQueue)(oldState))
     return yield* advancePlayingSlowStrum(oldState, signal)
+
   if (queueIs(SlowStrumHandoverQueue)(oldState))
     return yield* advanceSlowStrumPatternTransition(oldState, signal)
+
   // Every LoopBoundQueue member is handled above.
   return yield* Effect.dieMessage('advanceLoopBound: unreachable queue shape')
 })
