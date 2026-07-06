@@ -18,15 +18,12 @@ import {
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { Signal } from './signal.ts'
 
-// Pure silence (queue = []). The carried base accord+strength ride on oldState.
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
   oldState: PureSilenceState,
   signal: Signal,
 ) {
   const { accord, strength } = oldState
 
-  // While silent we can freely change the strength — no playback is scheduled,
-  // we just remember the new base selection.
   if (StrengthData.models(signal))
     return SilenceBoundPlayback.make({
       accord,
