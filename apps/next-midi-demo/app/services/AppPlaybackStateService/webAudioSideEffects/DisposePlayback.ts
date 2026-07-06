@@ -4,8 +4,6 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../types/common.ts'
 
-// Stops and disconnects a single playback's nodes. Terminal — the playback
-// is never scheduled again afterward. Never touches any OTHER playback.
 export class DisposePlayback extends Context.Tag(
   'next-midi-demo/DisposePlayback',
 )<DisposePlayback, (playback: AudioPlayback) => Effect.Effect<void>>() {
