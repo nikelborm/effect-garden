@@ -6,8 +6,6 @@ import { maxLoudness, minLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../types/common.ts'
 import type { Slot } from '../zones.ts'
 
-// Ramps a single playback's gain down to silence across a slot. Never
-// touches any OTHER playback.
 export class ScheduleFadeOut extends Context.Tag(
   'next-midi-demo/ScheduleFadeOut',
 )<

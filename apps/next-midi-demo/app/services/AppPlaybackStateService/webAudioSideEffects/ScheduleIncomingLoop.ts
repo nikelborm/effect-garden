@@ -14,11 +14,10 @@ import { AudioPlayback } from '../types/common.ts'
 import type { Slot } from '../zones.ts'
 
 export interface ScheduledNextPlaybackTiming {
-  // when the buffer is started (silently) — usually `now`
   readonly startAtSecond: number
-  // track-phase offset into the buffer so the new loop stays grid-aligned
+
   readonly bufferPhaseOffsetSeconds: number
-  // the fade-in window: silent until fadeoutStartsAtSecond, full by fadeoutEndsAtSecond
+
   readonly slot: Slot
 }
 
@@ -45,9 +44,6 @@ const createLoopingPlaybackGraph = (
     return AudioPlayback.make({ bufferSource, gainNode })
   })
 
-// Creates and starts a single brand-new looping playback, silent until its
-// fade-in window and ramped to full volume by the end of it — the incoming
-// half of a crossfade. Never touches any OTHER playback.
 export class ScheduleIncomingLoop extends Context.Tag(
   'next-midi-demo/ScheduleIncomingLoop',
 )<

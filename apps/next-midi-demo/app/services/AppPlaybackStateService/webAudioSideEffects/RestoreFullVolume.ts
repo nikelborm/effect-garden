@@ -5,9 +5,6 @@ import * as Layer from 'effect/Layer'
 import { maxLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../types/common.ts'
 
-// Wipes a single playback's scheduled gain ramp and pins it back to full
-// volume right now — the "un-fade" used to revive a loop mid-transition.
-// Never touches any OTHER playback.
 export class RestoreFullVolume extends Context.Tag(
   'next-midi-demo/RestoreFullVolume',
 )<
