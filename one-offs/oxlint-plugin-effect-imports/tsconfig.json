@@ -1,11 +1,24 @@
 {
   "extends": "@evadev/tsconfig",
   "compilerOptions": {
-    "rootDir": "./",
+    "declarationDir": "./dist-types",
     "outDir": "./dist",
-    "declarationDir": "./dist",
-    "types": []
+    "rootDir": "./"
   },
   "include": ["**/*.ts"],
-  "exclude": ["dist", "node_modules"]
+  "exclude": [
+    ".github",
+    ".stryker-tmp",
+    ".turbo",
+    ".vscode",
+    "build",
+    "dist-types",
+    "dist",
+    "gh-page",
+    "node_modules",
+    "out",
+    "reports",
+    "tmp",
+    "vite.config.ts"
+  ]
 }

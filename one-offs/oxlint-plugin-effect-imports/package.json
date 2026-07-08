@@ -1,7 +1,7 @@
 {
   "name": "oxlint-plugin-effect-imports",
   "type": "module",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Oxlint plugin to enforce namespace imports from Effect package subpaths",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -22,6 +22,7 @@
     "oxlint",
     "oxlint-plugin",
     "effect",
+    "plugin",
     "effect-ts",
     "lint",
     "imports"
@@ -32,7 +33,9 @@
     "directory": "one-offs/oxlint-plugin-effect-imports"
   },
   "scripts": {
-    "build": "bun build ./index.ts --outfile ./dist/index.js --format esm",
+    "build": "tsgo",
+    "dev": "tsgo --watch --preserveWatchOutput false",
+    "prepack": "rm -rf dist dist-types && bun run build",
     "test": "vitest --run",
     "test:watch": "vitest --watch"
   },
@@ -61,19 +64,36 @@
     "access": "public",
     "provenance": false
   },
+  "peerDependencies": {
+    "oxlint": ">=1.0.0"
+  },
   "exports": {
     ".": {
-      "source": "./index.ts",
+      "types": "./dist-types/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./*.js": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./*.ts": "./src/*.ts",
+    "./*": {
+      "types": "./dist-types/src/*.d.ts",
+      "default": "./dist/src/*.js"
+    },
+    "./internal/*": null,
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist-types/index.d.ts",
   "files": [
+    "dist-types",
     "dist",
     "index.ts",
     "package.json",
     "!**/*.spec.*",
-    "!**/*.tsbuildinfo"
+    "!**/*.tsbuildinfo",
+    "!**/scratchpad.*"
   ]
 }

@@ -101,12 +101,12 @@ vars. Install it.
       monorepo migration.
    3. [yt-music-export](./one-offs/yt-music-export) — Exports a personal library
       from YouTube Music.
-   4. [oxlint-plugin-effect-imports](./one-offs/oxlint-plugin-effect-imports) —
-      ESLint/Oxlint plugin that enforces subpath imports from Effect packages.
-      Auto-infers `import * as Module from 'effect/Module'` for PascalCase names
-      and `import { fn } from 'effect/Function'` for configured individual
-      exports; supports aliases for JS built-in name conflicts and per-package
-      overrides.
+   4. [oxlint-plugin-effect-imports](./one-offs/oxlint-plugin-effect-imports)
+      (published) — ESLint/Oxlint plugin that enforces subpath imports from
+      Effect packages. Auto-infers `import * as Module from 'effect/Module'` for
+      PascalCase names and `import { fn } from 'effect/Function'` for configured
+      individual exports; supports aliases for JS built-in name conflicts and
+      per-package overrides.
    5. [webref-idl-types](./one-offs/webref-idl-types) — Type declarations
       (`@types/webref__idl`) for `@webref/idl`, the W3C's machine-readable Web
       IDL definitions. Provides typed `listAll()` and `parseAll()` so you get
