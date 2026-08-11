@@ -415,7 +415,7 @@
     },
     "one-offs/oxlint-plugin-effect-imports": {
       "name": "oxlint-plugin-effect-imports",
-      "version": "1.0.0",
+      "version": "1.0.2",
       "devDependencies": {
         "@effect/language-service": "catalog:",
         "@evadev/tsconfig": "workspace:^",

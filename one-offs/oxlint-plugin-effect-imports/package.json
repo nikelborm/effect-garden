@@ -1,7 +1,7 @@
 {
   "name": "oxlint-plugin-effect-imports",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Oxlint plugin to enforce namespace imports from Effect package subpaths",
   "devDependencies": {
     "@effect/language-service": "catalog:",
@@ -90,6 +90,7 @@
   "files": [
     "dist-types",
     "dist",
+    "src",
     "index.ts",
     "package.json",
     "!**/*.spec.*",
