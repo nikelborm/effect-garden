@@ -6,6 +6,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
@@ -13,11 +14,11 @@
     "babel-plugin-react-compiler": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
-    "vitest": "catalog:",
-    "@effect/vitest": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
+    "@effect/experimental": "catalog:",
     "@effect/opentelemetry": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-browser": "catalog:",
@@ -28,7 +29,6 @@
     "@base-ui/react": "catalog:",
     "@effect-atom/atom": "catalog:",
     "@effect-atom/atom-react": "catalog:",
-    "@effect/experimental": "catalog:",
     "@evadev/effect-helpers": "workspace:^",
     "@fp-ts/optic": "catalog:",
     "@opentelemetry/exporter-logs-otlp-grpc": "catalog:",

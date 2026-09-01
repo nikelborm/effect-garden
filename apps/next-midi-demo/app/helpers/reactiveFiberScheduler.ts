@@ -11,6 +11,8 @@ export const reactivelySchedule = <TStreamA, TStreamR, TEffectR>(
   Effect.gen(function* () {
     const runtime = yield* Effect.runtime<TStreamR | TEffectR>()
     const scope = yield* Effect.scope
+    const span = yield* Effect.currentSpan.pipe(Effect.orDie)
+
     const runFork = <A, E>(
       effect: Effect.Effect<A, E, TStreamR | TEffectR>,
       options?: Runtime.RunForkOptions | undefined,
@@ -39,5 +41,9 @@ export const reactivelySchedule = <TStreamA, TStreamR, TEffectR>(
         }),
       )
 
-    stream.pipe(Stream.runForEach(scheduleNew), runForkScoped)
+    stream.pipe(
+      Stream.runForEach(scheduleNew),
+      Effect.withParentSpan(span),
+      runForkScoped,
+    )
   })

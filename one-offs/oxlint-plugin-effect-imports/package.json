@@ -8,10 +8,12 @@
     "@evadev/tsconfig": "workspace:^",
 
     "eslint": "catalog:",
-    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "oxlint": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/oxlint-plugin-effect-imports#readme",
   "bugs": {
@@ -63,9 +65,6 @@
   "publishConfig": {
     "access": "public",
     "provenance": false
-  },
-  "peerDependencies": {
-    "oxlint": ">=1.0.0"
   },
   "exports": {
     ".": {

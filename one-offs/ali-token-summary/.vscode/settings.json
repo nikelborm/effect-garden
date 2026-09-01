@@ -1,0 +1,16 @@
+{
+  "git.openRepositoryInParentFolders": "always",
+  "js/ts.tsdk.path": "./node_modules/typescript/lib",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "source.fixAll.biome": "explicit"
+  },
+  "js/ts.experimental.useTsgo": true,
+  "js/ts.preferences.importModuleSpecifier": "project-relative",
+  "js/ts.preferences.importModuleSpecifierEnding": "js",
+  "js/ts.preferences.preferTypeOnlyAutoImports": true,
+  "prettier.jsxSingleQuote": true,
+  "typescript.native-preview.tsdk": "./node_modules/@typescript/native-preview",
+  "prettier.singleQuote": true
+}

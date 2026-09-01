@@ -158,6 +158,7 @@
     "ts-pattern": "catalog:",
     "ts-toolbelt": "catalog:",
     "tsafe": "catalog:",
+    "tslib": "catalog:",
     "tstyche": "catalog:",
     "type-fest": "catalog:",
     "typescript": "catalog:",

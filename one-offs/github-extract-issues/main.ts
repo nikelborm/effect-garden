@@ -81,6 +81,8 @@ class MarkdownStdoutPrinter extends Context.Tag(
     '-',
   )
 
+  // TODO: https://github.com/themackabu/ink
+
   static RawPrintLive = Layer.succeed(this, (mdContent: string) =>
     Console.log(mdContent),
   )

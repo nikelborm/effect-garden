@@ -1,5 +1,7 @@
 # my helpers in Effect ecosystem
 
+[Try in playground!](https://www.effect.website/play#3efe9f827b7d)
+
 - `AbsentProperty`
 - `allFast`
 - `BadExitCodeError`

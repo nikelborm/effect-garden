@@ -105,7 +105,7 @@ const downloadRemainingAssetPart = Effect.fn(
     globalThis?.document?.location.origin,
   ).toString()
 
-  yield* Effect.log(`Starting download from: ${remoteAssetURL} `)
+  yield* Effect.log(`Starting download from:`, remoteAssetURL)
 
   const estimationMap = yield* LoadedAssetSizeEstimationMap
 
