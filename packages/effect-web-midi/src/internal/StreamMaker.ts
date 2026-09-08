@@ -158,6 +158,7 @@ export const createStreamMakerFrom =
           return Stream.fromEventListener(target, type, options).pipe(
             Stream.filter(
               // TODO: add `!== null` to all duplicate copies of stream maker
+              // `!== null` is to make it more universal like for false, 0 or ''
               event => event[field] !== null || onNullStrategy !== 'ignore',
             ),
             Stream.mapEffect(event =>
