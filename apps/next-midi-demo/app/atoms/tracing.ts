@@ -84,11 +84,11 @@ export const TracingLive = Layer.unwrapScoped(
         // TODO infer serviceVersion from commit hash or from git tag or from release
       },
       logRecordProcessor: new BatchLogRecordProcessor(
-        new OTLPLogExporter({
-          url: `/api/otel/logs`,
-          // compression,
-        }),
         {
+          exporter:new OTLPLogExporter({
+            url: `/api/otel/logs`,
+            // compression,
+          }),
           maxExportBatchSize: 128,
           maxQueueSize: 1024,
         },

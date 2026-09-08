@@ -154,7 +154,7 @@ import plugin, {
 
 ```sh
 bun install
-bun run build   # tsgo: JS -> dist/, type declarations -> dist-types/
+bun run build   # tsc: JS -> dist/, type declarations -> dist-types/
 bun run test    # vitest + eslint RuleTester
 ```
 

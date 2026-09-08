@@ -19,6 +19,7 @@ const deleteSet = new Set<string>([
   '__pycache__',
   'dist-types',
   'dist',
+  '.swc',
   // because we don't use yarn, npm, or pnpm
   'yarn.lock',
   'package-lock.json',

@@ -123,7 +123,7 @@ Version 1.0, HMAC-SHA1) and sent straight to `business.ap-southeast-1.aliyuncs.c
 ```bash
 bun run test      # vitest; includes Alibaba's documented signature test vector
 bun run lint      # biome check --write --unsafe
-bun run build     # tsc (TypeScript 7) into dist/, then a minified rollup bundle
+bun run build     # tsc (TypeScript 7) into dist/, then a minified rolldown bundle
 ```
 
 `bun test` does not work here: bun's own runner cannot load `@effect/vitest`.

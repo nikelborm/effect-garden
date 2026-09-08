@@ -11,4 +11,4 @@ In the effect-garden monorepo, use `bun` commands instead of `npm`.
 
 **Why:** The user explicitly asked for it; the repo is bun/workspace-based (catalog deps, `bun max` script).
 
-**How to apply:** Prefer `bun run <script>` / `bun install` etc. Typecheck is `bun run typecheck` (tsgo). See [[project_next_midi_demo_scheduling]].
+**How to apply:** Prefer `bun run <script>` / `bun install` etc. Typecheck is `bun run typecheck` (tsc). See [[project_next_midi_demo_scheduling]].

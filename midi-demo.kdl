@@ -15,6 +15,12 @@ layout {
         args "dev"
       }
       pane {
+        name "Serwist watch"
+        cwd "./apps/next-midi-demo"
+        command "serwist"
+        args "build" "--watch"
+      }
+      pane {
         name "Web MIDI tsc watch"
         cwd "./packages/effect-web-midi"
         command "bun"

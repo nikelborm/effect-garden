@@ -35,8 +35,6 @@ export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
       'source.organizeImports.biome': 'explicit',
       'source.fixAll.biome': 'explicit',
     },
-    'js/ts.experimental.useTsgo': true,
-
     'js/ts.preferences.importModuleSpecifier': 'project-relative',
     'js/ts.preferences.importModuleSpecifierEnding': 'js',
     'js/ts.preferences.preferTypeOnlyAutoImports': true,

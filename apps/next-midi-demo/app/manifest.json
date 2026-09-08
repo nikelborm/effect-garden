@@ -1,0 +1,22 @@
+{
+  "name": "Musiclab PADs",
+  "short_name": "Musiclab PADs",
+  "icons": [
+    {
+      "src": "/icons/android-chrome-192x192.png-TODO:set proper icons",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#FFFFFF",
+  "background_color": "#FFFFFF",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}

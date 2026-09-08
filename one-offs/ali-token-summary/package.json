@@ -9,14 +9,9 @@
     "@effect/platform-bun": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-    "@rollup/plugin-commonjs": "catalog:",
-    "@rollup/plugin-json": "catalog:",
-    "@rollup/plugin-node-resolve": "catalog:",
-    "@rollup/plugin-terser": "catalog:",
     "@types/bun": "catalog:",
     "effect": "catalog:",
-    "rollup": "catalog:",
-    "rollup-plugin-visualizer": "catalog:",
+    "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
@@ -32,7 +27,7 @@
     "directory": "one-offs/ali-token-summary"
   },
   "scripts": {
-    "build": "bun run lint && tsc && rollup -c rollup.config.mts && cd dist/minified && chmod +x index.js && mv index.js index.mjs",
+    "build": "bun run lint && tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
     "lint": "biome check --write --unsafe",
     "test": "bun --bun run vitest run"
   },

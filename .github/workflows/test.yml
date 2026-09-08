@@ -9,7 +9,7 @@ on:
       - '*.spec.ts'
       - 'vite.config.ts'
       - 'scripts/build.sh'
-      - 'rollup.config.mts'
+      - 'rolldown.config.mts'
       - 'gh-page/**'
 
 jobs:

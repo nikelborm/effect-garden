@@ -35,8 +35,8 @@
     "directory": "one-offs/oxlint-plugin-effect-imports"
   },
   "scripts": {
-    "build": "tsgo",
-    "dev": "tsgo --watch --preserveWatchOutput false",
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput false",
     "prepack": "rm -rf dist dist-types && bun run build",
     "test": "vitest --run",
     "test:watch": "vitest --watch"

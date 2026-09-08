@@ -1,23 +1,5 @@
-import withSerwistInit from '@serwist/next'
 import type { NextConfig } from 'next'
 import { withYak } from 'next-yak/withYak'
-
-import { pipe } from 'effect/Function'
-
-const withSerwist = withSerwistInit({
-  swSrc: 'sw.ts',
-  swDest: 'public/sw.js',
-  disable: process.env.NODE_ENV === 'development',
-
-  // This prevents files in /public/samples from being precached
-  exclude: [
-    // default exclusion:
-    /\.map$/,
-    /^manifest.*\.js$/,
-    // Excludes everything in public/samples
-    /^samples\/.*$/,
-  ],
-})
 
 const nextConfig: NextConfig = {
   headers() {
@@ -66,4 +48,4 @@ const nextConfig: NextConfig = {
   compress: false, // should be handled by nginx
 }
 
-export default pipe(nextConfig, withYak, withSerwist)
+export default withYak(nextConfig)

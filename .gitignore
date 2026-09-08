@@ -36,6 +36,7 @@ temp.json
 tmp
 .swc/
 sw.js
+public/sw*
 certificates/
 
 # temporarily

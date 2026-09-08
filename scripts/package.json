@@ -6,14 +6,8 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-    "@rollup/plugin-commonjs": "catalog:",
-    "@rollup/plugin-json": "catalog:",
-    "@rollup/plugin-node-resolve": "catalog:",
-    "@rollup/plugin-terser": "catalog:",
     "@types/bun": "catalog:",
-
-    "rollup": "catalog:",
-    "rollup-plugin-visualizer": "catalog:",
+    "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -45,7 +39,7 @@
     "directory": "scripts"
   },
   "scripts": {
-    "build": "tsc && rollup -c rollup.config.mts && chmod +x dist/minified/*"
+    "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*"
   },
   "author": {
     "name": "nikelborm",
