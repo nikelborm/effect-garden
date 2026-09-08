@@ -31,11 +31,11 @@
     "directory": "packages/bliss-audio-ts"
   },
   "scripts": {
-    "build": "bun build:ts && bun build:native",
+    "build": "bun run --parallel build:ts build:native",
     "build:native": "cd native && cargo build --release",
     "build:native-debug": "cd native && cargo build",
     "build:ts": "tsc",
-    "format": "bun format:ts && bun format:native",
+    "format": "bun run --parallel format:ts format:native",
     "format:native": "cd native && cargo fmt",
     "format:ts": "biome check --write --unsafe .",
     "prepack": "rm -rf dist dist-types && bun build:ts",

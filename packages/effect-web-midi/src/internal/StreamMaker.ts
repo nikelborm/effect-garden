@@ -134,6 +134,10 @@ export const createStreamMakerFrom =
               `Invalid strategy to handle nullish values: ${onNullStrategy}`,
             )
 
+          // TODO: rename to streamValueEmitter here and in all copies of stream
+          // maker on internal side because it make more sense inside. cameFrom
+          // still makes more sense to the public outside consumer of stream
+          // values
           const cameFrom = yield* Util.fromPolymorphic(
             cameFromPolymorphic,
             isSelf,
@@ -153,10 +157,11 @@ export const createStreamMakerFrom =
 
           return Stream.fromEventListener(target, type, options).pipe(
             Stream.filter(
-              event => !!event[field] || onNullStrategy !== 'ignore',
+              // TODO: add `!== null` to all duplicate copies of stream maker
+              event => event[field] !== null || onNullStrategy !== 'ignore',
             ),
             Stream.mapEffect(event =>
-              event[field] || onNullStrategy === 'passthrough'
+              event[field] !== null || onNullStrategy === 'passthrough'
                 ? Effect.succeed({
                     _tag: tag,
                     ...remapValueToContainer(event[field]),
