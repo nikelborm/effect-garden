@@ -117,6 +117,10 @@ function parseMIDIMessagePayload(
       Error.stackTraceLimit = 4
       const stackHolder = {} as { stack: string }
       Error.captureStackTrace(stackHolder)
+      // TODO: some environments forbid captureStackTrace and throw errors. Not
+      // browsers though, but some parts of the lib can also run elsewhere.
+      // Running tests and mocks on durable objects? Insane, but possible.
+      // Anyway need to handle this obscurity
       Error.stackTraceLimit = stackTraceLimit
       stack = stackHolder.stack ?? new Error().stack ?? ''
     }
