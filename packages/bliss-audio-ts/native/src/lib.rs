@@ -144,6 +144,7 @@ pub extern "C" fn bliss_analyze_cue_with_options(
 }
 
 /// Free a string previously returned by any `bliss_*` function.
+// TODO: candidate for removal, since bun made the life easier? check with other runtimes
 #[no_mangle]
 pub extern "C" fn bliss_free_string(ptr: *mut c_char) {
     if !ptr.is_null() {

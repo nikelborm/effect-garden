@@ -21,6 +21,14 @@
 import { dlopen, FFIType } from 'bun:ffi'
 import { resolve } from 'node:path'
 
+// TODO: do something about all these non-null assertions.
+// TODO: validate that bun properly releases and garbage collects string, and
+// that I actually don't need to do this anymore manually:
+//
+// const cstr = symbols.bliss_analyze_song(pathBuf, features, NUMBER_FEATURES)
+// const json = cstr.toString()
+// symbols.bliss_free_string(cstr.ptr)
+
 // ── Feature-version enum ──────────────────────────────────────────────────────
 
 /** Maps to Rust's `FeaturesVersion` enum. Use `FeaturesVersion.LATEST` in new code. */
@@ -273,6 +281,7 @@ const { symbols } = dlopen(LIB_PATH, {
     ],
     returns: FFIType.cstring,
   },
+  // TODO: candidate for removal, since bun made the life easier
   bliss_free_string: {
     args: [FFIType.ptr],
     returns: FFIType.void,
@@ -450,9 +459,7 @@ function numFeaturesForVersion(v: number): number {
 
 function callAnalyzeSong(pathBuf: Buffer): SongCall {
   const features = new Float32Array(NUMBER_FEATURES)
-  const cstr = symbols.bliss_analyze_song(pathBuf, features, NUMBER_FEATURES)
-  const json = cstr.toString()
-  symbols.bliss_free_string(cstr.ptr)
+  const json = symbols.bliss_analyze_song(pathBuf, features, NUMBER_FEATURES)!
   return { json, features }
 }
 
@@ -463,29 +470,25 @@ function callAnalyzeSongWithOptions(
 ): SongCall {
   const n = numFeaturesForVersion(featuresVersion)
   const features = new Float32Array(n)
-  const cstr = symbols.bliss_analyze_song_with_options(
+  const json = symbols.bliss_analyze_song_with_options(
     pathBuf,
     featuresVersion,
     numberCores,
     features,
     n,
-  )
-  const json = cstr.toString()
-  symbols.bliss_free_string(cstr.ptr)
+  )!
   return { json, features }
 }
 
 function callAnalyzeCue(pathBuf: Buffer): CueCall {
   const stride = NUMBER_FEATURES
   const features = new Float32Array(MAX_CUE_TRACKS * stride)
-  const cstr = symbols.bliss_analyze_cue(
+  const json = symbols.bliss_analyze_cue(
     pathBuf,
     features,
     stride,
     MAX_CUE_TRACKS,
-  )
-  const json = cstr.toString()
-  symbols.bliss_free_string(cstr.ptr)
+  )!
   return { json, features, stride }
 }
 
@@ -496,16 +499,14 @@ function callAnalyzeCueWithOptions(
 ): CueCall {
   const stride = numFeaturesForVersion(featuresVersion)
   const features = new Float32Array(MAX_CUE_TRACKS * stride)
-  const cstr = symbols.bliss_analyze_cue_with_options(
+  const json = symbols.bliss_analyze_cue_with_options(
     pathBuf,
     featuresVersion,
     numberCores,
     features,
     stride,
     MAX_CUE_TRACKS,
-  )
-  const json = cstr.toString()
-  symbols.bliss_free_string(cstr.ptr)
+  )!
   return { json, features, stride }
 }
 
