@@ -7,7 +7,6 @@
     "@effect/language-service": "catalog:",
     "@evadev/openapi-gen": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

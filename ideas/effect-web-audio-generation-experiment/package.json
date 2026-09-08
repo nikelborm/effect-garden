@@ -8,7 +8,6 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@types/webref__idl": "workspace:^",
-
     "@webref/idl": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

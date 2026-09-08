@@ -6,7 +6,6 @@
   "devDependencies": {
     "@effect/language-service": "catalog:",
     "@evadev/tsconfig": "workspace:^",
-
     "eslint": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:",
