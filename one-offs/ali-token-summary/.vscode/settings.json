@@ -11,6 +11,5 @@
   "js/ts.preferences.importModuleSpecifierEnding": "js",
   "js/ts.preferences.preferTypeOnlyAutoImports": true,
   "prettier.jsxSingleQuote": true,
-  "typescript.native-preview.tsdk": "./node_modules/@typescript/native-preview",
   "prettier.singleQuote": true
 }
