@@ -27,7 +27,7 @@
     "directory": "one-offs/ali-token-summary"
   },
   "scripts": {
-    "build": "bun run lint && tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
+    "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
     "lint": "biome check --write --unsafe",
     "test": "bun --bun run vitest run"
   },
