@@ -244,10 +244,7 @@ export interface RawCueResult {
 
 // ── FFI setup ─────────────────────────────────────────────────────────────────
 
-const LIB_PATH = resolve(
-  import.meta.dirname,
-  './native/target/release/libbliss_native.so',
-)
+const LIB_PATH = import.meta.resolve("bliss-audio-ts/libbliss_native.so")
 
 const { symbols } = dlopen(LIB_PATH, {
   bliss_number_features: {
