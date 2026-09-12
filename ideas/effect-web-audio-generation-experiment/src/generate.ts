@@ -65,7 +65,7 @@ function generateWrapper(_name: string, ast: any): GeneratedWrapper | null {
     .filter((m: any) => m.type === 'attribute' && m.readonly)
     .map((m: any) => m.name.replace(/,/g, '_'))
 
-  const content = `import * as Either from 'effect/Either'
+  const content = `import * as Result from 'effect/Result'
 import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'

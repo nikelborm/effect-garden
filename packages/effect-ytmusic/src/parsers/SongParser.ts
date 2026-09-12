@@ -1,4 +1,4 @@
-import type * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import type { AlbumBasic } from '../schema/AlbumBasic.ts'
@@ -11,7 +11,7 @@ import { extractList, extractString } from '../utils/extract.ts'
 import { isAlbum, isArtist, isDuration, isTitle } from '../utils/filters.ts'
 import { parseDuration } from './Parser.ts'
 
-export const parse = (data: unknown): Either.Either<SongFull, ParseError> =>
+export const parse = (data: unknown): Result.Result<SongFull, ParseError> =>
   checkType(
     'SongFull',
     {
@@ -32,7 +32,7 @@ export const parse = (data: unknown): Either.Either<SongFull, ParseError> =>
 
 export const parseSearchResult = (
   item: unknown,
-): Either.Either<SongDetailed, ParseError> => {
+): Result.Result<SongDetailed, ParseError> => {
   const columns = extractList(item, 'flexColumns', 'runs')
   const title = columns[0]
   const artist = columns.find(isArtist) ?? columns[3]
@@ -65,7 +65,7 @@ export const parseSearchResult = (
 export const parseArtistSong = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<SongDetailed, ParseError> => {
+): Result.Result<SongDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns.find(isTitle)
   const album = columns.find(isAlbum)
@@ -94,7 +94,7 @@ export const parseArtistSong = (
 export const parseArtistTopSong = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<SongDetailed, ParseError> => {
+): Result.Result<SongDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns.find(isTitle)
   const album = columns.find(isAlbum)
@@ -124,7 +124,7 @@ export const parseAlbumSong = (
   artistBasic: ArtistBasic,
   albumBasic: AlbumBasic,
   thumbnails: ThumbnailFull[],
-): Either.Either<SongDetailed, ParseError> => {
+): Result.Result<SongDetailed, ParseError> => {
   const title = (extractList(item, 'flexColumns', 'runs') as unknown[]).find(
     isTitle,
   )
@@ -149,4 +149,4 @@ export const parseAlbumSong = (
 
 export const parseHomeSection = (
   item: unknown,
-): Either.Either<SongDetailed, ParseError> => parseSearchResult(item)
+): Result.Result<SongDetailed, ParseError> => parseSearchResult(item)

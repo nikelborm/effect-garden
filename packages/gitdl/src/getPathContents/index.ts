@@ -3,5 +3,5 @@ export { PathContentsMetaInfo } from './PathContentsMetaInfo.ts'
 export {
   FailedToParseGitLFSInfoError,
   InconsistentExpectedAndRealContentSizeError,
-} from './parseGitLFSObjectEither.ts'
+} from './parseGitLFSObjectResult.ts'
 export { RawStreamOfRepoPathContentsFromGitHubAPI } from './RawStreamOfRepoPathContentsFromGitHubAPI.ts'

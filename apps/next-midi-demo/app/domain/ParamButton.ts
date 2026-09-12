@@ -8,8 +8,8 @@
 
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import type * as Either from 'effect/Either'
 import type * as Option from 'effect/Option'
+import type * as Result from 'effect/Result'
 
 import { isData } from '../helpers/isData.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
@@ -34,7 +34,7 @@ export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
   ): Option.Option<ParamButtonId<T>>
   either<T extends string | number = string | number>(
     i: T,
-  ): Either.Either<ParamButtonId<T>, Brand.Brand.BrandErrors>
+  ): Result.Result<ParamButtonId<T>, Brand.Brand.BrandErrors>
   is<T extends string | number = string | number>(
     i: T,
   ): i is T & ParamButtonId<T>

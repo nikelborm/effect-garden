@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import * as Prompt from '@effect/cli/Prompt'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
+import * as Prompt from 'effect/unstable/cli/Prompt'
 
 Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
@@ -102,4 +102,4 @@ Effect.gen(function* () {
       console.log(`Skipped PID ${targetPid}.`)
     }
   }
-}).pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)
+}).pipe(Effect.provide(BunServices.layer), BunRuntime.runMain)

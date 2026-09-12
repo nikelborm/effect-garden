@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
 
 import { END_TOKEN, README_FILE_PATH, START_TOKEN } from './src/constants.ts'
 import { getImageFileName } from './src/getPathToImageInRepo.ts'
@@ -58,4 +58,4 @@ const program = Effect.gen(function* () {
   yield* Effect.log('Deleted following files in images folder:', removalTargets)
 })
 
-program.pipe(Effect.provide(BunContext.layer), BunRuntime.runMain)
+program.pipe(Effect.provide(BunServices.layer), BunRuntime.runMain)

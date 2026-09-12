@@ -1,7 +1,7 @@
 import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as Option from 'effect/Option'
+import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 
 import { ContinuationToken } from '../brands.ts'
@@ -34,7 +34,7 @@ export const getHomeSections = () =>
       })
 
       const validSections = sections.flatMap(r =>
-        Either.isRight(r) ? [r.right] : [],
+        Result.isRight(r) ? [r.right] : [],
       )
 
       const nextToken = extractString(data, 'continuation')

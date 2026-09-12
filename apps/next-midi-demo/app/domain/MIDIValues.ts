@@ -1,8 +1,8 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import * as Either from 'effect/Either'
 import { flow } from 'effect/Function'
 import * as Option from 'effect/Option'
+import * as Result from 'effect/Result'
 
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { PhysicalButtonId, PhysicalButtonIdData } from './PhysicalButton.ts'
@@ -14,8 +14,8 @@ export type NoteId = Brand.Branded<
 export const NoteId = Brand.refined<NoteId>(
   flow(
     PhysicalButtonId.either<number>,
-    Either.flatMap(
-      Either.liftPredicate(
+    Result.flatMap(
+      Result.liftPredicate(
         n => Number.isSafeInteger(n) && n >= 0 && n < 128,
         n =>
           Brand.error(

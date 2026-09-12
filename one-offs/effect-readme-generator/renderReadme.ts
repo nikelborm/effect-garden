@@ -7,19 +7,19 @@ import { outdent } from 'outdent'
 
 import type { PlatformError } from '@effect/platform/Error'
 import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
 import * as Chunk from 'effect/Chunk'
 import * as Config from 'effect/Config'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as Fiber from 'effect/Fiber'
+import * as FileSystem from 'effect/FileSystem'
 import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
+import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 
 import {
@@ -58,7 +58,7 @@ const program = Effect.gen(function* () {
     Stream.suspend(() =>
       mockApi
         ? getMockRepos(repoOwner).pipe(
-            Effect.map(flow(Chunk.map(Either.right), Stream.fromChunk)),
+            Effect.map(flow(Chunk.map(Result.succeed), Stream.fromChunk)),
             Stream.unwrap,
           )
         : selfStarredReposOfUser(repoOwner),
@@ -197,6 +197,6 @@ const program = Effect.gen(function* () {
   yield* Effect.log(`Finished writing result to ${README_FILE_PATH} file`)
 })
 
-const AppLive = Layer.merge(FetchHttpClient.layer, BunContext.layer)
+const AppLive = Layer.merge(FetchHttpClient.layer, BunServices.layer)
 
 program.pipe(Effect.scoped, Effect.provide(AppLive), BunRuntime.runMain)

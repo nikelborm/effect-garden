@@ -1,7 +1,7 @@
 import * as Args from '@effect/cli/Args'
-import * as Path from '@effect/platform/Path'
 import type * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
+import * as Path from 'effect/Path'
 
 export const withResolvedToAbsolutePathArg = <A extends string>(
   self: Args.Args<A>,

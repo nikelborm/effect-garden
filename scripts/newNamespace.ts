@@ -2,13 +2,13 @@
 
 import { prettyPrint } from 'effect-errors'
 
-import * as Prompt from '@effect/cli/Prompt'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
+import * as Result from 'effect/Result'
+import * as Prompt from 'effect/unstable/cli/Prompt'
 
 import { myMonorepoPackagesEffect } from './fix_monorepo.ts'
 
@@ -26,12 +26,12 @@ export const listOfNamespacesPrompt = Prompt.list({
     'Enter a list of namespaces to create empty files for, delimited by space',
   validate: value =>
     value.split(namespaceDelimiter).some(el => el.length <= 3)
-      ? Either.left(
+      ? Result.fail(
           'Some of the names are too short. Should be at least 3 characters',
         )
       : value.split(namespaceDelimiter).length === 0
-        ? Either.left('Too little namespaces specified. Should be at least 1')
-        : Either.right(value),
+        ? Result.fail('Too little namespaces specified. Should be at least 1')
+        : Result.succeed(value),
 })
 
 export const createNamespaceRelatedFiles = Effect.fn(
@@ -84,7 +84,7 @@ const program = Effect.gen(function* () {
 
   yield* createNamespaceRelatedFiles(absolutePackageDirPath, namespaces)
 }).pipe(
-  Effect.provide(BunContext.layer),
+  Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catchAll(e => {

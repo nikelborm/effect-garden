@@ -79,7 +79,7 @@ A few names need special handling and are built in as defaults:
 - **Function combinators** (`pipe`, `flow`, `identity`, `constant`, `absurd`,
   `hole`, `unsafeCoerce`) become named imports from `effect/Function`.
 - **`@effect/cli`** modules are aliased to avoid collisions: `Command` →
-  `CliCommand`, `Options` → `CliOptions`.
+  `Command`, `Options` → `CliOptions`.
 
 Already-correct subpath imports (`import * as Effect from 'effect/Effect'`),
 type-only imports, and non-Effect packages are never touched.

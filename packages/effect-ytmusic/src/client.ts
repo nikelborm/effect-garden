@@ -3,9 +3,9 @@ import * as HttpClient from '@effect/platform/HttpClient'
 import * as HttpClientError from '@effect/platform/HttpClientError'
 import * as HttpClientRequest from '@effect/platform/HttpClientRequest'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as Layer from 'effect/Layer'
 import * as Ref from 'effect/Ref'
+import * as Result from 'effect/Result'
 
 import { type YTMusicConfig, YTMusicConfigService } from './config.ts'
 import {
@@ -27,7 +27,7 @@ const parseUserCookies = (cookieString: string): Cookies.Cookies => {
     const value = pair.slice(eqIdx + 1).trim()
     if (!name) continue
     const result = Cookies.set(cookies, name, value)
-    if (Either.isRight(result)) cookies = result.right
+    if (Result.isRight(result)) cookies = Result.succeed
   }
   return cookies
 }

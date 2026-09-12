@@ -1,9 +1,9 @@
 import * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
-import type * as Either from 'effect/Either'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
+import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -32,7 +32,7 @@ export const Strength = Brand.refined<Strength>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (s: unknown): Strength
   option(s: unknown): StrengthOption
-  either(s: unknown): Either.Either<Strength, Brand.Brand.BrandErrors>
+  either(s: unknown): Result.Result<Strength, Brand.Brand.BrandErrors>
   is(s: unknown): s is Strength
 }
 
@@ -64,7 +64,7 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   ) => new this(new StrengthData(strength))
 }
 
-export const StrengthSchema = Schema.Literal(...strengthsRawBase)
+export const StrengthSchema = Schema.Literals(strengthsRawBase)
   .annotations({ title: 'Strength' })
   .pipe(Schema.fromBrand(Strength))
 

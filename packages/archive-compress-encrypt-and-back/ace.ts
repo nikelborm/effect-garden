@@ -3,7 +3,6 @@
 import { prettyPrint } from 'effect-errors'
 
 import * as CliConfig from '@effect/cli/CliConfig'
-import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
@@ -13,6 +12,7 @@ import * as BunTerminal from '@effect/platform-bun/BunTerminal'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import { archiveCompressEncryptCommand } from './src/archiveCompressEncryptCommand.ts'
@@ -33,12 +33,12 @@ import { decryptDecompressExtractCommand } from './src/decryptDecompressExtractC
 
 // TODO: fix padding on the left for multiline strings as descriptions
 
-const appCommand = CliCommand.withSubcommands(CliCommand.make('ace'), [
+const appCommand = Command.withSubcommands(Command.make('ace'), [
   archiveCompressEncryptCommand,
   decryptDecompressExtractCommand,
 ])
 
-const cli = CliCommand.run(appCommand, {
+const cli = Command.run(appCommand, {
   name: 'ace',
   version: pkg.version,
   summary: HelpDocSpan.text(`

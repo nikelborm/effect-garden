@@ -4,10 +4,10 @@ import {
   simpleExec,
 } from '@evadev/effect-helpers'
 
-import * as Command from '@effect/platform/Command'
 import * as Effect from 'effect/Effect'
 import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsFindRootsError } from './Errors.ts'
 

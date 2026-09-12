@@ -1,8 +1,6 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import * as Prompt from '@effect/cli/Prompt'
-import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import type { PlatformError } from '@effect/platform/Error'
 import type * as Terminal from '@effect/platform/Terminal'
@@ -13,6 +11,8 @@ import * as Effect from 'effect/Effect'
 import * as Redacted from 'effect/Redacted'
 import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
+import * as Prompt from 'effect/unstable/cli/Prompt'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 const PrivelegedCommandExecutor = Effect.gen(function* () {
   const baseExecutor = yield* CommandExecutor.CommandExecutor

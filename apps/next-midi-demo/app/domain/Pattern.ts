@@ -1,10 +1,10 @@
 import * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
-import type * as Either from 'effect/Either'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
+import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -33,7 +33,7 @@ export const Pattern = Brand.refined<Pattern>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (p: unknown): Pattern
   option(p: unknown): PatternOption
-  either(p: unknown): Either.Either<Pattern, Brand.Brand.BrandErrors>
+  either(p: unknown): Result.Result<Pattern, Brand.Brand.BrandErrors>
   is(p: unknown): p is Pattern
 }
 
@@ -62,7 +62,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
     new this(new PatternData(pattern))
 }
 
-export const PatternSchema = Schema.Literal(...patternsRawBase)
+export const PatternSchema = Schema.Literals(patternsRawBase)
   .annotations({ title: 'Pattern' })
   .pipe(Schema.fromBrand(Pattern))
 

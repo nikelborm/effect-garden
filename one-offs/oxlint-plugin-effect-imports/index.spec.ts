@@ -184,7 +184,7 @@ describe('effect-imports/named-to-namespace', () => {
         {
           code: `import { Command } from '@effect/cli'`,
           errors: [{ messageId: 'useSubpathImport' }],
-          output: `import * as CliCommand from '@effect/cli/Command'`,
+          output: `import * as Command from 'effect/unstable/cli/Command'`,
         },
         {
           // Args has no override → auto-inferred (PascalCase)

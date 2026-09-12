@@ -1,8 +1,8 @@
-import * as FileSystem from '@effect/platform/FileSystem'
 import * as Config from 'effect/Config'
 import * as ConfigError from 'effect/ConfigError'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
@@ -18,7 +18,7 @@ import * as Schema from 'effect/Schema'
 // const EnvProviderLayer = Layer.unwrapEffect(
 //   PlatformConfigProvider.fromDotEnv(".env").pipe(
 //     Effect.map(Layer.setConfigProvider),
-//     Effect.provide(BunContext.layer)
+//     Effect.provide(BunServices.layer)
 //   )
 // )
 

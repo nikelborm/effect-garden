@@ -8,7 +8,6 @@ import {
 } from 'gitdl'
 
 import * as CliConfig from '@effect/cli/CliConfig'
-import * as CLICommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as CLIOptions from '@effect/cli/Options'
 import * as NodeFileSystem from '@effect/platform-node-shared/NodeFileSystem'
@@ -18,11 +17,12 @@ import * as NodeTerminal from '@effect/platform-node-shared/NodeTerminal'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
 
-const appCommand = CLICommand.make(
+const appCommand = Command.make(
   pkg.name,
   {
     // TODO change approach to default values. Either remove defaults completely
@@ -37,7 +37,7 @@ const appCommand = CLICommand.make(
   createApacheSupersetFolder,
 )
 
-const cli = CLICommand.run(appCommand, {
+const cli = Command.run(appCommand, {
   name: pkg.name,
   version: pkg.version,
   summary: HelpDocSpan.text(pkg.description),

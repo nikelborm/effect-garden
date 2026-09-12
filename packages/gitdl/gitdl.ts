@@ -3,7 +3,6 @@
 import { prettyPrint } from 'effect-errors'
 
 import * as CliConfig from '@effect/cli/CliConfig'
-import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
 import * as NodePath from '@effect/platform-node/NodePath'
@@ -12,6 +11,7 @@ import * as NodeTerminal from '@effect/platform-node/NodeTerminal'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import {
@@ -24,7 +24,7 @@ import {
 import { downloadEntityFromRepo } from './src/downloadEntityFromRepo.ts'
 import { OctokitLayer } from './src/octokit.ts'
 
-const appCommand = CliCommand.make(
+const appCommand = Command.make(
   pkg.name,
   {
     repo: {
@@ -39,7 +39,7 @@ const appCommand = CliCommand.make(
   downloadEntityFromRepo,
 )
 
-const cli = CliCommand.run(appCommand, {
+const cli = Command.run(appCommand, {
   name: pkg.name,
   version: pkg.version,
   summary: HelpDocSpan.text(pkg.description),

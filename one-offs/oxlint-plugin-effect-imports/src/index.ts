@@ -36,7 +36,6 @@ export const DEFAULT_OVERRIDES: Overrides = {
   },
   '@effect/cli': {
     // Aliases to avoid collisions with same-named modules in other packages
-    Command: 'CliCommand',
     Options: 'CliOptions',
   },
 }

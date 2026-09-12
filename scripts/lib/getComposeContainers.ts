@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import { devComposePs } from './composeCommands.ts'
@@ -40,10 +40,10 @@ export async function getDevComposeContainers() {
 
   const containersEither = decodePsCommandOutput(stdoutText)
 
-  if (Either.isLeft(containersEither))
+  if (Result.isLeft(containersEither))
     throw new Error(`Failed to parse \`${cmd}\` command output`, {
-      cause: containersEither.left,
+      cause: containersResult.fail,
     })
 
-  return containersEither.right
+  return containersResult.succeed
 }

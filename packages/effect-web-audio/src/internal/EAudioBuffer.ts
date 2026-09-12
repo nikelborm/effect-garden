@@ -1,9 +1,9 @@
-import * as Either from 'effect/Either'
 import * as Equal from 'effect/Equal'
 import { dual } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
+import type * as Result from 'effect/Result'
 
 import * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
@@ -221,12 +221,12 @@ export const makeImpl = (rawAudioBuffer: AudioBuffer): EAudioBufferImpl => {
  */
 export const make = (
   config: MakeAudioBufferOptions,
-): Either.Either<
+): Result.Result<
   EAudioBuffer,
   | AudioErrors.CannotMakeEAudioBufferInvalidOptions
   | AudioErrors.CannotMakeEAudioBufferNotEnoughMemory
 > =>
-  Either.try({
+  Result.try({
     try: () => makeImpl(new AudioBuffer(config)),
     catch: AudioErrors.remapErrorByName(
       {
@@ -393,7 +393,7 @@ export const copyFromChannel: CopyFromChannel = dual<
 >(
   args => is(args[0]),
   (source, destination, channelIndex, bufferOffset) =>
-    Either.try({
+    Result.try({
       try: () =>
         assumeImpl(source)._audioBuffer.copyFromChannel(
           destination,
@@ -475,7 +475,7 @@ export interface CopyFromChannelSourceLastSecondPart {
   (source: EAudioBuffer): CopyFromChannelResult
 }
 
-export type CopyFromChannelResult = Either.Either<
+export type CopyFromChannelResult = Result.Result<
   void,
   AudioErrors.CannotCopyFromChannelOfEAudioBufferWrongChannelIndex
 >
@@ -486,7 +486,7 @@ export const copyToChannel: CopyToChannel = dual<
 >(
   args => is(args[0]),
   (destination, source, channelIndex, bufferOffset) =>
-    Either.try({
+    Result.try({
       try: () =>
         assumeImpl(destination)._audioBuffer.copyToChannel(
           source,
@@ -514,7 +514,7 @@ export interface CopyToChannel
   extends CopyToChannelDestinationFirst,
     CopyToChannelDestinationLast {}
 
-export type CopyToChannelResult = Either.Either<
+export type CopyToChannelResult = Result.Result<
   void,
   | AudioErrors.CannotCopyToChannelOfEAudioBufferWrongChannelIndex
   | AudioErrors.CannotCopyToChannelOfEAudioBufferUnknownError
@@ -581,7 +581,7 @@ export const getChannelData: GetChannelData = dual<
 >(
   args => is(args[0]),
   (source, channelIndex) =>
-    Either.try({
+    Result.try({
       try: () => assumeImpl(source)._audioBuffer.getChannelData(channelIndex),
       catch: AudioErrors.remapErrorByName(
         {
@@ -641,7 +641,7 @@ export interface GetChannelDataSourceLastSecondPart {
   (source: EAudioBuffer): GetChannelDataResult
 }
 
-export type GetChannelDataResult = Either.Either<
+export type GetChannelDataResult = Result.Result<
   Float32Array,
   | AudioErrors.CannotChannelDataOfEAudioBufferWrongChannelIndex
   | AudioErrors.CannotChannelDataOfEAudioBufferUnknownError

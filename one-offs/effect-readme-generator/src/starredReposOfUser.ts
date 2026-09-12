@@ -3,8 +3,8 @@ import type { RequestError } from '@octokit/request-error'
 
 import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import { flow } from 'effect/Function'
+import type * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
@@ -14,10 +14,10 @@ import { parseLinkHeader } from './parseLinkHeader.ts'
 import { Repo } from './repo.interface.ts'
 
 const distributeChunkSuccess: <E>(
-  self: Either.Either<{ repos: Chunk.Chunk<Repo> }, E>,
-) => Chunk.Chunk<Either.Either<Repo, E>> = Either.match({
-  onRight: flow(Struct.get('repos'), Chunk.map(Either.right)),
-  onLeft: flow(Either.left, Chunk.make),
+  self: Result.Result<{ repos: Chunk.Chunk<Repo> }, E>,
+) => Chunk.Chunk<Result.Result<Repo, E>> = Result.match({
+  onRight: flow(Struct.get('repos'), Chunk.map(Result.succeed)),
+  onLeft: flow(Result.fail, Chunk.make),
 })
 
 export const starredReposOfUser = (username: string, reposPerPage: number) =>
@@ -31,15 +31,15 @@ export const starredReposOfUser = (username: string, reposPerPage: number) =>
 
     const firstPageEither = yield* Effect.either(requestPageOfStarredRepos(1))
 
-    if (Either.isLeft(firstPageEither))
-      return Stream.succeed(Either.left(firstPageEither.left))
+    if (Result.isLeft(firstPageEither))
+      return Stream.succeed(Result.fail(firstPageResult.fail))
 
-    const firstPageStream = firstPageEither.pipe(
+    const firstPageStream = firstPageResult.pipe(
       distributeChunkSuccess,
       Stream.fromChunk,
     )
 
-    const firstPage = firstPageEither.right
+    const firstPage = firstPageResult.succeed
 
     const lastPageIndex =
       firstPage.linkHeader.last?.page ?? firstPage.linkHeader.next?.page

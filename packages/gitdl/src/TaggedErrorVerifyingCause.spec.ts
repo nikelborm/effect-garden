@@ -2,11 +2,11 @@ import { outdent } from 'outdent'
 import { assert, type Equals } from 'tsafe'
 
 import * as Vitest from '@effect/vitest'
-import * as Either from 'effect/Either'
 import * as ParseResult from 'effect/ParseResult'
+import * as Result from 'effect/Result'
 
 import { FailedToParseGitLFSInfoError } from './getPathContents/index.ts'
-import { InconsistentExpectedAndRealContentSizeError } from './getPathContents/parseGitLFSObjectEither.ts'
+import { InconsistentExpectedAndRealContentSizeError } from './getPathContents/parseGitLFSObjectResult.ts'
 import {
   buildTaggedErrorClassVerifyingCause,
   type GetValueByKey,
@@ -19,7 +19,7 @@ Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
       const dynamicContext = {
         actual: 12,
         expected: 13,
-        gitLFSInfo: Either.right({
+        gitLFSInfo: Result.succeed({
           oidSha256: 'iosdvhksjsl',
           size: 14,
           version: 'lakdvfhjaljskhk',

@@ -1,5 +1,5 @@
-import * as Either from 'effect/Either'
 import * as JSONSchema from 'effect/JSONSchema'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 // arekmaz's:
@@ -48,11 +48,11 @@ const asd2 = Schema.transformOrFail(asd, asd, {
   strict: true,
   decode(_fromA, _options, _ast, fromI) {
     console.log('asd2 decode stuff validated')
-    return Either.right(fromI)
+    return Result.succeed(fromI)
   },
   encode(_toI, _options, _ast, toA) {
     console.log('asd2 encode stuff validated')
-    return Either.right(toA)
+    return Result.succeed(toA)
   },
   // decode(fromA, fromI) {
   //

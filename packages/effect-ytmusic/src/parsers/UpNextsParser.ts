@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { UpNextsDetails } from '../schema/UpNextsDetails.ts'
@@ -8,7 +8,7 @@ import { parseDuration } from './Parser.ts'
 
 export const parseItem = (
   item: unknown,
-): Either.Either<UpNextsDetails, ParseError> =>
+): Result.Result<UpNextsDetails, ParseError> =>
   checkType(
     'UpNextsDetails',
     {
@@ -30,16 +30,16 @@ export const parseItem = (
 
 export const parse = (
   data: unknown,
-): Either.Either<UpNextsDetails[], ParseError> => {
+): Result.Result<UpNextsDetails[], ParseError> => {
   const items = extractList(data, 'playlistPanelVideoRenderer') as unknown[]
 
   const results = items.slice(1).map(parseItem)
-  const firstError = results.find(Either.isLeft)
-  if (firstError && Either.isLeft(firstError)) {
-    return Either.left(firstError.left)
+  const firstError = results.find(Result.isLeft)
+  if (firstError && Result.isLeft(firstError)) {
+    return Result.fail(firstError.left)
   }
 
-  return Either.right(
-    results.map(r => (r as Either.Right<ParseError, UpNextsDetails>).right),
+  return Result.succeed(
+    results.map(r => (r as Result.succeed<ParseError, UpNextsDetails>).right),
   )
 }

@@ -1,10 +1,10 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
+import type * as Result from 'effect/Result'
 import * as EString from 'effect/String'
 
 import * as MediaBrand from './MediaBrand.ts'
@@ -167,7 +167,7 @@ const makeImpl = (
   return instance
 }
 
-const testKind = Either.liftPredicate(
+const testKind = Result.liftPredicate(
   (kind: string) => kind === 'audioinput' || kind === 'videoinput',
   kind =>
     Brand.error(`kind is "${kind}" when expected "audioinput" or "videoinput"`),
@@ -189,13 +189,13 @@ const testKind = Either.liftPredicate(
  */
 export const make = (
   info: InputDeviceInfo,
-): Either.Either<EInputDeviceInfo, Brand.Brand.BrandErrors> =>
-  Either.all([
+): Result.Result<EInputDeviceInfo, Brand.Brand.BrandErrors> =>
+  Result.all([
     MediaBrand.DeviceId.either(info.deviceId),
     MediaBrand.DeviceGroupId.either(info.groupId),
     MediaBrand.DeviceLabel.either(info.label),
     testKind(info.kind),
-  ]).pipe(Either.map(() => makeImpl(info)))
+  ]).pipe(Result.map(() => makeImpl(info)))
 
 /**
  * Asserts that an `unknown` value is a valid {@linkcode EInputDeviceInfoImpl}

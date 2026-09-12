@@ -1,16 +1,16 @@
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
 import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
 import * as NodePath from '@effect/platform-node/NodePath'
 import * as NodeRuntime from '@effect/platform-node/NodeRuntime'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
+import * as FileSystem from 'effect/FileSystem'
 import * as EFunction from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
 import * as ParseResult from 'effect/ParseResult'
+import * as Path from 'effect/Path'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 const SCHEMASTORE_HOSTS = new Set([
@@ -43,26 +43,26 @@ const parseJsonOrYaml = Schema.transformOrFail(
     strict: true,
     decode: (encoded, _, ast) =>
       EFunction.pipe(
-        Either.try(() => ({
+        Result.try(() => ({
           from: 'json' as const,
           result: JSON.parse(encoded),
         })),
-        Either.orElse(() =>
-          Either.try(() => ({
+        Result.orElse(() =>
+          Result.try(() => ({
             from: 'yaml' as const,
             result: Bun.YAML.parse(encoded),
           })),
         ),
-        Either.mapLeft(
+        Result.mapLeft(
           error => new ParseResult.Type(ast, encoded, getErrorMessage(error)),
         ),
       ),
     encode: (decoded, _, ast) =>
       EFunction.pipe(
-        Either.try(() =>
+        Result.try(() =>
           (decoded.from === 'json' ? JSON : Bun.YAML).stringify(decoded.result),
         ),
-        Either.mapLeft(
+        Result.mapLeft(
           error => new ParseResult.Type(ast, decoded, getErrorMessage(error)),
         ),
       ),

@@ -1,9 +1,9 @@
 import * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
-import type * as Either from 'effect/Either'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
+import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -32,7 +32,7 @@ export const Accord = Brand.refined<Accord>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (a: unknown): Accord
   option(a: unknown): AccordOption
-  either(a: unknown): Either.Either<Accord, Brand.Brand.BrandErrors>
+  either(a: unknown): Result.Result<Accord, Brand.Brand.BrandErrors>
   is(a: unknown): a is Accord
 }
 
@@ -63,7 +63,7 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
     new this(new AccordData(accord))
 }
 
-export const AccordSchema = Schema.Literal(...accordsRawBase)
+export const AccordSchema = Schema.Literals(accordsRawBase)
   .annotations({ title: 'Accord' })
   .pipe(Schema.fromBrand(Accord))
 

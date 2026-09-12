@@ -1,6 +1,6 @@
 import { config } from 'dotenv'
 
-import * as Either from 'effect/Either'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
@@ -42,7 +42,7 @@ export async function getDevEnvFromFile() {
 
   const envEither = decodeDevEnvEither(parsed)
 
-  if (Either.isLeft(envEither)) throw envEither.left
+  if (Result.isLeft(envEither)) throw envResult.fail
 
-  return envEither.right
+  return envResult.succeed
 }

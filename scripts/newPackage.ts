@@ -2,17 +2,16 @@
 
 import { prettyPrint } from 'effect-errors'
 
-import * as Prompt from '@effect/cli/Prompt'
-import * as Command from '@effect/platform/Command'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as BunSink from '@effect/platform-bun/BunSink'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
+import * as Prompt from 'effect/unstable/cli/Prompt'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
@@ -163,28 +162,28 @@ import * as Effect from 'effect/Effect'
 
 const program = Effect.gen(function* () {
   const { namespaces, ...config } = yield* Prompt.all({
-    name: Prompt.text({
+    name: Prompt.String({
       message: `Enter package name (if you want, add 'effect-' prefix):`,
       validate: value =>
         value.length <= 3
-          ? Either.left('Name is too short. At least 3 characters')
-          : Either.right(value),
+          ? Effect.fail('Name is too short. At least 3 characters')
+          : Effect.succeed(value),
     }),
-    description: Prompt.text({
+    description: Prompt.String({
       message: `Enter single-line short package description for readme and package.json:`,
       validate: value =>
         value.length <= 3
-          ? Either.left('Name is too short. At least 3 characters')
-          : Either.right(value),
+          ? Effect.fail('Name is too short. At least 3 characters')
+          : Effect.succeed(value),
     }),
-    namespaces: Prompt.list({
+    namespaces: Prompt.List({
       delimiter: ' ',
       message:
         'Enter a list of namespaces to create empty files for, delimited by space',
       validate: value =>
         value.length <= 1
-          ? Either.left('Name is too short. At least 3 characters')
-          : Either.right(value),
+          ? Effect.fail('Name is too short. At least 3 characters')
+          : Effect.succeed(value),
     }),
   }).pipe(Prompt.run)
 
@@ -248,7 +247,7 @@ const program = Effect.gen(function* () {
     Stream.run(BunSink.stdout),
   )
 }).pipe(
-  Effect.provide(BunContext.layer),
+  Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catchAll(e => {

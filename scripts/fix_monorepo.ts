@@ -12,15 +12,15 @@ import { prettyPrint } from 'effect-errors'
 import { parse as parseTOML, stringify as stringifyTOML } from 'smol-toml'
 import sortPackageJson from 'sort-package-json'
 
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { flow, pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
+import * as Path from 'effect/Path'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
@@ -1107,7 +1107,7 @@ const program = Effect.all([
 ]).pipe(
   Effect.repeatN(2),
   Effect.scoped,
-  Effect.provide(BunContext.layer),
+  Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catchAll(e => {

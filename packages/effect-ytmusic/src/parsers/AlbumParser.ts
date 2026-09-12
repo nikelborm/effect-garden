@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { AlbumDetailed } from '../schema/AlbumDetailed.ts'
@@ -14,7 +14,7 @@ const processYear = (year: string | undefined): number | null =>
 export const parse = (
   data: unknown,
   albumId: string,
-): Either.Either<AlbumFull, ParseError> => {
+): Result.Result<AlbumFull, ParseError> => {
   const albumBasic = {
     albumId,
     name: extractString(data, 'tabs', 'title', 'text'),
@@ -33,7 +33,7 @@ export const parse = (
   ).map(item =>
     SongParser.parseAlbumSong(item, artistBasic, albumBasic, thumbnails),
   )
-  const songs = songResults.flatMap(r => (Either.isRight(r) ? [r.right] : []))
+  const songs = songResults.flatMap(r => (Result.isRight(r) ? [r.right] : []))
 
   return checkType(
     'AlbumFull',
@@ -56,7 +56,7 @@ export const parse = (
 
 export const parseSearchResult = (
   item: unknown,
-): Either.Either<AlbumDetailed, ParseError> => {
+): Result.Result<AlbumDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
   const artist =
@@ -92,7 +92,7 @@ export const parseSearchResult = (
 export const parseArtistAlbum = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<AlbumDetailed, ParseError> =>
+): Result.Result<AlbumDetailed, ParseError> =>
   checkType(
     'AlbumDetailed',
     {
@@ -112,7 +112,7 @@ export const parseArtistAlbum = (
 export const parseArtistTopAlbum = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<AlbumDetailed, ParseError> =>
+): Result.Result<AlbumDetailed, ParseError> =>
   checkType(
     'AlbumDetailed',
     {
@@ -131,7 +131,7 @@ export const parseArtistTopAlbum = (
 
 export const parseHomeSection = (
   item: unknown,
-): Either.Either<AlbumDetailed, ParseError> => {
+): Result.Result<AlbumDetailed, ParseError> => {
   const artist = (extractList(item, 'subtitle', 'runs') as unknown[]).at(-1)
 
   return checkType(

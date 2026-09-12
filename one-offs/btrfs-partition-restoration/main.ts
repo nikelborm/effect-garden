@@ -1,20 +1,20 @@
 import { FiniteNonNegativeInteger, simpleExec } from '@evadev/effect-helpers'
 import { Btrfs } from 'effect-btrfs'
 
-import * as Prompt from '@effect/cli/Prompt'
-import * as Command from '@effect/platform/Command'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as BunContext from '@effect/platform-bun/BunContext'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Console from 'effect/Console'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import * as EFunction from 'effect/Function'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
+import * as Path from 'effect/Path'
 import * as Redacted from 'effect/Redacted'
 import * as Schema from 'effect/Schema'
+import * as Prompt from 'effect/unstable/cli/Prompt'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { pathToRegExpPattern } from './pathToRegExpPattern.ts'
 
@@ -229,7 +229,7 @@ const program = Effect.gen(function* () {
 
 const AppLayer = Layer.provideMerge(
   SudoCommandExecutor.LiveBackedByFsCache,
-  BunContext.layer,
+  BunServices.layer,
 )
 
 program.pipe(Effect.provide(AppLayer), BunRuntime.runMain)

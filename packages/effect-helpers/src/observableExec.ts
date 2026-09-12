@@ -1,8 +1,8 @@
-import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as EString from 'effect/String'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BadExitCodeError } from './BadExitCodeError.ts'
 

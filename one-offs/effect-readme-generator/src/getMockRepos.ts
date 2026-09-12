@@ -1,8 +1,8 @@
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
 import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { constant, pipe } from 'effect/Function'
+import * as Path from 'effect/Path'
 import * as Schema from 'effect/Schema'
 
 import { Repo } from './repo.interface.ts'

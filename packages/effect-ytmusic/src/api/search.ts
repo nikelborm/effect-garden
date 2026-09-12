@@ -1,5 +1,5 @@
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
+import * as Result from 'effect/Result'
 
 import { constructRequest } from '../client.ts'
 import * as AlbumParser from '../parsers/AlbumParser.ts'
@@ -30,7 +30,7 @@ export const search = Effect.fn('effect-ytmusic/search')(function* (
     extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
   ).flatMap(item => {
     const r = SearchParser.parse(item)
-    if (!r || Either.isLeft(r)) return []
+    if (!r || Result.isLeft(r)) return []
     return [r.right]
   })
 

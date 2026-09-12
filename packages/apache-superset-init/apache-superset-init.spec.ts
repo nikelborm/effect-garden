@@ -5,19 +5,19 @@ import {
 } from 'gitdl'
 import { parse } from 'yaml'
 
-import * as CLICommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as NodeContext from '@effect/platform-node/NodeContext'
+import * as NodeServices from '@effect/platform-node/NodeServices'
 import { describe, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import * as Layer from 'effect/Layer'
+import * as Path from 'effect/Path'
+import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/index.ts'
 
-const appCommand = CLICommand.make(
+const appCommand = Command.make(
   pkg.name,
   {
     destinationPath: destinationPathCLIOptionBackedByEnv,
@@ -27,7 +27,7 @@ const appCommand = CLICommand.make(
 )
 
 const cli = (args: ReadonlyArray<string>) =>
-  CLICommand.run(appCommand, {
+  Command.run(appCommand, {
     name: pkg.name,
     version: pkg.version,
     summary: HelpDocSpan.text(pkg.description),
@@ -96,6 +96,6 @@ describe('CLI', { concurrent: true }, () => {
           'jwtSecret',
           'CHANGE-ME-IN-PRODUCTION-GOTTA-BE-LONG-AND-SECRET',
         )
-    }).pipe(Effect.provide(Layer.merge(NodeContext.layer, OctokitLayer()))),
+    }).pipe(Effect.provide(Layer.merge(NodeServices.layer, OctokitLayer()))),
   )
 })

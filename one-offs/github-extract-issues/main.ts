@@ -6,23 +6,23 @@ import {
   type RepoArgs,
 } from 'effect-octokit-layer'
 
-import * as Command from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
 import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
-import * as BunContext from '@effect/platform-bun/BunContext'
+import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
+import * as Path from 'effect/Path'
 import * as EffectString from 'effect/String'
 import * as Struct from 'effect/Struct'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 // TODO: test how the handle per character streaming: who waits to buffer
 // everything, and who waits for newline
@@ -95,7 +95,7 @@ const AppLayer = pipe(
   Layer.unwrapEffect,
   Layer.provideMerge(MarkdownStdoutPrinter.RichLive),
   Layer.provideMerge(
-    Layer.mergeAll(OctokitLayerLive, Logger.pretty, BunContext.layer),
+    Layer.mergeAll(OctokitLayerLive, Logger.pretty, BunServices.layer),
   ),
 )
 

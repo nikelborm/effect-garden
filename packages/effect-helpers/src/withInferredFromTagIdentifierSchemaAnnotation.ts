@@ -1,6 +1,6 @@
-import * as Either from 'effect/Either'
 import * as EFunction from 'effect/Function'
 import * as ParseResult from 'effect/ParseResult'
+import type * as Result from 'effect/Result'
 import type * as Schema from 'effect/Schema'
 import * as SchemaAST from 'effect/SchemaAST'
 
@@ -12,7 +12,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     prefix: string,
   ): <Self extends Schema.Struct<any>>(
     self: Self,
-  ) => Either.Either<
+  ) => Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
   >
@@ -20,7 +20,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
   <Self extends Schema.Struct<any>>(
     self: Self,
     prefix: string,
-  ): Either.Either<
+  ): Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
   >
@@ -29,7 +29,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
   <Self extends Schema.Struct<any>>(
     self: Self,
     prefix: string,
-  ): Either.Either<
+  ): Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
     ParseResult.ParseIssue
   > => {
@@ -93,11 +93,11 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
       prefix,
     )
 
-    if (Either.isLeft(result))
+    if (Result.isLeft(result))
       throw new Error('Failed to infer identifier for OpenApi schema', {
-        cause: result.left,
+        cause: Result.fail,
       })
 
-    return result.right
+    return Result.succeed
   },
 )

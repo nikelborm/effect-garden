@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 
 import { starredReposOfUser } from './starredReposOfUser.ts'
@@ -7,7 +7,7 @@ export const selfStarredReposOfUser = (username: string) =>
   Stream.filter(
     starredReposOfUser(username, 100),
     repoEither =>
-      Either.isLeft(repoEither) || repoEither.right.owner === username,
+      Result.isLeft(repoEither) || repoResult.succeed.owner === username,
   )
 
 // There were generally 2 ways to do it. Lets say we have 1500 stars (A) and

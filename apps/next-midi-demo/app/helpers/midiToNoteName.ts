@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 const MIDDLE_C_OCTAVE = 5 // Change to 3 or 5 based on preference
@@ -10,13 +10,13 @@ const MIDDLE_C_OCTAVE = 5 // Change to 3 or 5 based on preference
  */
 export function midiToNoteName(
   midiNoteIndex: number,
-): Either.Either<string, InvalidMIDINote> {
+): Result.Result<string, InvalidMIDINote> {
   if (
     !Number.isSafeInteger(midiNoteIndex) ||
     midiNoteIndex < 0 ||
     midiNoteIndex > 127
   )
-    return Either.left(new InvalidMIDINote())
+    return Result.fail(new InvalidMIDINote())
 
   const noteNames = [
     'C',
@@ -39,7 +39,7 @@ export function midiToNoteName(
   // Calculate the octave (-1 to 9)
   const octave = Math.floor(midiNoteIndex / 12) - (5 - MIDDLE_C_OCTAVE)
 
-  return Either.right(`${noteNames[noteIndex]}${octave}`)
+  return Result.succeed(`${noteNames[noteIndex]}${octave}`)
 }
 
 export class InvalidMIDINote extends Schema.TaggedError<InvalidMIDINote>()(

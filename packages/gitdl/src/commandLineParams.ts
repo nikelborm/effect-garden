@@ -1,11 +1,11 @@
 import { outdent } from 'outdent'
 
 import * as CLIOptions from '@effect/cli/Options'
-import * as Path from '@effect/platform/Path'
 import * as Config from 'effect/Config'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as ParseResult from 'effect/ParseResult'
+import * as Path from 'effect/Path'
 import * as Schema from 'effect/Schema'
 
 const isGitHubSlug = (s: string) => !!s.match(/^[a-z0-9.\-_]+$/gi)

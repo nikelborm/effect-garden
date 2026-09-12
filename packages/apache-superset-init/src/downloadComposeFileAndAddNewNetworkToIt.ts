@@ -1,8 +1,8 @@
 import { downloadEntityFromRepo } from 'gitdl'
 
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
 
 import { repo } from './repo.ts'
 

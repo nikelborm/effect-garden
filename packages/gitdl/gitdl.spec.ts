@@ -1,17 +1,17 @@
 import { allFast } from '@evadev/effect-helpers'
 
-import * as CliCommand from '@effect/cli/Command'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as PlatformCommand from '@effect/platform/Command'
 import * as CommandExecutor from '@effect/platform/CommandExecutor'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
-import * as NodeContext from '@effect/platform-node/NodeContext'
+import * as NodeServices from '@effect/platform-node/NodeServices'
 import { describe, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Path from 'effect/Path'
 import * as Stream from 'effect/Stream'
+import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import {
@@ -25,7 +25,7 @@ import { downloadEntityFromRepo } from './src/downloadEntityFromRepo.ts'
 import { OctokitLayer } from './src/octokit.ts'
 import { buildTaggedErrorClassVerifyingCause } from './src/TaggedErrorVerifyingCause.ts'
 
-const appCommand = CliCommand.make(
+const appCommand = Command.make(
   pkg.name,
   {
     repo: {
@@ -41,13 +41,13 @@ const appCommand = CliCommand.make(
 )
 
 const cli = (args: ReadonlyArray<string>) =>
-  CliCommand.run(appCommand, {
+  Command.run(appCommand, {
     name: pkg.name,
     version: pkg.version,
     summary: HelpDocSpan.text(pkg.description),
   })(['node', '-', ...args])
 
-const MainLive = Layer.merge(NodeContext.layer, OctokitLayer())
+const MainLive = Layer.merge(NodeServices.layer, OctokitLayer())
 
 type Params = {
   gitRepoName: string

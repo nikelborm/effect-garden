@@ -1,8 +1,8 @@
-import * as FileSystem from '@effect/platform/FileSystem'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import * as Match from 'effect/Match'
 
 // ---------------------------------------------------------------------------

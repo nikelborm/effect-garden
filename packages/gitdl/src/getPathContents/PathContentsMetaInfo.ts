@@ -2,7 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import { CastToReadableStream } from '../castToReadableStream.ts'
 import { ParsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
-import { parseGitLFSObjectEither } from './parseGitLFSObjectEither.ts'
+import { parseGitLFSObjectEither } from './parseGitLFSObjectResult.ts'
 
 export const PathContentsMetaInfo = Effect.gen(function* () {
   const response = yield* ParsedMetaInfoAboutPathContentsFromGitHubAPI

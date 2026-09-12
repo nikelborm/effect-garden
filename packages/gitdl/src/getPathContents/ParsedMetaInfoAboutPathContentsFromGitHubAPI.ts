@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as ParseResult from 'effect/ParseResult'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import {
@@ -16,7 +16,7 @@ export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.gen(
   function* () {
     const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
 
-    return yield* Either.mapLeft(
+    return yield* Result.mapLeft(
       decodeResponse(response.data),
       parseError =>
         new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(

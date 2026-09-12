@@ -1,13 +1,13 @@
 import * as Args from '@effect/cli/Args'
-import * as CliCommand from '@effect/cli/Command'
 import * as HelpDoc from '@effect/cli/HelpDoc'
-import * as Prompt from '@effect/cli/Prompt'
 import * as ValidationError from '@effect/cli/ValidationError'
 import * as PlatformCommand from '@effect/platform/Command'
-import * as FileSystem from '@effect/platform/FileSystem'
-import * as Path from '@effect/platform/Path'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
+import * as Path from 'effect/Path'
+import * as Command from 'effect/unstable/cli/Command'
+import * as Prompt from 'effect/unstable/cli/Prompt'
 
 import { GPG_RECIPIENT } from './gpgRecipientConfig.ts'
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
@@ -62,7 +62,7 @@ const destFilePathArg = Args.path({ name: 'destination file' }).pipe(
   ),
 )
 
-export const archiveCompressEncryptCommand = CliCommand.make(
+export const archiveCompressEncryptCommand = Command.make(
   'do',
   { sourceDirPath: sourceDirPathArg, destFilePath: destFilePathArg },
   Effect.fn('archiveCompressEncrypt handler')(function* ({
@@ -105,7 +105,7 @@ export const archiveCompressEncryptCommand = CliCommand.make(
     if (exitCode !== 0) return yield* Effect.dieMessage('failed to ace')
   }),
 ).pipe(
-  CliCommand.withDescription(
+  Command.withDescription(
     `
       Creates a tar archive, compress with zstd, and encrypt with gpg.
       Script does not check if the destination file exists, so it is recommended

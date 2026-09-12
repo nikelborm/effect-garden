@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import { PageType } from '../constants.ts'
 import type { ParseError } from '../errors.ts'
@@ -34,7 +34,7 @@ export const parseNumber = (string: string): number => {
 
 export const parseHomeSection = (
   data: unknown,
-): Either.Either<HomeSection, ParseError> => {
+): Result.Result<HomeSection, ParseError> => {
   const pageType = extractString(
     data,
     'contents',
@@ -52,7 +52,7 @@ export const parseHomeSection = (
 
   const contents = (extractList(data, 'contents') as unknown[]).flatMap(
     item => {
-      let result: Either.Either<unknown, ParseError>
+      let result: Result.Result<unknown, ParseError>
       switch (pageType) {
         case PageType.MUSIC_PAGE_TYPE_ALBUM:
           result = AlbumParser.parseHomeSection(item)
@@ -68,7 +68,7 @@ export const parseHomeSection = (
         default:
           return []
       }
-      return Either.isRight(result) ? [result.right] : []
+      return Result.isRight(result) ? [Result.succeed] : []
     },
   )
 

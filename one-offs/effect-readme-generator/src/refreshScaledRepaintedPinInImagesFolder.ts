@@ -1,9 +1,9 @@
-import * as FileSystem from '@effect/platform/FileSystem'
 import * as HttpClient from '@effect/platform/HttpClient'
 import * as HttpClientRequest from '@effect/platform/HttpClientRequest'
 import * as EArray from 'effect/Array'
 import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import * as Tuple from 'effect/Tuple'
 
 import { FetchPinImageError } from './errors.ts'

@@ -1,7 +1,7 @@
 import { outdent } from 'outdent'
 
-import * as Either from 'effect/Either'
 import * as ParseResult from 'effect/ParseResult'
+import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import {
@@ -16,13 +16,13 @@ export const parseGitLFSObjectEither = ({
   contentAsBuffer: Buffer<ArrayBuffer>
   expectedContentSize: number
 }) =>
-  Either.gen(function* () {
+  Result.gen(function* () {
     // gitLFS info usually is no longer than MAX_GIT_LFS_INFO_SIZE bytes
     const contentAsString = contentAsBuffer
       .subarray(0, MAX_GIT_LFS_INFO_SIZE)
       .toString('utf8')
 
-    const parsingResult = Either.mapLeft(
+    const parsingResult = Result.mapLeft(
       decodeGitLFSInfoSchema(contentAsString.match(gitLFSInfoRegexp)?.groups),
       cause =>
         new FailedToParseGitLFSInfoError(cause, {
@@ -30,10 +30,10 @@ export const parseGitLFSObjectEither = ({
         }),
     )
 
-    const matchedByRegexpAndParsedByEffectSchema = Either.isRight(parsingResult)
+    const matchedByRegexpAndParsedByEffectSchema = Result.isRight(parsingResult)
     const doesSizeFromGitLFSInfoAlignWithExpectedContentSize =
-      Either.isRight(parsingResult) &&
-      parsingResult.right.size === expectedContentSize
+      Result.isRight(parsingResult) &&
+      parsingResult.succeed.size === expectedContentSize
 
     const shouldFailIfItIsNotGitLFS =
       contentAsBuffer.byteLength !== expectedContentSize
@@ -44,12 +44,12 @@ export const parseGitLFSObjectEither = ({
 
     if (isThisAGitLFSObject)
       return {
-        gitLFSObjectIdSha256: parsingResult.right.oidSha256,
-        gitLFSVersion: parsingResult.right.version,
+        gitLFSObjectIdSha256: parsingResult.succeed.oidSha256,
+        gitLFSVersion: parsingResult.succeed.version,
       } as const
 
     if (shouldFailIfItIsNotGitLFS)
-      return yield* Either.left(
+      return yield* Result.fail(
         new InconsistentExpectedAndRealContentSizeError({
           actual: contentAsBuffer.byteLength,
           expected: expectedContentSize,
@@ -104,7 +104,7 @@ export class FailedToParseGitLFSInfoError extends _1 {}
 type InconsistentSizesDynamicContext = {
   actual: number
   expected: number
-  gitLFSInfo: Either.Either<
+  gitLFSInfo: Result.Result<
     Readonly<{
       version: string
       oidSha256: string

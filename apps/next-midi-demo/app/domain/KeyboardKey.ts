@@ -2,10 +2,10 @@ import * as NonPrintableKey from 'ts-key-not-enum'
 
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import * as Either from 'effect/Either'
 import { flow } from 'effect/Function'
 import * as Iterable from 'effect/Iterable'
 import * as Option from 'effect/Option'
+import * as Result from 'effect/Result'
 
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
 import { PhysicalButtonId, PhysicalButtonIdData } from './PhysicalButton.ts'
@@ -26,8 +26,8 @@ export const KeyboardKey = Brand.refined<KeyboardKey>(
   // returned by `.length`
   flow(
     PhysicalButtonId.either<string>,
-    Either.flatMap(
-      Either.liftPredicate(
+    Result.flatMap(
+      Result.liftPredicate(
         candidate =>
           NonPrintableKeyboardKeys.has(candidate as any) ||
           [...candidate].length === 1,

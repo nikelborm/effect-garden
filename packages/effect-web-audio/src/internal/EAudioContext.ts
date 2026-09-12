@@ -7,13 +7,13 @@ import type * as MediaBrand from 'effect-web-mediacapture-streams/MediaBrand'
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
-import * as Either from 'effect/Either'
 import * as Equal from 'effect/Equal'
 import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Layer from 'effect/Layer'
 import * as Pipeable from 'effect/Pipeable'
+import type * as Result from 'effect/Result'
 
 import type * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
@@ -177,14 +177,14 @@ const makeImpl = (
  */
 export const make = (
   config?: Readonly<MakeAudioContextOptions>,
-): Either.Either<
+): Result.Result<
   EAudioContextInstance,
   | AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive
   | AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate
   | AudioErrors.CannotMakeEAudioContextInvalidLatencyHint
   | AudioErrors.CannotMakeEAudioContextWrongRuntime
 > =>
-  Either.try({
+  Result.try({
     try: () => makeImpl(new AudioContext(config), config),
     catch: AudioErrors.remapErrorByName(
       {

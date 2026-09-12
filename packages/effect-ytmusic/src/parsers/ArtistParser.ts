@@ -1,4 +1,4 @@
-import * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { ArtistDetailed } from '../schema/ArtistDetailed.ts'
@@ -13,7 +13,7 @@ import * as VideoParser from './VideoParser.ts'
 export const parse = (
   data: unknown,
   artistId: string,
-): Either.Either<ArtistFull, ParseError> => {
+): Result.Result<ArtistFull, ParseError> => {
   const artistBasic = {
     artistId,
     name: extractString(data, 'header', 'title', 'text'),
@@ -23,12 +23,12 @@ export const parse = (
 
   const mapCarousel = <T>(
     index: number,
-    mapFn: (item: unknown) => Either.Either<T, ParseError>,
+    mapFn: (item: unknown) => Result.Result<T, ParseError>,
   ): T[] =>
     ((carousels[index]?.contents as unknown[] | undefined) ?? []).flatMap(
       item => {
         const r = mapFn(item)
-        return Either.isRight(r) ? [r.right] : []
+        return Result.isRight(r) ? [r.right] : []
       },
     )
 
@@ -42,7 +42,7 @@ export const parse = (
         extractList(data, 'musicShelfRenderer', 'contents') as unknown[]
       ).flatMap(item => {
         const r = SongParser.parseArtistTopSong(item, artistBasic)
-        return Either.isRight(r) ? [r.right] : []
+        return Result.isRight(r) ? [r.right] : []
       }),
       topAlbums: mapCarousel(0, item =>
         AlbumParser.parseArtistTopAlbum(item, artistBasic),
@@ -64,7 +64,7 @@ export const parse = (
 
 export const parseSearchResult = (
   item: unknown,
-): Either.Either<ArtistDetailed, ParseError> => {
+): Result.Result<ArtistDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
 
@@ -82,7 +82,7 @@ export const parseSearchResult = (
 
 export const parseSimilarArtists = (
   item: unknown,
-): Either.Either<ArtistDetailed, ParseError> =>
+): Result.Result<ArtistDetailed, ParseError> =>
   checkType(
     'ArtistDetailed',
     {

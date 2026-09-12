@@ -1,4 +1,4 @@
-import type * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import type { ArtistBasic } from '../schema/ArtistBasic.ts'
@@ -10,7 +10,7 @@ import { extract, extractList, extractString } from '../utils/extract.ts'
 export const parse = (
   data: unknown,
   playlistId: string,
-): Either.Either<PlaylistFull, ParseError> => {
+): Result.Result<PlaylistFull, ParseError> => {
   const artist = extract(data, 'tabs', 'straplineTextOne')
 
   return checkType(
@@ -41,7 +41,7 @@ export const parse = (
 
 export const parseSearchResult = (
   item: unknown,
-): Either.Either<PlaylistDetailed, ParseError> => {
+): Result.Result<PlaylistDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
   const artist =
@@ -72,7 +72,7 @@ export const parseSearchResult = (
 export const parseArtistFeaturedOn = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Either.Either<PlaylistDetailed, ParseError> =>
+): Result.Result<PlaylistDetailed, ParseError> =>
   checkType(
     'PlaylistDetailed',
     {
@@ -87,7 +87,7 @@ export const parseArtistFeaturedOn = (
 
 export const parseHomeSection = (
   item: unknown,
-): Either.Either<PlaylistDetailed, ParseError> => {
+): Result.Result<PlaylistDetailed, ParseError> => {
   const artist = extract(item, 'subtitle', 'runs')
 
   return checkType(

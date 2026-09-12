@@ -1,4 +1,4 @@
-import type * as Either from 'effect/Either'
+import type * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import type { SearchResult } from '../schema/SearchResult.ts'
@@ -11,7 +11,7 @@ import * as VideoParser from './VideoParser.ts'
 
 export const parse = (
   item: unknown,
-): Either.Either<SearchResult, ParseError> | null => {
+): Result.Result<SearchResult, ParseError> | null => {
   const flexColumns = extractList(item, 'flexColumns')
   const type = (extractList(flexColumns[1], 'runs', 'text') as unknown[]).at(
     0,

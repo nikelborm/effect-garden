@@ -1,12 +1,12 @@
 import * as Args from '@effect/cli/Args'
-import * as CliCommand from '@effect/cli/Command'
 import * as HelpDoc from '@effect/cli/HelpDoc'
-import * as Prompt from '@effect/cli/Prompt'
 import * as ValidationError from '@effect/cli/ValidationError'
 import * as PlatformCommand from '@effect/platform/Command'
-import * as FileSystem from '@effect/platform/FileSystem'
 import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
+import * as Command from 'effect/unstable/cli/Command'
+import * as Prompt from 'effect/unstable/cli/Prompt'
 
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
 
@@ -68,7 +68,7 @@ const destDirPathArg = Args.directory({ name: 'destination directory' }).pipe(
   ),
 )
 
-export const decryptDecompressExtractCommand = CliCommand.make(
+export const decryptDecompressExtractCommand = Command.make(
   'undo',
   { sourceFilePath: sourceFilePathArg, destDirPath: destDirPathArg },
   Effect.fn('decryptDecompressExtract handler')(function* ({
@@ -99,7 +99,7 @@ export const decryptDecompressExtractCommand = CliCommand.make(
     if (exitCode !== 0) return yield* Effect.dieMessage('failed to undo ace')
   }),
 ).pipe(
-  CliCommand.withDescription(
+  Command.withDescription(
     `
       Decrypt, decompress, and extract files from an encrypted compressed archive.
       Script does not handle conflicts when extracting files, so it is recommended

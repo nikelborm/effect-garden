@@ -1,7 +1,7 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import type * as Either from 'effect/Either'
 import type * as Option from 'effect/Option'
+import type * as Result from 'effect/Result'
 
 import { isData } from '../helpers/isData.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
@@ -31,7 +31,7 @@ export const PhysicalButtonId = Brand.refined<
   ): Option.Option<PhysicalButtonId<T>>
   either<T extends string | number = string | number>(
     i: T,
-  ): Either.Either<PhysicalButtonId<T>, Brand.Brand.BrandErrors>
+  ): Result.Result<PhysicalButtonId<T>, Brand.Brand.BrandErrors>
   is<T extends string | number = string | number>(
     i: T,
   ): i is T & PhysicalButtonId<T>
