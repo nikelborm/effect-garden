@@ -92,7 +92,7 @@ const packageJson = (config: { name: string; description: string }) =>
     homepage: `${httpsRepoLink}/tree/main/packages/${config.name}#readme`,
     devDependencies: {
       '@evadev/tsconfig': 'workspace:^',
-      '@effect/language-service': 'catalog:',
+      '@effect/tsgo': 'catalog:',
       'ts-namespace-import': 'catalog:',
       'ts-patch': 'catalog:',
       typescript: 'catalog:',
