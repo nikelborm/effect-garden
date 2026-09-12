@@ -4,8 +4,7 @@
   "version": "0.1.3",
   "description": "Offline JSON schema validation using the full SchemaStore catalog — no internet required.",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@effect/platform": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/platform-node": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",

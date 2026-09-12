@@ -4,15 +4,13 @@
   "version": "0.1.0",
   "description": "More command executors for @effect/platform/CommandExecutor",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-node-shared": "catalog:",
     "@effect/vitest": "catalog:",
     "@types/bun": "catalog:",

@@ -4,8 +4,7 @@
   "version": "1.0.10",
   "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
-    "@effect/platform": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@microsoft/tsdoc": "catalog:",

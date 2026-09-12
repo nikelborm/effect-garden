@@ -4,14 +4,13 @@
   "version": "0.1.0",
   "description": "Reusable Effect HTTP API declarations of Trellis Form.",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {

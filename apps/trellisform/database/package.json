@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Now it's just a showcase of drizzle-fp's capabilities. Previously were a promising startup",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -12,8 +12,6 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/sql": "catalog:",
-    "@effect/sql-drizzle": "catalog:",
     "@effect/sql-pg": "catalog:",
     "effect": "catalog:"
   },

@@ -4,16 +4,13 @@
   "version": "0.1.0",
   "description": "Infer effect schemas with AI",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/ai-google": "catalog:",
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@types/bun": "catalog:",
     "effect": "catalog:"

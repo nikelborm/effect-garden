@@ -4,14 +4,13 @@
   "version": "0.1.0",
   "description": "Reusable Effect tags to know which exact config params does effect/layer depends on and see if they weren't provided",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "effect": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/backend-config#readme",

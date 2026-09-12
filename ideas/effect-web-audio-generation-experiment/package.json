@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Generates missing Effect wrappers for Web Audio API using @webref/idl",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@types/webref__idl": "workspace:^",

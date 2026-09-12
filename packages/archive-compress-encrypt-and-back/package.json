@@ -4,15 +4,13 @@
   "version": "0.1.2",
   "description": "Archive, compress, encrypt and back",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@types/bun": "catalog:",
     "effect": "catalog:"

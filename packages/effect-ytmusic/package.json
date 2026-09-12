@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Effect client to interact with YouTube Music",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
@@ -14,7 +14,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
   },

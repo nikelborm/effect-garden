@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "A bunch of scripts to automate things and maintain the monorepo",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "rolldown": "catalog:",
@@ -13,10 +13,7 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@effect/printer-ansi": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {

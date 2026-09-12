@@ -5,7 +5,7 @@
   "description": "Summarize your Alibaba API LLM token usage",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",

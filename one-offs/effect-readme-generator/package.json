@@ -4,14 +4,13 @@
   "version": "0.1.0",
   "description": "Generate Readme with table for my github profile",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@types/bun": "catalog:",
     "effect": "catalog:"

@@ -5,7 +5,7 @@
   "description": "Painfully copy-pasted better auth wrapper.",
   "devDependencies": {
     "@better-auth/cli": "catalog:",
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -13,7 +13,6 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
   },

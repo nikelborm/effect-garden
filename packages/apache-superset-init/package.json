@@ -4,7 +4,7 @@
   "version": "0.1.6",
   "description": "Quickly download files needed to run Apache Superset deployment in docker and preconfigure them for production",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@vitest/coverage-v8": "catalog:",
@@ -15,8 +15,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
     "@effect/platform-node-shared": "catalog:",
     "@effect/vitest": "catalog:",

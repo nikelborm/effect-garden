@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Backend of Trellis Form.",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -12,12 +12,8 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/experimental": "catalog:",
     "@effect/opentelemetry": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
-    "@effect/sql": "catalog:",
-    "@effect/sql-drizzle": "catalog:",
     "@effect/sql-pg": "catalog:",
     "effect": "catalog:"
   },

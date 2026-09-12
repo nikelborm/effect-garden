@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Effect HTTP API declarations for NPM Registry",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/openapi-gen": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
@@ -12,7 +12,6 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/platform": "catalog:",
     "effect": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/effect-npm-api#readme",

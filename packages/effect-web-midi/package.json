@@ -4,7 +4,7 @@
   "version": "0.2.3",
   "description": "Effect WEB MIDI API wrapper",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

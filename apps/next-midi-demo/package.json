@@ -5,7 +5,7 @@
   "description": "Demo of MIDI and Web audio capabilities on frontend with Effect",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@serwist/cli": "^9.5.12",
@@ -20,17 +20,14 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@effect/experimental": "catalog:",
     "@effect/opentelemetry": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-browser": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
-    "@effect-atom/atom": "catalog:",
-    "@effect-atom/atom-react": "catalog:",
+    "@effect/atom-react": "catalog:",
     "@evadev/effect-helpers": "workspace:^",
     "@fp-ts/optic": "catalog:",
     "@opentelemetry/exporter-logs-otlp-grpc": "catalog:",

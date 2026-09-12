@@ -4,7 +4,7 @@
   "version": "0.2.6",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@vitest/coverage-v8": "catalog:",
@@ -15,8 +15,6 @@
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-node": "catalog:",
     "effect": "catalog:"
   },

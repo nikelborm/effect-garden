@@ -4,7 +4,7 @@
   "version": "0.2.1",
   "description": "Effect WEB Media Capture and Streams API wrapper",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

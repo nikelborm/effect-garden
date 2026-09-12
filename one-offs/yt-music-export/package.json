@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Trying to export my library from youtube music",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

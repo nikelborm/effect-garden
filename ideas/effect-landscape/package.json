@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "Overview analytics of the whole effect ecosystem",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

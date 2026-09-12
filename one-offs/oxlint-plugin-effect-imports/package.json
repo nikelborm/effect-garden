@@ -4,7 +4,7 @@
   "version": "1.0.2",
   "description": "Oxlint plugin to enforce namespace imports from Effect package subpaths",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "eslint": "catalog:",
     "ts-namespace-import": "catalog:",

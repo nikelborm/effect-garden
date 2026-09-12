@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Script to extract issues with comments from repo",
   "devDependencies": {
-    "@effect/language-service": "catalog:",
+    "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "ts-namespace-import": "catalog:",
@@ -12,8 +12,6 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@effect/cli": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "effect": "catalog:"
   },
