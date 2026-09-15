@@ -45,29 +45,32 @@ import {
 } from './newPackage.ts'
 
 const deps = NonEmptyRecord(
-  Schema.NonEmptyTrimmedString,
-  Schema.NonEmptyTrimmedString,
+  Schema.Trimmed.check(Schema.isNonEmpty()),
+  Schema.Trimmed.check(Schema.isNonEmpty()),
 )
 
 export const RootPackageJsonFromStringSchema = Schema.parseJson(
   Schema.Struct(
     {
-      name: Schema.NonEmptyTrimmedString,
+      name: Schema.Trimmed.check(Schema.isNonEmpty()),
       // to avoid accidental publishs
       private: Schema.Literal(true),
-      version: Schema.NonEmptyTrimmedString,
+      version: Schema.Trimmed.check(Schema.isNonEmpty()),
       dependencies: deps.pipe(OptionalProperty),
       catalog: deps,
       devDependencies: AbsentProperty,
       workspaces: Schema.NonEmptyArray(
-        Schema.Union(
-          Schema.TemplateLiteralParser(Schema.NonEmptyTrimmedString, '/*'),
-          Schema.NonEmptyTrimmedString,
-        ),
+        Schema.Union([
+          Schema.TemplateLiteralParser(
+            Schema.Trimmed.check(Schema.isNonEmpty()),
+            '/*',
+          ),
+          Schema.Trimmed.check(Schema.isNonEmpty()),
+        ]),
       ),
     },
     { key: Schema.String, value: Schema.Unknown },
-  ).annotations({ title: 'RootPackageJson' }),
+  ).annotateKey({ title: 'RootPackageJson' }),
   { space: 2 },
 )
 
@@ -78,9 +81,9 @@ const myUserSchema = Schema.Struct({
   url: Schema.Literal(httpsUserLink),
 })
 const userSchema = Schema.Struct({
-  name: Schema.NonEmptyTrimmedString,
-  email: Schema.NonEmptyTrimmedString,
-  url: Schema.NonEmptyTrimmedString,
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
+  email: Schema.Trimmed.check(Schema.isNonEmpty()),
+  url: Schema.Trimmed.check(Schema.isNonEmpty()),
 })
 
 // TODO: add tooling to maintain options on what's CLI, what's library, what's
@@ -95,11 +98,11 @@ const userSchema = Schema.Struct({
 // end-apps, which bundle them into final build/binary
 export const SubPackageJsonSchema = Schema.Struct(
   {
-    name: Schema.NonEmptyTrimmedString,
+    name: Schema.Trimmed.check(Schema.isNonEmpty()),
     type: Schema.Literal('module'),
-    version: Schema.NonEmptyTrimmedString,
+    version: Schema.Trimmed.check(Schema.isNonEmpty()),
 
-    description: Schema.NonEmptyTrimmedString,
+    description: Schema.Trimmed.check(Schema.isNonEmpty()),
     devDependencies: deps.pipe(OptionalProperty),
     peerDependencies: deps.pipe(OptionalProperty),
 
@@ -107,33 +110,33 @@ export const SubPackageJsonSchema = Schema.Struct(
     dependencies: deps.pipe(OptionalProperty),
     homepage: Schema.TemplateLiteralParser(
       `${httpsRepoLink}/tree/main/`,
-      Schema.NonEmptyTrimmedString,
+      Schema.Trimmed.check(Schema.isNonEmpty()),
       `#readme`,
     ),
     bugs: Schema.Struct({
       url: Schema.Literal(issuesLink),
       email: emailSchema,
     }),
-    keywords: Schema.NonEmptyArray(Schema.NonEmptyTrimmedString).pipe(
-      OptionalProperty,
-    ),
+    keywords: Schema.NonEmptyArray(
+      Schema.Trimmed.check(Schema.isNonEmpty()),
+    ).pipe(OptionalProperty),
     repository: Schema.Struct({
       type: Schema.Literal('git'),
       url: Schema.Literal(gitSshUrl),
-      directory: Schema.NonEmptyTrimmedString,
+      directory: Schema.Trimmed.check(Schema.isNonEmpty()),
     }),
     scripts: NonEmptyRecord(
-      Schema.NonEmptyTrimmedString,
-      Schema.NonEmptyTrimmedString,
+      Schema.Trimmed.check(Schema.isNonEmpty()),
+      Schema.Trimmed.check(Schema.isNonEmpty()),
     ).pipe(OptionalProperty),
     author: myUserSchema,
-    contributors: Schema.Tuple([myUserSchema], userSchema),
-    maintainers: Schema.Tuple([myUserSchema], userSchema),
+    contributors: Schema.TupleWithRest(myUserSchema, userSchema),
+    maintainers: Schema.TupleWithRest(myUserSchema, userSchema),
   },
   { key: Schema.String, value: Schema.Unknown },
 ).pipe(
   Schema.extend(
-    Schema.Union(
+    Schema.Union([
       Schema.Struct({
         license: Schema.Literal('UNLICENSED'),
         private: Schema.Literal(true),
@@ -151,9 +154,9 @@ export const SubPackageJsonSchema = Schema.Struct(
           // linkDirectory: Schema.Literal(false),
         }),
       }),
-    ),
+    ]),
   ),
-  Schema.annotations({ title: 'SubPackageJson' }),
+  Schema.annotateKey({ title: 'SubPackageJson' }),
 )
 
 export const SubPackageJsonSchemaFromString = Schema.parseJson(
@@ -172,20 +175,20 @@ export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
 )
 
 export const MyMonorepoPackagePathsSchema = Schema.Struct({
-  packageDirName: Schema.NonEmptyTrimmedString,
-  absolutePackageDirPath: Schema.NonEmptyTrimmedString,
+  packageDirName: Schema.Trimmed.check(Schema.isNonEmpty()),
+  absolutePackageDirPath: Schema.Trimmed.check(Schema.isNonEmpty()),
 }).pipe(
   schema =>
-    Schema.Union(
+    Schema.Union([
       Schema.extend(
         schema,
         Schema.Struct({
-          workspaceDirName: Schema.NonEmptyTrimmedString,
-          absoluteWorkspaceDirPath: Schema.NonEmptyTrimmedString,
+          workspaceDirName: Schema.Trimmed.check(Schema.isNonEmpty()),
+          absoluteWorkspaceDirPath: Schema.Trimmed.check(Schema.isNonEmpty()),
         }),
       ),
       schema,
-    ),
+    ]),
   Schema.NonEmptyArray,
 )
 
@@ -236,7 +239,7 @@ export const myMonorepoPackagePathsEffect = pipe(
 export class WrongHardcodedPathInPackageJson extends Schema.TaggedError<WrongHardcodedPathInPackageJson>()(
   'WrongHardcodedPathInPackageJson',
   {
-    where: Schema.NonEmptyTrimmedString,
+    where: Schema.Trimmed.check(Schema.isNonEmpty()),
     expected: Schema.Unknown,
     actual: Schema.Unknown,
   },
@@ -325,8 +328,8 @@ export class AmbiguousDependencyVersions extends Schema.TaggedError<AmbiguousDep
   'AmbiguousDependencyVersions',
   {
     conflicts: Schema.Record({
-      key: Schema.NonEmptyTrimmedString,
-      value: Schema.Array(Schema.NonEmptyTrimmedString),
+      key: Schema.Trimmed.check(Schema.isNonEmpty()),
+      value: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
     }),
   },
 ) {
@@ -338,12 +341,12 @@ export class AmbiguousDependencyVersions extends Schema.TaggedError<AmbiguousDep
 export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<IntersectionOfDevAndProdDeps>()(
   'IntersectionOfDevAndProdDeps',
   {
-    packageName: Schema.NonEmptyTrimmedString,
+    packageName: Schema.Trimmed.check(Schema.isNonEmpty()),
     intersection: Schema.Record({
-      key: Schema.NonEmptyTrimmedString,
+      key: Schema.Trimmed.check(Schema.isNonEmpty()),
       value: Schema.Struct({
-        devVersion: Schema.NonEmptyTrimmedString,
-        prodVersion: Schema.NonEmptyTrimmedString,
+        devVersion: Schema.Trimmed.check(Schema.isNonEmpty()),
+        prodVersion: Schema.Trimmed.check(Schema.isNonEmpty()),
       }),
     }),
   },
@@ -357,8 +360,8 @@ export class DuplicatePackageNames extends Schema.TaggedError<DuplicatePackageNa
   'DuplicatePackageNames',
   {
     duplicates: Schema.Record({
-      key: Schema.NonEmptyTrimmedString,
-      value: Schema.Array(Schema.NonEmptyTrimmedString),
+      key: Schema.Trimmed.check(Schema.isNonEmpty()),
+      value: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
     }),
   },
 ) {
@@ -784,7 +787,7 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   const playground = myMonorepoPackages.find(
     pkg => pkg.pkg.name === 'playground',
   )
-  if (!playground) return yield* Effect.dieMessage('absurd')
+  if (!playground) return yield* Effect.die(new Error('absurd'))
 
   const existingDevDeps = playground.pkg.devDependencies ?? {}
 
@@ -1039,8 +1042,8 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
 
         const seen = catalogPackageNameToUsage.get(depName)
         if (!seen)
-          return yield* Effect.dieMessage(
-            'assertion failed. expected map to be prefilled',
+          return yield* Effect.die(
+            new Error('assertion failed. expected map to be prefilled'),
           )
 
         if (seen.type === 'never') {

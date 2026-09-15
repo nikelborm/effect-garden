@@ -4,9 +4,10 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../types/common.ts'
 
-export class DisposePlayback extends Context.Tag(
-  'next-midi-demo/DisposePlayback',
-)<DisposePlayback, (playback: AudioPlayback) => Effect.Effect<void>>() {
+export class DisposePlayback extends Context.Service<
+  DisposePlayback,
+  (playback: AudioPlayback) => Effect.Effect<void>
+>()('next-midi-demo/DisposePlayback') {
   static Live = Layer.succeed(
     this,
     ({ bufferSource, gainNode }: AudioPlayback) =>

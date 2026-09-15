@@ -35,15 +35,13 @@ const createPlaybackGraph = (
     return AudioPlayback.make({ bufferSource, gainNode })
   })
 
-export class StartFreshPlayback extends Context.Tag(
-  'next-midi-demo/StartFreshPlayback',
-)<
+export class StartFreshPlayback extends Context.Service<
   StartFreshPlayback,
   (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,
   ) => Effect.Effect<AudioPlayback>
->() {
+>()('next-midi-demo/StartFreshPlayback') {
   static Live = Layer.effect(
     this,
     Effect.map(

@@ -22,7 +22,7 @@ export const withNewStructFields: {
   Schema.Struct({
     ...(self.fields as Omit<typeof self.fields, keyof typeof newFields>),
     ...newFields,
-  }).annotations(
+  }).annotateKey(
     Struct.omit(SchemaAST.IdentifierAnnotationId)(self.ast.annotations),
   ),
 )

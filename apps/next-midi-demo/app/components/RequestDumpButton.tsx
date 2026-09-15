@@ -1,5 +1,5 @@
-import * as Result from '@effect-atom/atom/Result'
 import * as Cause from 'effect/Cause'
+import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
 
 import { useDumpRequester } from '../useDumpRequester.ts'
 
@@ -11,7 +11,7 @@ export const RequestDumpButton = () => {
       <button type="button" onClick={() => requestDump()}>
         Request dump
       </button>
-      {Result.match(dumpRequestState, {
+      {AsyncResult.match(dumpRequestState, {
         onFailure: _ => (
           <pre>
             Request dump failure:{'\n'}

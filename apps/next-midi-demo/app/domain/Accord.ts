@@ -64,7 +64,7 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
 }
 
 export const AccordSchema = Schema.Literals(accordsRawBase)
-  .annotations({ title: 'Accord' })
+  .annotateKey({ title: 'Accord' })
   .pipe(Schema.fromBrand(Accord))
 
 export type UnbrandedAccord<TAccord extends Accord> =
@@ -73,10 +73,9 @@ export type UnbrandedAccord<TAccord extends Accord> =
 export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
   accord as UnbrandedAccord<TAccord>
 
-export class AllAccords extends Context.Tag('next-midi-demo/AllAccords')<
-  AllAccords,
-  AllAccordTuple
->() {
+export class AllAccords extends Context.Service<AllAccords, AllAccordTuple>()(
+  'next-midi-demo/AllAccords',
+) {
   static readonly Default: Layer.Layer<AllAccords> = Layer.succeed(
     this,
     allAccords,

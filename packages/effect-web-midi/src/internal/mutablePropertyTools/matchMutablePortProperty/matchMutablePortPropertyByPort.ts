@@ -40,8 +40,10 @@ const matchMutableMIDIPortProperty = <
         if (state === stateCase)
           return (stateCallback as PortStateHandler)(port)
 
-      return yield* Effect.dieMessage(
-        `AssertionFailed: Missing handler for "${state}" state inside "${property}" property`,
+      return yield* Effect.die(
+        new Error(
+          `AssertionFailed: Missing handler for "${state}" state inside "${property}" property`,
+        ),
       )
     }),
   )

@@ -26,8 +26,10 @@ export const advancePatternSilenceTransition = Effect.fn(
     })
 
   if (AccordData.models(signal))
-    return yield* Effect.dieMessage(
-      'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+    return yield* Effect.die(
+      new Error(
+        'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+      ),
     )
 
   const now = yield* getAudioNow
@@ -37,8 +39,10 @@ export const advancePatternSilenceTransition = Effect.fn(
 
   if (signal.pattern === current.asset.pattern) {
     if (!isInGreenZone)
-      return yield* Effect.dieMessage(
-        're-press of the same pattern during active fade-out: not yet handled',
+      return yield* Effect.die(
+        new Error(
+          're-press of the same pattern during active fade-out: not yet handled',
+        ),
       )
 
     const revived = yield* current.cancelFadeoutAndRestore()

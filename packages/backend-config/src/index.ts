@@ -15,7 +15,7 @@ import * as Schema from 'effect/Schema'
 // import { BunContext } from "@effect/platform-bun";
 // import { Config, Effect, Layer } from "effect";
 
-// const EnvProviderLayer = Layer.unwrapEffect(
+// const EnvProviderLayer = Layer.unwrap(
 //   PlatformConfigProvider.fromDotEnv(".env").pipe(
 //     Effect.map(Layer.setConfigProvider),
 //     Effect.provide(BunServices.layer)
@@ -55,7 +55,7 @@ const allowedEnvTypeLiterals = [
   'PRODUCTION',
 ] as const
 
-const EnvTypeConfig = Config.literal(...allowedEnvTypeLiterals)
+const EnvTypeConfig = Config.Literals(allowedEnvTypeLiterals)
 
 export class EnvType extends Effect.Tag('@evadev/backend-config/index/EnvType')<
   EnvType,
@@ -86,9 +86,10 @@ export class BackendPort extends Effect.Tag(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class BackendExternallyAvailableAtURL extends Context.Tag(
-  '@evadev/backend-config/index/BackendExternallyAvailableAtURL',
-)<BackendExternallyAvailableAtURL, URL>() {
+export class BackendExternallyAvailableAtURL extends Context.Service<
+  BackendExternallyAvailableAtURL,
+  URL
+>()('@evadev/backend-config/index/BackendExternallyAvailableAtURL') {
   static Live = pipe(
     Config.url('EXTERNALLY_AVAILABLE_AT_URL'),
     Effect.catchAll(err =>
@@ -109,10 +110,11 @@ export class BackendExternallyAvailableAtURL extends Context.Tag(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class OpenTelemetryProcessingURL extends Context.Tag(
-  '@evadev/backend-config/index/OpenTelemetryProcessingURL',
-)<OpenTelemetryProcessingURL, Option.Option<URL>>() {
-  static Live = Config.url('OTLP_URL').pipe(
+export class OpenTelemetryProcessingURL extends Context.Service<
+  OpenTelemetryProcessingURL,
+  Option.Option<URL>
+>()('@evadev/backend-config/index/OpenTelemetryProcessingURL') {
+  static Live = Config.URL('OTLP_URL').pipe(
     Config.option,
     // for cases, where env is present, but it's bad, it will be error instead
     // of Option.None, and so we crash on that error
@@ -138,7 +140,7 @@ export class BetterAuthSecret extends Effect.Service<BetterAuthSecret>()(
 
       // using env is actually insecure on most linux machines, because any
       // process can be easily inspected and their envs too
-      const secretFilePath = yield* Config.nonEmptyString(
+      const secretFilePath = yield* Config.NonEmptyString(
         'BETTER_AUTH_SECRET_FILE_PATH',
       )
 
@@ -161,9 +163,9 @@ export class DbConfig extends Effect.Service<DbConfig>()(
   {
     effect: Config.all({
       host: ConfigStringWithMinLength2('DATABASE_HOST'),
-      port: Config.port('DATABASE_PORT'),
+      port: Config.Port('DATABASE_PORT'),
       username: ConfigStringWithMinLength2('DATABASE_USERNAME'),
-      password: Config.redacted('DATABASE_PASSWORD'),
+      password: Config.Redacted('DATABASE_PASSWORD'),
       database: ConfigStringWithMinLength2('DATABASE_NAME'),
       ssl: Config.succeed(false),
     }).pipe(

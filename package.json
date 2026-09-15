@@ -118,7 +118,7 @@
     "ts-pattern": "^5.9.0",
     "unified": "^11.0.5",
     "webidl2": "^24.5.0",
-    "@evadev/openapi-gen": "^0.4.17",
+    "@tim-smart/openapi-gen": "^1.0.4",
     "@stryker-mutator/api": "^10.0.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/instrumenter": "^10.0.0",
@@ -187,7 +187,6 @@
     "@effect/tsgo": "0.45.0",
     "@effect/vitest": "4.0.0-rc.115",
     "effect": "4.0.0-rc.115"
-
   },
   "workspaces": [
     "ideas/*",

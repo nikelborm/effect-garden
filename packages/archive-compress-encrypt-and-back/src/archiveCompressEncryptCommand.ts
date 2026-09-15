@@ -1,6 +1,5 @@
 import * as Args from '@effect/cli/Args'
 import * as HelpDoc from '@effect/cli/HelpDoc'
-import * as ValidationError from '@effect/cli/ValidationError'
 import * as PlatformCommand from '@effect/platform/Command'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
@@ -102,7 +101,7 @@ export const archiveCompressEncryptCommand = Command.make(
 
     const exitCode = yield* PlatformCommand.exitCode(aceDoCommand)
 
-    if (exitCode !== 0) return yield* Effect.dieMessage('failed to ace')
+    if (exitCode !== 0) return yield* Effect.die(new Error('failed to ace'))
   }),
 ).pipe(
   Command.withDescription(

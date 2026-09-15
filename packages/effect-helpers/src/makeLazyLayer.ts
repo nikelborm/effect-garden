@@ -13,7 +13,10 @@ const refsAndFlags = Effect.all({
 })
 
 export const makeLazyLayer = <TTagId, TSuccess, TError, TRequirements>(
-  tag: Context.Tag<TTagId, Effect.Effect<NoInfer<TSuccess>, NoInfer<TError>>>,
+  tag: Context.Service<
+    TTagId,
+    Effect.Effect<NoInfer<TSuccess>, NoInfer<TError>>
+  >,
   init: Effect.Effect<TSuccess, TError, TRequirements>,
 ) =>
   Effect.gen(function* () {

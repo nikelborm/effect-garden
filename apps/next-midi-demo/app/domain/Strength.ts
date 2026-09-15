@@ -65,7 +65,7 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 }
 
 export const StrengthSchema = Schema.Literals(strengthsRawBase)
-  .annotations({ title: 'Strength' })
+  .annotateKey({ title: 'Strength' })
   .pipe(Schema.fromBrand(Strength))
 
 export type UnbrandedStrength<TStrength extends Strength> =
@@ -75,10 +75,10 @@ export const UnbrandedStrength = <TStrength extends Strength>(
   strength: TStrength,
 ) => strength as UnbrandedStrength<TStrength>
 
-export class AllStrengths extends Context.Tag('next-midi-demo/AllStrengths')<
+export class AllStrengths extends Context.Service<
   AllStrengths,
   AllStrengthTuple
->() {
+>()('next-midi-demo/AllStrengths') {
   static readonly Default: Layer.Layer<AllStrengths> = Layer.succeed(
     this,
     allStrengths,

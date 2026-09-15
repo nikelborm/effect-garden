@@ -5,7 +5,7 @@ import * as Layer from 'effect/Layer'
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
-type OctokitTag = Context.Tag<Octokit, Octokit>
+type OctokitTag = Context.Service<Octokit, Octokit>
 
 export const OctokitTag: OctokitTag = Context.GenericTag<Octokit>('OctokitTag')
 

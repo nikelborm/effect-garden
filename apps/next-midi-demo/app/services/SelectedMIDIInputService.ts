@@ -18,8 +18,10 @@ export class SelectedMIDIInputService extends Effect.Service<SelectedMIDIInputSe
       if (Option.isNone(access))
         return {
           selectInput: () =>
-            Effect.dieMessage(
-              'MIDI access is not granted. Selecting input id is no-op',
+            Effect.die(
+              new Error(
+                'MIDI access is not granted. Selecting input id is no-op',
+              ),
             ),
           changes: Stream.succeed(null),
         }

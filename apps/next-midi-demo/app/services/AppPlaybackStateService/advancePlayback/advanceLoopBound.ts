@@ -41,5 +41,7 @@ export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
     return yield* advanceSlowStrumPatternTransition(oldState, signal)
 
   // Every LoopBoundQueue member is handled above.
-  return yield* Effect.dieMessage('advanceLoopBound: unreachable queue shape')
+  return yield* Effect.die(
+    new Error('advanceLoopBound: unreachable queue shape'),
+  )
 })

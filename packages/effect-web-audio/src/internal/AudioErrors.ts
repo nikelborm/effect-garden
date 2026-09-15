@@ -2,17 +2,19 @@ import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 
+const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
+
 // TODO: deduplicate with effect-web-midi
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,
 ) =>
   Schema.Struct({
     name: (nameSchema ??
-      Schema.NonEmptyTrimmedString) as TSchema extends undefined
-      ? typeof Schema.NonEmptyTrimmedString
+      Schema.Trimmed.check(Schema.isNonEmpty())) as TSchema extends undefined
+      ? typeof NonEmptyTrimmedString
       : TSchema,
-    message: Schema.NonEmptyTrimmedString,
-    stack: Schema.NonEmptyTrimmedString.pipe(
+    message: Schema.Trimmed.check(Schema.isNonEmpty()),
+    stack: Schema.Trimmed.check(Schema.isNonEmpty()).pipe(
       Schema.optionalWith({ exact: true }),
     ),
     cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
@@ -51,19 +53,19 @@ export const remapErrorByName =
 
 const config = Schema.UndefinedOr(
   Schema.Struct({
-    latencyHint: Schema.Union(
+    latencyHint: Schema.Union([
       Schema.Literal('balanced', 'interactive', 'playback'),
       Schema.Number,
-    ).pipe(Schema.optionalWith({ exact: true })),
+    ]).pipe(Schema.optionalWith({ exact: true })),
     sampleRate: Schema.Number.pipe(Schema.optionalWith({ exact: true })),
-    sinkId: Schema.Union(
+    sinkId: Schema.Union([
       Schema.String,
       Schema.Struct({
         type: Schema.Literal('none'),
       }),
-    ).pipe(Schema.optionalWith({ exact: true })),
+    ]).pipe(Schema.optionalWith({ exact: true })),
     renderSizeHint: EFunction.pipe(
-      Schema.Union(Schema.Literal('hardware', 'default'), Schema.Number),
+      Schema.Union([Schema.Literals('hardware', 'default'), Schema.Number]),
       Schema.optionalWith({ exact: true }),
     ),
   }),

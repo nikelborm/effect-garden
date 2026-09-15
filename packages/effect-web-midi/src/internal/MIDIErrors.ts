@@ -7,18 +7,22 @@ import * as EMIDIPort from './EMIDIPort.ts'
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-const PortId = Schema.fromBrand(EMIDIPort.BothId)(Schema.NonEmptyTrimmedString)
+const PortId = Schema.fromBrand(EMIDIPort.BothId)(
+  Schema.Trimmed.check(Schema.isNonEmpty()),
+)
+
+const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
 
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,
 ) =>
   Schema.Struct({
     name: (nameSchema ??
-      Schema.NonEmptyTrimmedString) as TSchema extends undefined
-      ? typeof Schema.NonEmptyTrimmedString
+      Schema.Trimmed.check(Schema.isNonEmpty())) as TSchema extends undefined
+      ? typeof NonEmptyTrimmedString
       : TSchema,
-    message: Schema.NonEmptyTrimmedString,
-    stack: Schema.NonEmptyTrimmedString.pipe(
+    message: Schema.Trimmed.check(Schema.isNonEmpty()),
+    stack: Schema.Trimmed.check(Schema.isNonEmpty()).pipe(
       Schema.optionalWith({ exact: true }),
     ),
     cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),

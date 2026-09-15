@@ -127,7 +127,7 @@ export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlaybac
   'DisposedLoopPlayback',
   {},
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -141,7 +141,7 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -177,7 +177,7 @@ export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingI
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -222,7 +222,7 @@ export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Sche
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -255,7 +255,7 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
     playbackStartedAtSecond: Schema.Number,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -277,8 +277,8 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
   }
 }
 
-export const FadingOutLoopPlayback = Schema.Union(
+export const FadingOutLoopPlayback = Schema.Union([
   LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
   LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
-)
+])
 export type FadingOutLoopPlayback = typeof FadingOutLoopPlayback.Type

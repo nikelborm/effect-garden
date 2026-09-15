@@ -44,15 +44,13 @@ const createLoopingPlaybackGraph = (
     return AudioPlayback.make({ bufferSource, gainNode })
   })
 
-export class ScheduleIncomingLoop extends Context.Tag(
-  'next-midi-demo/ScheduleIncomingLoop',
-)<
+export class ScheduleIncomingLoop extends Context.Service<
   ScheduleIncomingLoop,
   (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: ScheduledNextPlaybackTiming,
   ) => Effect.Effect<AudioPlayback>
->() {
+>()('next-midi-demo/ScheduleIncomingLoop') {
   static Live = Layer.effect(
     this,
     Effect.map(

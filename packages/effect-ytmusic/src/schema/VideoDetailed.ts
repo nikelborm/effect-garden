@@ -5,11 +5,11 @@ import { ThumbnailFull } from './ThumbnailFull.ts'
 
 export const VideoDetailed = Schema.Struct({
   type: Schema.Literal('VIDEO'),
-  videoId: Schema.NonEmptyTrimmedString,
-  name: Schema.NonEmptyTrimmedString,
+  videoId: Schema.Trimmed.check(Schema.isNonEmpty()),
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
   artist: ArtistBasic,
-  duration: Schema.NullOr(Schema.Int.pipe(Schema.nonNegative())),
+  duration: Schema.NullOr(Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))),
   thumbnails: Schema.Array(ThumbnailFull),
-}).annotations({ title: 'VideoDetailed' })
+}).annotateKey({ title: 'VideoDetailed' })
 
 export type VideoDetailed = Schema.Schema.Type<typeof VideoDetailed>

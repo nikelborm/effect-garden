@@ -10,21 +10,20 @@ import {
 import * as Effect from 'effect/Effect'
 import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsListRootsError } from './Errors.ts'
 
 export const ListedRootItemsSchema = Schema.Struct({
-  treeObjectId: Schema.Union(
+  treeObjectId: Schema.Union([
     FiniteNonNegativeIntegerFromString,
-    Schema.NonEmptyTrimmedString,
-  ),
+    Schema.Trimmed.check(Schema.isNonEmpty()),
+  ]),
   keyOffset: FiniteNonNegativeIntegerFromString,
   byteNumber: FiniteNonNegativeIntegerFromString,
   treeLevel: FiniteNonNegativeIntegerFromString,
-}).pipe(Schema.Data, Schema.Array, Schema.Data)
+}).pipe(Schema.Array)
 
-export const decodeListedRootItems = Schema.decodeUnknownEither(
+export const decodeListedRootItems = Schema.decodeUnknownResult(
   ListedRootItemsSchema,
 )
 

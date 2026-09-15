@@ -4,10 +4,10 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-export class GetAudioNow extends Context.Tag('next-midi-demo/GetAudioNow')<
+export class GetAudioNow extends Context.Service<
   GetAudioNow,
   () => Effect.Effect<number>
->() {
+>()('next-midi-demo/GetAudioNow') {
   static Live = Layer.effect(
     this,
     Effect.map(

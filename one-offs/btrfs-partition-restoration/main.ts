@@ -14,7 +14,6 @@ import * as Path from 'effect/Path'
 import * as Redacted from 'effect/Redacted'
 import * as Schema from 'effect/Schema'
 import * as Prompt from 'effect/unstable/cli/Prompt'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { pathToRegExpPattern } from './pathToRegExpPattern.ts'
 
@@ -27,8 +26,8 @@ const CacheValueSchema = Schema.Struct({
   exitCode: FiniteNonNegativeInteger.pipe(Schema.brand('ExitCode')),
 })
 type CacheValue = Schema.Schema.Type<typeof CacheValueSchema>
-const decodeCacheEntries = Schema.decodeUnknownEither(
-  Schema.Array(Schema.Tuple(Schema.String, CacheValueSchema)),
+const decodeCacheEntries = Schema.decodeUnknownResult(
+  Schema.Array(Schema.Tuple([Schema.String, CacheValueSchema])),
 )
 
 class SudoCommandExecutor extends Effect.Service<SudoCommandExecutor>()(

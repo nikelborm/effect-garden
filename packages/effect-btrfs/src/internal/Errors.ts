@@ -4,8 +4,8 @@ import { PlatformError } from '@effect/platform/Error'
 import * as Schema from 'effect/Schema'
 
 const fields = {
-  args: Schema.Array(Schema.NonEmptyTrimmedString),
-  cause: Schema.Union(BadExitCodeError, ParseErrorSchema, PlatformError),
+  args: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
+  cause: Schema.Union([BadExitCodeError, ParseErrorSchema, PlatformError]),
 }
 
 export class BtrfsFindRootsError extends Schema.TaggedError<BtrfsFindRootsError>()(

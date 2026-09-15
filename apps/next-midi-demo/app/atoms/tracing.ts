@@ -66,7 +66,7 @@ export class ByteAwareBatchSpanProcessor extends BatchSpanProcessor {
 // need audioContext which is available only on the main thread (page's context)
 export let somebodyKillMe: OTLPTraceExporter | undefined
 
-export const TracingLive = Layer.unwrapScoped(
+export const TracingLive = Layer.unwrap(
   Effect.gen(function* () {
     // const AXIOM_API_KEY = yield* Config.redacted('AXIOM_API_KEY');
 
@@ -83,16 +83,14 @@ export const TracingLive = Layer.unwrapScoped(
         // serviceVersion: '12',
         // TODO infer serviceVersion from commit hash or from git tag or from release
       },
-      logRecordProcessor: new BatchLogRecordProcessor(
-        {
-          exporter:new OTLPLogExporter({
-            url: `/api/otel/logs`,
-            // compression,
-          }),
-          maxExportBatchSize: 128,
-          maxQueueSize: 1024,
-        },
-      ),
+      logRecordProcessor: new BatchLogRecordProcessor({
+        exporter: new OTLPLogExporter({
+          url: `/api/otel/logs`,
+          // compression,
+        }),
+        maxExportBatchSize: 128,
+        maxQueueSize: 1024,
+      }),
       spanProcessor: new BatchSpanProcessor(
         // biome-ignore lint/suspicious/noAssignInExpressions: intentional
         (somebodyKillMe = new OTLPTraceExporter({ url: `/api/otel/traces` })),

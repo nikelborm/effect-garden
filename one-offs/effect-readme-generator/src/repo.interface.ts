@@ -8,7 +8,7 @@ export class Repo extends Schema.TaggedClass<Repo>()('Repo', {
   isItArchived: Schema.Boolean,
   isTemplate: Schema.Boolean,
   lastTimeBeenPushedInto: Schema.NullOr(
-    Schema.Union(Schema.DateFromSelf, Schema.DateFromString),
+    Schema.Union([Schema.DateFromSelf, Schema.DateFromString]),
   ),
 }) {
   static Chunk = Schema.Chunk(this)

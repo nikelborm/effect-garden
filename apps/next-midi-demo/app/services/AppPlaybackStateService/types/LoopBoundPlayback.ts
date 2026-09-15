@@ -13,45 +13,45 @@ import {
 } from './loopElements.ts'
 import { PlayingSlowStrum } from './PlayingSlowStrum.ts'
 
-export const PlayingLoopQueue = Schema.Tuple(PlayingLoopPlayback)
+export const PlayingLoopQueue = Schema.Tuple([PlayingLoopPlayback])
 export const isPlayingLoopQueue = Schema.is(PlayingLoopQueue)
 
-export const LoopRolloverHandoverQueue = Schema.Tuple(
+export const LoopRolloverHandoverQueue = Schema.Tuple([
   LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
   IncomingLoopFadingIn,
-)
+])
 export const isLoopRolloverHandoverQueue = Schema.is(LoopRolloverHandoverQueue)
 
-export const LoopSilenceHandoverQueue = Schema.Tuple(
+export const LoopSilenceHandoverQueue = Schema.Tuple([
   LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
   IncomingLoopFadingIn,
-)
+])
 export const isLoopSilenceHandoverQueue = Schema.is(LoopSilenceHandoverQueue)
 
-export const FullLoopQueue = Schema.Tuple(
+export const FullLoopQueue = Schema.Tuple([
   FadingOutLoopPlayback,
   FadingOutLoopPlayback,
   IncomingLoopFadingIn,
-)
+])
 export const isFullLoopQueue = Schema.is(FullLoopQueue)
 
-export const PlayingSlowStrumQueue = Schema.Tuple(PlayingSlowStrum)
+export const PlayingSlowStrumQueue = Schema.Tuple([PlayingSlowStrum])
 export const isPlayingSlowStrumQueue = Schema.is(PlayingSlowStrumQueue)
 
-export const SlowStrumHandoverQueue = Schema.Tuple(
+export const SlowStrumHandoverQueue = Schema.Tuple([
   SlowStrumTransitionQueueElement,
   ScheduledPatternTransitionQueueElement,
-)
+])
 export const isSlowStrumHandoverQueue = Schema.is(SlowStrumHandoverQueue)
 
-export const LoopBoundQueue = Schema.Union(
+export const LoopBoundQueue = Schema.Union([
   PlayingLoopQueue,
   LoopRolloverHandoverQueue,
   LoopSilenceHandoverQueue,
   FullLoopQueue,
   PlayingSlowStrumQueue,
   SlowStrumHandoverQueue,
-)
+])
 export type LoopBoundQueue = typeof LoopBoundQueue.Type
 
 export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
@@ -61,7 +61,7 @@ export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
     transitionQueue: LoopBoundQueue,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }

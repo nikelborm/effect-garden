@@ -5,7 +5,7 @@ import * as NodeSdk from '@effect/opentelemetry/NodeSdk'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-export const TracingLive = Layer.unwrapEffect(
+export const TracingLive = Layer.unwrap(
   Effect.gen(function* () {
     // const AXIOM_API_KEY = yield* Config.redacted('AXIOM_API_KEY');
     const AXIOM_API_KEY = 'xaat-16c3c461-ab00-41cb-ac23-abe01363975e'

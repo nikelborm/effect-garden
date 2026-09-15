@@ -64,9 +64,10 @@ export type TypeId = typeof TypeId
  *
  * @see `AudioContext` {@link https://www.w3.org/TR/webaudio/#AudioContext|Web Audio spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/AudioContext|MDN reference}
  */
-export class EAudioContext extends Context.Tag(
-  'effect-web-audio/EAudioContext',
-)<EAudioContext, EAudioContextInstance>() {}
+export class EAudioContext extends Context.Service<
+  EAudioContext,
+  EAudioContextInstance
+>()('effect-web-audio/EAudioContext') {}
 
 /**
  * Prototype of all objects satisfying the

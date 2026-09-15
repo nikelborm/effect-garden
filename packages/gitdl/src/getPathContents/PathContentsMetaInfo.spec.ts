@@ -72,8 +72,10 @@ const testValidityOfErrorThrownByEffect =
       >,
       Effect.flatMap(result => {
         console.error(result)
-        return Effect.dieMessage(
-          `Effect ${effectDescription} succeeded when expected to fail`,
+        return Effect.die(
+          new Error(
+            `Effect ${effectDescription} succeeded when expected to fail`,
+          ),
         )
       }),
       Effect.catchAll(err => {

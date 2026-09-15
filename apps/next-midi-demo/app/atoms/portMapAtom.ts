@@ -2,7 +2,6 @@ import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 
-import * as Atom from '@effect-atom/atom/Atom'
 import * as EArray from 'effect/Array'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
@@ -10,6 +9,7 @@ import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
 import * as Stream from 'effect/Stream'
+import * as Atom from 'effect/unstable/reactivity/Atom'
 
 export const portMapAtom = Effect.gen(function* () {
   const initialValue = yield* EMIDIAccess.AllPortsRecord

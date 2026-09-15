@@ -16,9 +16,13 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "@octokit/core": "^7.0.8",
+    "@octokit/types": "^18.0.0",
     "@total-typescript/ts-reset": "catalog:",
+    "date-fns": "^4.4.0",
     "effect-errors": "catalog:",
-    "effect-octokit-layer": "catalog:"
+    "effect-octokit-layer": "catalog:",
+    "picocolors": "^1.1.1"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/github-extract-issues#readme",
   "bugs": {

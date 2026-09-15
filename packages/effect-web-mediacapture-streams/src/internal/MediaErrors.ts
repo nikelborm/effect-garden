@@ -1,17 +1,19 @@
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 
+const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
+
 // TODO: deduplicate with effect-web-midi
 const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
   nameSchema?: TSchema,
 ) =>
   Schema.Struct({
     name: (nameSchema ??
-      Schema.NonEmptyTrimmedString) as TSchema extends undefined
-      ? typeof Schema.NonEmptyTrimmedString
+      Schema.Trimmed.check(Schema.isNonEmpty())) as TSchema extends undefined
+      ? typeof NonEmptyTrimmedString
       : TSchema,
-    message: Schema.NonEmptyTrimmedString,
-    stack: Schema.NonEmptyTrimmedString.pipe(
+    message: Schema.Trimmed.check(Schema.isNonEmpty()),
+    stack: Schema.Trimmed.check(Schema.isNonEmpty()).pipe(
       Schema.optionalWith({ exact: true }),
     ),
     cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),

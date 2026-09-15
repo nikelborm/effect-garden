@@ -69,7 +69,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
       const { clientX, clientY, type, currentTarget, pointerId, target } = ev
 
       const getTargetWithGoodDataset = EFunction.flow(
-        Option.fromNullable<unknown>,
+        Option.fromNullishOr<unknown>,
         Option.filter(isElementWithDataset),
         Option.flatMapNullable(
           emergeUpToDesiredTarget(

@@ -43,7 +43,7 @@ export const ResponseSchema = Schema.Union(
   Schema.Struct({
     type: Schema.Literal('dir'),
     entries: Schema.Struct({
-      type: Schema.Union(dirLiteral, nonDirLiterals),
+      type: Schema.Union([dirLiteral, nonDirLiterals]),
       ...GitSomethingFields,
     }).pipe(Schema.Array),
     ...GitSomethingFields,
@@ -56,7 +56,7 @@ export const ResponseSchema = Schema.Union(
   }),
 )
 
-const decodeResponse = Schema.decodeUnknownEither(ResponseSchema, {
+const decodeResponse = Schema.decodeUnknownResult(ResponseSchema, {
   exact: true,
 })
 

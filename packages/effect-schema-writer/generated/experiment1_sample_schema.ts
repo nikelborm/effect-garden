@@ -3,7 +3,7 @@ import * as Schema from 'effect/Schema'
 const Part15 = Schema.Struct({
   runs: Schema.Array(
     Schema.Struct({
-      text: Schema.String.annotations({
+      text: Schema.String.annotateKey({
         examples: [
           '13K plays',
           '1:13',
@@ -75,7 +75,7 @@ const Part16 = Schema.Struct({ text: Part15 })
 const Part32 = Schema.Struct({
   thumbnails: Schema.Array(
     Schema.Struct({
-      url: Schema.String.annotations({
+      url: Schema.String.annotateKey({
         examples: [
           'https://yt3.googleusercontent.com/DiIZWv6sbHmLruJ3iasMdsREI-fS1pg64EGWUcgERjvE4B5s5B5PiYmAYSJuFgeUUgGix_vsWTMLI70=w60-h60-l90-rj',
           'https://yt3.googleusercontent.com/DiIZWv6sbHmLruJ3iasMdsREI-fS1pg64EGWUcgERjvE4B5s5B5PiYmAYSJuFgeUUgGix_vsWTMLI70=w120-h120-l90-rj',
@@ -87,8 +87,8 @@ const Part32 = Schema.Struct({
           'https://lh3.googleusercontent.com/9NA8f3tUbSju7zxkVg34dkTDJtE3u3kbBApDPwuptGPKjgioD-NmT4vZUXAjteIzdexC2_YEzn5DLp4=w544-h544-p-l90-rj',
         ],
       }),
-      width: Schema.JsonNumber.annotations({ examples: [60, 120, 226, 544] }),
-      height: Schema.JsonNumber.annotations({ examples: [60, 120, 226, 544] }),
+      width: Schema.JsonNumber.annotateKey({ examples: [60, 120, 226, 544] }),
+      height: Schema.JsonNumber.annotateKey({ examples: [60, 120, 226, 544] }),
     }),
   ),
 })
@@ -96,10 +96,10 @@ const Part32 = Schema.Struct({
 const Part34 = Schema.Struct({
   musicThumbnailRenderer: Schema.Struct({
     thumbnail: Part32,
-    thumbnailCrop: Schema.String.annotations({
+    thumbnailCrop: Schema.String.annotateKey({
       examples: ['MUSIC_THUMBNAIL_CROP_UNSPECIFIED'],
     }),
-    thumbnailScale: Schema.String.annotations({
+    thumbnailScale: Schema.String.annotateKey({
       examples: ['MUSIC_THUMBNAIL_SCALE_UNSPECIFIED'],
     }),
   }),
@@ -107,7 +107,7 @@ const Part34 = Schema.Struct({
 
 export const MainSchema = Schema.Struct({
   responseContext: Schema.Struct({
-    responseId: Schema.String.annotations({
+    responseId: Schema.String.annotateKey({
       examples: ['IhMIkqn-2ojVlAMVWzkGAB2OHwAs'],
     }),
   }),
@@ -129,7 +129,7 @@ export const MainSchema = Schema.Struct({
                                 text: Schema.Struct({
                                   runs: Schema.Array(
                                     Schema.Struct({
-                                      text: Schema.String.annotations({
+                                      text: Schema.String.annotateKey({
                                         examples: [
                                           'Panic Attack',
                                           'Fire At The House',
@@ -153,7 +153,7 @@ export const MainSchema = Schema.Struct({
                                       }),
                                       navigationEndpoint: Schema.Struct({
                                         watchEndpoint: Schema.Struct({
-                                          videoId: Schema.String.annotations({
+                                          videoId: Schema.String.annotateKey({
                                             examples: [
                                               'SZ6Bj2tX6Ag',
                                               'eBauYFxXb3k',
@@ -175,7 +175,7 @@ export const MainSchema = Schema.Struct({
                                               'sohD_VX7KDk',
                                             ],
                                           }),
-                                          playlistId: Schema.String.annotations(
+                                          playlistId: Schema.String.annotateKey(
                                             {
                                               examples: [
                                                 'OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
@@ -187,7 +187,7 @@ export const MainSchema = Schema.Struct({
                                               watchEndpointMusicConfig:
                                                 Schema.Struct({
                                                   musicVideoType:
-                                                    Schema.String.annotations({
+                                                    Schema.String.annotateKey({
                                                       examples: [
                                                         'MUSIC_VIDEO_TYPE_ATV',
                                                       ],
@@ -226,7 +226,7 @@ export const MainSchema = Schema.Struct({
                         }),
                       ),
                       playlistItemData: Schema.Struct({
-                        playlistSetVideoId: Schema.String.annotations({
+                        playlistSetVideoId: Schema.String.annotateKey({
                           examples: [
                             '14D7A6DC653F0643',
                             '5B470DC84CD04A18',
@@ -248,7 +248,7 @@ export const MainSchema = Schema.Struct({
                             'C8BF589C2569A838',
                           ],
                         }),
-                        videoId: Schema.String.annotations({
+                        videoId: Schema.String.annotateKey({
                           examples: [
                             'SZ6Bj2tX6Ag',
                             'eBauYFxXb3k',
@@ -271,7 +271,7 @@ export const MainSchema = Schema.Struct({
                           ],
                         }),
                       }),
-                      itemHeight: Schema.String.annotations({
+                      itemHeight: Schema.String.annotateKey({
                         examples: ['MUSIC_RESPONSIVE_LIST_ITEM_HEIGHT_MEDIUM'],
                       }),
                       index: Part15,
@@ -297,19 +297,19 @@ export const MainSchema = Schema.Struct({
                       straplineTextOne: Schema.Struct({
                         runs: Schema.Array(
                           Schema.Struct({
-                            text: Schema.String.annotations({
+                            text: Schema.String.annotateKey({
                               examples: ['Hania Rani'],
                             }),
                             navigationEndpoint: Schema.Struct({
                               browseEndpoint: Schema.Struct({
-                                browseId: Schema.String.annotations({
+                                browseId: Schema.String.annotateKey({
                                   examples: ['UCkBoNlyN9hWbq6uO_CqGeIg'],
                                 }),
                                 browseEndpointContextSupportedConfigs:
                                   Schema.Struct({
                                     browseEndpointContextMusicConfig:
                                       Schema.Struct({
-                                        pageType: Schema.String.annotations({
+                                        pageType: Schema.String.annotateKey({
                                           examples: ['MUSIC_PAGE_TYPE_ARTIST'],
                                         }),
                                       }),
@@ -333,54 +333,54 @@ export const MainSchema = Schema.Struct({
   }),
   microformat: Schema.Struct({
     microformatDataRenderer: Schema.Struct({
-      urlCanonical: Schema.String.annotations({
+      urlCanonical: Schema.String.annotateKey({
         examples: [
           'https://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ',
         ],
       }),
-      title: Schema.String.annotations({
+      title: Schema.String.annotateKey({
         examples: [
           'The Lost Flowers of Alice Hart (Prime Video Original Series Soundtrack) - Album by Hania Rani',
         ],
       }),
-      description: Schema.String.annotations({
+      description: Schema.String.annotateKey({
         examples: [
           'Listen to The Lost Flowers of Alice Hart (Prime Video Original Series Soundtrack) by Hania Rani on YouTube Music - a dedicated music app with official songs, music videos, remixes, covers, and more.',
         ],
       }),
       thumbnail: Part32,
-      androidPackage: Schema.String.annotations({
+      androidPackage: Schema.String.annotateKey({
         examples: ['com.google.android.apps.youtube.music'],
       }),
-      iosAppStoreId: Schema.String.annotations({ examples: ['1017492454'] }),
-      ogType: Schema.String.annotations({ examples: ['music.album'] }),
-      urlApplinksWeb: Schema.String.annotations({
+      iosAppStoreId: Schema.String.annotateKey({ examples: ['1017492454'] }),
+      ogType: Schema.String.annotateKey({ examples: ['music.album'] }),
+      urlApplinksWeb: Schema.String.annotateKey({
         examples: [
           'https://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ&feature=applinks',
         ],
       }),
-      urlApplinksIos: Schema.String.annotations({
+      urlApplinksIos: Schema.String.annotateKey({
         examples: [
           'vnd.youtube.music://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ&feature=applinks',
         ],
       }),
-      urlApplinksAndroid: Schema.String.annotations({
+      urlApplinksAndroid: Schema.String.annotateKey({
         examples: [
           'vnd.youtube.music://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ&feature=applinks',
         ],
       }),
-      urlTwitterIos: Schema.String.annotations({
+      urlTwitterIos: Schema.String.annotateKey({
         examples: [
           'vnd.youtube.music://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ&feature=twitter-deep-link',
         ],
       }),
-      urlTwitterAndroid: Schema.String.annotations({
+      urlTwitterAndroid: Schema.String.annotateKey({
         examples: [
           'vnd.youtube.music://music.youtube.com/playlist?list=OLAK5uy_mfJjf2Ew1kjS_jmZo0Hvx73LHXT_WWMmQ&feature=twitter-deep-link',
         ],
       }),
-      twitterCardType: Schema.String.annotations({ examples: ['summary'] }),
-      twitterSiteHandle: Schema.String.annotations({
+      twitterCardType: Schema.String.annotateKey({ examples: ['summary'] }),
+      twitterSiteHandle: Schema.String.annotateKey({
         examples: ['@youtubemusic'],
       }),
     }),

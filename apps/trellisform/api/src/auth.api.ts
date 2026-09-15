@@ -25,7 +25,7 @@ export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>(
   {
     cause: Schema.Unknown,
   },
-  HttpApiSchema.annotations({
+  HttpApiSchema.annotateKey({
     status: 500,
   }),
 ) {}
@@ -75,10 +75,10 @@ const UserWithSessionSchema = Schema.Struct({
 
 export type UserWithSessionDecoded = (typeof UserWithSessionSchema)['Type']
 
-export class UserWithSession extends Context.Tag('UserWithSession')<
+export class UserWithSession extends Context.Service<
   UserWithSession,
   (typeof UserWithSessionSchema)['Type']
->() {}
+>()('UserWithSession') {}
 
 export const decodeUserWithSession = decodeUnknownEither(UserWithSessionSchema)
 

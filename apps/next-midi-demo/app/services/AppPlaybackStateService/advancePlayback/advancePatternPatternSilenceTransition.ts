@@ -25,8 +25,10 @@ export const advancePatternPatternSilenceTransition = Effect.fn(
     })
 
   if (AccordData.models(signal))
-    return yield* Effect.dieMessage(
-      'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+    return yield* Effect.die(
+      new Error(
+        'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+      ),
     )
 
   const asset = TaggedPatternPointer.make({

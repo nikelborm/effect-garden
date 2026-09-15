@@ -12,8 +12,8 @@ export const advancePlayingSlowStrum = Effect.fn('advancePlayingSlowStrum')(
   function* (oldState: PlayingSlowStrumState, signal: Signal) {
     const [strum] = oldState.transitionQueue
     yield* Effect.logError({ strum, signal })
-    return yield* Effect.dieMessage(
-      'slow strums are deferred (PlayingSlowStrum)',
+    return yield* Effect.die(
+      new Error('slow strums are deferred (PlayingSlowStrum)'),
     )
   },
 )

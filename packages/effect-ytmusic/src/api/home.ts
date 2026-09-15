@@ -30,7 +30,7 @@ export const getHomeSections = () =>
 
       const sections = rawSections.flatMap(item => {
         const r = Parser.parseHomeSection(item)
-        return Option.isNone(Option.fromNullable(r)) ? [] : [r]
+        return Option.isNone(Option.fromNullishOr(r)) ? [] : [r]
       })
 
       const validSections = sections.flatMap(r =>

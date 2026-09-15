@@ -83,7 +83,7 @@ export const MetadataSchema = Schema.Struct({
     { default: () => Data.unsafeArray([]) },
   ),
 }).pipe(Schema.Data, value =>
-  Schema.Record({ key: Schema.NonEmptyTrimmedString, value }),
+  Schema.Record({ key: Schema.Trimmed.check(Schema.isNonEmpty()), value }),
 )
 
 export const MetadataFromString = Schema.parseJson(MetadataSchema)

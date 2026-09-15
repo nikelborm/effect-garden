@@ -6,7 +6,6 @@ import * as EFunction from 'effect/Function'
 import * as Logger from 'effect/Logger'
 
 import {
-  type AssistantMessage,
   type ClaudeSessionMessage,
   decodeClaudeSession,
   decodeClaudeSessionLine,
@@ -44,7 +43,7 @@ await Effect.gen(function* () {
   )
   const validated = yield* decodeClaudeSession(parsed)
 
-  const isMessageOfSpecificType =
+  const _isMessageOfSpecificType =
     <const T extends IClaudeSessionMessage['type']>(type: T) =>
     <M extends IClaudeSessionMessage>(message: M): message is M & { type: T } =>
       message.type === type

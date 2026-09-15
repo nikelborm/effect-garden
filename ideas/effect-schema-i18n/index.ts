@@ -6,7 +6,7 @@ import * as Schema from 'effect/Schema'
 // https://effect.website/play#3efe9f827b7d
 
 const asd = Schema.Struct({
-  asd_property1: Schema.String.annotations({
+  asd_property1: Schema.String.annotateKey({
     identifier: '@identifier/asd_property1',
     schemaId: 'asd_property1 english schemaId',
     title: 'asd_property1 english title',
@@ -19,7 +19,7 @@ const asd = Schema.Struct({
     message: () => 'asd_property1 english message',
     parseIssueTitle: () => 'asd_property1 english parseIssueTitle',
   }),
-  asd_property2: Schema.Number.annotations({
+  asd_property2: Schema.Number.annotateKey({
     identifier: '@identifier/asd_property2',
     schemaId: 'asd_property2 english schemaId',
     title: 'asd_property2 english title',
@@ -30,7 +30,7 @@ const asd = Schema.Struct({
     parseIssueTitle: () => 'asd_property2 english parseIssueTitle',
   }),
   // 'asd/asd': Schema.Date,
-}).annotations({
+}).annotateKey({
   identifier: '@identifier/asd_struct',
   examples: [
     { asd_property1: 'hello english', asd_property2: 1 },

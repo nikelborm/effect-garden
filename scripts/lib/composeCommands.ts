@@ -10,6 +10,7 @@ import {
 
 const isBinaryFoundInSystem = (binaryName: string) => which(binaryName) !== null
 
+// biome-ignore lint/complexity/useLiteralKeys: <explanation>
 const USER = import.meta.env['USER']
 
 if (!USER) throw new Error('Somehow USER env var is not defined')

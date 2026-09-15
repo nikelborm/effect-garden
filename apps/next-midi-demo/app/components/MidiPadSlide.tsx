@@ -3,8 +3,8 @@
 import { Button as BaseButton } from '@base-ui/react/button'
 import { styled } from 'next-yak'
 
-import * as Result from '@effect-atom/atom/Result'
-import * as Hooks from '@effect-atom/atom-react/Hooks'
+import * as Hooks from '@effect/atom-react/Hooks'
+import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
 
 import { accordsAtom } from '../atoms/accordsAtom.ts'
 import {
@@ -33,7 +33,7 @@ import type { Pattern } from '../domain/Pattern.ts'
 import type { Strength } from '../domain/Strength.ts'
 
 export const MidiPadSlide = () => {
-  const res = Result.all({
+  const res = AsyncResult.all({
     accords: Hooks.useAtomValue(accordsAtom),
     patterns: Hooks.useAtomValue(patternsAtom),
     strengths: Hooks.useAtomValue(strengthsAtom),
@@ -41,7 +41,7 @@ export const MidiPadSlide = () => {
 
   Hooks.useAtomMount(testAtom)
 
-  if (!Result.isSuccess(res)) return 'wtf'
+  if (!AsyncResult.isSuccess(res)) return 'wtf'
   const { accords, patterns, strengths } = res.value
 
   return (
@@ -90,15 +90,15 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
   //   console.log(`wtf. pattern № ${pattern} isPressableRes`, isPressableRes)
   //   return 'wtf'
   // }
-  if (!Result.isSuccess(isSelectedRes)) {
+  if (!AsyncResult.isSuccess(isSelectedRes)) {
     console.log(`wtf. pattern № ${pattern} isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(isPressedRes)) {
+  if (!AsyncResult.isSuccess(isPressedRes)) {
     console.log(`wtf. pattern № ${pattern} isPressedRes`, isPressedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(downloadPercentRes)) {
+  if (!AsyncResult.isSuccess(downloadPercentRes)) {
     console.log(
       `wtf. pattern № ${pattern} downloadPercentRes`,
       downloadPercentRes,
@@ -157,15 +157,15 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
   //   console.log(`wtf accord №${accord}. isPressableRes`, isPressableRes)
   //   return 'wtf'
   // }
-  if (!Result.isSuccess(isSelectedRes)) {
+  if (!AsyncResult.isSuccess(isSelectedRes)) {
     console.log(`wtf accord №${accord}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(isPressedRes)) {
+  if (!AsyncResult.isSuccess(isPressedRes)) {
     console.log(`wtf accord №${accord}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(downloadPercentRes)) {
+  if (!AsyncResult.isSuccess(downloadPercentRes)) {
     console.log(`wtf accord №${accord}. downloadPercentRes`, downloadPercentRes)
     return 'wtf'
   }
@@ -224,15 +224,15 @@ const StrengthButton = ({ strength }: { strength: Strength }) => {
   //   console.log(`wtf. strength ${strength}. isPressableRes`, isPressableRes)
   //   return 'wtf'
   // }
-  if (!Result.isSuccess(isSelectedRes)) {
+  if (!AsyncResult.isSuccess(isSelectedRes)) {
     console.log(`wtf. strength ${strength}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(isPressedRes)) {
+  if (!AsyncResult.isSuccess(isPressedRes)) {
     console.log(`wtf. strength ${strength}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
-  if (!Result.isSuccess(downloadPercentRes)) {
+  if (!AsyncResult.isSuccess(downloadPercentRes)) {
     console.log(
       `wtf. strength ${strength}. downloadPercentRes`,
       downloadPercentRes,

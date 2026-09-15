@@ -20,12 +20,12 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
    import * as Context from 'effect/Context'
    import * as Scope from 'effect/Scope'
 
-   class Service1 extends Context.Tag("Service1")<Service1, Effect.Effect<{ field1:'test' }>>() {}
-   class Service2 extends Context.Tag("Service2")<Service2, Effect.Effect<{ field2:'test' }>>() {}
-   class Service3 extends Context.Tag("Service3")<Service3, Effect.Effect<{ field3:'test' }>>() {}
+   class Service1 extends Context.Service<Service1, Effect.Effect<{ field1:'test' }>>()("Service1") {}
+   class Service2 extends Context.Service<Service2, Effect.Effect<{ field2:'test' }>>()("Service2") {}
+   class Service3 extends Context.Service<Service3, Effect.Effect<{ field3:'test' }>>()("Service3") {}
 
    const makeLazyLayer = <I, S>(
-     tag: Context.Tag<I, Effect.Effect<S>>,
+     tag: Context.Service<I, Effect.Effect<S>>,
      init: Effect.Effect<S, never, Scope.Scope>
    ) =>
      Layer.scoped(tag, Effect.gen(function* () {

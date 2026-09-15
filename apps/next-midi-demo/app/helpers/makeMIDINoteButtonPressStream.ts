@@ -34,8 +34,10 @@ export const makeMIDINoteButtonPressStream = (
           ? accessOption.value.pipe(
               EMIDIAccess.getInputByIdInPipe(inputId),
               Effect.catchTag('PortNotFound', () =>
-                Effect.dieMessage(
-                  'Assertion failed. Got nonexistent id from SelectedMIDIInputService.changes',
+                Effect.die(
+                  new Error(
+                    'Assertion failed. Got nonexistent id from SelectedMIDIInputService.changes',
+                  ),
                 ),
               ),
               EMIDIInput.makeMessagesStream(),

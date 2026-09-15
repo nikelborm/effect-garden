@@ -2,7 +2,6 @@ import { allFast } from '@evadev/effect-helpers'
 
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as PlatformCommand from '@effect/platform/Command'
-import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import * as NodeServices from '@effect/platform-node/NodeServices'
 import { describe, it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
@@ -12,6 +11,7 @@ import * as Layer from 'effect/Layer'
 import * as Path from 'effect/Path'
 import * as Stream from 'effect/Stream'
 import * as Command from 'effect/unstable/cli/Command'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import pkg from './package.json' with { type: 'json' }
 import {
@@ -73,9 +73,9 @@ const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
   command: PlatformCommand.Command,
 ) =>
   Effect.gen(function* () {
-    const executor = yield* CommandExecutor.CommandExecutor
+    const executor = yield* ChildProcessSpawner.ChildProcessSpawner
 
-    const process = yield* executor.start(command)
+    const process = yield* executor.spawn(command)
 
     const [exitCode, stdout, stderr] = yield* allFast([
       process.exitCode,

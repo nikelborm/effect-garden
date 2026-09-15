@@ -2,9 +2,9 @@
 
 import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
-import * as Result from '@effect-atom/atom/Result'
-import * as Hooks from '@effect-atom/atom-react/Hooks'
+import * as Hooks from '@effect/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
+import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
 
 import { getMessagesLogAtom } from '../atoms/getMessagesLogAtom.ts'
 
@@ -15,7 +15,7 @@ export const MessageEventsLog = ({
 }) => {
   const text = Hooks.useAtomValue(getMessagesLogAtom(selectedId))
 
-  return Result.match(text, {
+  return AsyncResult.match(text, {
     onFailure: _ => (
       <>
         failure:

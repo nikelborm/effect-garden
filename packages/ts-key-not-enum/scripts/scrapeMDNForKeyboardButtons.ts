@@ -23,7 +23,6 @@ import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
 import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { parseMdxNodes } from './lib/parseMdxNodes.ts'
 import {
@@ -190,7 +189,7 @@ await Effect.gen(function* () {
 
   yield* service.compileMdx(mdxPageContent, { rehypePlugins: [logAstPlugin] })
 
-  if (!mdast) return yield* Effect.dieMessage(`MDX AST plugin didn't work`)
+  if (!mdast) return yield* Effect.die(new Error(`MDX AST plugin didn't work`))
   yield* Effect.log('Parsed mdast by mdx parser\n')
 
   const removeEntries = (

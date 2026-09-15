@@ -81,12 +81,12 @@ export const DumbAssistantMessage = Struct({
     Struct({ type: Literal('text'), text: Literal('No response requested.') }),
   ),
   context_management: Null,
-}).annotations({ title: 'DumbAssistantMessage' })
+}).annotateKey({ title: 'DumbAssistantMessage' })
 
 export const MessageIteration = Struct({
   type: Literal('message'),
   ...usageCommon,
-}).annotations({ title: 'MessageIteration' })
+}).annotateKey({ title: 'MessageIteration' })
 
 export const Usage = Struct({
   server_tool_use: Struct({
@@ -98,19 +98,19 @@ export const Usage = Struct({
   service_tier: Literal('standard'),
   speed: Literal('standard'),
   ...usageCommon,
-}).annotations({ title: 'Usage' })
+}).annotateKey({ title: 'Usage' })
 
 export const TextContent = Struct({
   type: Literal('text'),
   text: NonEmptyTrimmedString,
-}).annotations({ title: 'TextContent' })
+}).annotateKey({ title: 'TextContent' })
 
 const toolName = Literal('ExitPlanMode', 'TaskCreate', 'TaskUpdate', 'TaskList')
 
 export const ToolReference = Struct({
   type: Literal('tool_reference'),
   tool_name: toolName,
-}).annotations({ title: 'ToolReference' })
+}).annotateKey({ title: 'ToolReference' })
 
 export const ToolResultContent = Union(
   Struct({
@@ -138,15 +138,15 @@ export const AiTitleMessage = Struct({
   type: Literal('ai-title'),
   aiTitle: NonEmptyTrimmedString,
   sessionId: UUID,
-}).annotations({ title: 'AiTitleMessage' })
+}).annotateKey({ title: 'AiTitleMessage' })
 
 export const ThinkingContent = Struct({
   type: Literal('thinking'),
   thinking: String$,
   signature: StringFromBase64,
-}).annotations({ title: 'ThinkingContent' })
+}).annotateKey({ title: 'ThinkingContent' })
 
-export const DirectCaller = Struct({ type: Literal('direct') }).annotations({
+export const DirectCaller = Struct({ type: Literal('direct') }).annotateKey({
   title: 'DirectCaller',
 })
 
@@ -173,7 +173,7 @@ export const AskUserQuestionToolUseContent = Struct({
     questions,
   }),
   caller: DirectCaller,
-}).annotations({ title: 'AskUserQuestionToolUseContent' })
+}).annotateKey({ title: 'AskUserQuestionToolUseContent' })
 
 export const TaskCreateToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -185,7 +185,7 @@ export const TaskCreateToolUseContent = Struct({
     activeForm: NonEmptyTrimmedString,
   }),
   caller: DirectCaller,
-}).annotations({ title: 'TaskCreateToolUseContent' })
+}).annotateKey({ title: 'TaskCreateToolUseContent' })
 
 const taskStatus = Literal('pending', 'in_progress', 'completed')
 
@@ -204,7 +204,7 @@ export const TaskUpdateToolUseContent = Struct({
     activeForm: optionalWith(NonEmptyTrimmedString, { exact: true }),
   }),
   caller: DirectCaller,
-}).annotations({ title: 'TaskUpdateToolUseContent' })
+}).annotateKey({ title: 'TaskUpdateToolUseContent' })
 
 export const AgentToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -216,7 +216,7 @@ export const AgentToolUseContent = Struct({
     prompt: NonEmptyTrimmedString,
   }),
   caller: DirectCaller,
-}).annotations({ title: 'AgentToolUseContent' })
+}).annotateKey({ title: 'AgentToolUseContent' })
 
 export const WriteToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -224,7 +224,7 @@ export const WriteToolUseContent = Struct({
   name: Literal('Write'),
   input: Struct({ file_path: NonEmptyTrimmedString, content: NonEmptyString }),
   caller: DirectCaller,
-}).annotations({ title: 'WriteToolUseContent' })
+}).annotateKey({ title: 'WriteToolUseContent' })
 
 export const ReadToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -236,7 +236,7 @@ export const ReadToolUseContent = Struct({
     offset: optionalWith(NonNegativeInt, { exact: true }),
   }),
   caller: DirectCaller,
-}).annotations({ title: 'ReadToolUseContent' })
+}).annotateKey({ title: 'ReadToolUseContent' })
 
 export const StructuredPatch = Struct({
   oldStart: NonNegativeInt,
@@ -244,7 +244,7 @@ export const StructuredPatch = Struct({
   newStart: NonNegativeInt,
   newLines: NonNegativeInt,
   lines: NonEmptyArray(NonEmptyString),
-}).annotations({ title: 'StructuredPatch' })
+}).annotateKey({ title: 'StructuredPatch' })
 
 export const AskUserQuestionToolUseResult = Struct({
   questions,
@@ -261,11 +261,11 @@ export const AskUserQuestionToolUseResult = Struct({
     }),
     { exact: true },
   ),
-}).annotations({ title: 'AskUserQuestionToolUseResult' })
+}).annotateKey({ title: 'AskUserQuestionToolUseResult' })
 
 export const TaskCreateToolUseResult = Struct({
   task: Struct({ id: NumberFromString, subject: NonEmptyTrimmedString }),
-}).annotations({ title: 'TaskCreateToolUseResult' })
+}).annotateKey({ title: 'TaskCreateToolUseResult' })
 
 export const TaskUpdateToolUseResult = Struct({
   taskId: NumberFromString,
@@ -280,7 +280,7 @@ export const TaskUpdateToolUseResult = Struct({
     }),
     { exact: true },
   ),
-}).annotations({ title: 'TaskUpdateToolUseResult' })
+}).annotateKey({ title: 'TaskUpdateToolUseResult' })
 
 export const EditToolUseResult = Struct({
   type: optionalWith(Literal('create', 'update'), { exact: true }),
@@ -292,7 +292,7 @@ export const EditToolUseResult = Struct({
   structuredPatch: Array$(StructuredPatch),
   userModified: Boolean$,
   replaceAll: optionalWith(Boolean$, { exact: true }),
-}).annotations({ title: 'EditToolUseResult' })
+}).annotateKey({ title: 'EditToolUseResult' })
 
 export const ReadToolUseResult = Struct({
   type: Literal('text'),
@@ -303,7 +303,7 @@ export const ReadToolUseResult = Struct({
     startLine: NonNegativeInt,
     totalLines: NonNegativeInt,
   }),
-}).annotations({ title: 'ReadToolUseResult' })
+}).annotateKey({ title: 'ReadToolUseResult' })
 
 export const EditToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -316,7 +316,7 @@ export const EditToolUseContent = Struct({
     new_string: NonEmptyString,
   }),
   caller: DirectCaller,
-}).annotations({ title: 'EditToolUseContent' })
+}).annotateKey({ title: 'EditToolUseContent' })
 
 export const BashToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -328,7 +328,7 @@ export const BashToolUseContent = Struct({
     timeout: optionalWith(NonNegativeInt, { exact: true }),
   }),
   caller: DirectCaller,
-}).annotations({ title: 'BashToolUseContent' })
+}).annotateKey({ title: 'BashToolUseContent' })
 
 export const BashToolUseResult = Struct({
   stdout: String$,
@@ -339,7 +339,7 @@ export const BashToolUseResult = Struct({
     exact: true,
   }),
   noOutputExpected: Boolean$,
-}).annotations({ title: 'BashToolUseResult' })
+}).annotateKey({ title: 'BashToolUseResult' })
 
 export const ToolSearchToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -347,7 +347,7 @@ export const ToolSearchToolUseContent = Struct({
   name: Literal('ToolSearch'),
   input: Struct({ query: NonEmptyTrimmedString, max_results: NonNegativeInt }),
   caller: DirectCaller,
-}).annotations({ title: 'ToolSearchToolUseContent' })
+}).annotateKey({ title: 'ToolSearchToolUseContent' })
 
 export const ExitPlanModeToolUseContent = Struct({
   type: Literal('tool_use'),
@@ -361,7 +361,7 @@ export const ExitPlanModeToolUseContent = Struct({
     planFilePath: NonEmptyTrimmedString,
   }),
   caller: DirectCaller,
-}).annotations({ title: 'ExitPlanModeToolUseContent' })
+}).annotateKey({ title: 'ExitPlanModeToolUseContent' })
 
 export const AssistantMessageContent = Union(
   ThinkingContent,
@@ -376,7 +376,7 @@ export const AssistantMessageContent = Union(
   BashToolUseContent,
   ExitPlanModeToolUseContent,
   ToolSearchToolUseContent,
-).annotations({ title: 'AssistantMessageContent' })
+).annotateKey({ title: 'AssistantMessageContent' })
 
 const UsualAssistantMessage = Struct({
   type: Literal('message'),
@@ -396,7 +396,7 @@ const UsualAssistantMessage = Struct({
       }),
     }),
   ),
-}).annotations({ title: 'UsualAssistantMessage' })
+}).annotateKey({ title: 'UsualAssistantMessage' })
 
 export const AssistantMessage = Struct({
   type: Literal('assistant'),
@@ -404,13 +404,13 @@ export const AssistantMessage = Struct({
   isApiErrorMessage: optionalWith(Boolean$, { exact: true }),
   message: Union(DumbAssistantMessage, UsualAssistantMessage),
   ...CommonShitStructFields,
-}).annotations({ title: 'AssistantMessage' })
+}).annotateKey({ title: 'AssistantMessage' })
 
 export const PermissionModeMessage = Struct({
   type: Literal('permission-mode'),
   permissionMode: Literal('plan', 'acceptEdits', 'default'),
   sessionId: UUID,
-}).annotations({ title: 'PermissionModeMessage' })
+}).annotateKey({ title: 'PermissionModeMessage' })
 
 export const FileHistorySnapshotMessage = Struct({
   type: Literal('file-history-snapshot'),
@@ -421,19 +421,19 @@ export const FileHistorySnapshotMessage = Struct({
     timestamp: DateFromString,
   }),
   isSnapshotUpdate: Boolean$,
-}).annotations({ title: 'FileHistorySnapshotMessage' })
+}).annotateKey({ title: 'FileHistorySnapshotMessage' })
 
 export const TuiModeMessage = Struct({
   type: Literal('mode'),
   mode: Literal('normal'),
   sessionId: UUID,
-}).annotations({ title: 'TuiModeMessage' })
+}).annotateKey({ title: 'TuiModeMessage' })
 
 export const ToolSearchToolUseResult = Struct({
   matches: NonEmptyArray(toolName),
   query: NonEmptyTrimmedString,
   total_deferred_tools: NonNegativeInt,
-}).annotations({ title: 'ToolSearchToolUseResult' })
+}).annotateKey({ title: 'ToolSearchToolUseResult' })
 
 export const AgentToolUseResult = Struct({
   status: Literal('completed'),
@@ -454,13 +454,13 @@ export const AgentToolUseResult = Struct({
     linesRemoved: NonNegativeInt,
     otherToolCount: NonNegativeInt,
   }),
-}).annotations({ title: 'AgentToolUseResult' })
+}).annotateKey({ title: 'AgentToolUseResult' })
 
 export const PlanToolUseResult = Struct({
   isAgent: Boolean$,
   filePath: NonEmptyTrimmedString,
   plan: NonEmptyString,
-}).annotations({ title: 'PlanToolUseResult' })
+}).annotateKey({ title: 'PlanToolUseResult' })
 
 export const ToolUseResult = Union(
   AgentToolUseResult,
@@ -472,7 +472,7 @@ export const ToolUseResult = Union(
   EditToolUseResult,
   ReadToolUseResult,
   PlanToolUseResult,
-).annotations({ title: 'ToolUseResult' })
+).annotateKey({ title: 'ToolUseResult' })
 
 export const UserMessage = Struct({
   type: Literal('user'),
@@ -495,7 +495,7 @@ export const UserMessage = Struct({
     exact: true,
   }),
   ...CommonShitStructFields,
-}).annotations({ title: 'UserMessage' })
+}).annotateKey({ title: 'UserMessage' })
 
 export const InterruptionUserMessage = Struct({
   type: Literal('user'),
@@ -511,7 +511,7 @@ export const InterruptionUserMessage = Struct({
   }),
   interruptedMessageId: NonEmptyTrimmedString,
   ...CommonShitStructFields,
-}).annotations({ title: 'InterruptionUserMessage' })
+}).annotateKey({ title: 'InterruptionUserMessage' })
 
 export const DefferedToolUseDeltaAttachment = Struct({
   type: Literal('deferred_tools_delta'),
@@ -522,7 +522,7 @@ export const DefferedToolUseDeltaAttachment = Struct({
   pendingMcpServers: optionalWith(Array$(NonEmptyTrimmedString), {
     exact: true,
   }),
-}).annotations({ title: 'DefferedToolUseDeltaAttachment' })
+}).annotateKey({ title: 'DefferedToolUseDeltaAttachment' })
 
 export const AgentListingDeltaAttachment = Struct({
   type: Literal('agent_listing_delta'),
@@ -532,7 +532,7 @@ export const AgentListingDeltaAttachment = Struct({
 
   isInitial: Boolean$,
   showConcurrencyNote: Boolean$,
-}).annotations({ title: 'AgentListingDeltaAttachment' })
+}).annotateKey({ title: 'AgentListingDeltaAttachment' })
 
 export const SkillListingAttachment = Struct({
   type: Literal('skill_listing'),
@@ -540,14 +540,14 @@ export const SkillListingAttachment = Struct({
   skillCount: NonNegativeInt,
   isInitial: Boolean$,
   names: Array$(NonEmptyTrimmedString),
-}).annotations({ title: 'SkillListingAttachment' })
+}).annotateKey({ title: 'SkillListingAttachment' })
 
 export const McpInstructionsDeltaAttachment = Struct({
   type: Literal('mcp_instructions_delta'),
   addedNames: Array$(NonEmptyTrimmedString),
   addedBlocks: Array$(NonEmptyTrimmedString),
   removedNames: Array$(NonEmptyTrimmedString),
-}).annotations({ title: 'McpInstructionsDeltaAttachment' })
+}).annotateKey({ title: 'McpInstructionsDeltaAttachment' })
 
 export const FileAttachment = Struct({
   type: Literal('file'),
@@ -563,19 +563,19 @@ export const FileAttachment = Struct({
       totalLines: NonNegativeInt,
     }),
   }),
-}).annotations({ title: 'FileAttachment' })
+}).annotateKey({ title: 'FileAttachment' })
 
 export const CompactFileReferenceAttachment = Struct({
   type: Literal('compact_file_reference'),
   filename: NonEmptyTrimmedString,
   displayPath: NonEmptyTrimmedString,
-}).annotations({ title: 'CompactFileReferenceAttachment' })
+}).annotateKey({ title: 'CompactFileReferenceAttachment' })
 
 export const QueuedCommandAttachment = Struct({
   type: Literal('queued_command'),
   prompt: NonEmptyTrimmedString,
   commandMode: Literal('prompt'),
-}).annotations({ title: 'QueuedCommandAttachment' })
+}).annotateKey({ title: 'QueuedCommandAttachment' })
 
 export const PlanModeAttachment = Struct({
   type: Literal('plan_mode'),
@@ -583,25 +583,25 @@ export const PlanModeAttachment = Struct({
   isSubAgent: Boolean$,
   planFilePath: NonEmptyTrimmedString,
   planExists: Boolean$,
-}).annotations({ title: 'PlanModeAttachment' })
+}).annotateKey({ title: 'PlanModeAttachment' })
 
 export const PlanModeExitAttachment = Struct({
   type: Literal('plan_mode_exit'),
   planFilePath: NonEmptyTrimmedString,
   planExists: Boolean$,
-}).annotations({ title: 'PlanModeExitAttachment' })
+}).annotateKey({ title: 'PlanModeExitAttachment' })
 
 export const TaskReminderAttachment = Struct({
   type: Literal('task_reminder'),
   content: Array$(Struct({})),
   itemCount: NonNegativeInt,
-}).annotations({ title: 'TaskReminderAttachment' })
+}).annotateKey({ title: 'TaskReminderAttachment' })
 
 export const EditedTextFileAttachment = Struct({
   type: Literal('edited_text_file'),
   filename: NonEmptyTrimmedString,
   snippet: String$,
-}).annotations({ title: 'EditedTextFileAttachment' })
+}).annotateKey({ title: 'EditedTextFileAttachment' })
 
 export const Attachment = Union(
   DefferedToolUseDeltaAttachment,
@@ -615,20 +615,20 @@ export const Attachment = Union(
   PlanModeExitAttachment,
   McpInstructionsDeltaAttachment,
   PlanModeAttachment,
-).annotations({ title: 'Attachment' })
+).annotateKey({ title: 'Attachment' })
 
 export const AttachmentMessage = Struct({
   type: Literal('attachment'),
   attachment: Attachment,
   ...CommonShitStructFields,
-}).annotations({ title: 'AttachmentMessage' })
+}).annotateKey({ title: 'AttachmentMessage' })
 
 export const LastPromptMessage = Struct({
   type: Literal('last-prompt'),
   lastPrompt: optionalWith(NonEmptyTrimmedString, { exact: true }),
   leafUuid: UUID,
   sessionId: UUID,
-}).annotations({ title: 'LastPromptMessage' })
+}).annotateKey({ title: 'LastPromptMessage' })
 
 export const QueueOperationMessage = Struct({
   type: Literal('queue-operation'),
@@ -636,13 +636,13 @@ export const QueueOperationMessage = Struct({
   timestamp: DateFromString,
   sessionId: UUID,
   content: optionalWith(String$, { exact: true }),
-}).annotations({ title: 'QueueOperationMessage' })
+}).annotateKey({ title: 'QueueOperationMessage' })
 
 export const AgentNameMessage = Struct({
   type: Literal('agent-name'),
   agentName: NonEmptyTrimmedString,
   sessionId: UUID,
-}).annotations({ title: 'AgentNameMessage' })
+}).annotateKey({ title: 'AgentNameMessage' })
 
 export const SystemMessage = Struct({
   type: Literal('system'),
@@ -705,7 +705,7 @@ export const ClaudeSessionMessage = Union(
   AiTitleMessage,
   AssistantMessage,
   LastPromptMessage,
-).annotations({ title: 'ClaudeSessionMessage' })
+).annotateKey({ title: 'ClaudeSessionMessage' })
 
 export const ClaudeSessionSchema = Array$(ClaudeSessionMessage)
 

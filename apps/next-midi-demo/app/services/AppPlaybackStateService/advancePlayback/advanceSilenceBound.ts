@@ -25,7 +25,7 @@ export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
   if (queueIs(TwoLoopsFadingToSilenceQueue)(oldState))
     return yield* advancePatternPatternSilenceTransition(oldState, signal)
 
-  return yield* Effect.dieMessage(
-    'advanceSilenceBound: unreachable queue shape',
+  return yield* Effect.die(
+    new Error('advanceSilenceBound: unreachable queue shape'),
   )
 })

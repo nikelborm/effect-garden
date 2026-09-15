@@ -12,25 +12,25 @@ const PortSchema = Schema.compose(
 )
 
 const DatabaseConfigSchema = Schema.Struct({
-  DATABASE_HOST: Schema.NonEmptyTrimmedString,
-  DATABASE_PASSWORD: Schema.NonEmptyTrimmedString,
-  DATABASE_USERNAME: Schema.NonEmptyTrimmedString,
-  DATABASE_NAME: Schema.NonEmptyTrimmedString,
+  DATABASE_HOST: Schema.Trimmed.check(Schema.isNonEmpty()),
+  DATABASE_PASSWORD: Schema.Trimmed.check(Schema.isNonEmpty()),
+  DATABASE_USERNAME: Schema.Trimmed.check(Schema.isNonEmpty()),
+  DATABASE_NAME: Schema.Trimmed.check(Schema.isNonEmpty()),
   DATABASE_PORT: PortSchema,
 })
 
 const DevEnvSchema = Schema.Struct({
-  COMPOSE_PROJECT_NAME: Schema.NonEmptyTrimmedString,
+  COMPOSE_PROJECT_NAME: Schema.Trimmed.check(Schema.isNonEmpty()),
 
-  BETTER_AUTH_SECRET: Schema.NonEmptyTrimmedString,
+  BETTER_AUTH_SECRET: Schema.Trimmed.check(Schema.isNonEmpty()),
   EXTERNAL_PROXIED_PORT: PortSchema,
-  TZ: Schema.NonEmptyTrimmedString,
+  TZ: Schema.Trimmed.check(Schema.isNonEmpty()),
 
   ...DatabaseConfigSchema.fields,
   DATABASE_PORT_EXPOSED_TO_DEV_LOCALHOST: PortSchema,
 })
 
-const decodeDevEnvEither = Schema.decodeUnknownEither(DevEnvSchema)
+const decodeDevEnvEither = Schema.decodeUnknownResult(DevEnvSchema)
 export const decodeDbConfigSync = Schema.decodeUnknownSync(DatabaseConfigSchema)
 
 export async function getDevEnvFromFile() {

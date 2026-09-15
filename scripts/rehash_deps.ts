@@ -62,6 +62,7 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
     // above. Before changing it back, don't forget to just try `bun install` in
     // repo root. If it won't fix the problem during container builds, swap
     // commented parts in this script
+    // biome-ignore lint/complexity/useLiteralKeys: <explanation>
     filtered['dependencies'] = getObjectSortedByKeys({
       ...pkg.dependencies,
       ...pkg.devDependencies,

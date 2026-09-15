@@ -1,15 +1,8 @@
 import '@total-typescript/ts-reset'
 
-import {
-  OctokitLayer,
-  OctokitLayerLive,
-  type RepoArgs,
-} from 'effect-octokit-layer'
-
-import * as CommandExecutor from '@effect/platform/CommandExecutor'
-import * as PlatformConfigProvider from '@effect/platform/PlatformConfigProvider'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
+import * as ConfigProvider from 'effect/ConfigProvider'
 import * as Console from 'effect/Console'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
@@ -17,85 +10,82 @@ import * as FileSystem from 'effect/FileSystem'
 import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
-import * as Option from 'effect/Option'
 import * as Order from 'effect/Order'
 import * as Path from 'effect/Path'
+import * as Result from 'effect/Result'
+import * as Stream from 'effect/Stream'
 import * as EffectString from 'effect/String'
 import * as Struct from 'effect/Struct'
 import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
+
+import {
+  getIssueComments,
+  getRepoIssues,
+  type RepoArgs,
+} from './effect-octokit-layer-extracted.ts'
 
 // TODO: test how the handle per character streaming: who waits to buffer
 // everything, and who waits for newline
 
-class MarkdownStdoutPrinter extends Context.Tag(
-  '@evadev/github-extract-issues/index/MarkdownStdoutPrinter',
-)<MarkdownStdoutPrinter, (mdContent: string) => Effect.Effect<void>>() {
-  static layerFromCmdToPipeMdThrough = (
-    ...command: EArray.NonEmptyArray<string>
-  ) =>
-    pipe(
-      CommandExecutor.CommandExecutor,
-      Effect.map(
-        executor => (mdContent: string) =>
-          pipe(
-            Command.make(...command),
-            Command.feed(mdContent),
-            Command.stdout('inherit'),
-            cmd => executor.start(cmd),
-            Effect.flatMap(process => process.exitCode),
-            Effect.scoped,
-            Effect.orDie,
-          ),
-      ),
-      Layer.effect(this),
-    )
+class MarkdownStdoutPrinter extends Context.Service<
+  MarkdownStdoutPrinter,
+  (mdContent: string) => Effect.Effect<void>
+>()('@evadev/github-extract-issues/index/MarkdownStdoutPrinter') {}
 
-  // https://github.com/charmbracelet/glow
-  static GlowLive = this.layerFromCmdToPipeMdThrough('glow', '--width=0')
-
-  // https://github.com/tacheraSasi/mdcat
-  static MdcatLive = this.layerFromCmdToPipeMdThrough(
-    'mdcat',
-    '--ansi',
-    '--local',
-    '--no-pager',
-    // '--columns=500'
+export const layerFromCmdToPipeMdThrough = (
+  templates: TemplateStringsArray,
+  ...expressions: ReadonlyArray<ChildProcess.TemplateExpression>
+) =>
+  pipe(
+    ChildProcessSpawner.ChildProcessSpawner,
+    Effect.map(
+      executor => (mdContent: string) =>
+        pipe(
+          ChildProcess.make({
+            stdout: 'inherit',
+            stdin: Stream.encodeText(Stream.make(mdContent)),
+          })(templates, ...expressions),
+          cmd => executor.spawn(cmd),
+          Effect.flatMap(process => process.exitCode),
+          Effect.scoped,
+          Effect.orDie,
+        ),
+    ),
+    Layer.effect(MarkdownStdoutPrinter),
   )
 
-  // https://github.com/sharkdp/bat/
-  static BatLive = this.layerFromCmdToPipeMdThrough(
-    'bat',
-    '--style=plain',
-    '--language=md',
-    '--force-colorization',
-    '--paging=never',
-  )
+// https://github.com/charmbracelet/glow
+export const GlowLive = layerFromCmdToPipeMdThrough`glow --width=0`
 
-  // https://github.com/Textualize/rich-cli
-  static RichLive = this.layerFromCmdToPipeMdThrough(
-    'rich',
-    '--markdown',
-    '--hyperlinks',
-    '--emoji',
-    '--force-terminal',
-    '-',
-  )
+// https://github.com/tacheraSasi/mdcat
+export const MdcatLive = layerFromCmdToPipeMdThrough`mdcat --ansi --local --no-pager`
+// '--columns=500'
 
-  // TODO: https://github.com/themackabu/ink
+// https://github.com/sharkdp/bat/
+export const BatLive = layerFromCmdToPipeMdThrough`bat --style=plain --language=md --force-colorization --paging=never`
 
-  static RawPrintLive = Layer.succeed(this, (mdContent: string) =>
-    Console.log(mdContent),
-  )
-}
+// https://github.com/Textualize/rich-cli
+export const RichLive = layerFromCmdToPipeMdThrough`rich --markdown --hyperlinks --emoji --force-terminal -`
+
+// TODO: https://github.com/themackabu/ink
+
+export const RawPrintLive = Layer.succeed(
+  MarkdownStdoutPrinter,
+  (mdContent: string) => Console.log(mdContent),
+)
 
 const AppLayer = pipe(
   Effect.map(Path.Path, path => path.join(import.meta.dirname, '.env')),
-  Effect.flatMap(e => PlatformConfigProvider.fromDotEnv(e)),
-  Effect.map(Layer.setConfigProvider),
-  Layer.unwrapEffect,
-  Layer.provideMerge(MarkdownStdoutPrinter.RichLive),
+  Effect.flatMap(path => ConfigProvider.fromDotEnv({ path })),
+  Effect.map(ConfigProvider.layer),
+  Layer.unwrap,
+  Layer.provideMerge(RichLive),
   Layer.provideMerge(
-    Layer.mergeAll(OctokitLayerLive, Logger.pretty, BunServices.layer),
+    Layer.mergeAll(
+      Logger.layer([Logger.consolePrettyTty()]),
+      BunServices.layer,
+    ),
   ),
 )
 
@@ -117,14 +107,14 @@ const saveIssuesWithCommentsToLocalMdFile = (repo: RepoArgs) =>
     return issueWithComments
   })
 
-const getIssuesWithCommentsFromAPI = (repo: RepoArgs) =>
+const getIssuesWithCommentsFromAPI = (args: RepoArgs) =>
   Effect.flatMap(
-    OctokitLayer.repo(repo).issues({ state: 'all', excludePulls: true }),
+    getRepoIssues({ ...args, state: 'all', excludePulls: true }),
     Effect.forEach(
       issue =>
         Effect.map(
           issue.comments
-            ? OctokitLayer.repo(repo).issue(issue.number).comments()
+            ? getIssueComments({ ...args, issueNumber: issue.number })
             : Effect.succeed([]),
           comments => ({ ...issue, comments }),
         ),
@@ -133,12 +123,12 @@ const getIssuesWithCommentsFromAPI = (repo: RepoArgs) =>
   )
 
 const preferLargerAmountOfBodyEntries = Order.mapInput(
-  Order.number,
+  Order.Number,
   (a: { body: string[] }) => a.body.length,
 )
 
 const preferHighPriority = Order.mapInput(
-  Order.boolean,
+  Order.Boolean,
   (a: { isHighPriority: boolean }) => a.isHighPriority,
 )
 
@@ -148,18 +138,17 @@ const renderIssuesWithCommentsToMd = (issuesWithComments: Issues): string =>
     .map(
       flow(
         Struct.evolve({
-          comments: EArray.filterMap((comment: IssueComment) =>
-            Option.fromNullable(
-              comment.author_association === 'OWNER'
-                ? comment.body?.trim() || null
-                : null,
-            ),
-          ),
-          labels: EArray.filterMap((label: IssueLabel) =>
-            Option.fromNullable(
-              (typeof label === 'string' ? label : label.name)?.trim() || null,
-            ),
-          ),
+          comments: EArray.filterMap((comment: IssueComment) => {
+            const res = comment.body?.trim()
+            if (comment.author_association !== 'OWNER' || !res)
+              return Result.failVoid
+            return Result.succeed(res)
+          }),
+          labels: EArray.filterMap((label: IssueLabel) => {
+            const res = (typeof label === 'string' ? label : label.name)?.trim()
+            if (!res) return Result.failVoid
+            return Result.succeed(res)
+          }),
         }),
         ({ body, comments, labels, title }) => ({
           title,
@@ -201,9 +190,7 @@ const getIssuesWithCommentsFromLocalJsonFile = Effect.fn(
   return yield* Effect.sync(() => JSON.parse(issues) as Issues)
 })
 
-type Issues = Effect.Effect.Success<
-  ReturnType<typeof getIssuesWithCommentsFromAPI>
->
+type Issues = Effect.Success<ReturnType<typeof getIssuesWithCommentsFromAPI>>
 type Issue = Issues[number]
 type IssueLabel = Issue['labels'][number]
 type IssueComment = Issue['comments'][number]

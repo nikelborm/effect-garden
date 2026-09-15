@@ -15,11 +15,11 @@ const CacheValueSchema = Schema.Struct({
   exitCode: FiniteNonNegativeInteger.pipe(Schema.brand('ExitCode')),
 })
 type CacheValue = Schema.Schema.Type<typeof CacheValueSchema>
-const decodeCacheEntries = Schema.decodeUnknownEither(
-  Schema.Array(Schema.Tuple(Schema.String, CacheValueSchema)),
+const decodeCacheEntries = Schema.decodeUnknownResult(
+  Schema.Array(Schema.Tuple([Schema.String, CacheValueSchema])),
 )
 
-const LiveBackedByFsCache = EFunction.pipe(
+const _LiveBackedByFsCache = EFunction.pipe(
   Effect.all({
     fs: FileSystem.FileSystem,
     cacheFileWriteSemaphore: Effect.makeSemaphore(1),

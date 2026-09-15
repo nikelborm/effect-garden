@@ -144,7 +144,7 @@ export const withOpenApiAnnotationsForStructs = (
       },
     ): EnsureTaggedStructWithStringLiteral<Self, never> =>
       withInferredFromTagIdentifierSchemaAnnotationSync(
-        self.annotations(annotations) as Self,
+        self.annotateKey(annotations) as Self,
         prefix,
       ),
   )

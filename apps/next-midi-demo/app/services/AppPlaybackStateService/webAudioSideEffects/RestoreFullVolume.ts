@@ -5,12 +5,10 @@ import * as Layer from 'effect/Layer'
 import { maxLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../types/common.ts'
 
-export class RestoreFullVolume extends Context.Tag(
-  'next-midi-demo/RestoreFullVolume',
-)<
+export class RestoreFullVolume extends Context.Service<
   RestoreFullVolume,
   (playback: AudioPlayback, atSecond: number) => Effect.Effect<void>
->() {
+>()('next-midi-demo/RestoreFullVolume') {
   static Live = Layer.succeed(this, (playback, atSecond) =>
     Effect.sync(() => {
       playback.gainNode.gain.cancelScheduledValues(atSecond)

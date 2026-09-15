@@ -4,20 +4,20 @@ import { AccordSchema } from '../../../domain/Accord.ts'
 import { StrengthSchema } from '../../../domain/Strength.ts'
 import { FadingOutLoopPlayback } from './loopElements.ts'
 
-export const PureSilenceQueue = Schema.Tuple()
+export const PureSilenceQueue = Schema.Tuple([])
 
-export const LoopFadingToSilenceQueue = Schema.Tuple(FadingOutLoopPlayback)
+export const LoopFadingToSilenceQueue = Schema.Tuple([FadingOutLoopPlayback])
 
-export const TwoLoopsFadingToSilenceQueue = Schema.Tuple(
+export const TwoLoopsFadingToSilenceQueue = Schema.Tuple([
   FadingOutLoopPlayback,
   FadingOutLoopPlayback,
-)
+])
 
-export const SilenceBoundQueue = Schema.Union(
+export const SilenceBoundQueue = Schema.Union([
   PureSilenceQueue,
   LoopFadingToSilenceQueue,
   TwoLoopsFadingToSilenceQueue,
-)
+])
 export type SilenceBoundQueue = typeof SilenceBoundQueue.Type
 
 export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlayback>()(
@@ -28,7 +28,7 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
     transitionQueue: SilenceBoundQueue,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }

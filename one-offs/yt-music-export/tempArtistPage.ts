@@ -5,11 +5,11 @@ import * as Schema from 'effect/Schema'
 const artistsSchema = Schema.parseJson(
   Schema.NonEmptyArray(
     Schema.Struct({
-      image: Schema.NonEmptyTrimmedString,
+      image: Schema.Trimmed.check(Schema.isNonEmpty()),
       title: Schema.NonEmptyString,
-    }).annotations({ title: 'Artist' }),
+    }).annotateKey({ title: 'Artist' }),
   ),
-).annotations({ title: 'Artists' })
+).annotateKey({ title: 'Artists' })
 
 const artists = Schema.decodeUnknownSync(artistsSchema)(
   await readFile('artists.json', 'utf-8'),

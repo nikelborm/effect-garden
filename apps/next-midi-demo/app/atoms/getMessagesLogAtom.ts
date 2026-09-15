@@ -6,16 +6,16 @@ import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
 
-// import { Atom, Result } from '@effect-atom/atom-react'
-import * as Atom from '@effect-atom/atom/Atom'
-import * as Result from '@effect-atom/atom/Result'
 import { pipe } from 'effect/Function'
 import * as Stream from 'effect/Stream'
+import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+// import { Atom, Result } from '@effect-atom/atom-react'
+import * as Atom from 'effect/unstable/reactivity/Atom'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,
 ) => Atom.Atom<
-  Result.Result<
+  AsyncResult.AsyncResult<
     string,
     | MIDIErrors.AbortError
     | MIDIErrors.UnderlyingSystemError
@@ -25,7 +25,7 @@ export const getMessagesLogAtom: (
 > = Atom.family(inputId =>
   !inputId
     ? Atom.make(
-        Result.success('Input id is not selected. No log entries to show'),
+        AsyncResult.success('Input id is not selected. No log entries to show'),
       ).pipe(Atom.withLabel('messagesStringLog'))
     : pipe(
         EMIDIInput.makeMessagesStreamById(inputId),

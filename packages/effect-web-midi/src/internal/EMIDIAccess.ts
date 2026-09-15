@@ -115,10 +115,10 @@ export type TypeId = typeof TypeId
  *
  * @see `navigator.requestMIDIAccess` {@link https://www.w3.org/TR/webmidi/#dom-navigator-requestmidiaccess|Web MIDI spec}, {@link https://developer.mozilla.org/en-US/docs/Web/API/Navigator/requestMIDIAccess|MDN reference}
  */
-export class EMIDIAccess extends Context.Tag('effect-web-midi/EMIDIAccess')<
+export class EMIDIAccess extends Context.Service<
   EMIDIAccess,
   EMIDIAccessInstance
->() {}
+>()('effect-web-midi/EMIDIAccess') {}
 
 export interface RequestMIDIAccessOptions {
   /**
@@ -452,7 +452,7 @@ export const simplify = <E = never, R = never>(
  *   never
  * > = EMIDIAccess.request().pipe(
  *   Effect.catchTag('AbortError', 'UnderlyingSystemError', () =>
- *     Effect.dieMessage('YOLO'),
+ *     Effect.die(new Error('YOLO')),
  *   ),
  * )
  *

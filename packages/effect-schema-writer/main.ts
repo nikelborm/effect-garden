@@ -94,7 +94,7 @@ const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
         unionMembers.add(subtree.schema)
       }
 
-      const schema = Schema.Array(Schema.Union(...unionMembers))
+      const schema = Schema.Array(Schema.Union([...unionMembers]))
 
       const code = () => {
         const members = [
@@ -145,7 +145,7 @@ const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
 
           const examples = [...(fieldExamples.get(key) ?? [])]
           if (examples.length)
-            schemaCode += `.annotations(${JSON.stringify({ examples })})`
+            schemaCode += `.annotateKey(${JSON.stringify({ examples })})`
 
           return `"${key}": ${schemaCode}`
         })
@@ -245,7 +245,7 @@ for (const [childKey, child] of registry) {
   registry.delete(childKey)
 }
 
-const file =
+const _file =
   'import * as Schema from "effect/Schema"\n\n' +
   registry
     .values()

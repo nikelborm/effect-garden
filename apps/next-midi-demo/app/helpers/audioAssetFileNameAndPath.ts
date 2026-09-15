@@ -227,7 +227,7 @@ export const getAssetFromLocalFileName = (
 ): Option.Option<AssetPointer> => {
   const parseBase = (regexp: RegExp) =>
     Option.flatMap(
-      Option.fromNullable(fileName.match(regexp)?.groups),
+      Option.fromNullishOr(fileName.match(regexp)?.groups),
       flow(
         Struct.evolve({
           pattern: Pattern.option,

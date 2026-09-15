@@ -43,8 +43,10 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
     physicalButtonIdsRepresentingPhysicalButtonGroup.length !==
     paramButtonIdsRepresentedByPhysicalButtonGroup.length
   )
-    return yield* Effect.dieMessage(
-      'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
+    return yield* Effect.die(
+      new Error(
+        'Assertion failed: physicalButtonIds.length !== paramButtonIds.length',
+      ),
     )
 
   const registrations: ReadonlyArray<

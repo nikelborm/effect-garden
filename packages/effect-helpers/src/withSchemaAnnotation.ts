@@ -13,9 +13,8 @@ export const withSchemaAnnotation = <const T extends CommonAnnotationMapKeys>(
     <S extends Annotable.All>(
       self: S,
       annotationValue: Exclude<CommonAnnotationMap[T], undefined>,
-    ) => Annotable.Self<S>
-  >(2, (self, annotationValue) =>
-    self.annotations({ [annotationField]: annotationValue }),
+    ) => Annotable.Self<S>>(2, (self, annotationValue) =>
+    self.annotateKey({ [annotationField]: annotationValue }),
   )
 
 type Is<A, ExtendsB> = [A] extends [ExtendsB] ? true : false

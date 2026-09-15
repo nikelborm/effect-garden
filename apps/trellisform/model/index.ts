@@ -27,14 +27,15 @@ const buildEntityParts = buildEntityPartsPrefixed(prefix)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-export const HowToAddressUserFieldSchema =
-  Schema.NonEmptyTrimmedString.annotations({
-    identifier: prefixSlashed + 'HowToAddressUser',
-    title: 'Обращение к пользователю',
-    description:
-      'Имя пользователя в наиболее гибком формате, чтобы учесть другие структуры помимо ФИО, которые могут быть например у иностранных студентов',
-    examples: ['Иван Иванов', 'Мария Ивановна', 'Сергей Петрович'],
-  })
+export const HowToAddressUserFieldSchema = Schema.Trimmed.check(
+  Schema.isNonEmpty(),
+).annotateKey({
+  identifier: prefixSlashed + 'HowToAddressUser',
+  title: 'Обращение к пользователю',
+  description:
+    'Имя пользователя в наиболее гибком формате, чтобы учесть другие структуры помимо ФИО, которые могут быть например у иностранных студентов',
+  examples: ['Иван Иванов', 'Мария Ивановна', 'Сергей Петрович'],
+})
 
 export const UserEmailFieldSchema = Schema.String
 export const IsUserEmailVerifiedFieldSchema = Schema.Boolean
@@ -67,7 +68,9 @@ export type UserId = User['id']
 
 ///////////////////////////////////////////////////////////////////////////////
 
-export const AbstractTestNameSchema = Schema.NonEmptyTrimmedString.annotations({
+export const AbstractTestNameSchema = Schema.Trimmed.check(
+  Schema.isNonEmpty(),
+).annotateKey({
   identifier: prefixSlashed + 'AbstractTestName',
   description: 'Название абстрактного теста',
   examples: [
@@ -78,8 +81,8 @@ export const AbstractTestNameSchema = Schema.NonEmptyTrimmedString.annotations({
 })
 
 export const AbstractTestDescriptionSchema = Schema.NullOr(
-  Schema.NonEmptyTrimmedString,
-).annotations({
+  Schema.Trimmed.check(Schema.isNonEmpty()),
+).annotateKey({
   identifier: prefixSlashed + 'AbstractTestDescription',
   description: 'Опциональное (может быть null) описание абстрактного теста',
   examples: [
@@ -88,7 +91,9 @@ export const AbstractTestDescriptionSchema = Schema.NullOr(
   ],
 })
 
-export const AbstractTestGoalSchema = Schema.NonEmptyTrimmedString.annotations({
+export const AbstractTestGoalSchema = Schema.Trimmed.check(
+  Schema.isNonEmpty(),
+).annotateKey({
   identifier: prefixSlashed + 'AbstractTestGoal',
   description: 'Цель абстрактного тестирования',
   examples: [
@@ -97,14 +102,14 @@ export const AbstractTestGoalSchema = Schema.NonEmptyTrimmedString.annotations({
   ],
 })
 
-export const IsAbstractTestReadyToLaunchSchema = Schema.Boolean.annotations({
+export const IsAbstractTestReadyToLaunchSchema = Schema.Boolean.annotateKey({
   identifier: prefixSlashed + 'IsAbstractTestReadyToLaunch',
   description:
     'Завершена ли работа над тестом? Можно ли его запускать и проходить?',
   default: false,
 })
 
-export const IsAbstractTestPublicWorldwideSchema = Schema.Boolean.annotations({
+export const IsAbstractTestPublicWorldwideSchema = Schema.Boolean.annotateKey({
   identifier: prefixSlashed + 'IsAbstractTestPublicWorldwide',
   description:
     'Открыт ли доступ для людей со всего мира? Могут ли кто-угодно свободно его смотреть, проходить, запускать без ограничений?',
@@ -347,21 +352,23 @@ export type AnswerOptionInstanceId = AnswerOptionInstance['id']
 
 ///////////////////////////////////////////////////////////////////////////////
 
-export const EducationalSpaceNameSchema =
-  Schema.NonEmptyTrimmedString.annotations({
-    identifier: prefixSlashed + 'EducationalSpaceName',
-    description: 'Название образовательного пространства',
-    examples: ['Школа № 43', 'Курсы SkillBox'],
-  })
+export const EducationalSpaceNameSchema = Schema.Trimmed.check(
+  Schema.isNonEmpty(),
+).annotateKey({
+  identifier: prefixSlashed + 'EducationalSpaceName',
+  description: 'Название образовательного пространства',
+  examples: ['Школа № 43', 'Курсы SkillBox'],
+})
 
-export const EducationalSpaceDescriptionSchema =
-  Schema.NonEmptyTrimmedString.annotations({
-    identifier: prefixSlashed + 'EducationalSpaceDescription',
-    description: 'Описание образовательного пространства',
-    examples: [
-      'Skillbox - один из лидеров российского рынка онлайн-образования. Более 560 образовательных программ по маркетингу, дизайну, программированию, разработке игр, управлению и мультимедиа.',
-    ],
-  })
+export const EducationalSpaceDescriptionSchema = Schema.Trimmed.check(
+  Schema.isNonEmpty(),
+).annotateKey({
+  identifier: prefixSlashed + 'EducationalSpaceDescription',
+  description: 'Описание образовательного пространства',
+  examples: [
+    'Skillbox - один из лидеров российского рынка онлайн-образования. Более 560 образовательных программ по маркетингу, дизайну, программированию, разработке игр, управлению и мультимедиа.',
+  ],
+})
 
 export const {
   EducationalSpaceIdFromNumberSchema,

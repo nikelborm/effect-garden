@@ -56,7 +56,7 @@ export function fromPolymorphic<A, E = never, R = never>(
   const check = (value: A) =>
     is(value)
       ? Effect.succeed(value)
-      : Effect.dieMessage('Assertion failed on polymorphic value')
+      : Effect.die(new Error('Assertion failed on polymorphic value'))
 
   return Effect.isEffect(polymorphicValue)
     ? Effect.flatMap(polymorphicValue, check)

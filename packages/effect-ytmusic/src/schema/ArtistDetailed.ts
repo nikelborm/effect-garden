@@ -4,9 +4,9 @@ import { ThumbnailFull } from './ThumbnailFull.ts'
 
 export const ArtistDetailed = Schema.Struct({
   type: Schema.Literal('ARTIST'),
-  artistId: Schema.NonEmptyTrimmedString,
-  name: Schema.NonEmptyTrimmedString,
+  artistId: Schema.Trimmed.check(Schema.isNonEmpty()),
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
   thumbnails: Schema.Array(ThumbnailFull),
-}).annotations({ title: 'ArtistDetailed' })
+}).annotateKey({ title: 'ArtistDetailed' })
 
 export type ArtistDetailed = Schema.Schema.Type<typeof ArtistDetailed>

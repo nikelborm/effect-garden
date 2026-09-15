@@ -63,7 +63,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     const tag = tagPropertySignature.type.literal
 
     return ParseResult.succeed(
-      self.annotations({
+      self.annotateKey({
         identifier: `${prefix}/${tag}`,
       }) as EnsureTaggedStructWithStringLiteral<Self, never>,
     )

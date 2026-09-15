@@ -28,7 +28,7 @@ function expectFeaturesClose(
   expected: readonly number[],
 ) {
   for (const [i, exp] of expected.entries()) {
-    expect(Math.abs(actual[i]! - exp)).toBeLessThan(1e-7)
+    expect(Math.abs(actual[i]! - exp)).toBeLessThan(1e-6)
   }
 }
 

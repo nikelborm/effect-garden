@@ -37,7 +37,7 @@ export const component4 = Schema.Struct({
 })
 
 export const component5 = Schema.Struct({
-  musicResponsiveListItemFlexColumnRenderer: Schema.Union(
+  musicResponsiveListItemFlexColumnRenderer: Schema.Union([
     Schema.Struct({
       text: Schema.Struct({
         runs: component3,
@@ -59,7 +59,7 @@ export const component5 = Schema.Struct({
       }),
       displayPriority: Schema.String,
     }),
-  ),
+  ]),
 })
 
 export const component6 = Schema.Struct({

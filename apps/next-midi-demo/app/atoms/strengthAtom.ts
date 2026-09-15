@@ -1,4 +1,4 @@
-import * as Atom from '@effect-atom/atom/Atom'
+import * as Atom from 'effect/unstable/reactivity/Atom'
 
 import { AllStrengths } from '../domain/Strength.ts'
 

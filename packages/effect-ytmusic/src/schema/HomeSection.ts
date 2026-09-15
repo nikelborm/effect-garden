@@ -5,10 +5,10 @@ import { PlaylistDetailed } from './PlaylistDetailed.ts'
 import { SongDetailed } from './SongDetailed.ts'
 
 export const HomeSection = Schema.Struct({
-  title: Schema.NonEmptyTrimmedString,
+  title: Schema.Trimmed.check(Schema.isNonEmpty()),
   contents: Schema.Array(
-    Schema.Union(AlbumDetailed, PlaylistDetailed, SongDetailed),
+    Schema.Union([AlbumDetailed, PlaylistDetailed, SongDetailed]),
   ),
-}).annotations({ title: 'HomeSection' })
+}).annotateKey({ title: 'HomeSection' })
 
 export type HomeSection = Schema.Schema.Type<typeof HomeSection>

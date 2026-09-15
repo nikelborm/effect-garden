@@ -83,8 +83,10 @@ export const getPortByPortIdAndAccess = getPortByIdAndRemap({
 export const getInputByPortIdAndAccess = getPortByIdAndRemap({
   onInputFound: EFunction.flow(EMIDIInput.make, Effect.succeed),
   onOutputFound: rawOutput =>
-    Effect.dieMessage(
-      `Assertion failed: getInputById expected id=${rawOutput.id} to point at input, but it points at output instead`,
+    Effect.die(
+      new Error(
+        `Assertion failed: getInputById expected id=${rawOutput.id} to point at input, but it points at output instead`,
+      ),
     ),
 })
 
@@ -94,8 +96,10 @@ export const getInputByPortIdAndAccess = getPortByIdAndRemap({
  */
 export const getOutputByPortIdAndAccess = getPortByIdAndRemap({
   onInputFound: rawInput =>
-    Effect.dieMessage(
-      `Assertion failed: getOutputById expected id=${rawInput.id} to point at output, but it points at input instead`,
+    Effect.die(
+      new Error(
+        `Assertion failed: getOutputById expected id=${rawInput.id} to point at output, but it points at input instead`,
+      ),
     ),
   onOutputFound: EFunction.flow(EMIDIOutput.make, Effect.succeed),
 })

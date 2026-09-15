@@ -9,8 +9,8 @@ import { VideoDetailed } from './VideoDetailed.ts'
 
 export const ArtistFull = Schema.Struct({
   type: Schema.Literal('ARTIST'),
-  artistId: Schema.NonEmptyTrimmedString,
-  name: Schema.NonEmptyTrimmedString,
+  artistId: Schema.Trimmed.check(Schema.isNonEmpty()),
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
   thumbnails: Schema.Array(ThumbnailFull),
   topSongs: Schema.Array(SongDetailed),
   topAlbums: Schema.Array(AlbumDetailed),
@@ -18,6 +18,6 @@ export const ArtistFull = Schema.Struct({
   topVideos: Schema.Array(VideoDetailed),
   featuredOn: Schema.Array(PlaylistDetailed),
   similarArtists: Schema.Array(ArtistDetailed),
-}).annotations({ title: 'ArtistFull' })
+}).annotateKey({ title: 'ArtistFull' })
 
 export type ArtistFull = Schema.Schema.Type<typeof ArtistFull>

@@ -7,7 +7,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as EString from 'effect/String'
 
-export const SqlLive = Layer.unwrapEffect(
+export const SqlLive = Layer.unwrap(
   DbConfig.use(({ db }) =>
     PgClient.layer({
       ...db,

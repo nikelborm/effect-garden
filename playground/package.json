@@ -39,7 +39,7 @@
     "@evadev/backend-config": "workspace:^",
     "@evadev/effect-helpers": "workspace:^",
     "@evadev/effect-schema-i18n": "workspace:^",
-    "@evadev/openapi-gen": "catalog:",
+    "@tim-smart/openapi-gen": "catalog:",
     "@evadev/scripts": "workspace:^",
     "@evadev/tsconfig": "workspace:^",
     "@fp-ts/optic": "catalog:",

@@ -1,8 +1,7 @@
-import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as EString from 'effect/String'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import { BadExitCodeError } from './BadExitCodeError.ts'
 
@@ -24,8 +23,8 @@ export const observableExec = Effect.fn('observableExec')(function* ({
   )
   yield* Effect.annotateCurrentSpan({ cmd: cmd.join(' '), cwd })
 
-  const executor = yield* CommandExecutor.CommandExecutor
-  const process = yield* executor.start(
+  const executor = yield* ChildProcessSpawner.ChildProcessSpawner
+  const process = yield* executor.spawn(
     Command.make(...cmd).pipe(
       Command.workingDirectory(cwd),
       Command.stderr('inherit'),

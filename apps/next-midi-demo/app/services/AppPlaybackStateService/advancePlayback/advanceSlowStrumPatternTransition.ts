@@ -12,5 +12,7 @@ export const advanceSlowStrumPatternTransition = Effect.fn(
 )(function* (oldState: SlowStrumHandoverState, signal: Signal) {
   const [strum, scheduled] = oldState.transitionQueue
   yield* Effect.logError({ strum, scheduled, signal })
-  return yield* Effect.dieMessage('slow strums are deferred (SlowStrumPattern)')
+  return yield* Effect.die(
+    new Error('slow strums are deferred (SlowStrumPattern)'),
+  )
 })

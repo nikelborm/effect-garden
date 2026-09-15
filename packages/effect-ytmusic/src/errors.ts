@@ -5,11 +5,11 @@ import * as Schema from 'effect/Schema'
 export class NetworkError extends Schema.TaggedError<NetworkError>()(
   'NetworkError',
   {
-    message: Schema.NonEmptyTrimmedString,
-    cause: Schema.Union(
+    message: Schema.Trimmed.check(Schema.isNonEmpty()),
+    cause: Schema.Union([
       Schema.instanceOf(HttpClientError.RequestError),
       Schema.instanceOf(HttpClientError.ResponseError),
-    ),
+    ]),
   },
 ) {}
 
@@ -17,7 +17,7 @@ export class HttpStatusError extends Schema.TaggedError<HttpStatusError>()(
   'HttpStatusError',
   {
     status: Schema.Int.pipe(Schema.between(100, 599)),
-    endpoint: Schema.NonEmptyTrimmedString,
+    endpoint: Schema.Trimmed.check(Schema.isNonEmpty()),
     cause: Schema.instanceOf(HttpClientError.ResponseError),
   },
 ) {}
@@ -25,13 +25,13 @@ export class HttpStatusError extends Schema.TaggedError<HttpStatusError>()(
 export class ConfigExtractionError extends Schema.TaggedError<ConfigExtractionError>()(
   'ConfigExtractionError',
   {
-    message: Schema.NonEmptyTrimmedString,
+    message: Schema.Trimmed.check(Schema.isNonEmpty()),
     cause: Schema.optional(Schema.Defect),
   },
 ) {}
 
 export class ParseError extends Schema.TaggedError<ParseError>()('ParseError', {
-  schema: Schema.NonEmptyTrimmedString,
+  schema: Schema.Trimmed.check(Schema.isNonEmpty()),
   data: Schema.Unknown,
   cause: Schema.instanceOf(ParseResult.ParseError),
 }) {}
@@ -58,7 +58,7 @@ export class InvalidPlaylistIdError extends Schema.TaggedError<InvalidPlaylistId
 
 export class TraverseNotFoundError extends Schema.TaggedError<TraverseNotFoundError>()(
   'TraverseNotFoundError',
-  { keys: Schema.Array(Schema.NonEmptyTrimmedString) },
+  { keys: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())) },
 ) {}
 
 export class LyricsNotFoundError extends Schema.TaggedError<LyricsNotFoundError>()(
@@ -68,7 +68,7 @@ export class LyricsNotFoundError extends Schema.TaggedError<LyricsNotFoundError>
 
 export class MissingBrowseTokenError extends Schema.TaggedError<MissingBrowseTokenError>()(
   'MissingBrowseTokenError',
-  { context: Schema.NonEmptyTrimmedString },
+  { context: Schema.Trimmed.check(Schema.isNonEmpty()) },
 ) {}
 
 export class VideoIdMismatchError extends Schema.TaggedError<VideoIdMismatchError>()(
@@ -78,7 +78,7 @@ export class VideoIdMismatchError extends Schema.TaggedError<VideoIdMismatchErro
 
 export class InvalidResponseShapeError extends Schema.TaggedError<InvalidResponseShapeError>()(
   'InvalidResponseShapeError',
-  { endpoint: Schema.NonEmptyTrimmedString },
+  { endpoint: Schema.Trimmed.check(Schema.isNonEmpty()) },
 ) {}
 
 export class EmptyContinuationError extends Schema.TaggedError<EmptyContinuationError>()(

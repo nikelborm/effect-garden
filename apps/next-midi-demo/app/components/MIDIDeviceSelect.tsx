@@ -1,12 +1,12 @@
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import { styled } from 'next-yak'
 
-import type * as Atom from '@effect-atom/atom/Atom'
-import * as Result from '@effect-atom/atom/Result'
-import * as Hooks from '@effect-atom/atom-react/Hooks'
+import * as Hooks from '@effect/atom-react/Hooks'
 import * as EArray from 'effect/Array'
 import * as EFunction from 'effect/Function'
 import * as EString from 'effect/String'
+import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+import type * as Atom from 'effect/unstable/reactivity/Atom'
 
 import {
   type CleanupPortType,
@@ -49,7 +49,7 @@ export const MIDIDeviceSelect = <
 
   const setSelectedId = Hooks.useAtomSet(selectedIdAtom)
 
-  return Result.matchWithError(filteredPortsResult, {
+  return AsyncResult.matchWithError(filteredPortsResult, {
     onDefect: defect => {
       console.log('defect', defect)
       throw defect

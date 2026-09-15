@@ -6,12 +6,12 @@ import { PlaylistDetailed } from './PlaylistDetailed.ts'
 import { SongDetailed } from './SongDetailed.ts'
 import { VideoDetailed } from './VideoDetailed.ts'
 
-export const SearchResult = Schema.Union(
+export const SearchResult = Schema.Union([
   SongDetailed,
   VideoDetailed,
   AlbumDetailed,
   ArtistDetailed,
   PlaylistDetailed,
-).annotations({ title: 'SearchResult' })
+]).annotateKey({ title: 'SearchResult' })
 
 export type SearchResult = Schema.Schema.Type<typeof SearchResult>

@@ -73,12 +73,12 @@ const gitLFSInfoRegexp =
   /^version (?<version>https:\/\/git-lfs\.github\.com\/spec\/v1)\noid sha256:(?<oidSha256>[0-9a-f]{64})\nsize (?<size>[1-9]\d{0,11})\n$/m
 
 const GitLFSInfoSchema = Schema.Struct({
-  version: Schema.NonEmptyTrimmedString,
-  oidSha256: Schema.NonEmptyTrimmedString,
+  version: Schema.Trimmed.check(Schema.isNonEmpty()),
+  oidSha256: Schema.Trimmed.check(Schema.isNonEmpty()),
   size: Schema.NumberFromString,
 })
 
-const decodeGitLFSInfoSchema = Schema.decodeUnknownEither(GitLFSInfoSchema, {
+const decodeGitLFSInfoSchema = Schema.decodeUnknownResult(GitLFSInfoSchema, {
   exact: true,
 })
 

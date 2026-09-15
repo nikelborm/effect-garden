@@ -96,7 +96,8 @@ export const decryptDecompressExtractCommand = Command.make(
 
     const exitCode = yield* PlatformCommand.exitCode(aceUndoCommand)
 
-    if (exitCode !== 0) return yield* Effect.dieMessage('failed to undo ace')
+    if (exitCode !== 0)
+      return yield* Effect.die(new Error('failed to undo ace'))
   }),
 ).pipe(
   Command.withDescription(

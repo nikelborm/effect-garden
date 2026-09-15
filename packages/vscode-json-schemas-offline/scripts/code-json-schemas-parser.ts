@@ -32,13 +32,13 @@ declare const Bun: any
 // TODO: Maybe it's time to shine for my gitdl?
 
 const parseJsonOrYaml = Schema.transformOrFail(
-  Schema.String.annotations({
+  Schema.String.annotateKey({
     description: 'a string to be decoded from JSON/YAML',
   }),
-  Schema.Union(
+  Schema.Union([
     Schema.Struct({ from: Schema.Literal('yaml'), result: Schema.Unknown }),
     Schema.Struct({ from: Schema.Literal('json'), result: Schema.Unknown }),
-  ),
+  ]),
   {
     strict: true,
     decode: (encoded, _, ast) =>
@@ -67,7 +67,7 @@ const parseJsonOrYaml = Schema.transformOrFail(
         ),
       ),
   },
-).annotations({ title: 'parseJsonOrYaml' })
+).annotateKey({ title: 'parseJsonOrYaml' })
 
 // 2 motherfuckers host YAML, although given how much easier it's to read for
 // human, they are actually smarter than everybody else
@@ -76,7 +76,9 @@ const CachedFileSchema = Schema.compose(
   Schema.Struct({
     from: Schema.Literal('json', 'yaml'),
     result: Schema.Struct({
-      $id: Schema.optionalWith(Schema.NonEmptyTrimmedString, { exact: true }),
+      $id: Schema.optionalWith(Schema.Trimmed.check(Schema.isNonEmpty()), {
+        exact: true,
+      }),
       $schema: Schema.optionalWith(FineURLFromString, { exact: true }),
     }),
   }),
@@ -94,21 +96,24 @@ const CatalogEntry = Schema.Struct({
     Schema.propertySignature,
     Schema.fromKey('url'),
   ),
-  fileMatch: Schema.optionalWith(Schema.Array(Schema.NonEmptyTrimmedString), {
-    exact: true,
-  }),
-  name: Schema.NonEmptyTrimmedString,
+  fileMatch: Schema.optionalWith(
+    Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
+    {
+      exact: true,
+    },
+  ),
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
   description: Schema.String,
   versions: Schema.optionalWith(
     Schema.Record({
-      key: Schema.NonEmptyTrimmedString,
+      key: Schema.Trimmed.check(Schema.isNonEmpty()),
       value: FineURLFromString,
     }),
     { exact: true },
   ),
 }).pipe(
   schema => ({
-    from: schema.annotations({ title: 'CatalogEntryWithoutCache' }),
+    from: schema.annotateKey({ title: 'CatalogEntryWithoutCache' }),
     to: schema.pipe(
       Schema.typeSchema,
       Schema.extend(
@@ -116,7 +121,7 @@ const CatalogEntry = Schema.Struct({
           cached: Schema.NullOr(CachedFileSchema),
         }),
       ),
-      Schema.annotations({ title: 'CatalogEntryWithCache' }),
+      Schema.annotateKey({ title: 'CatalogEntryWithCache' }),
     ),
   }),
   ({ from, to }) =>
@@ -184,7 +189,7 @@ const CatalogEntry = Schema.Struct({
 const CatalogSchema = Schema.Struct({
   $schema: FineURLFromString,
   version: Schema.JsonNumber,
-  schemas: Schema.Array(CatalogEntry).annotations({ concurrency: 5 }),
+  schemas: Schema.Array(CatalogEntry).annotateKey({ concurrency: 5 }),
 }).pipe(e => Schema.parseJson(e))
 
 const decodeCatalog = Schema.decode(CatalogSchema, {

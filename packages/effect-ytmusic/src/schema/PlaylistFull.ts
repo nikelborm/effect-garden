@@ -5,11 +5,11 @@ import { ThumbnailFull } from './ThumbnailFull.ts'
 
 export const PlaylistFull = Schema.Struct({
   type: Schema.Literal('PLAYLIST'),
-  playlistId: Schema.NonEmptyTrimmedString,
-  name: Schema.NonEmptyTrimmedString,
+  playlistId: Schema.Trimmed.check(Schema.isNonEmpty()),
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
   artist: ArtistBasic,
-  videoCount: Schema.Int.pipe(Schema.nonNegative()),
+  videoCount: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)),
   thumbnails: Schema.Array(ThumbnailFull),
-}).annotations({ title: 'PlaylistFull' })
+}).annotateKey({ title: 'PlaylistFull' })
 
 export type PlaylistFull = Schema.Schema.Type<typeof PlaylistFull>

@@ -11,14 +11,12 @@ import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { getFileHandle, readFileBuffer } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
-export class AudioBufferStore extends Context.Tag(
-  'next-midi-demo/AudioBufferStore',
-)<
+export class AudioBufferStore extends Context.Service<
   AudioBufferStore,
   {
     readonly getByAsset: (pointer: AssetPointer) => Effect.Effect<EAudioBuffer>
   }
->() {
+>()('next-midi-demo/AudioBufferStore') {
   static Live = Effect.gen(this, function* () {
     const audioContext = yield* EAudioContext.EAudioContext
     const rootDirectoryHandle = yield* RootDirectoryHandle

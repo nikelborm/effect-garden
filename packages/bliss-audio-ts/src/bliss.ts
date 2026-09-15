@@ -19,7 +19,6 @@
  * ```
  */
 import { dlopen, FFIType } from 'bun:ffi'
-import { resolve } from 'node:path'
 
 // TODO: do something about all these non-null assertions.
 // TODO: validate that bun properly releases and garbage collects string, and
@@ -244,7 +243,7 @@ export interface RawCueResult {
 
 // ── FFI setup ─────────────────────────────────────────────────────────────────
 
-const LIB_PATH = import.meta.resolve("bliss-audio-ts/libbliss_native.so")
+const LIB_PATH = import.meta.resolve('bliss-audio-ts/libbliss_native.so')
 
 const { symbols } = dlopen(LIB_PATH, {
   bliss_number_features: {

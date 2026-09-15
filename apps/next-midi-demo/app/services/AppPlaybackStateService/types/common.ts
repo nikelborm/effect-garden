@@ -26,7 +26,7 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   static {
     this.make = this.make.bind(this)
   }
-  protected declare '~brand~': never
+  declare protected '~brand~': never
 
   getDuration() {
     const buffer = this.bufferSource.buffer
@@ -63,7 +63,7 @@ export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>
     ),
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -76,7 +76,7 @@ export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTra
     playback: AudioPlayback,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }
@@ -101,7 +101,7 @@ export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStru
     durationSeconds: Schema.Number,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
   }

@@ -6,12 +6,10 @@ import { maxLoudness, minLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../types/common.ts'
 import type { Slot } from '../zones.ts'
 
-export class ScheduleFadeOut extends Context.Tag(
-  'next-midi-demo/ScheduleFadeOut',
-)<
+export class ScheduleFadeOut extends Context.Service<
   ScheduleFadeOut,
   (playback: AudioPlayback, slot: Slot) => Effect.Effect<void>
->() {
+>()('next-midi-demo/ScheduleFadeOut') {
   static Live = Layer.succeed(this, (playback: AudioPlayback, slot: Slot) =>
     Effect.sync(() => {
       playback.gainNode.gain.setValueAtTime(

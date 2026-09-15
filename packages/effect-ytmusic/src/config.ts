@@ -19,10 +19,10 @@ export interface YTMusicConfig {
   readonly DEVICE: string
 }
 
-export class YTMusicConfigService extends Context.Tag('YTMusic/Config')<
+export class YTMusicConfigService extends Context.Service<
   YTMusicConfigService,
   YTMusicConfig
->() {}
+>()('YTMusic/Config') {}
 
 export const makeLayer = (options?: { GL?: string; HL?: string }) =>
   Layer.effect(

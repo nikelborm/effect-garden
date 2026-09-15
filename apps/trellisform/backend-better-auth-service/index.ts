@@ -39,7 +39,7 @@ export class GetSessionError extends Schema.TaggedError<GetSessionError>(
 }) {}
 
 // Create a separate Drizzle database tag for better-auth
-export class AuthDb extends Context.Tag('@app/AuthDb')<AuthDb, any>() {}
+export class AuthDb extends Context.Service<AuthDb, any>()('@app/AuthDb') {}
 
 export class EffectlessDrizzleAuthDbService extends Effect.Service<EffectlessDrizzleAuthDbService>()(
   '@trellisform/EffectlessDrizzleAuthDbService',

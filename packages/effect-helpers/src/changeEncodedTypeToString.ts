@@ -52,6 +52,6 @@ const copyAnnotationFrom =
   ) =>
     Option.match(getAnnotation(annotated), {
       onSome: val => self =>
-        self.annotations({ [keyToSet]: valueTransformer(val) }),
+        self.annotateKey({ [keyToSet]: valueTransformer(val) }),
       onNone: () => EFunction.identity<typeof Schema.String>,
     })

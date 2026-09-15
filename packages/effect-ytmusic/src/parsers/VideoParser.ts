@@ -100,7 +100,7 @@ export const parsePlaylistVideo = (
     'VideoDetailed',
     {
       type: 'VIDEO',
-      videoId: videoId1 || videoId2Match![1],
+      videoId: videoId1 || videoId2Match?.[1],
       name: extractString(title, 'text'),
       artist: {
         name: extractString(artist, 'text'),

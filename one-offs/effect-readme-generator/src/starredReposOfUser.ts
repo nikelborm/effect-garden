@@ -85,13 +85,15 @@ const makeRequesterOfStarredReposPage = Effect.fnUntraced(function* (
   reposPerPage: number,
 ) {
   if (!username)
-    return yield* Effect.dieMessage(
-      'starredReposOfUser accepts only non-empty strings as username',
+    return yield* Effect.die(
+      new Error(
+        'starredReposOfUser accepts only non-empty strings as username',
+      ),
     )
 
   if (reposPerPage <= 0 || reposPerPage > 100)
-    return yield* Effect.dieMessage(
-      'starredReposOfUser accepts only 0 < reposPerPage <= 100',
+    return yield* Effect.die(
+      new Error('starredReposOfUser accepts only 0 < reposPerPage <= 100'),
     )
 
   const octokit = new Octokit()

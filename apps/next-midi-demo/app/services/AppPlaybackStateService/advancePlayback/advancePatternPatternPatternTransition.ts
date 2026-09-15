@@ -40,15 +40,19 @@ export const advancePatternPatternPatternTransition = Effect.fn(
       })
     }
     yield* Effect.logError({ oldest, middle, incoming, signal })
-    return yield* Effect.dieMessage(
-      'red-zone deselect during a full queue (a 4th input): would need a 3rd fading-to-silence loop — excluded from the MVP',
+    return yield* Effect.die(
+      new Error(
+        'red-zone deselect during a full queue (a 4th input): would need a 3rd fading-to-silence loop — excluded from the MVP',
+      ),
     )
   }
 
   if (!isInGreenZone) {
     yield* Effect.logError({ oldest, middle, incoming, signal })
-    return yield* Effect.dieMessage(
-      'red-zone switch during a full queue (a 4th input): would need a 4th queue element — excluded from the MVP',
+    return yield* Effect.die(
+      new Error(
+        'red-zone switch during a full queue (a 4th input): would need a 4th queue element — excluded from the MVP',
+      ),
     )
   }
 

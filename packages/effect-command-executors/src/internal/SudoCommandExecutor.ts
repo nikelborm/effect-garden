@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import * as CommandExecutor from '@effect/platform/CommandExecutor'
 import type { PlatformError } from '@effect/platform/Error'
 import type * as Terminal from '@effect/platform/Terminal'
 import * as NodeStream from '@effect/platform-node-shared/NodeStream'
@@ -12,10 +11,10 @@ import * as Redacted from 'effect/Redacted'
 import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 import * as Prompt from 'effect/unstable/cli/Prompt'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
-const PrivelegedCommandExecutor = Effect.gen(function* () {
-  const baseExecutor = yield* CommandExecutor.CommandExecutor
+const _PrivelegedCommandExecutor = Effect.gen(function* () {
+  const baseExecutor = yield* ChildProcessSpawner.ChildProcessSpawner
 
   const passwordChunk = Chunk.of(
     new TextEncoder().encode(Redacted.value(yield* SudoPassword)),
@@ -120,12 +119,12 @@ const patchCommand = (
 //   }
 // })
 
-class SudoPassword extends Context.Tag('SudoPassword')<
+class SudoPassword extends Context.Service<
   SudoPassword,
   Redacted.Redacted<string>
->() {}
+>()('SudoPassword') {}
 
-const SudoPasswordPrompted = Prompt.password({
+const _SudoPasswordPrompted = Prompt.Password({
   message: 'Enter your password for sudo calls: ',
   validate: value =>
     value.length === 0

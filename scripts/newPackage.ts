@@ -11,7 +11,6 @@ import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 import * as Prompt from 'effect/unstable/cli/Prompt'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'

@@ -15,7 +15,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
     strength: StrengthSchema,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedPatternPointer =
     Schema.is(this)
   static {
@@ -33,7 +33,7 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
     strength: StrengthSchema,
   },
 ) {
-  protected declare '~brand~': never
+  declare protected '~brand~': never
   static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
     Schema.is(this)
   static {
@@ -43,10 +43,10 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
 
 export type SlowStrumPointer = Omit<TaggedSlowStrumPointer, '_tag'>
 
-export const AssetPointerSchema = Schema.Union(
+export const AssetPointerSchema = Schema.Union([
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-)
+])
 
 export type AssetPointer = TaggedPatternPointer | TaggedSlowStrumPointer
 

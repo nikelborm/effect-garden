@@ -179,7 +179,7 @@ const program = Effect.gen(function* () {
   )
 
   if (pinRefreshErrorsCount)
-    return yield* Effect.dieMessage('Failed to refresh some pins')
+    return yield* Effect.die(new Error('Failed to refresh some pins'))
 
   const newRepoMarkdownTable = renderMarkdownTableOfSmallStrings(
     getPinsSortedByTheirProbablePopularity(repos.pipe(Chunk.toArray)),

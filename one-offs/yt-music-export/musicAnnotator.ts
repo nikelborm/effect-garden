@@ -13,7 +13,7 @@ const musicVideoRegexp =
 const doubleSpaceRegex = / {2,}/g
 
 const file = File.createFromPath(
-  path.join('/big_media/yt-music/', tracksFromBigMediaFolder[0]!.filename),
+  path.join('/big_media/yt-music/', tracksFromBigMediaFolder[0]?.filename),
 )
 console.log(file.properties)
 file.tag

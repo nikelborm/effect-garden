@@ -10,7 +10,7 @@ export const checkType = <A, I>(
   schema: Schema.Schema<A, I>,
 ): Result.Result<A, ParseError> =>
   Result.mapLeft(
-    Schema.decodeUnknownEither(schema)(data),
+    Schema.decodeUnknownResult(schema)(data),
     (e: ParseResult.ParseError) =>
       new ParseError({ schema: schemaName, data, cause: e }),
   )

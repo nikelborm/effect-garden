@@ -1,4 +1,3 @@
-/** biome-ignore-all lint/correctness/noUnusedVariables: it's a prototype, so I don't care for now> */
 /** biome-ignore-all lint/correctness/noUnusedImports: it's a prototype, so I don't care for now> */
 'use client'
 
@@ -7,10 +6,9 @@ import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import { styled } from 'next-yak'
 import { useEffect, useState } from 'react'
 
-import { makeRunMain } from '@effect/platform/Runtime'
-import * as Atom from '@effect-atom/atom/Atom'
-import * as Hooks from '@effect-atom/atom-react/Hooks'
+import * as Hooks from '@effect/atom-react/Hooks'
 import * as Effect from 'effect/Effect'
+import * as Atom from 'effect/unstable/reactivity/Atom'
 
 import { ConnectionEventsLog } from './components/ConnectionEventsLog.tsx'
 // import { fetchAudioAsset, runnable } from './lib/dataFetcher.ts'
@@ -36,7 +34,7 @@ import { MidiPadSlide } from './components/MidiPadSlide.tsx'
 export default function Home() {
   // const selectedId = Hooks.useAtomValue(selectedInputIdAtom)
   // Hooks.useAtomMount(fetcherAtom)
-  const [state, setFlag] = useState(true)
+  const [state, _setFlag] = useState(true)
 
   // useEffect(() => {
   //   const id = setTimeout(() => setFlag(false), 10000)
@@ -67,17 +65,17 @@ export default function Home() {
   )
 }
 
-const Separator = styled.div`
+const _Separator = styled.div`
   width:  100px;
   height: 300px;
 `
 
-const Wrapper = styled.div`
+const _Wrapper = styled.div`
   color: wheat;
   padding: 40px;
 `
 
-const Header = styled.h3`
+const _Header = styled.h3`
   /* margin-top: 20px;   */
   border-top: 1px solid white;
 `

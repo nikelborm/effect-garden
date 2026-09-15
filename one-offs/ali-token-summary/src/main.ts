@@ -14,8 +14,8 @@ import * as Option from 'effect/Option'
 import * as References from 'effect/References'
 import * as Schema from 'effect/Schema'
 import * as Argument from 'effect/unstable/cli/Argument'
+import * as Command from 'effect/unstable/cli/Command'
 import * as Flag from 'effect/unstable/cli/Flag'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import * as packageJson from '../package.json'
 import * as Aliyun from './Aliyun.ts'
@@ -33,7 +33,7 @@ const BillingCycle = Schema.String.pipe(
   ),
 )
 
-const cycle = Argument.string('cycle').pipe(
+const cycle = Argument.String('cycle').pipe(
   Argument.withDescription(
     'Billing cycle to report on, as YYYY-MM (default: the current month)',
   ),
@@ -41,13 +41,13 @@ const cycle = Argument.string('cycle').pipe(
   Argument.optional,
 )
 
-const currency = Flag.choice('currency', ['usd', 'rub', 'both']).pipe(
+const currency = Flag.Literals('currency', ['usd', 'rub', 'both']).pipe(
   Flag.withAlias('c'),
   Flag.withDescription('Which currency columns to print'),
   Flag.withDefault('rub'),
 )
 
-const product = Flag.string('product').pipe(
+const product = Flag.String('product').pipe(
   Flag.withAlias('p'),
   Flag.withDescription(
     'Restrict the report to one product code (default: every product)',
@@ -55,19 +55,19 @@ const product = Flag.string('product').pipe(
   Flag.optional,
 )
 
-const transport = Flag.choice('transport', ['http', 'cli']).pipe(
+const transport = Flag.Literals('transport', ['http', 'cli']).pipe(
   Flag.withDescription(
     'Reach the API directly, or shell out to the `aliyun` binary',
   ),
   Flag.withDefault('http'),
 )
 
-const json = Flag.boolean('json').pipe(
+const json = Flag.Boolean('json').pipe(
   Flag.withDescription('Emit the aggregate as JSON instead of a table'),
   Flag.withDefault(false),
 )
 
-const nonzero = Flag.boolean('nonzero').pipe(
+const nonzero = Flag.Boolean('nonzero').pipe(
   Flag.withDescription('Hide models that cost nothing this cycle'),
   Flag.withDefault(false),
 )

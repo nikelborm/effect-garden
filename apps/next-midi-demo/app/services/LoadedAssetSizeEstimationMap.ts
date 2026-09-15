@@ -209,8 +209,10 @@ export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSize
           Effect.flatMap(e =>
             e.status === 'finished'
               ? Effect.void
-              : Effect.dieMessage(
-                  'Assertion failed: Expected Asset download to be finished',
+              : Effect.die(
+                  new Error(
+                    'Assertion failed: Expected Asset download to be finished',
+                  ),
                 ),
           ),
         ),

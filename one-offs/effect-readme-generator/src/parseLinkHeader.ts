@@ -16,7 +16,7 @@ const linkField = <const T extends string>(name: T) =>
     sort: Schema.Literal('updated', 'created'),
     url: Schema.URL,
   })
-    .annotations({ title: 'Link' })
+    .annotateKey({ title: 'Link' })
     .pipe(OptionalProperty)
 
 export class LinkHeader extends Schema.TaggedError<LinkHeader>()('LinkHeader', {

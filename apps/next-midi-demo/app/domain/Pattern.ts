@@ -63,7 +63,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
 }
 
 export const PatternSchema = Schema.Literals(patternsRawBase)
-  .annotations({ title: 'Pattern' })
+  .annotateKey({ title: 'Pattern' })
   .pipe(Schema.fromBrand(Pattern))
 
 export type UnbrandedPattern<TPattern extends Pattern> =
@@ -79,10 +79,10 @@ export const patternSomeSet: Set<PatternOption> = new Set(
   ),
 )
 
-export class AllPatterns extends Context.Tag('next-midi-demo/AllPatterns')<
+export class AllPatterns extends Context.Service<
   AllPatterns,
   AllPatternTuple
->() {
+>()('next-midi-demo/AllPatterns') {
   static readonly Default: Layer.Layer<AllPatterns> = Layer.succeed(
     this,
     allPatterns,

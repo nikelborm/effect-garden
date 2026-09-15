@@ -58,7 +58,7 @@ bunx fetch-github-folder \
   --repoName bliss-rs \
   --pathToEntityInRepo /data \
   --destinationPath bliss-audio/data \
-  --gitRef c5036035f63cd7d83e9152c2468a6a4a4bc9e0cc
+  --gitRef 0de922dd6121e11f958509f05a30444dcf2d12d2
 
 # If you're interested in studying the bliss-audio code too, you can clone the repo instead
 git clone git@github.com:Polochon-street/bliss-rs.git bliss-audio
@@ -79,7 +79,9 @@ bun build:ts
 
 The compiled library lands at `native/target/release/libbliss_native.so` (Linux)
 or `.dylib` (macOS). `bliss.ts` loads it from that path at import time. Although
-I currently don't compile for macOS/Windows because I didn't have a reson to yet
+I currently don't compile for macOS/Windows because I don't have them quickly
+avaialable. If you need this, file an issue in this repo, I'll try to do
+something about it.
 
 ## Usage
 
@@ -226,6 +228,8 @@ bun format:ts
 bun format:native
 ```
 
-Tests use the sample files bundled in `bliss-audio/data/` (`.flac`, `.cue`, etc.)
-and include snapshot tests for feature vectors and distance values. Make sure
-you fetched them with the command from the [Requirements](#Requirements) section.
+Tests reuse the sample files bundled in
+[`bliss-audio/data/`](https://github.com/Polochon-street/bliss-rs/tree/master/data)
+(`.flac`, `.cue`, etc.) and include snapshot tests for feature vectors and
+distance values. Make sure you fetched them with the command from the
+[Requirements](#Requirements) section.

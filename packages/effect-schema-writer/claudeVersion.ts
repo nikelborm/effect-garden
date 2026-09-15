@@ -85,8 +85,8 @@ const schemaEq = (a: SchemaIR, b: SchemaIR): boolean => {
     if (ak.join(',') !== bk.join(',')) return false
     return ak.every(
       k =>
-        a.fields[k]!.optional === b.fields[k]!.optional &&
-        schemaEq(a.fields[k]!.schema, b.fields[k]!.schema),
+        a.fields[k]?.optional === b.fields[k]?.optional &&
+        schemaEq(a.fields[k]?.schema, b.fields[k]?.schema),
     )
   }
   if (a._tag === 'Union' && b._tag === 'Union') {

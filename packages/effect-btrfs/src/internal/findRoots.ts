@@ -7,7 +7,6 @@ import {
 import * as Effect from 'effect/Effect'
 import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsFindRootsError } from './Errors.ts'
 
@@ -20,7 +19,7 @@ export const FoundRootsSchema = Schema.Struct({
 export type FoundRoots = (typeof FoundRootsSchema)['Type']
 export type FoundRoot = FoundRoots[number]
 
-const decodeFoundRoots = Schema.decodeUnknownEither(FoundRootsSchema)
+const decodeFoundRoots = Schema.decodeUnknownResult(FoundRootsSchema)
 
 export interface FindRootsOptions {
   readonly devicePath: string

@@ -171,7 +171,7 @@ export const createStreamMakerFrom =
                   })
                 : onNullStrategy === 'fail'
                   ? NullCausedErrorEffect
-                  : Effect.dieMessage(missingFieldMessage),
+                  : Effect.die(new Error(missingFieldMessage)),
             ),
             Stream.withSpan('MIDI Web API event stream', {
               kind: 'producer',
