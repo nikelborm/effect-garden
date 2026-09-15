@@ -192,13 +192,13 @@ export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandl
             ),
           )
 
-          return Sink.zipRight(
+          return Sink.flatMap(
             Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
               Effect.flatMap(Queue.offer(queue, data), accepted =>
                 accepted ? Effect.void : finalizeAndSurface,
               ),
             ),
-            Sink.fromEffect(finalizeAndSurface),
+            () => Sink.fromEffect(finalizeAndSurface),
           )
         }).pipe(
           Effect.withSpan('OpfsWritableHandleManager.acquireFileSink'),
