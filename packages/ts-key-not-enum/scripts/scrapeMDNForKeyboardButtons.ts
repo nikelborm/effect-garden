@@ -142,10 +142,10 @@ await Effect.gen(function* () {
       onNone: () => true,
       onSome: birthtime => {
         const cacheExpiresAt = DateTime.add(
-          DateTime.unsafeFromDate(birthtime),
+          DateTime.fromDateUnsafe(birthtime),
           { weeks: 1 },
         )
-        const isPastCacheExpiration = DateTime.unsafeNow().pipe(
+        const isPastCacheExpiration = DateTime.nowUnsafe().pipe(
           DateTime.isGreaterThanOrEqualTo(cacheExpiresAt),
         )
         return isPastCacheExpiration
@@ -169,7 +169,7 @@ await Effect.gen(function* () {
       yield* fs.makeDirectory(cacheDirPath, { recursive: true })
 
       yield* fs.writeFileString(cacheFilePath, mdxPageContent)
-    }, Effect.ignore),
+    }, Effect.ignore()),
   )
 
   const mdxPageContent = yield* Effect.orDieWith<
@@ -463,7 +463,7 @@ await Effect.gen(function* () {
       )) {
         const newStack = [...stack, nodeName]
         yield* walk(subNode, subNodeName, newStack).pipe(
-          Effect.catchAllCause(Effect.logError),
+          Effect.catchCause(Effect.logError),
         )
         indexFileBody += renderMainModuleTsDocString(subNode.main)
         indexFileBody += `export * as ${subNodeName} from './${subNodeName}.ts'\n\n`
@@ -493,7 +493,7 @@ await Effect.gen(function* () {
   yield* Effect.log('✓ All done! Successfully updated index.ts.')
 }).pipe(
   Effect.scoped,
-  Effect.catchAllCause(error => Console.error(error)),
+  Effect.catchCause(error => Console.error(error)),
   Effect.provide(AppLayer),
   // TODO: make custom runtime
   // https://typeonce.dev/course/effect-beginners-complete-getting-started/effect-in-production/most-common-effect-patterns#use-a-custom-runtime-from-the-beginning

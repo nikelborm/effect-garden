@@ -39,7 +39,7 @@ await Effect.gen(function* () {
       ),
     ),
     Effect.andThen(Effect.log('Success 🎉')),
-    Effect.ignore,
+    Effect.ignore(),
   )
   const validated = yield* decodeClaudeSession(parsed)
 
