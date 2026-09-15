@@ -8,7 +8,7 @@ import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import { KiB } from '@effect/platform/FileSystem'
 import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
-import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
+import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
 import * as Console from 'effect/Console'
@@ -94,7 +94,7 @@ const makeCacheError = (
 const AppLayer = MdxServiceLive.pipe(
   Layer.provideMerge(defaultMdxConfigLayer),
   Layer.provideMerge(FetchHttpClient.layer),
-  Layer.provideMerge(BunCommandExecutor.layer),
+  Layer.provideMerge(BunChildProcessSpawner.layer),
   Layer.provideMerge(BunFileSystem.layer),
   Layer.provideMerge(Logger.pretty),
   Layer.provideMerge(BunPath.layer),

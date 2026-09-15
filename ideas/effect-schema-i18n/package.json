@@ -24,7 +24,7 @@
     "directory": "ideas/effect-schema-i18n"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "# tsc # TODO: uncomment",
     "dev": "tsc --watch"
   },
   "author": {

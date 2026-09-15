@@ -4,7 +4,7 @@ import { prettyPrint } from 'effect-errors'
 
 import * as CliConfig from '@effect/cli/CliConfig'
 import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
-import * as BunCommandExecutor from '@effect/platform-bun/BunCommandExecutor'
+import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
@@ -52,7 +52,7 @@ const cli = Command.run(appCommand, {
 export const AppLayer = Layer.mergeAll(
   BunPath.layer,
   BunTerminal.layer,
-  Layer.provideMerge(BunCommandExecutor.layer, BunFileSystem.layer),
+  Layer.provideMerge(BunChildProcessSpawner.layer, BunFileSystem.layer),
   CliConfig.layer({ showTypes: false }),
 )
 
