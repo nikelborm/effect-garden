@@ -160,7 +160,7 @@ const CatalogEntry = Schema.Struct({
 
         return {
           ...decodedSelf,
-          cached: yield* Effect.catchAll(
+          cached: yield* Effect.catch(
             fs.readFileString(localSchemstoreSchemaFile),
             // TODO: verify that NotFound is the actual error that's thrown
             // because I also found a case where its thrown by CommandExecutor,

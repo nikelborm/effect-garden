@@ -639,7 +639,7 @@ export const isPlayStopButtonPressableAtom = EFunction.pipe(
 //   .fn(() =>
 //     AppPlaybackStateService.switchPlayPauseFromCurrentlySelected.pipe(
 //       Effect.orDie,
-//       Effect.tapErrorCause(Effect.logError),
+//       Effect.tapCause(Effect.logError),
 //     ),
 //   )
 //   .pipe(

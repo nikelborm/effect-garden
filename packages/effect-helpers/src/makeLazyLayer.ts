@@ -37,7 +37,7 @@ export const makeLazyLayer = <TTagId, TSuccess, TError, TRequirements>(
         fiberRefPatch: FiberRefsPatch.diff(before.refs, after.refs),
         runtimeFlagsPatch: RuntimeFlags.diff(before.flags, after.flags),
       })),
-      Effect.intoDeferred(deferred),
+      Deferred.into(deferred),
       Effect.forkScoped,
     )
 

@@ -1113,7 +1113,7 @@ const program = Effect.all([
   Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
-  Effect.catchAll(e => {
+  Effect.catch(e => {
     console.error(prettyPrint(e))
 
     return Effect.fail(e)

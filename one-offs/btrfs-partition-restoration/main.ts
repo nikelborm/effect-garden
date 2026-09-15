@@ -4,6 +4,7 @@ import { Btrfs } from 'effect-btrfs'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Console from 'effect/Console'
+import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
@@ -30,12 +31,11 @@ const decodeCacheEntries = Schema.decodeUnknownResult(
   Schema.Array(Schema.Tuple([Schema.String, CacheValueSchema])),
 )
 
-class SudoCommandExecutor extends Effect.Service<SudoCommandExecutor>()(
+class SudoCommandExecutor extends Context.Service<SudoCommandExecutor>()(
   'SudoCommandExecutor',
   {
-    accessors: true,
-    effect: Effect.gen(function* () {
-      const password = yield* Prompt.password({
+    make: Effect.gen(function* () {
+      const password = yield* Prompt.Password({
         message: 'Enter your password for sudo calls: ',
         validate: value =>
           value.length === 0

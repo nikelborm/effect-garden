@@ -3,7 +3,7 @@ import { schemaWithRelations } from '@trellisform/database'
 
 import * as PgDrizzlePg from '@effect/sql-drizzle/Pg'
 import * as PgClient from '@effect/sql-pg/PgClient'
-import * as Effect from 'effect/Effect'
+import * as Context from 'effect/Context'
 import * as Layer from 'effect/Layer'
 import * as EString from 'effect/String'
 
@@ -17,10 +17,10 @@ export const SqlLive = Layer.unwrap(
   ),
 )
 
-export class Database extends Effect.Service<Database>()(
+export class Database extends Context.Service<Database>()(
   '@trellisform/EffectfulDrizzle',
   {
-    effect: PgDrizzlePg.make({
+    make: PgDrizzlePg.make({
       schema: schemaWithRelations,
       casing: 'snake_case',
     }),

@@ -7,8 +7,8 @@ import {
 } from '@trellisform/database/schema'
 import { eq } from 'drizzle-orm'
 
-import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
 import * as Effect from 'effect/Effect'
+import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
 
 import { Database } from '../infrastructure/Database.ts'
 

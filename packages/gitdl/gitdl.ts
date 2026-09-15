@@ -65,7 +65,7 @@ pipe(
     },
   }),
   Effect.sandbox,
-  Effect.catchAll(e => {
+  Effect.catch(e => {
     console.error(prettyPrint(e))
 
     return Effect.fail(e)

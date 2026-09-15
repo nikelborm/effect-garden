@@ -24,7 +24,7 @@ export const cleanupAllPlaybacks = Effect.fn('cleanupAllPlaybacks')(function* (
   //     )
   //   },
   //   { discard: true },
-  // ).pipe(Effect.tapErrorCause(Effect.logError), Effect.forkDaemon)
+  // ).pipe(Effect.tapCause(Effect.logError), Effect.forkDaemon)
 
   yield* Effect.logError(state)
   return yield* Effect.die(new Error('not implemented'))

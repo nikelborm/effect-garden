@@ -34,7 +34,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
     never,
     TStreamR
   >,
-  inputBusWriterEffect: Context.ReadonlyTag<
+  inputBusWriterEffect: Context.Key<
     TBusR,
     InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>
   >,
@@ -90,7 +90,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
       }),
     ),
     Effect.withSpan('paramButtonStateRefUpdateFiber.lifetime'),
-    Effect.tapErrorCause(Effect.logError),
+    Effect.tapCause(Effect.logError),
     Effect.forkScoped,
   )
 

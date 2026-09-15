@@ -5,13 +5,13 @@ import {
 } from 'node:zlib'
 
 import * as NodeStream from '@effect/platform-node-shared/NodeStream'
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 import type * as Stream from 'effect/Stream'
 
-export class ZStd extends Effect.Service<ZStd>()('ZStd', {
-  accessors: true,
-  effect: Effect.gen(function* () {
+export class ZStd extends Context.Service<ZStd>()('ZStd', {
+  make: Effect.gen(function* () {
     const makeCompressionChannel = <IE>(options?: Options) =>
       NodeStream.fromDuplex<IE, ZstdCompressionError, Uint8Array, Uint8Array>(
         () => createZstdCompress(options?.zstdOptions),

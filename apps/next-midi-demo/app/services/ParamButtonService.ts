@@ -1,4 +1,4 @@
-import type * as Context from 'effect/Context'
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
@@ -27,10 +27,7 @@ const makeParamButtonService = <
   busTag,
   matches,
 }: {
-  readonly busTag: Context.ReadonlyTag<
-    TBusId,
-    InputBusReaderHandle<TParamButtonId>
-  >
+  readonly busTag: Context.Key<TBusId, InputBusReaderHandle<TParamButtonId>>
   // Does this button's value correspond to the given (selected or playing)
   // asset? The per-kind field comparison (accord / pattern / strength).
   readonly matches: (
@@ -134,13 +131,13 @@ const makeParamButtonService = <
     //   ),
     //   // rechunk because of the damn bug in effect
     //   Stream.rechunk(1),
-    //   Stream.broadcastDynamic({ capacity: 'unbounded' }),
+    //   Stream.broadcast({ capacity: 'unbounded' }),
     // )
 
     // yield* validPressesOnlyStream.pipe(
     //   Stream.tap(value => selectAction(registry, value)),
     //   Stream.runDrain,
-    //   Effect.tapErrorCause(Effect.logError),
+    //   Effect.tapCause(Effect.logError),
     //   Effect.forkScoped,
     // )
 
@@ -177,22 +174,20 @@ const makeParamButtonService = <
     }
   })
 
-export class AccordParamButtonService extends Effect.Service<AccordParamButtonService>()(
+export class AccordParamButtonService extends Context.Service<AccordParamButtonService>()(
   'next-midi-demo/AccordParamButtonService',
   {
-    accessors: true,
-    scoped: makeParamButtonService({
+    make: makeParamButtonService({
       busTag: AccordInputBus,
       matches: (asset, value) => asset.accord === value.id.accord,
     }).pipe(Effect.withSpan('AccordParamButtonService.init')),
   },
 ) {}
 
-export class PatternParamButtonService extends Effect.Service<PatternParamButtonService>()(
+export class PatternParamButtonService extends Context.Service<PatternParamButtonService>()(
   'next-midi-demo/PatternParamButtonService',
   {
-    accessors: true,
-    scoped: makeParamButtonService({
+    make: makeParamButtonService({
       busTag: PatternInputBus,
       matches: (asset, value) =>
         Option.exists(asset.pattern, pattern => pattern === value.id.pattern),
@@ -200,11 +195,10 @@ export class PatternParamButtonService extends Effect.Service<PatternParamButton
   },
 ) {}
 
-export class StrengthParamButtonService extends Effect.Service<StrengthParamButtonService>()(
+export class StrengthParamButtonService extends Context.Service<StrengthParamButtonService>()(
   'next-midi-demo/StrengthParamButtonService',
   {
-    accessors: true,
-    scoped: makeParamButtonService({
+    make: makeParamButtonService({
       busTag: StrengthInputBus,
       matches: (asset, value) => asset.strength === value.id.strength,
     }).pipe(Effect.withSpan('StrengthParamButtonService.init')),

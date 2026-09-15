@@ -1,4 +1,5 @@
 import * as Chunk from 'effect/Chunk'
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
@@ -74,7 +75,7 @@ const makeParamSpecificBus = Effect.fn('makeParamSpecificBus')(function* <
       Stream.withSpan('paramPressedByPhysicalButtonSetStream', {
         attributes: { paramButtonId },
       }),
-      Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+      Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
     ),
   }
 })
@@ -131,7 +132,7 @@ const makeInputBus = Effect.fnUntraced(function* <
         { concurrency: 'unbounded' },
       ),
       Stream.withSpan('pressesOnlyStream'),
-      Stream.broadcastDynamic({ capacity: 'unbounded' }),
+      Stream.broadcast({ capacity: 'unbounded' }),
     )
 
   const register = (
@@ -203,31 +204,28 @@ export type SupportedPhysicalButtonIds =
   | PatternData
   | StrengthData
 
-export class AccordInputBus extends Effect.Service<AccordInputBus>()(
+export class AccordInputBus extends Context.Service<AccordInputBus>()(
   'next-midi-demo/AccordInputBus',
   {
-    accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, AccordData>().pipe(
+    make: makeInputBus<SupportedPhysicalButtonIds, AccordData>().pipe(
       Effect.withSpan('AccordInputBus.init'),
     ),
   },
 ) {}
 
-export class PatternInputBus extends Effect.Service<PatternInputBus>()(
+export class PatternInputBus extends Context.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
   {
-    accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, PatternData>().pipe(
+    make: makeInputBus<SupportedPhysicalButtonIds, PatternData>().pipe(
       Effect.withSpan('PatternInputBus.init'),
     ),
   },
 ) {}
 
-export class StrengthInputBus extends Effect.Service<StrengthInputBus>()(
+export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
   {
-    accessors: true,
-    scoped: makeInputBus<SupportedPhysicalButtonIds, StrengthData>().pipe(
+    make: makeInputBus<SupportedPhysicalButtonIds, StrengthData>().pipe(
       Effect.withSpan('StrengthInputBus.init'),
     ),
   },

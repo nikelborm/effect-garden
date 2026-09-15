@@ -1,3 +1,4 @@
+import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
 import { flow, pipe } from 'effect/Function'
@@ -14,11 +15,10 @@ import { makeAssetPointerMapFactory } from '../helpers/makeAssetPointerMap.ts'
 import { listEntries } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
-export class LoadedAssetSizeEstimationMap extends Effect.Service<LoadedAssetSizeEstimationMap>()(
+export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSizeEstimationMap>()(
   'next-midi-demo/LoadedAssetSizeEstimationMap',
   {
-    accessors: true,
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
       const makeEmptyAssetToSizeHashMap =

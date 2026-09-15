@@ -36,7 +36,7 @@ const ifConfigAbsentFallbackTo =
   >(
     self: Effect.Effect<A, E, R>,
   ): Res =>
-    Effect.catchAll(self, err =>
+    Effect.catch(self, err =>
       ConfigError.isConfigError(err) && ConfigError.isMissingDataOnly(err)
         ? (fallback as Res)
         : Effect.fail(err),
@@ -92,7 +92,7 @@ export class BackendExternallyAvailableAtURL extends Context.Service<
 >()('@evadev/backend-config/index/BackendExternallyAvailableAtURL') {
   static Live = pipe(
     Config.url('EXTERNALLY_AVAILABLE_AT_URL'),
-    Effect.catchAll(err =>
+    Effect.catch(err =>
       EnvType.use(env =>
         env === 'development' && ConfigError.isMissingDataOnly(err)
           ? Config.port('EXTERNAL_PROXIED_PORT').pipe(
@@ -125,11 +125,11 @@ export class OpenTelemetryProcessingURL extends Context.Service<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class BetterAuthSecret extends Effect.Service<BetterAuthSecret>()(
+export class BetterAuthSecret extends Context.Service<BetterAuthSecret>()(
   '@evadev/backend-config/index/BetterAuthSecret',
   {
     dependencies: [EnvType.Live],
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const env = yield* EnvType
       const fs = yield* FileSystem.FileSystem
 
@@ -158,10 +158,10 @@ export class BetterAuthSecret extends Effect.Service<BetterAuthSecret>()(
 const ConfigStringWithMinLength2 = (name: string) =>
   Schema.Config(name, Schema.String.pipe(Schema.minLength(2)))
 
-export class DbConfig extends Effect.Service<DbConfig>()(
+export class DbConfig extends Context.Service<DbConfig>()(
   '@evadev/backend-config/index/DbConfig',
   {
-    effect: Config.all({
+    make: Config.all({
       host: ConfigStringWithMinLength2('DATABASE_HOST'),
       port: Config.Port('DATABASE_PORT'),
       username: ConfigStringWithMinLength2('DATABASE_USERNAME'),

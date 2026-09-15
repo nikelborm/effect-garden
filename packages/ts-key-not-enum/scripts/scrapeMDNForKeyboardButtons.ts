@@ -4,7 +4,6 @@ import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
 
-import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
@@ -23,6 +22,7 @@ import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 import * as HttpClient from 'effect/unstable/http/HttpClient'
+import type * as HttpClientError from 'effect/unstable/http/HttpClientError'
 import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
@@ -52,7 +52,7 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
     .replaceAll(/<!--.*-->/g, '')
     .replaceAll(/[\n ]*>/g, '>')
 }).pipe(
-  Effect.tapErrorCause(cause =>
+  Effect.tapCause(cause =>
     Effect.logError('Failed to fetch from GitHub: ', cause),
   ),
 )
@@ -156,9 +156,9 @@ await Effect.gen(function* () {
     `The script will attempt to ${preferRefetch ? 'fetch from github' : 'read from cache'} first`,
   )
 
-  const readCacheFile = Effect.tapErrorCause(
+  const readCacheFile = Effect.tapCause(
     cacheFallback
-      ? Effect.catchAll(fs.readFileString(cacheFilePath), makeCacheError)
+      ? Effect.catch(fs.readFileString(cacheFilePath), makeCacheError)
       : makeCacheError({ message: 'cacheFallback is null' }),
     cause => Effect.logError('Failed to read from cache: ', cause),
   )
@@ -179,12 +179,12 @@ await Effect.gen(function* () {
   >(
     preferRefetch
       ? fetchAndCacheLocally.pipe(
-          Effect.tapErrorCause(() => Effect.log('Falling back to cache...')),
-          Effect.orElse(() => readCacheFile),
+          Effect.tapCause(() => Effect.log('Falling back to cache...')),
+          Effect.catch(() => readCacheFile),
         )
       : readCacheFile.pipe(
-          Effect.tapErrorCause(() => Effect.log('Falling back to GitHub...')),
-          Effect.orElse(() => fetchAndCacheLocally),
+          Effect.tapCause(() => Effect.log('Falling back to GitHub...')),
+          Effect.catch(() => fetchAndCacheLocally),
         ),
     () => 'Failed to both fetch from GitHub and read from cache',
   )

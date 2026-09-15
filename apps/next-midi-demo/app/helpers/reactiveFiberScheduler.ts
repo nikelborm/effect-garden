@@ -19,7 +19,7 @@ export const reactivelySchedule = <TStreamA, TStreamR, TEffectR>(
     ) =>
       Runtime.runFork(
         runtime,
-        Effect.tapErrorCause(effect, Effect.logError),
+        Effect.tapCause(effect, Effect.logError),
         options,
       )
 

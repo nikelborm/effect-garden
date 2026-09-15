@@ -44,7 +44,7 @@ export const DEFAULT_OVERRIDES: Overrides = {
 
 // Supports exact match and trailing /* glob (e.g. '@effect/*').
 // The * matches exactly one path segment, so '@effect/*' matches '@effect/platform'
-// but NOT '@effect/platform/HttpApiError' (which is already a subpath specifier).
+// but NOT 'effect/unstable/httpapi/HttpApiError' (which is already a subpath specifier).
 function matchesGlob(pkg: string, pattern: string): boolean {
   if (pattern === pkg) return true
   if (pattern.endsWith('/*')) {

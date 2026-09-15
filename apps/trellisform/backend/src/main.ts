@@ -16,11 +16,6 @@ import {
   UserWithSessionMiddlewareLive,
 } from '@trellisform/backend-better-auth-service'
 
-import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
-import * as HttpApiScalar from '@effect/platform/HttpApiScalar'
-import * as HttpMiddleware from '@effect/platform/HttpMiddleware'
-import * as HttpServerRequest from '@effect/platform/HttpServerRequest'
-import * as OpenApi from '@effect/platform/OpenApi'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunHttpServer from '@effect/platform-bun/BunHttpServer'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
@@ -29,6 +24,11 @@ import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Logger from 'effect/Logger'
 import * as Option from 'effect/Option'
+import * as HttpMiddleware from 'effect/unstable/http/HttpMiddleware'
+import * as HttpServerRequest from 'effect/unstable/http/HttpServerRequest'
+import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
+import * as HttpApiScalar from 'effect/unstable/httpapi/HttpApiScalar'
+import * as OpenApi from 'effect/unstable/httpapi/OpenApi'
 
 import { AbstractAnswerOptionHttpGroupLive } from './services/abstractAnswerOption/Http.ts'
 import { AbstractQuestionHttpGroupLive } from './services/abstractQuestion/Http.ts'

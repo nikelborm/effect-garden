@@ -1,12 +1,14 @@
 import * as Cause from 'effect/Cause'
+import * as Context from 'effect/Context'
 import * as Deferred from 'effect/Deferred'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
-import * as Mailbox from 'effect/Mailbox'
 import * as Option from 'effect/Option'
+import * as Queue from 'effect/Queue'
 import * as Ref from 'effect/Ref'
+import * as Semaphore from 'effect/Semaphore'
 import * as Sink from 'effect/Sink'
 import * as Stream from 'effect/Stream'
 import * as Tracer from 'effect/Tracer'
@@ -25,14 +27,14 @@ import {
 } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
-export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandleManager>()(
+export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandleManager>()(
   'next-midi-demo/OpfsWritableHandleManager',
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const assetToSemaphoreMapRef = yield* Ref.make(
-        HashMap.empty<AssetPointer, Effect.Semaphore>(),
+        HashMap.empty<AssetPointer, Semaphore.Semaphore>(),
       )
 
       const acquireScopedWritePermit = (asset: AssetPointer) =>
@@ -40,7 +42,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           Ref.modify(map => {
             const existingSemaphoreOption = HashMap.get(map, asset)
             const semaphore = Option.getOrElse(existingSemaphoreOption, () =>
-              Effect.unsafeMakeSemaphore(1),
+              Semaphore.makeUnsafe(1),
             )
             return [
               // effect's success
@@ -87,12 +89,12 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             }),
           )
 
-          const mailbox = yield* Mailbox.make<Uint8Array<ArrayBuffer>>()
+          const queue = yield* Queue.make<Uint8Array<ArrayBuffer>, Cause.Done>()
 
           const writerDeferred =
             yield* Deferred.make<Exit.Exit<void, OPFSError>>()
 
-          yield* Mailbox.toStream(mailbox).pipe(
+          yield* Stream.fromQueue(queue).pipe(
             Stream.runForEach(data =>
               write(writablePointingAtTheEnd, data).pipe(
                 Effect.zip(
@@ -106,9 +108,9 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
                 }),
               ),
             ),
-            Effect.tapErrorCause(() => mailbox.shutdown), // forceful
+            Effect.tapCause(() => Queue.shutdown(queue)), // forceful
             Effect.exit,
-            Effect.intoDeferred(writerDeferred),
+            Deferred.into(writerDeferred),
             Effect.uninterruptible,
             Effect.withSpan('OpfsFileSink.writerFiber.lifetime'),
             self =>
@@ -124,7 +126,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
             // Effect.forkScoped might trigger the interruption of drain
             // operation when the stream that is drained into the current sink
             // finishes. And I want to avoid that.
-            Effect.forkDaemon,
+            Effect.forkDetach,
           )
 
           // Memoized via Effect.cached so it can be driven from BOTH the sink's
@@ -132,7 +134,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
           // safety-net) while its side effects run exactly once.
           const finalize = yield* Effect.cached(
             Effect.gen(function* () {
-              yield* mailbox.end // graceful: writer drains the rest, then exits
+              yield* Queue.end(queue) // graceful: writer drains the rest, then exits
               const writerExit = yield* Deferred.await(writerDeferred)
               const closeExit = yield* Effect.exit(
                 closeWritable(writablePointingAtTheEnd),
@@ -192,7 +194,7 @@ export class OpfsWritableHandleManager extends Effect.Service<OpfsWritableHandle
 
           return Sink.zipRight(
             Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
-              Effect.flatMap(mailbox.offer(data), accepted =>
+              Effect.flatMap(Queue.offer(queue, data), accepted =>
                 accepted ? Effect.void : finalizeAndSurface,
               ),
             ),

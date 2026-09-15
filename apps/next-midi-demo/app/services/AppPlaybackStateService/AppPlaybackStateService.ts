@@ -1,3 +1,4 @@
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -15,12 +16,10 @@ import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { SilenceBoundPlayback } from './types/SilenceBoundPlayback.ts'
-
-export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateService>()(
+export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
-    accessors: true,
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
         SilenceBoundPlayback.make({
           accord: defaultAccord,
@@ -40,7 +39,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
 
       //     return Silence.make()
       //   }),
-      // ).pipe(Effect.tapErrorCause(Effect.logError))
+      // ).pipe(Effect.tapCause(Effect.logError))
 
       // yield* Effect.addFinalizer(() =>
       //   Effect.map(stateRef, state =>
@@ -60,7 +59,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
         ),
         Stream.changes,
         Stream.rechunk(1),
-        Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }),
+        Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
       )
 
       // STUB: download-gating lived in CurrentlySelectedAssetState, now deleted.
@@ -68,7 +67,7 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       // pressable. Real inference-from-playback comes later.
       const playStopButtonPressableFlagChangesStream = yield* Stream.succeed(
         true,
-      ).pipe(Stream.broadcastDynamic({ capacity: 'unbounded', replay: 1 }))
+      ).pipe(Stream.broadcast({ capacity: 'unbounded', replay: 1 }))
 
       // const _playbackPublicInfoChangesStream = Stream.map(
       //   stateRef.changes,
@@ -91,12 +90,12 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
           SubscriptionRef.updateEffect(stateRef, state =>
             advancePlayback(state, signal.id).pipe(
               Effect.provideService(CleanupFiberMaker, makeCleanupFibers),
-              Effect.tapErrorCause(Effect.logError),
+              Effect.tapCause(Effect.logError),
             ),
           ),
         ),
 
-        Effect.tapErrorCause(Effect.logError),
+        Effect.tapCause(Effect.logError),
         Effect.forkScoped,
       )
       // Stream.mergeAll([,], { concurrency: 'unbounded' })
@@ -127,13 +126,13 @@ export class AppPlaybackStateService extends Effect.Service<AppPlaybackStateServ
       //       ).pipe(
       //         stateSemaphore.withPermits(1),
       //         Effect.delay(Duration.seconds(Math.max(0, remainingSeconds))),
-      //         Effect.tapErrorCause(Effect.logError),
+      //         Effect.tapCause(Effect.logError),
       //         Effect.forkDaemon,
       //       )
       //     }),
       //   ),
       //   Stream.runDrain,
-      //   Effect.tapErrorCause(Effect.logError),
+      //   Effect.tapCause(Effect.logError),
       //   Effect.forkScoped,
       // )
 

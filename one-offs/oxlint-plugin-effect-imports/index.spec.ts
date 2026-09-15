@@ -9,12 +9,12 @@ const tester = new RuleTester({
 
 describe('effect-imports/named-to-namespace', () => {
   test('does not flag already-specific subpath specifiers (glob only matches one segment)', () => {
-    // '@effect/platform/HttpApiError' must NOT match '@effect/*' —
+    // 'effect/unstable/httpapi/HttpApiError' must NOT match '@effect/*' —
     // it is already a subpath specifier, not a package root.
     tester.run('named-to-namespace', namedToNamespace, {
       valid: [
         {
-          code: `import { Unauthorized } from '@effect/platform/HttpApiError'`,
+          code: `import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'`,
         },
         { code: `import { KiB } from '@effect/platform/FileSystem'` },
         { code: `import { PlatformError } from '@effect/platform/Error'` },
@@ -41,7 +41,7 @@ describe('effect-imports/named-to-namespace', () => {
         { code: `import * as EArray from 'effect/Array'` },
         { code: `import { pipe } from 'effect/Function'` },
         {
-          code: `import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'`,
+          code: `import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'`,
         },
         {
           code: `import * as BunRuntime from '@effect/platform-bun/BunRuntime'`,
@@ -59,15 +59,15 @@ describe('effect-imports/named-to-namespace', () => {
           // @effect/platform — all PascalCase, fully auto-inferred, no override entry required
           code: `import { HttpApiBuilder } from '@effect/platform'`,
           errors: [{ messageId: 'useSubpathImport' }],
-          output: `import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'`,
+          output: `import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'`,
         },
         {
           code: `import { HttpApiBuilder, HttpMiddleware, HttpServerRequest } from '@effect/platform'`,
           errors: [{ messageId: 'useSubpathImport' }],
           output: [
-            `import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'`,
-            `import * as HttpMiddleware from '@effect/platform/HttpMiddleware'`,
-            `import * as HttpServerRequest from '@effect/platform/HttpServerRequest'`,
+            `import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'`,
+            `import * as HttpMiddleware from 'effect/unstable/http/HttpMiddleware'`,
+            `import * as HttpServerRequest from 'effect/unstable/http/HttpServerRequest'`,
           ].join('\n'),
         },
         {

@@ -9,7 +9,7 @@ https://github.com/APIDevTools/json-schema-ref-parser/tree/main/test
 5. integrate https://github.com/useairfoil/typescript-sdk/tree/main/packages/effect-vcr
 6. add Effect.withRuntimeFlagsPatch to audio context/midi shit and maybe dom manipulation shit
 7. make initialization of EMidiAccess layer non-blocking. Likely would require
-   creating a special helper to replace Effect.service. the example:
+   creating a special helper to replace Context.Service. the example:
 
    ```ts
    import * as BunRuntime from '@effect/platform-bun/BunRuntime'

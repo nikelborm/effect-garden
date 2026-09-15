@@ -9,14 +9,14 @@ import {
   UserUpdatedAtDateFieldSchema,
 } from '@trellisform/model'
 
-import * as HttpApiEndpoint from '@effect/platform/HttpApiEndpoint'
-import { Unauthorized } from '@effect/platform/HttpApiError'
-import * as HttpApiGroup from '@effect/platform/HttpApiGroup'
-import * as HttpApiMiddleware from '@effect/platform/HttpApiMiddleware'
-import * as HttpApiSchema from '@effect/platform/HttpApiSchema'
 import * as Context from 'effect/Context'
 import * as Schema from 'effect/Schema'
 import { decodeUnknownEither } from 'effect/Schema'
+import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
+import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'
+import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
+import * as HttpApiMiddleware from 'effect/unstable/httpapi/HttpApiMiddleware'
+import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
 
 export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>(
   'BetterAuthApiError',

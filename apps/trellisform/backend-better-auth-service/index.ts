@@ -17,17 +17,17 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
-// import { createServer } from 'node:http';
-import * as HttpApiBuilder from '@effect/platform/HttpApiBuilder'
-import { Unauthorized } from '@effect/platform/HttpApiError'
-import * as HttpServerRequest from '@effect/platform/HttpServerRequest'
-import * as HttpServerResponse from '@effect/platform/HttpServerResponse'
 import * as BunHttpServerRequest from '@effect/platform-bun/BunHttpServerRequest'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Redacted from 'effect/Redacted'
 import * as Schema from 'effect/Schema'
+import * as HttpServerRequest from 'effect/unstable/http/HttpServerRequest'
+import * as HttpServerResponse from 'effect/unstable/http/HttpServerResponse'
+// import { createServer } from 'node:http';
+import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
+import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'
 
 // Other implementations
 // https://github.com/search?type=code&q=%2F%5B%27%22%5Dbetter-auth%5B%27%22%5C%2F%5D%2F+AND+%2F%5B%27%22%5D%40%3Feffect%5B%27%22%5C%2F%5D%2F+AND+language%3ATypeScript
@@ -41,10 +41,10 @@ export class GetSessionError extends Schema.TaggedError<GetSessionError>(
 // Create a separate Drizzle database tag for better-auth
 export class AuthDb extends Context.Service<AuthDb, any>()('@app/AuthDb') {}
 
-export class EffectlessDrizzleAuthDbService extends Effect.Service<EffectlessDrizzleAuthDbService>()(
+export class EffectlessDrizzleAuthDbService extends Context.Service<EffectlessDrizzleAuthDbService>()(
   '@trellisform/EffectlessDrizzleAuthDbService',
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const {
         db: { password, ...dbConfig },
       } = yield* DbConfig
@@ -127,10 +127,10 @@ export class EffectlessDrizzleAuthDbService extends Effect.Service<EffectlessDri
   },
 ) {}
 
-export class BetterAuth extends Effect.Service<BetterAuth>()(
+export class BetterAuth extends Context.Service<BetterAuth>()(
   '@app/BetterAuth',
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       // Get the separate Drizzle database instance for auth
       const { authDbSchema, effectlessDrizzleAuthDbInstance } =
         yield* EffectlessDrizzleAuthDbService

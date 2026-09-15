@@ -1,11 +1,12 @@
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 
 import { OPFSError } from './opfs.ts'
 
-export class RootDirectoryHandle extends Effect.Service<RootDirectoryHandle>()(
+export class RootDirectoryHandle extends Context.Service<RootDirectoryHandle>()(
   'next-midi-demo/RootDirectoryHandle',
   {
-    effect: Effect.tryPromise({
+    make: Effect.tryPromise({
       try: async () => {
         console.time('RootDirectoryHandle')
         const res = await navigator.storage.getDirectory()

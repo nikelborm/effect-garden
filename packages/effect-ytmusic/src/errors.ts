@@ -1,6 +1,6 @@
-import * as HttpClientError from '@effect/platform/HttpClientError'
 import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
+import * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
 export class NetworkError extends Schema.TaggedError<NetworkError>()(
   'NetworkError',

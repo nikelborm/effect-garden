@@ -78,7 +78,7 @@ const testValidityOfErrorThrownByEffect =
           ),
         )
       }),
-      Effect.catchAll(err => {
+      Effect.catch(err => {
         ctx
           .expect(err, `Error thrown by ${effectDescription}`)
           .toBeInstanceOf(ExpectedErrorClass)

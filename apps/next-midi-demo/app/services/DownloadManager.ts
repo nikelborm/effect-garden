@@ -1,9 +1,10 @@
-import type * as HttpClientError from '@effect/platform/HttpClientError'
+import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as FiberMap from 'effect/FiberMap'
 import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
 import * as HttpClient from 'effect/unstable/http/HttpClient'
+import type * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
 import type { AssetPointer } from '../domain/AssetPointer.ts'
@@ -13,10 +14,10 @@ import { getFibersOfFiberMap } from '../helpers/getFibersOfFiberMap.ts'
 import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from './OpfsWritableHandleManager.ts'
 
-export class DownloadManager extends Effect.Service<DownloadManager>()(
+export class DownloadManager extends Context.Service<DownloadManager>()(
   'next-midi-demo/DownloadManager',
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const fiberMap = yield* FiberMap.make<AssetPointer, void, never>()
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const assetAdditionSemaphore = yield* Effect.makeSemaphore(1)
@@ -122,7 +123,7 @@ const downloadRemainingAssetPart = Effect.fn(
       Stream.run(opfs.acquireFileSink(asset)),
     )
   }).pipe(
-    Effect.tapErrorCause(cause =>
+    Effect.tapCause(cause =>
       Effect.logError('Failure while downloading asset: ', cause),
     ),
     Effect.withSpan('DownloadManager.assetDownloadingAttempt'),

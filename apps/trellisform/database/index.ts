@@ -1,6 +1,6 @@
 import { make } from 'drizzle-orm/effect-postgres'
 
-import * as Effect from 'effect/Effect'
+import * as Context from 'effect/Context'
 
 import { relationalSchema } from './src/relations.ts'
 import * as Schema from './src/schema.ts'
@@ -10,8 +10,8 @@ export type schema = typeof schema
 
 export { relationalSchema }
 
-export class DrizzleDB extends Effect.Service<DrizzleDB>()('DrizzleDB', {
-  effect: make({
+export class DrizzleDB extends Context.Service<DrizzleDB>()('DrizzleDB', {
+  make: make({
     schema,
     relations: relationalSchema,
     casing: 'snake_case',
