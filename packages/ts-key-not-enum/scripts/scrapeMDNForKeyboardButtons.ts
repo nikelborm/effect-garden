@@ -107,7 +107,7 @@ const AppLayer = MdxServiceLive.pipe(
   Layer.provideMerge(FetchHttpClient.layer),
   Layer.provideMerge(BunChildProcessSpawner.layer),
   Layer.provideMerge(BunFileSystem.layer),
-  Layer.provideMerge(Logger.pretty),
+  Layer.provideMerge(Logger.layer([Logger.consolePrettyTty()])),
   Layer.provideMerge(BunPath.layer),
 )
 

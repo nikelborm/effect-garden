@@ -8,6 +8,7 @@ import type * as MediaBrand from 'effect-web-mediacapture-streams/MediaBrand'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import * as Formatter from 'effect/Formatter'
 import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
@@ -88,7 +89,7 @@ const Proto = {
     return Pipeable.pipeArguments(this, arguments)
   },
   toString() {
-    return Inspectable.format(this.toJSON())
+    return Formatter.formatJson(this.toJSON(), { space: 2 })
   },
   toJSON() {
     return { _id: 'EAudioContext', config: this._config }

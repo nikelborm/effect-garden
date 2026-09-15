@@ -4,7 +4,7 @@ import type * as Types from 'effect/Types'
 const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
 
 // TODO: deduplicate with effect-web-midi
-const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
+const ErrorSchema = <TSchema extends Schema.Constraint | undefined = undefined>(
   nameSchema?: TSchema,
 ) =>
   Schema.Struct({
@@ -13,10 +13,8 @@ const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
       ? typeof NonEmptyTrimmedString
       : TSchema,
     message: Schema.Trimmed.check(Schema.isNonEmpty()),
-    stack: Schema.Trimmed.check(Schema.isNonEmpty()).pipe(
-      Schema.optionalWith({ exact: true }),
-    ),
-    cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
+    stack: Schema.optionalKey(Schema.Trimmed.check(Schema.isNonEmpty())),
+    cause: Schema.optionalKey(Schema.Unknown),
   })
 
 // TODO: deduplicate with effect-web-midi
@@ -51,7 +49,7 @@ export class MediaDeviceEnumerationNotSupportedError extends Schema.TaggedError<
   'MediaDeviceEnumerationNotSupportedError',
   {
     cause: ErrorSchema(
-      Schema.Literal('NotSupportedError', 'ReferenceError', 'TypeError'),
+      Schema.Literals(['NotSupportedError', 'ReferenceError', 'TypeError']),
     ),
   },
 ) {}

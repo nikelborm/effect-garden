@@ -1,6 +1,5 @@
 import {
   buildEntityPartsPrefixed,
-  OptionalProperty,
   withNewStructFields,
 } from '@evadev/effect-helpers'
 
@@ -12,7 +11,7 @@ const addRequiredName = withNewStructFields({
 })
 
 const addOptionalDescription = withNewStructFields({
-  description: Schema.String.pipe(OptionalProperty),
+  description: Schema.String.pipe(Schema.optionalKey),
 })
 
 const _addRequiredNameWithOptionalDescription = EFunction.flow(
@@ -57,7 +56,7 @@ export const { UserIdFromNumberSchema, UserIdFromStringSchema, UserSchema } =
       email: UserEmailFieldSchema,
       emailVerified: IsUserEmailVerifiedFieldSchema,
       canCreateEducationalSpaces: CanUserCreateEducationalSpacesSchema,
-      avatar: UserAvatarFieldSchema.pipe(OptionalProperty),
+      avatar: UserAvatarFieldSchema.pipe(Schema.optionalKey),
       createdAt: UserCreatedAtDateFieldSchema,
       updatedAt: UserUpdatedAtDateFieldSchema,
     },

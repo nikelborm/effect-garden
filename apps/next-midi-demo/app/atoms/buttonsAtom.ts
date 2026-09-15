@@ -65,45 +65,45 @@ import { somebodyKillMe, TracingLive } from './tracing.ts'
 
 const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
   Layer.withSpan('AccordInputBus.Default'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 const PatternInputBusNoDeps = PatternInputBus.Default.pipe(
   Layer.withSpan('PatternInputBus.Default'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 const StrengthInputBusNoDeps = StrengthInputBus.Default.pipe(
   Layer.withSpan('StrengthInputBus.Default'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AllBusesNoDeps = Layer.mergeAll(
   AccordInputBusNoDeps,
   PatternInputBusNoDeps,
   StrengthInputBusNoDeps,
-).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.ensureRequirementsType<never>())
+).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.satisfiesServicesType<never>())
 
 const AllAccordsNoDeps = AllAccords.Default.pipe(
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 const AllPatternsNoDeps = AllPatterns.Default.pipe(
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 const AllStrengthsNoDeps = AllStrengths.Default.pipe(
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AllConstantsNoDeps = Layer.mergeAll(
   AllAccordsNoDeps,
   AllPatternsNoDeps,
   AllStrengthsNoDeps,
-).pipe(Layer.ensureRequirementsType<never>())
+).pipe(Layer.satisfiesServicesType<never>())
 
 const AllConstantsAndBusesNoDeps = Layer.mergeAll(
   AllBusesNoDeps,
   AllConstantsNoDeps,
 ).pipe(
   Layer.withSpan('AllConstantsAndBusesNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
@@ -116,33 +116,33 @@ const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
     ),
   ),
   Layer.withSpan('EMIDIAccess.layerSoftwareSynthSupported'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const SelectedMIDIInputWithAccessServiceNoDeps =
   SelectedMIDIInputService.Default.pipe(
     Layer.provideMerge(MIDIAccessNoDeps),
     Layer.withSpan('SelectedMIDIInputWithAccessServiceNoDeps'),
-    Layer.ensureRequirementsType<never>(),
+    Layer.satisfiesServicesType<never>(),
   )
 // background
 const KeyboardButtonMappingLayerNoDeps = KeyboardButtonMappingLayer.pipe(
   Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.withSpan('KeyboardButtonMappingLayerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 // background
 const MIDIPadButtonMappingLayerNoDeps = MIDIPadButtonMappingLayer.pipe(
   Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.provide(SelectedMIDIInputWithAccessServiceNoDeps),
   Layer.withSpan('MIDIPadButtonMappingLayerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 // background
 const OnScreenButtonMappingLayerNoDeps = OnScreenButtonMappingLayer.pipe(
   Layer.provide(AllConstantsAndBusesNoDeps),
   Layer.withSpan('OnScreenButtonMappingLayerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 // background
@@ -152,12 +152,12 @@ const AllButtonMappingLayerNoDeps = Layer.mergeAll(
   OnScreenButtonMappingLayerNoDeps,
 ).pipe(
   Layer.withSpan('AllButtonMappingLayerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
   Layer.withSpan('RootDirectoryHandleNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const LoadedAssetSizeEstimationMapNoDeps =
@@ -165,26 +165,26 @@ const LoadedAssetSizeEstimationMapNoDeps =
     Layer.provide(RootDirectoryHandleNoDeps),
     Layer.provide(AllConstantsNoDeps),
     Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
-    Layer.ensureRequirementsType<never>(),
+    Layer.satisfiesServicesType<never>(),
   )
 
 const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AudioContextLive = EAudioContext.layer().pipe(
   Layer.orDie,
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
   Layer.provide(AudioContextLive),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 // Every WebAudio side effect the playback state machine
@@ -201,7 +201,7 @@ const WebAudioSideEffectsNoDeps = Layer.mergeAll(
 ).pipe(
   Layer.provide(AudioContextLive),
   Layer.withSpan('WebAudioSideEffectsNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
@@ -210,7 +210,7 @@ const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
   Layer.provide(AllBusesNoDeps),
   Layer.provide(WebAudioSideEffectsNoDeps),
   Layer.withSpan('AppPlaybackStateServiceNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const DownloadManagerNoDeps = DownloadManager.Default.pipe(
@@ -218,28 +218,28 @@ const DownloadManagerNoDeps = DownloadManager.Default.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(OpfsWritableHandleManagerNoDeps),
   Layer.withSpan('DownloadManagerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 // background
 const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
   Layer.provide(DownloadManagerNoDeps),
   Layer.withSpan('AssetDownloadSchedulerNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
   Layer.provide(AccordInputBusNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('AccordParamButtonServiceNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
   Layer.provide(PatternInputBusNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('PatternParamButtonServiceNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 const StrengthParamButtonServiceNoDeps =
@@ -247,7 +247,7 @@ const StrengthParamButtonServiceNoDeps =
     Layer.provide(StrengthInputBusNoDeps),
     Layer.provide(AppPlaybackStateServiceNoDeps),
     Layer.withSpan('StrengthParamButtonServiceNoDeps'),
-    Layer.ensureRequirementsType<never>(),
+    Layer.satisfiesServicesType<never>(),
   )
 
 const ParamButtonServiceNoDeps = Layer.mergeAll(
@@ -256,7 +256,7 @@ const ParamButtonServiceNoDeps = Layer.mergeAll(
   StrengthParamButtonServiceNoDeps,
 ).pipe(
   Layer.withSpan('ParamButtonServiceNoDeps'),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
 )
 
 export const AppLayer = Layer.mergeAll(
@@ -265,11 +265,11 @@ export const AppLayer = Layer.mergeAll(
   AllButtonMappingLayerNoDeps,
   AssetDownloadSchedulerNoDeps,
 ).pipe(
-  Layer.provideMerge(Logger.pretty),
+  Layer.provideMerge(Logger.layer([Logger.consolePrettyBrowser()])),
   Layer.withSpan('AppLayer'),
 
   Layer.provide(TracingLive),
-  Layer.ensureRequirementsType<never>(),
+  Layer.satisfiesServicesType<never>(),
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
 )
 

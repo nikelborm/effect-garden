@@ -3,6 +3,7 @@
 
 import * as Brand from 'effect/Brand'
 import * as Equal from 'effect/Equal'
+import * as Formatter from 'effect/Formatter'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
@@ -47,7 +48,7 @@ const CommonProto = {
   },
 
   toString() {
-    return Inspectable.format(this.toJSON())
+    return Formatter.formatJson(this.toJSON(), { space: 2 })
   },
 
   toJSON() {

@@ -200,10 +200,7 @@ const decodeCatalog = Schema.decode(CatalogSchema, {
 const AppLayer = Layer.mergeAll(
   NodePath.layer,
   NodeFileSystem.layer,
-  Logger.replace(
-    Logger.defaultLogger,
-    Logger.prettyLogger({ colors: true, mode: 'browser' }),
-  ),
+  Logger.replace(Logger.defaultLogger, Logger.consolePretty({ colors: true })),
 )
 
 Effect.gen(function* () {

@@ -1,4 +1,3 @@
-import { OptionalProperty } from '@evadev/effect-helpers'
 import parseLinkHeaderToObject from 'parse-link-header'
 
 import * as Effect from 'effect/Effect'
@@ -17,7 +16,7 @@ const linkField = <const T extends string>(name: T) =>
     url: Schema.URL,
   })
     .annotateKey({ title: 'Link' })
-    .pipe(OptionalProperty)
+    .pipe(Schema.optionalKey)
 
 export class LinkHeader extends Schema.TaggedError<LinkHeader>()('LinkHeader', {
   prev: linkField('prev'),

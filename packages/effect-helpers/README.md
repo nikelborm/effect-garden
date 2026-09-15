@@ -12,7 +12,6 @@
 - `holdLatestValue`
 - `logObjectPretty`
 - `NonEmptyRecord`
-- `OptionalProperty`
 - `observableExec`
 - `ParseErrorSchema`
 - `passthroughErrorsWithTagsOrElseMapError`

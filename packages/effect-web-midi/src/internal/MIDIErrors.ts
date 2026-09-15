@@ -13,7 +13,8 @@ const PortId = Schema.fromBrand(EMIDIPort.BothId)(
 
 const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
 
-const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
+// TODO: consolidate duplicated method
+const ErrorSchema = <TSchema extends Schema.Constraint | undefined = undefined>(
   nameSchema?: TSchema,
 ) =>
   Schema.Struct({
@@ -22,10 +23,8 @@ const ErrorSchema = <TSchema extends Schema.Schema.Any | undefined = undefined>(
       ? typeof NonEmptyTrimmedString
       : TSchema,
     message: Schema.Trimmed.check(Schema.isNonEmpty()),
-    stack: Schema.Trimmed.check(Schema.isNonEmpty()).pipe(
-      Schema.optionalWith({ exact: true }),
-    ),
-    cause: Schema.Unknown.pipe(Schema.optionalWith({ exact: true })),
+    stack: Schema.optionalKey(Schema.Trimmed.check(Schema.isNonEmpty())),
+    cause: Schema.optionalKey(Schema.Unknown),
   })
 
 const midiAccessFailureFields = {
@@ -82,7 +81,7 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
   'MIDIAccessNotSupportedError',
   {
     cause: ErrorSchema(
-      Schema.Literal('ReferenceError', 'TypeError', 'NotSupportedError'),
+      Schema.Literals(['ReferenceError', 'TypeError', 'NotSupportedError']),
     ),
     ...midiAccessFailureFields,
   },
@@ -103,7 +102,7 @@ export class MIDIAccessNotSupportedError extends Schema.TaggedError<MIDIAccessNo
 export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<ClearingSendingQueueIsNotSupportedError>()(
   'ClearingSendingQueueIsNotSupportedError',
   {
-    cause: ErrorSchema(Schema.Literal('TypeError', 'NotSupportedError')),
+    cause: ErrorSchema(Schema.Literals(['TypeError', 'NotSupportedError'])),
     portId: PortId,
   },
 ) {
@@ -169,7 +168,9 @@ export class CannotSendToDisconnectedPortError extends Schema.TaggedError<Cannot
 export class CannotSendSysexMessageError extends Schema.TaggedError<CannotSendSysexMessageError>()(
   'CannotSendSysexMessageError',
   {
-    cause: ErrorSchema(Schema.Literal('InvalidAccessError', 'NotAllowedError')),
+    cause: ErrorSchema(
+      Schema.Literals(['InvalidAccessError', 'NotAllowedError']),
+    ),
     portId: PortId,
   },
 ) {
@@ -193,7 +194,7 @@ export class CannotSendSysexMessageError extends Schema.TaggedError<CannotSendSy
 export class MIDIAccessNotAllowedError extends Schema.TaggedError<MIDIAccessNotAllowedError>()(
   'MIDIAccessNotAllowedError',
   {
-    cause: ErrorSchema(Schema.Literal('NotAllowedError', 'SecurityError')),
+    cause: ErrorSchema(Schema.Literals(['NotAllowedError', 'SecurityError'])),
     ...midiAccessFailureFields,
   },
 ) {

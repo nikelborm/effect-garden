@@ -5,17 +5,17 @@ import * as EArray from 'effect/Array'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import * as Formatter from 'effect/Formatter'
 import * as EFunction from 'effect/Function'
 import * as Hash from 'effect/Hash'
+import * as HashMap from 'effect/HashMap'
 import * as Inspectable from 'effect/Inspectable'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
-import * as Order from 'effect/Order'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
-import * as SortedMap from 'effect/SortedMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
 
@@ -183,7 +183,7 @@ const Proto = {
     return Pipeable.pipeArguments(this, arguments)
   },
   toString() {
-    return Inspectable.format(this.toJSON())
+    return Formatter.formatJson(this.toJSON(), { space: 2 })
   },
   toJSON() {
     return { _id: 'EMIDIAccess', config: this._config }
@@ -933,7 +933,7 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
             // TODO: make an experiment and paste the error text here
             'TODO: imitate there an error thats thrown when the port is disconnected',
             'InvalidStateError',
-          ) as DOMException & { name: 'InvalidStateError' },
+          ) as DOMException & { readonly name: 'InvalidStateError' },
         })
 
       const sendToSome = (predicate: (id: EMIDIOutput.Id) => boolean) =>
@@ -1059,9 +1059,7 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
 
   // TODO: finish this
 
-  const _ref = yield* Ref.make(
-    SortedMap.empty<EMIDIPort.BothId, MIDIPortType>(Order.string),
-  )
+  const _ref = yield* Ref.make(HashMap.empty<EMIDIPort.BothId, MIDIPortType>())
 
   // return make(rawAccess, options, ref)
   return make(rawAccess, options)

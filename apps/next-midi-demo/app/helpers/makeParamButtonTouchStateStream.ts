@@ -1,5 +1,3 @@
-import { OptionalProperty } from '@evadev/effect-helpers'
-
 import * as Data from 'effect/Data'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
@@ -52,7 +50,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     Object.fromEntries(
       Array.from(keysOfDatasetToLookFor, key => [
         key,
-        OptionalProperty(Schema.String),
+        Schema.optionalKey(Schema.String),
       ]),
     ),
   )

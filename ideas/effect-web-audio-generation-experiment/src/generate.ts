@@ -101,7 +101,7 @@ const Proto = {
     return Pipeable.pipeArguments(this, arguments)
   },
   toString() {
-    return Inspectable.format(this.toJSON())
+    return Formatter.formatJson(this.toJSON(), { space: 2 })
   },
   toJSON() {
     return { _id: "${interfaceName}" }

@@ -14,11 +14,12 @@ export const AbstractQuestionIdParam = HttpApiSchema.param(
 
 export const DeleteAbstractQuestionEndpoint = HttpApiEndpoint.delete(
   'Delete abstract question',
-  `/:abstractQuestionId`,{
-    params:{
-      abstractQuestionId: AbstractQuestionIdFromStringSchema
-    }
-  }
+  `/:abstractQuestionId`,
+  {
+    params: {
+      abstractQuestionId: AbstractQuestionIdFromStringSchema,
+    },
+  },
 )
 
 export const CreateAbstractAnswerOptionEndpoint = HttpApiEndpoint.post(

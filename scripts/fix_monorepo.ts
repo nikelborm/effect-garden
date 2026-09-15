@@ -5,7 +5,6 @@ import { console } from 'node:inspector'
 import {
   AbsentProperty,
   NonEmptyRecord,
-  OptionalProperty,
   observableExec,
 } from '@evadev/effect-helpers'
 import { prettyPrint } from 'effect-errors'
@@ -56,7 +55,7 @@ export const RootPackageJsonFromStringSchema = Schema.parseJson(
       // to avoid accidental publishs
       private: Schema.Literal(true),
       version: Schema.Trimmed.check(Schema.isNonEmpty()),
-      dependencies: deps.pipe(OptionalProperty),
+      dependencies: deps.pipe(Schema.optionalKey),
       catalog: deps,
       devDependencies: AbsentProperty,
       workspaces: Schema.NonEmptyArray(
@@ -103,11 +102,11 @@ export const SubPackageJsonSchema = Schema.Struct(
     version: Schema.Trimmed.check(Schema.isNonEmpty()),
 
     description: Schema.Trimmed.check(Schema.isNonEmpty()),
-    devDependencies: deps.pipe(OptionalProperty),
-    peerDependencies: deps.pipe(OptionalProperty),
+    devDependencies: deps.pipe(Schema.optionalKey),
+    peerDependencies: deps.pipe(Schema.optionalKey),
 
     catalog: AbsentProperty,
-    dependencies: deps.pipe(OptionalProperty),
+    dependencies: deps.pipe(Schema.optionalKey),
     homepage: Schema.TemplateLiteralParser(
       `${httpsRepoLink}/tree/main/`,
       Schema.Trimmed.check(Schema.isNonEmpty()),
@@ -119,7 +118,7 @@ export const SubPackageJsonSchema = Schema.Struct(
     }),
     keywords: Schema.NonEmptyArray(
       Schema.Trimmed.check(Schema.isNonEmpty()),
-    ).pipe(OptionalProperty),
+    ).pipe(Schema.optionalKey),
     repository: Schema.Struct({
       type: Schema.Literal('git'),
       url: Schema.Literal(gitSshUrl),
@@ -128,7 +127,7 @@ export const SubPackageJsonSchema = Schema.Struct(
     scripts: NonEmptyRecord(
       Schema.Trimmed.check(Schema.isNonEmpty()),
       Schema.Trimmed.check(Schema.isNonEmpty()),
-    ).pipe(OptionalProperty),
+    ).pipe(Schema.optionalKey),
     author: myUserSchema,
     contributors: Schema.TupleWithRest(myUserSchema, userSchema),
     maintainers: Schema.TupleWithRest(myUserSchema, userSchema),

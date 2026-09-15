@@ -315,7 +315,7 @@ import * as Order from 'effect/Order'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
-import * as SortedMap from 'effect/SortedMap'
+import * as HashMap from 'effect/HashMap'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
 
@@ -448,7 +448,7 @@ const Proto = {
     return Pipeable.pipeArguments(this, arguments)
   },
   toString() {
-    return Inspectable.format(this.toJSON())
+return Formatter.formatJson(this.toJSON(), {space:2})
   },
   toJSON() {
     return { _id: 'EMIDIAccess', config: this._config }
@@ -1325,7 +1325,7 @@ export const request = Effect.fn('EMIDIAccess.request')(function* (
   // TODO: finish this
 
   const _ref = yield* Ref.make(
-    SortedMap.empty<EMIDIPort.BothId, MIDIPortType>(Order.string),
+    HashMap.empty<EMIDIPort.BothId, MIDIPortType>(),
   )
 
   // return make(rawAccess, options, ref)

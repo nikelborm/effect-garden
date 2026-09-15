@@ -1,3 +1,3 @@
 import * as Schema from 'effect/Schema'
 
-export const AbsentProperty = Schema.optionalWith(Schema.Never, { exact: true })
+export const AbsentProperty = Schema.optionalKey(Schema.Never)
