@@ -84,7 +84,8 @@ function distributeBySize(
   for (const file of sorted) {
     let minIdx = 0
     for (let i = 1; i < n; i++) {
-      if (buckets[i]?.totalSize < buckets[minIdx]?.totalSize) minIdx = i
+      // TODO: better handle on typelevel
+      if ((buckets[i]?.totalSize ?? 0) < (buckets[minIdx]?.totalSize ?? 0)) minIdx = i
     }
     buckets[minIdx]?.paths.push(file.path)
     buckets[minIdx]!.totalSize += file.size

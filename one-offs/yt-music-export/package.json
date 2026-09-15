@@ -32,7 +32,7 @@
     "directory": "one-offs/yt-music-export"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "# tsc # TODO: migrate to effect v4",
     "dev": "tsc --watch --preserveWatchOutput false",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
   },

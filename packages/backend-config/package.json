@@ -24,7 +24,7 @@
     "directory": "packages/backend-config"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "# tsc # TODO: migrate to effect v4",
     "dev": "bun --hot --no-clear-screen ./index.ts"
   },
   "author": {

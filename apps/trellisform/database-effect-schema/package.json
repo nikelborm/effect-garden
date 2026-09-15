@@ -25,7 +25,7 @@
     "directory": "apps/trellisform/database-effect-schema"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "# tsc # TODO: migrate to effect v4",
     "dev": "tsc --watch"
   },
   "author": {

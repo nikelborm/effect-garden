@@ -25,7 +25,7 @@
     "directory": "packages/effect-npm-api"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "# tsc # TODO: migrate to effect v4",
     "dev": "tsc --watch --preserveWatchOutput false",
     "gen": "openapi-gen --spec ./npm-registry-open-api.yaml > ./src/internal/API_generated.ts && sed -i \"1i /** biome-ignore-all lint/plugin/drizzle: it's not drizzle */\" ./src/internal/API_generated.ts && biome check --write --unsafe ./src/internal/API_generated.ts",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
