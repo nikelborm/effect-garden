@@ -4,13 +4,11 @@ import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
 import type { Transformer } from 'unified'
 import type { Node } from 'unist'
 
-import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
-import { KiB } from '@effect/platform/FileSystem'
-import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
+import * as ByteSize from 'effect/ByteSize'
 import * as Console from 'effect/Console'
 import * as DateTime from 'effect/DateTime'
 import * as Effect from 'effect/Effect'
@@ -23,6 +21,10 @@ import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
 import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
+import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
+import * as HttpClient from 'effect/unstable/http/HttpClient'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import { parseMdxNodes } from './lib/parseMdxNodes.ts'
 import {
@@ -55,24 +57,33 @@ const fetchMdnPageContentFromGithub = Effect.gen(function* () {
   ),
 )
 
-const fixGeneratedFolder = Effect.all([
-  Effect.log('Started fixing comments with prettier.'),
-  Command.string(
-    Command.make('bunx', 'prettier', '--write', `src`, 'index.ts'),
-  ),
-  Effect.log('Finished fixing comments with prettier.\n'),
-  Effect.log('Started fixing everything with biome.'),
-  Command.string(Command.make('biome', 'check', '--write', `src`, 'index.ts')),
-  Effect.log('Finished fixing everything with biome.\n'),
-  Effect.log('Started compiling with tsc.'),
-  Effect.flatMap(FileSystem.FileSystem, fs => {
-    const rm = (p: string) => fs.remove(p, { force: true, recursive: true })
-    return Effect.all([rm('dist'), rm('dist-types')])
-  }),
-  // TODO: properly show tsc's error output. It's currently fails silently
-  Command.string(Command.make('bunx', 'tsc')),
-  Effect.log('Finished compiling with tsc.\n'),
-])
+// TODO: handle exit codes and stdout/stderr in a better way
+const fixGeneratedFolder = ChildProcessSpawner.ChildProcessSpawner.use(spawn =>
+  Effect.all([
+    Effect.log('Started fixing comments with prettier.'),
+    spawn.exitCode(
+      ChildProcess.make({
+        stderr: 'inherit',
+      })`bunx prettier --write src index.ts`,
+    ),
+    Effect.log('Finished fixing comments with prettier.\n'),
+    Effect.log('Started fixing everything with biome.'),
+    spawn.exitCode(
+      ChildProcess.make({
+        stderr: 'inherit',
+      })`biome check --write src index.ts`,
+    ),
+    Effect.log('Finished fixing everything with biome.\n'),
+    Effect.log('Started compiling with tsc.'),
+    Effect.flatMap(FileSystem.FileSystem, fs => {
+      const rm = (p: string) => fs.remove(p, { force: true, recursive: true })
+      return Effect.all([rm('dist'), rm('dist-types')])
+    }),
+    // TODO: properly show tsc's error output. It's currently fails silently
+    spawn.exitCode(ChildProcess.make({ stderr: 'inherit' })`bunx tsc`),
+    Effect.log('Finished compiling with tsc.\n'),
+  ]),
+)
 
 const makeCacheError = (
   cause: unknown,
@@ -117,7 +128,10 @@ await Effect.gen(function* () {
 
   const cacheFallback = yield* cacheStat.pipe(
     Effect.map(info =>
-      info.type === 'File' && info.size > KiB(10) ? info : null,
+      info.type === 'File' &&
+      pipe(info.size, ByteSize.isGreaterThan(ByteSize.kibibytes(10)))
+        ? info
+        : null,
     ),
     Effect.orElseSucceed(() => null),
   )
@@ -132,7 +146,7 @@ await Effect.gen(function* () {
           { weeks: 1 },
         )
         const isPastCacheExpiration = DateTime.unsafeNow().pipe(
-          DateTime.greaterThanOrEqualTo(cacheExpiresAt),
+          DateTime.isGreaterThanOrEqualTo(cacheExpiresAt),
         )
         return isPastCacheExpiration
       },

@@ -1,10 +1,10 @@
-import * as HttpClient from '@effect/platform/HttpClient'
-import * as HttpClientRequest from '@effect/platform/HttpClientRequest'
 import * as EArray from 'effect/Array'
 import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Tuple from 'effect/Tuple'
+import * as HttpClient from 'effect/unstable/http/HttpClient'
+import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
 
 import { FetchPinImageError } from './errors.ts'
 import { getPathToImageInRepoRelativeToRepoRoot } from './getPathToImageInRepo.ts'

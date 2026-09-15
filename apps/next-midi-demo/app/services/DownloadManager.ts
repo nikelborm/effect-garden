@@ -1,9 +1,9 @@
-import * as HttpClient from '@effect/platform/HttpClient'
 import type * as HttpClientError from '@effect/platform/HttpClientError'
 import * as Effect from 'effect/Effect'
 import * as FiberMap from 'effect/FiberMap'
 import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
+import * as HttpClient from 'effect/unstable/http/HttpClient'
 
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
 import type { AssetPointer } from '../domain/AssetPointer.ts'

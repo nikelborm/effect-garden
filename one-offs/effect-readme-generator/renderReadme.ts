@@ -6,7 +6,6 @@ import { format } from 'node:util'
 import { outdent } from 'outdent'
 
 import type { PlatformError } from '@effect/platform/Error'
-import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
@@ -21,6 +20,7 @@ import type * as Option from 'effect/Option'
 import * as Ref from 'effect/Ref'
 import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
+import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 
 import {
   AMOUNT_OF_COLUMNS,

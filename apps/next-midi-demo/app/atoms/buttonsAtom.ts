@@ -1,7 +1,6 @@
 import { EAudioContext } from 'effect-web-audio'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
-import * as FetchHttpClient from '@effect/platform/FetchHttpClient'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import * as EFunction from 'effect/Function'
@@ -10,6 +9,7 @@ import * as Logger from 'effect/Logger'
 import * as Scope from 'effect/Scope'
 // import * as LogLevel from 'effect/LogLevel'
 import * as Stream from 'effect/Stream'
+import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
 import * as Atom from 'effect/unstable/reactivity/Atom'
 

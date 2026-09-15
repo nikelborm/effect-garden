@@ -1,11 +1,11 @@
-import * as Cookies from '@effect/platform/Cookies'
-import * as HttpClient from '@effect/platform/HttpClient'
 import * as HttpClientError from '@effect/platform/HttpClientError'
-import * as HttpClientRequest from '@effect/platform/HttpClientRequest'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as Ref from 'effect/Ref'
 import * as Result from 'effect/Result'
+import * as Cookies from 'effect/unstable/http/Cookies'
+import * as HttpClient from 'effect/unstable/http/HttpClient'
+import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
 
 import { type YTMusicConfig, YTMusicConfigService } from './config.ts'
 import {
