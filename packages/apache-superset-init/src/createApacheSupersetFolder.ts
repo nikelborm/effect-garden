@@ -1,10 +1,8 @@
 import { allFast } from '@evadev/effect-helpers'
-import type { Octokit } from '@octokit/core'
 import { downloadEntityFromRepo } from 'gitdl'
 
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
-import * as EFunction from 'effect/Function'
 import * as Path from 'effect/Path'
 
 import { createPipRequirementsConfig } from './createPipRequirementsConfig.ts'
@@ -13,42 +11,39 @@ import { repo } from './repo.ts'
 import { updateEnvFile } from './updateEnvFile.ts'
 import { updateJwtSecretInSupersetWebsocketConfig } from './updateJwtSecretInSupersetWebsocketConfig.ts'
 
-export const createApacheSupersetFolder: (config: {
+export const createApacheSupersetFolder = Effect.fn(
+  'createApacheSupersetFolder',
+)(function* ({
+  gitRef,
+  destinationPath,
+}: {
   gitRef: string
   destinationPath: string
-}) => Effect.Effect<void, never, FileSystem.FileSystem | Path.Path | Octokit> =
-  EFunction.flow(
-    Effect.fn('createApacheSupersetFolder')(function* ({
-      gitRef,
+}) {
+  const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
+
+  yield* fs
+    .makeDirectory(destinationPath, { recursive: true })
+    .pipe(Effect.orDie)
+
+  const downloadDockerFolder = downloadEntityFromRepo({
+    pathToEntityInRepo: 'docker',
+    localPathAtWhichEntityFromRepoWillBeAvailable: path.join(
       destinationPath,
-    }: {
-      gitRef: string
-      destinationPath: string
-    }) {
-      const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
+      'docker',
+    ),
+    repo,
+    gitRef,
+  })
 
-      yield* fs.makeDirectory(destinationPath, { recursive: true })
+  const patchSomeStuffInDockerFolder = allFast([
+    updateJwtSecretInSupersetWebsocketConfig(destinationPath),
+    updateEnvFile(destinationPath),
+    createPipRequirementsConfig(destinationPath),
+  ])
 
-      const downloadDockerFolder = downloadEntityFromRepo({
-        pathToEntityInRepo: 'docker',
-        localPathAtWhichEntityFromRepoWillBeAvailable: path.join(
-          destinationPath,
-          'docker',
-        ),
-        repo,
-        gitRef,
-      })
-
-      const patchSomeStuffInDockerFolder = allFast([
-        updateJwtSecretInSupersetWebsocketConfig(destinationPath),
-        updateEnvFile(destinationPath),
-        createPipRequirementsConfig(destinationPath),
-      ])
-
-      yield* allFast([
-        downloadComposeFileAndAddNewNetworkToIt(destinationPath, gitRef),
-        downloadDockerFolder.pipe(Effect.andThen(patchSomeStuffInDockerFolder)),
-      ])
-    }),
-    Effect.orDie,
-  )
+  yield* allFast([
+    downloadComposeFileAndAddNewNetworkToIt(destinationPath, gitRef),
+    downloadDockerFolder.pipe(Effect.andThen(patchSomeStuffInDockerFolder)),
+  ])
+}, Effect.orDie)

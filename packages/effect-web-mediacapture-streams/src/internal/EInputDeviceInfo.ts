@@ -4,7 +4,7 @@ import * as Equal from 'effect/Equal'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 import * as EString from 'effect/String'
 
 import * as MediaBrand from './MediaBrand.ts'

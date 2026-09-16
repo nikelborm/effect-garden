@@ -124,11 +124,11 @@ export class CannotOpenUnavailablePortError extends Schema.TaggedError<CannotOpe
   'CannotOpenUnavailablePortError',
   {
     cause: ErrorSchema(
-      Schema.Literal(
+      Schema.Literals([
         'InvalidAccessError',
         'NotAllowedError',
         'InvalidStateError',
-      ),
+      ]),
     ),
     portId: PortId,
   },
