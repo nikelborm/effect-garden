@@ -1,8 +1,8 @@
 import * as EFunction from 'effect/Function'
-import * as ParseResult from 'effect/ParseResult'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 import type * as Schema from 'effect/Schema'
 import * as SchemaAST from 'effect/SchemaAST'
+import * as SchemaIssue from 'effect/SchemaIssue'
 
 import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts'
 
@@ -14,7 +14,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     self: Self,
   ) => Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
-    ParseResult.ParseIssue
+    SchemaIssue.Issue
   >
   // data-first
   <Self extends Schema.Struct<any>>(
@@ -22,7 +22,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     prefix: string,
   ): Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
-    ParseResult.ParseIssue
+    SchemaIssue.Issue
   >
 } = EFunction.dual(
   2,
@@ -31,17 +31,16 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     prefix: string,
   ): Result.Result<
     EnsureTaggedStructWithStringLiteral<Self, never>,
-    ParseResult.ParseIssue
+    SchemaIssue.Issue
   > => {
     const ast = self.ast
 
-    if (!SchemaAST.isTypeLiteral(ast))
-      return ParseResult.fail(
-        new ParseResult.Type(
-          ast,
-          ast._tag,
-          'Argument of withInferredFromTagIdentifierSchemaAnnotationEither is not type literal',
-        ),
+    if (!SchemaAST.isObjects(ast))
+      return Result.fail(
+        new SchemaIssue.InvalidValue({
+          message:
+            'Argument of withInferredFromTagIdentifierSchemaAnnotationEither is not type literal',
+        }),
       )
 
     const tagPropertySignature = ast.propertySignatures.find(
@@ -52,18 +51,16 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
       !tagPropertySignature ||
       !SchemaAST.isLiteral(tagPropertySignature.type)
     )
-      return ParseResult.fail(
-        new ParseResult.Type(
-          ast,
-          ast._tag,
-          `withInferredFromTagIdentifierSchemaAnnotationEither were not able to find tag field in passed struct. Are you sure it's TaggedStruct?`,
-        ),
+      return Result.fail(
+        new SchemaIssue.InvalidValue({
+          message: `withInferredFromTagIdentifierSchemaAnnotationEither were not able to find tag field in passed struct. Are you sure it's TaggedStruct?`,
+        }),
       )
 
     const tag = tagPropertySignature.type.literal
 
-    return ParseResult.succeed(
-      self.annotateKey({
+    return Result.succeed(
+      self.annotate({
         identifier: `${prefix}/${tag}`,
       }) as EnsureTaggedStructWithStringLiteral<Self, never>,
     )
@@ -93,11 +90,11 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
       prefix,
     )
 
-    if (Result.isLeft(result))
+    if (Result.isFailure(result))
       throw new Error('Failed to infer identifier for OpenApi schema', {
-        cause: Result.fail,
+        cause: result.failure,
       })
 
-    return Result.succeed
+    return result.success
   },
 )

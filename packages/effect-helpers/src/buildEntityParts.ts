@@ -12,19 +12,21 @@ import {
   withTitleSchemaAnnotation,
 } from './withSchemaAnnotation.ts'
 
-const ID = Schema.Number.pipe(
-  Schema.int(),
-  Schema.positive({ examples: [1, 200, 6719] }),
-  Schema.asSchema,
+const ID = Schema.Int.check(
+  Schema.isGreaterThan(0, { examples: [1, 200, 6719] }),
 )
 
-const makeBrandSchema: <S extends Schema.Schema.Any, B extends string | symbol>(
+// TODO: heavily test
+const makeBrandSchema: <S extends Schema.Constraint, B extends string>(
   brand: B,
-  annotations?: Schema.Annotations.Schema<
-    Schema.Schema.Type<S> & Brand.Brand<B>
+  annotations?: Schema.Annotations.Bottom<
+    S['Type'] & Brand.Brand<B>,
+    any
   >,
-) => <SubS extends S>(self: SubS) => Schema.brand<SubS, B> = Schema.brand as any
+) => <SubS extends S>(self: SubS) => Schema.brand<SubS, B> =
+  Schema.brand as any
 
+// TODO: heavily test
 export const buildEntityPartsPrefixed = (prefix: string) => {
   const withOpenApiAnnotations = _withOpenApiAnnotationsForStructs(prefix)
   const withIdsAnnotations = withSchemaIdAndIdentifierAnnotations(prefix)
@@ -65,12 +67,11 @@ export const buildEntityPartsPrefixed = (prefix: string) => {
       withTitleSchemaAnnotation(idFieldTitle),
       withDescriptionSchemaAnnotation(idFieldDescription),
       withIdsAnnotations(`${EntityId}FromNumber`),
-      Schema.asSchema,
     )
 
     const EntityIdFromNumberSchemaContainer = {
       [`${EntityId}FromNumberSchema`]: EntityIdFromNumberSchema,
-    } as EntityIdFromNumberSchemaContainer<EntityName>
+    } as unknown as EntityIdFromNumberSchemaContainer<EntityName>
 
     const EntityIdFromStringSchema = EntityIdFromNumberSchema.pipe(
       changeEncodedTypeToString,
@@ -79,7 +80,7 @@ export const buildEntityPartsPrefixed = (prefix: string) => {
 
     const EntityIdFromStringSchemaContainer = {
       [`${EntityId}FromStringSchema`]: EntityIdFromStringSchema,
-    } as EntityIdFromStringSchemaContainer<EntityName>
+    } as unknown as EntityIdFromStringSchemaContainer<EntityName>
 
     // TODO: report issue to Typescript: Type '"_tag" | "id" | "sad2" | "sad" |
     // keyof Fields' is not assignable to type '"_tag" | "id" | "sad2" | "sad" |
@@ -110,14 +111,14 @@ export const buildEntityPartsPrefixed = (prefix: string) => {
 
 export type EntityParts<
   EntityName extends string,
-  Fields extends Record<string, Schema.Struct.Field>,
+  Fields extends Schema.Struct.Fields,
 > = BrandContainer<EntityName> &
   EntityIdFromNumberSchemaContainer<EntityName> &
   EntityIdFromStringSchemaContainer<EntityName> &
   EntityStructContainer<EntityName, Fields>
 
 export type BrandContainer<EntityName extends string> = {
-  [k in `with${EntityName}IdBrand`]: <SubS extends Schema.Schema.Any>(
+  [k in `with${EntityName}IdBrand`]: <SubS extends Schema.Constraint>(
     self: SubS,
   ) => Schema.brand<SubS, `${EntityName}Id`>
 }
@@ -127,15 +128,14 @@ export type IdType<EntityName extends string> = Brand.Branded<
   `${EntityName}Id`
 >
 
-export type IdFromNumberSchema<EntityName extends string> = Schema.Schema<
+export type IdFromNumberSchema<EntityName extends string> = Schema.Codec<
   IdType<EntityName>,
-  number,
-  never
+  number
 >
 
 export type EntitySchema<
   EntityName extends string,
-  Fields extends Record<string, Schema.Struct.Field>,
+  Fields extends Schema.Struct.Fields,
 > = EnsureTaggedStructWithStringLiteral<
   Schema.TaggedStruct<
     EntityName,
@@ -149,16 +149,15 @@ export type EntityIdFromNumberSchemaContainer<EntityName extends string> = {
 }
 
 export type EntityIdFromStringSchemaContainer<EntityName extends string> = {
-  [k in `${EntityName}IdFromStringSchema`]: Schema.Schema<
+  [k in `${EntityName}IdFromStringSchema`]: Schema.Codec<
     IdType<EntityName>,
-    string,
-    never
+    string
   >
 }
 
 export type EntityStructContainer<
   EntityName extends string,
-  Fields extends Record<string, Schema.Struct.Field>,
+  Fields extends Schema.Struct.Fields,
 > = {
   [k in `${EntityName}Schema`]: EntitySchema<EntityName, Fields>
 }

@@ -1,13 +1,12 @@
 import * as Schema from 'effect/Schema'
 
-export const FiniteNonNegativeIntegerFromString = Schema.NumberFromString.pipe(
-  Schema.finite(),
-  Schema.isGreaterThanOrEqualTo(0),
-  Schema.int(),
-)
+export const FiniteNonNegativeIntegerFromString =
+  Schema.FiniteFromString.check(
+    Schema.isInt(),
+    Schema.isGreaterThanOrEqualTo(0),
+  )
 
-export const FiniteNonNegativeInteger = Schema.Number.pipe(
-  Schema.finite(),
+export const FiniteNonNegativeInteger = Schema.Finite.check(
+  Schema.isInt(),
   Schema.isGreaterThanOrEqualTo(0),
-  Schema.int(),
 )

@@ -6,6 +6,6 @@ export class BadExitCodeError extends Schema.TaggedError<BadExitCodeError>()(
     stdout: Schema.String,
     stderr: Schema.String,
     message: Schema.String,
-    exitCode: Schema.NonNegativeInt,
+    exitCode: Schema.Natural,
   },
 ) {}

@@ -1,54 +1,44 @@
-import { dual, pipe } from 'effect/Function'
-import type { Annotable, Annotations } from 'effect/Schema'
+import { dual } from 'effect/Function'
+import type * as Schema from 'effect/Schema'
 
 export const withSchemaAnnotation = <const T extends CommonAnnotationMapKeys>(
   annotationField: T,
 ) =>
   dual<
     // data-last
-    <S extends Annotable.All>(
-      annotationValue: Exclude<CommonAnnotationMap[T], undefined>,
-    ) => (self: S) => Annotable.Self<S>,
+    (
+      annotationValue: string,
+    ) => <S extends Schema.Top>(self: S) => S['Rebuild'],
     // data-first
-    <S extends Annotable.All>(
-      self: S,
-      annotationValue: Exclude<CommonAnnotationMap[T], undefined>,
-    ) => Annotable.Self<S>>(2, (self, annotationValue) =>
-    self.annotateKey({ [annotationField]: annotationValue }),
+    <S extends Schema.Top>(self: S, annotationValue: string) => S['Rebuild']
+  >(2, (self, annotationValue) =>
+    (self as Schema.Top).annotateKey({
+      [annotationField]: annotationValue,
+    }) as never,
   )
 
-type Is<A, ExtendsB> = [A] extends [ExtendsB] ? true : false
+export type CommonAnnotationMapKeys = 'title' | 'description' | 'identifier'
 
-export type GeneralAnnotationsMap<T = any> = Annotations.GenericSchema<T>
-
-export type CommonAnnotationMap<T = any> = {
-  [K in keyof GeneralAnnotationsMap<T> as [
-    Is<string, K> | Is<number, K> | Is<symbol, K>,
-  ] extends [false]
-    ? K
-    : never]: GeneralAnnotationsMap<T>[K]
-}
-
-export type CommonAnnotationMapKeys<T = any> = keyof CommonAnnotationMap<T>
+export type CommonAnnotationMap<T = string> = Record<
+  CommonAnnotationMapKeys,
+  T
+>
 
 export const withTitleSchemaAnnotation = withSchemaAnnotation('title')
 
 export const withDescriptionSchemaAnnotation =
   withSchemaAnnotation('description')
 
-export const withIdentifierSchemaAnnotation = withSchemaAnnotation('identifier')
-
-export const withSchemaIdSchemaAnnotation = withSchemaAnnotation('schemaId')
+export const withIdentifierSchemaAnnotation =
+  withSchemaAnnotation('identifier')
 
 export const withSchemaIdAndIdentifierAnnotations = (prefix: string) => {
-  const annotate = (self: any, identifier: string) => {
+  const annotate = (self: Schema.Top, identifier: string) => {
     const prefixedId = `${prefix}/${identifier}`
 
-    return pipe(
-      self,
-      withSchemaIdSchemaAnnotation(prefixedId),
-      withIdentifierSchemaAnnotation(prefixedId),
-    )
+    return (self as Schema.Top).annotateKey({
+      identifier: prefixedId,
+    }) as never
   }
 
   return ((...args: any[]) => {

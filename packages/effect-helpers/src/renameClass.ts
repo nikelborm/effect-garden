@@ -1,4 +1,4 @@
-import type { InspectContext, inspect } from 'node:util'
+import type { InspectOptionsStylized, inspect } from 'node:util'
 
 const utilInspectSymbol = Symbol.for('nodejs.util.inspect.custom')
 
@@ -11,7 +11,7 @@ export function renameClass<
   Object.defineProperty(cls, 'name', { value: newName, configurable: true })
   ;(cls as any)[utilInspectSymbol] = (
     depth: number,
-    options: InspectContext,
+    options: InspectOptionsStylized,
     inspect_: typeof inspect,
   ) => {
     const header = options.stylize(`[class ${newName}]`, 'special')

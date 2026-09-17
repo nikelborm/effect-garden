@@ -1,6 +1,5 @@
 import { dual } from 'effect/Function'
 import * as Schema from 'effect/Schema'
-import * as SchemaAST from 'effect/SchemaAST'
 import * as Struct from 'effect/Struct'
 
 export type GetFields<T> =
@@ -18,14 +17,17 @@ export const withNewStructFields: {
     self: Self,
     newFields: NewFields,
   ): Schema.Struct<Omit<GetFields<Self>, keyof NewFields> & NewFields>
-} = dual(2, (self, newFields) =>
-  Schema.Struct({
-    ...(self.fields as Omit<typeof self.fields, keyof typeof newFields>),
-    ...newFields,
-  }).annotateKey(
-    Struct.omit(SchemaAST.IdentifierAnnotationId)(self.ast.annotations),
-  ),
-)
+} = dual(2, (self, newFields) => {
+  const out = self.mapFields((fields: any) =>
+    Struct.assign(fields, newFields),
+  ) as any
+
+  const {identifier} = Schema.resolveAnnotations(self as Schema.Constraint) ?? {}
+
+  return (
+    identifier ? out.annotate({ identifier }) : out
+  ) as any
+})
 
 // TODO: add also option to throw on duplicates
 // as there's in effect codebase

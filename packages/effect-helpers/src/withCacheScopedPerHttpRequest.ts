@@ -26,22 +26,25 @@ const cache = new WeakMap<
 export const withCacheScopedPerHttpRequest =
   (key: string) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>) =>
-    Effect.withFiberRuntime<A, E, R | HttpServerRequest.HttpServerRequest>(
-      fiber => {
-        const request = Context.unsafeGet(
-          fiber.currentContext,
+    Effect.flatMap(
+      Effect.context<HttpServerRequest.HttpServerRequest>(),
+      ctx => {
+        const request = Context.getUnsafe(
+          ctx,
           HttpServerRequest.HttpServerRequest,
         )
         let requestCache = cache.get(request)
-        let deferred = requestCache?.get(key)
-        if (deferred) {
-          return Deferred.await(deferred)
-        } else if (!requestCache) {
+        const cached = requestCache?.get(key) as
+          | Deferred.Deferred<A, E>
+          | undefined
+        if (cached) return Deferred.await(cached)
+        if (!requestCache) {
           requestCache = new Map()
           cache.set(request, requestCache)
         }
-        deferred = Deferred.unsafeMake<E, R>(fiber.id())
-        requestCache.set(key, deferred)
-        return Effect.onExit(effect, exit => Deferred.done(deferred, exit))
+        return Effect.flatMap(Deferred.make<A, E>(), deferred => {
+          requestCache.set(key,deferred)
+          return Effect.onExit(effect, exit => Deferred.done(deferred, exit))
+        })
       },
     )

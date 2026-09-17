@@ -8,14 +8,12 @@ export const allFast = <
   O extends NoExcessProperties<
     {
       readonly concurrency?: Concurrency | undefined
-      readonly batching?: boolean | 'inherit' | undefined
       readonly discard?: boolean | undefined
-      readonly mode?: 'default' | 'validate' | 'either' | undefined
-      readonly concurrentFinalizers?: boolean | undefined
+      readonly mode?: 'default' | 'result' | undefined
     },
     O
   >,
 >(
   arg: Arg,
   options?: O,
-) => all(arg, { concurrency: 'inherit', ...options })
+) => all(arg, { concurrency: 'unbounded', ...options })
