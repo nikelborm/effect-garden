@@ -1,16 +1,16 @@
 import { allFast } from '@evadev/effect-helpers'
 
-import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
-import * as PlatformCommand from '@effect/platform/Command'
 import * as NodeServices from '@effect/platform-node/NodeServices'
-import { describe, it } from '@effect/vitest'
+import { it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Path from 'effect/Path'
+import * as Stdio from 'effect/Stdio'
 import * as Stream from 'effect/Stream'
 import * as Command from 'effect/unstable/cli/Command'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import pkg from './package.json' with { type: 'json' }
@@ -40,12 +40,9 @@ const appCommand = Command.make(
   downloadEntityFromRepo,
 )
 
-const cli = (args: ReadonlyArray<string>) =>
-  Command.run(appCommand, {
-    name: pkg.name,
-    version: pkg.version,
-    summary: HelpDocSpan.text(pkg.description),
-  })(['node', '-', ...args])
+const cliEffect = Command.run(appCommand, {
+  version: pkg.version,
+})
 
 const MainLive = Layer.merge(NodeServices.layer, OctokitLayer())
 
@@ -69,10 +66,8 @@ const Uint8ArrayStreamToString = <E, R>(
   stream: Stream.Stream<Uint8Array<ArrayBufferLike>, E, R>,
 ) => stream.pipe(Stream.decodeText(), Stream.mkString)
 
-const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
-  command: PlatformCommand.Command,
-) =>
-  Effect.gen(function* () {
+const runCommandAndGetCommandOutputAndFailIfNonZeroCode = Effect.fnUntraced(
+  function* (command: ChildProcess.Command) {
     const executor = yield* ChildProcessSpawner.ChildProcessSpawner
 
     const process = yield* executor.spawn(command)
@@ -91,13 +86,13 @@ const runCommandAndGetCommandOutputAndFailIfNonZeroCode = (
       })
 
     return { stdout, stderr }
-  })
+  },
+)
 
 const getPurelyContentDependentHashOfDirectory = (directoryPath: string) =>
   runCommandAndGetCommandOutputAndFailIfNonZeroCode(
     pipe(
-      PlatformCommand.make(
-        'tar',
+      ChildProcess.make('tar', [
         '--sort=name',
         '--mtime="@0"',
         '--owner=0',
@@ -109,9 +104,9 @@ const getPurelyContentDependentHashOfDirectory = (directoryPath: string) =>
         '-C',
         directoryPath,
         '.',
-      ),
-      PlatformCommand.pipeTo(PlatformCommand.make('sha256sum')),
-      PlatformCommand.pipeTo(PlatformCommand.make('head', '-c', '64')),
+      ]),
+      ChildProcess.pipeTo(ChildProcess.make('sha256sum')),
+      ChildProcess.pipeTo(ChildProcess.make('head', ['-c', '64'])),
     ),
   ).pipe(Effect.map(v => v.stdout))
 
@@ -125,18 +120,17 @@ const bareCloneAndHashRepoContents = Effect.fn('bareCloneAndHashRepoContents')(
     )
 
     yield* runCommandAndGetCommandOutputAndFailIfNonZeroCode(
-      PlatformCommand.make(
-        'git',
+      ChildProcess.make('git', [
         'clone',
         '--depth=1',
         `https://github.com/${gitRepoOwner}/${gitRepoName}.git`,
         entireGitRepoDestinationPath,
-      ),
+      ]),
     )
 
     yield* runCommandAndGetCommandOutputAndFailIfNonZeroCode(
-      PlatformCommand.make('git', 'checkout', gitRef).pipe(
-        PlatformCommand.workingDirectory(entireGitRepoDestinationPath),
+      ChildProcess.make('git', ['checkout', gitRef]).pipe(
+        ChildProcess.setCwd(entireGitRepoDestinationPath),
       ),
     )
 
@@ -158,12 +152,17 @@ const cliFetchAndHashRepoContents = Effect.fn('cliFetchAndHashRepoContents')(
       'gitRepoFetchedWithOurCli/',
     )
 
-    yield* cli([
-      `--repoOwner=${gitRepoOwner}`,
-      `--repoName=${gitRepoName}`,
-      `--destinationPath=${dirPathOfGitRepoFetchedWithOurCli}`,
-      `--gitRef=${gitRef}`,
-    ])
+    yield* Effect.provide(
+      cliEffect,
+      Stdio.layerTest({
+        args: Effect.succeed([
+          `--repoOwner=${gitRepoOwner}`,
+          `--repoName=${gitRepoName}`,
+          `--destinationPath=${dirPathOfGitRepoFetchedWithOurCli}`,
+          `--gitRef=${gitRef}`,
+        ]),
+      }),
+    )
 
     return yield* getPurelyContentDependentHashOfDirectory(
       dirPathOfGitRepoFetchedWithOurCli,
@@ -187,34 +186,32 @@ const fetchAndHashBothDirs = Effect.fn('fetchAndHashBothDirs')(function* (
   })
 })
 
-describe('CLI', { concurrent: true }, () => {
-  // Commented because since the repo has big git lfs file, I quickly hit bandwidth limits
+// Commented because since the repo has big git lfs file, I quickly hit bandwidth limits
 
-  // it.scoped(
-  //   `Git Repo ${defaultRepo.owner}/${defaultRepo.name} (has git LFS objects in it) fetched by our cli, should be the same as repo cloned by git itself`,
+// it.layer(MainLive, { timeout: { seconds: 0 } })(
+//   `Git Repo ${defaultRepo.owner}/${defaultRepo.name} (has git LFS objects in it) fetched by our cli, should be the same as repo cloned by git itself`,
+//     gen(function* () {
+//       const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
+//         yield* fetchAndHashBothDirs({
+//           gitRepoOwner: defaultRepo.owner,
+//           gitRepoName: defaultRepo.name,
+//           gitRef: 'main',
+//         });
 
-  //   ctx =>
-  //     gen(function* () {
-  //       const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
-  //         yield* fetchAndHashBothDirs({
-  //           gitRepoOwner: defaultRepo.owner,
-  //           gitRepoName: defaultRepo.name,
-  //           gitRef: 'main',
-  //         });
+//       ctx
+//         .expect(
+//           hashOfGitRepoFetchedUsingOurCLI,
+//           `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
+//         )
+//         .toBe(hashOfOriginalGitRepo);
+//     }).pipe(provide(MainLive)),
+//   { timeout: 0 /* long because of 100mb git LFS file  */ },
+// );
 
-  //       ctx
-  //         .expect(
-  //           hashOfGitRepoFetchedUsingOurCLI,
-  //           `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
-  //         )
-  //         .toBe(hashOfOriginalGitRepo);
-  //     }).pipe(provide(MainLive)),
-  //   { timeout: 0 /* long because of 100mb git LFS file  */ },
-  // );
-
-  it.scoped(
+it.layer(MainLive, { timeout: { seconds: 30 } })('CLI', it => {
+  it.effect(
     'Git Repo nikelborm/nikelborm fetched by our cli, should be the same as repo cloned by git itself',
-    Effect.fn(function* (ctx) {
+    Effect.fnUntraced(function* (ctx) {
       const { hashOfOriginalGitRepo, hashOfGitRepoFetchedUsingOurCLI } =
         yield* fetchAndHashBothDirs({
           gitRepoOwner: 'nikelborm',
@@ -228,7 +225,6 @@ describe('CLI', { concurrent: true }, () => {
           `Hash of directory fetched by our CLI ("${hashOfGitRepoFetchedUsingOurCLI}") isn't equal to hash of directory cloned with native Git ("${hashOfOriginalGitRepo}"). Does your git client has git LFS activated?`,
         )
         .toBe(hashOfOriginalGitRepo)
-    }, Effect.provide(MainLive)),
-    30000,
+    }),
   )
 })

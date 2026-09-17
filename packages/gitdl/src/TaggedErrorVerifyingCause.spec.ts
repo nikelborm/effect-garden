@@ -2,8 +2,9 @@ import { outdent } from 'outdent'
 import { assert, type Equals } from 'tsafe'
 
 import * as Vitest from '@effect/vitest'
-import * as ParseResult from 'effect/ParseResult'
 import * as Result from 'effect/Result'
+import * as Schema from 'effect/Schema'
+import * as SchemaIssue from 'effect/SchemaIssue'
 
 import { FailedToParseGitLFSInfoError } from './getPathContents/index.ts'
 import { InconsistentExpectedAndRealContentSizeError } from './getPathContents/parseGitLFSObjectResult.ts'
@@ -76,7 +77,7 @@ Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
     ctx => {
       try {
         const error = new FailedToParseGitLFSInfoError(
-          new Error('bad error') as ParseResult.ParseError,
+          new Error('bad error') as unknown as Schema.SchemaError,
           {
             partOfContentThatCouldBeGitLFSInfo:
               'Part of content that could be git lfs info',
@@ -91,16 +92,16 @@ Vitest.describe('TaggedErrorVerifyingCause', { concurrent: true }, () => {
         ctx
           .expect((error as Error).message)
           .toBe(
-            'Provided cause of incorrect type to "FailedToParseGitLFSInfoError" class. Expected cause class: "ParseError"',
+            'Provided cause of incorrect type to "FailedToParseGitLFSInfoError" class. Expected cause class: "SchemaError"',
           )
       }
     },
   )
 
   Vitest.it('Should not try to call message string', ctx => {
-    const causeOriginal = new ParseResult.ParseError({
-      issue: new ParseResult.Unexpected('asdf'),
-    })
+    const causeOriginal = new Schema.SchemaError(
+      new SchemaIssue.InvalidValue({ message: 'asdf' }),
+    )
 
     const error = new FailedToParseGitLFSInfoError(causeOriginal, {
       partOfContentThatCouldBeGitLFSInfo:

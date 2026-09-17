@@ -18,7 +18,7 @@ import {
   GitHubApiRepoIsEmptyError,
   GitHubApiThingNotExistsOrYouDontHaveAccessError,
 } from '../commonErrors.ts'
-import { type InputConfig, provideInputConfig } from '../configContext.ts'
+import { type InputConfig, InputConfigTag, provideInputConfig } from '../configContext.ts'
 import { OctokitLayer } from '../octokit.ts'
 import { UnparsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
 import { PathContentsMetaInfo } from './PathContentsMetaInfo.ts'
@@ -31,7 +31,7 @@ const defaultRepo = {
 
 const UnexpectedErrors = [
   RequestError,
-  Cause.UnknownException,
+  Cause.UnknownError,
   GitHubApiAuthRatelimitedError,
   GitHubApiRatelimitedError,
   GitHubApiGeneralServerError,
@@ -42,7 +42,7 @@ type ErrorExpectedToBeThrown = (typeof UnexpectedErrors)[number] extends new (
   ...args: any
 ) => infer UnexpectedErrorInstance
   ? Exclude<
-      Effect.Effect.Error<typeof RawStreamOfRepoPathContentsFromGitHubAPI>,
+      Effect.Error<typeof RawStreamOfRepoPathContentsFromGitHubAPI>,
       UnexpectedErrorInstance
     >
   : never
@@ -66,9 +66,9 @@ const testValidityOfErrorThrownByEffect =
       ((e: any) => e) as (
         self: Effect.Effect<any, any, any>,
       ) => Effect.Effect<
-        Effect.Effect.Success<TSelf>,
-        Effect.Effect.Error<TSelf>,
-        Effect.Effect.Context<TSelf>
+        Effect.Success<TSelf>,
+        Effect.Error<TSelf>,
+        Effect.Services<TSelf>
       >,
       Effect.flatMap(result => {
         console.error(result)
@@ -147,8 +147,8 @@ const expectNotFail = <A, E>(
   pathToEntityInRepo: string,
   testEffect: (
     ctx: Vitest.TestContext,
-    pathContentsMetaInfo: Effect.Effect.Success<typeof PathContentsMetaInfo>,
-  ) => Effect.Effect<A, E, Octokit | InputConfig>,
+    pathContentsMetaInfo: Effect.Success<typeof PathContentsMetaInfo>,
+  ) => Effect.Effect<A, E, Octokit | InputConfigTag>,
   authToken: string = '',
 ) =>
   Vitest.it.effect('Should return ' + descriptionOfWhatItShouldReturn, ctx =>
@@ -319,7 +319,9 @@ Vitest.describe('PathContentsMetaInfo', { concurrent: true }, () => {
         throw new Error("File wasn't inlined")
 
       const { contentStream, ...rest } = pathContentsMetaInfo
-      const content = yield* Effect.andThen(contentStream, text)
+      const content = yield* Effect.andThen(contentStream, stream =>
+        Effect.promise(() => text(stream)),
+      )
 
       ctx.expect({ ...rest, content }).toEqual({
         blobSha: 'f247396548e37f8f6be1fb71ff2e45fd63abed94',
@@ -344,7 +346,9 @@ Vitest.describe('PathContentsMetaInfo', { concurrent: true }, () => {
         throw new Error("File wasn't inlined")
 
       const { contentStream, ...rest } = pathContentsMetaInfo
-      const content = yield* Effect.andThen(contentStream, text)
+      const content = yield* Effect.andThen(contentStream, stream =>
+        Effect.promise(() => text(stream)),
+      )
 
       ctx.expect({ ...rest, content }).toEqual({
         type: 'file',
@@ -404,7 +408,9 @@ Vitest.describe('PathContentsMetaInfo', { concurrent: true }, () => {
         throw new Error("File wasn't inlined")
 
       const { contentStream, ...rest } = pathContentsMetaInfo
-      const content = yield* Effect.andThen(contentStream, text)
+      const content = yield* Effect.andThen(contentStream, stream =>
+        Effect.promise(() => text(stream)),
+      )
 
       ctx.expect({ ...rest, content }).toEqual({
         blobSha: '24ebb076f9e46157c4abdc6e7b69a775eb38d6a4',

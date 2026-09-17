@@ -7,7 +7,7 @@ import * as Layer from 'effect/Layer'
 // library will have much faster type inference
 type OctokitTag = Context.Service<Octokit, Octokit>
 
-export const OctokitTag: OctokitTag = Context.GenericTag<Octokit>('OctokitTag')
+export const OctokitTag: OctokitTag = Context.Service<Octokit>('OctokitTag')
 
 export const OctokitLayer: (
   options?: OctokitOptions,

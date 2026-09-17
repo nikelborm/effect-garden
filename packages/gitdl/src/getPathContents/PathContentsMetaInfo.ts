@@ -2,7 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import { CastToReadableStream } from '../castToReadableStream.ts'
 import { ParsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
-import { parseGitLFSObjectEither } from './parseGitLFSObjectResult.ts'
+import { parseGitLFSObjectResult } from './parseGitLFSObjectResult.ts'
 
 export const PathContentsMetaInfo = Effect.gen(function* () {
   const response = yield* ParsedMetaInfoAboutPathContentsFromGitHubAPI
@@ -65,10 +65,10 @@ export const PathContentsMetaInfo = Effect.gen(function* () {
 
   const contentAsBuffer = Buffer.from(content, encoding)
 
-  const potentialGitLFSObject = yield* parseGitLFSObjectEither({
+  const potentialGitLFSObject = yield* parseGitLFSObjectResult({
     contentAsBuffer,
     expectedContentSize: size,
-  })
+  }).pipe(Effect.fromResult)
 
   if (typeof potentialGitLFSObject === 'object')
     return {

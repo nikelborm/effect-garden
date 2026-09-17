@@ -34,7 +34,7 @@ export const getHomeSections = () =>
       })
 
       const validSections = sections.flatMap(r =>
-        Result.isRight(r) ? [r.right] : [],
+        Result.isSuccess(r) ? [r.success] : [],
       )
 
       const nextToken = extractString(data, 'continuation')

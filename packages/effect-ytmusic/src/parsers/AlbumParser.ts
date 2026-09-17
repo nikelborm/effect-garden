@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { AlbumDetailed } from '../schema/AlbumDetailed.ts'
@@ -33,7 +33,7 @@ export const parse = (
   ).map(item =>
     SongParser.parseAlbumSong(item, artistBasic, albumBasic, thumbnails),
   )
-  const songs = songResults.flatMap(r => (Result.isRight(r) ? [r.right] : []))
+  const songs = songResults.flatMap(r => (Result.isSuccess(r) ? [r.success] : []))
 
   return checkType(
     'AlbumFull',

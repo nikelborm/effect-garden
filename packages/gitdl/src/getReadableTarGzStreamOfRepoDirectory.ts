@@ -49,7 +49,7 @@ const requestTarballFromGitHubAPI = (
         }),
       catch: error => {
         if (!(error instanceof RequestError))
-          return new Cause.UnknownException(
+          return new Cause.UnknownError(
             error,
             'Failed to request .tar.gz file from GitHub API',
           )

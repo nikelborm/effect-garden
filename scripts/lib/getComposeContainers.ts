@@ -21,7 +21,7 @@ const PsCommandOutputSchema = Schema.compose(
   ).pipe(Schema.Array),
 ).pipe(Schema.asSchema)
 
-const decodePsCommandOutput = Schema.decodeEither(PsCommandOutputSchema)
+const decodePsCommandOutput = Schema.decodeResult(PsCommandOutputSchema)
 
 export async function getDevComposeContainers() {
   const cmd = devComposePs.concat('--format', 'json', '-a')
@@ -38,9 +38,9 @@ export async function getDevComposeContainers() {
   if (!processFinishedSuccessfully)
     throw new Error(`Failed to run \`${cmd}\` command`)
 
-  const containersEither = decodePsCommandOutput(stdoutText)
+  const containersResult = decodePsCommandOutput(stdoutText)
 
-  if (Result.isLeft(containersEither))
+  if (Result.isFailure(containersResult))
     throw new Error(`Failed to parse \`${cmd}\` command output`, {
       cause: containersResult.fail,
     })

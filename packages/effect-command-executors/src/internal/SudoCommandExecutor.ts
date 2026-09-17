@@ -94,7 +94,7 @@ const patchCommand = (
 //     // For piped commands it only makes sense to provide `stdin` for the
 //     // left-most command as the rest will be piped in.
 //     case "PipedCommand": {
-//       return makePiped({ ...self, left: stdin(self.left, input) })
+//       return makePiped({ ...self, left: stdin(self.failure, input) })
 //     }
 //   }
 // })
@@ -114,7 +114,7 @@ const patchCommand = (
 //     // For piped commands it only makes sense to provide `stderr` for the
 //     // right-most command as the rest will be piped in.
 //     case "PipedCommand": {
-//       return makePiped({ ...self, right: stdout(self.right, output) })
+//       return makePiped({ ...self, right: stdout(self.success, output) })
 //     }
 //   }
 // })

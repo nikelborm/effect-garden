@@ -1,7 +1,6 @@
 import { outdent } from 'outdent'
 
-import * as ParseResult from 'effect/ParseResult'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import {
@@ -9,7 +8,7 @@ import {
   type TaggedErrorClass,
 } from '../TaggedErrorVerifyingCause.ts'
 
-export const parseGitLFSObjectEither = ({
+export const parseGitLFSObjectResult = ({
   contentAsBuffer,
   expectedContentSize,
 }: {
@@ -22,7 +21,7 @@ export const parseGitLFSObjectEither = ({
       .subarray(0, MAX_GIT_LFS_INFO_SIZE)
       .toString('utf8')
 
-    const parsingResult = Result.mapLeft(
+    const parsingResult = Result.mapError(
       decodeGitLFSInfoSchema(contentAsString.match(gitLFSInfoRegexp)?.groups),
       cause =>
         new FailedToParseGitLFSInfoError(cause, {
@@ -30,10 +29,11 @@ export const parseGitLFSObjectEither = ({
         }),
     )
 
-    const matchedByRegexpAndParsedByEffectSchema = Result.isRight(parsingResult)
+    const matchedByRegexpAndParsedByEffectSchema =
+      Result.isSuccess(parsingResult)
     const doesSizeFromGitLFSInfoAlignWithExpectedContentSize =
-      Result.isRight(parsingResult) &&
-      parsingResult.succeed.size === expectedContentSize
+      Result.isSuccess(parsingResult) &&
+      parsingResult.success.size === expectedContentSize
 
     const shouldFailIfItIsNotGitLFS =
       contentAsBuffer.byteLength !== expectedContentSize
@@ -44,8 +44,8 @@ export const parseGitLFSObjectEither = ({
 
     if (isThisAGitLFSObject)
       return {
-        gitLFSObjectIdSha256: parsingResult.succeed.oidSha256,
-        gitLFSVersion: parsingResult.succeed.version,
+        gitLFSObjectIdSha256: parsingResult.success.oidSha256,
+        gitLFSVersion: parsingResult.success.version,
       } as const
 
     if (shouldFailIfItIsNotGitLFS)
@@ -78,15 +78,13 @@ const GitLFSInfoSchema = Schema.Struct({
   size: Schema.NumberFromString,
 })
 
-const decodeGitLFSInfoSchema = Schema.decodeUnknownResult(GitLFSInfoSchema, {
-  exact: true,
-})
+const decodeGitLFSInfoSchema = Schema.decodeUnknownResult(GitLFSInfoSchema)
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 export type FailedToParseGitLFSInfoErrorClass = TaggedErrorClass<{
   ErrorName: 'FailedToParseGitLFSInfoError'
-  ExpectedCauseClass: typeof ParseResult.ParseError
+  ExpectedCauseClass: typeof Schema.SchemaError
   DynamicContext: { partOfContentThatCouldBeGitLFSInfo: string }
 }>
 
@@ -96,7 +94,7 @@ const _1: FailedToParseGitLFSInfoErrorClass =
   }>()(
     'FailedToParseGitLFSInfoError',
     `Failed to parse git LFS announcement`,
-    ParseResult.ParseError,
+    Schema.SchemaError,
   )
 
 export class FailedToParseGitLFSInfoError extends _1 {}

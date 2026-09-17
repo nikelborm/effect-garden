@@ -216,7 +216,7 @@ const handleOctokitRequestError = (
 ): RetryAfterTag | GithubApiError =>
   pipe(
     requestError,
-    Schema.decodeUnknownResult(Schema.toType(OctokitApiRateLimitErrorSchema)),
+    Schema.decodeUnknownEffect(Schema.toType(OctokitApiRateLimitErrorSchema)),
     Result.map(({ name, status, request, response }) => {
       const isRateLimitError =
         (status === 403 || status === 429) &&

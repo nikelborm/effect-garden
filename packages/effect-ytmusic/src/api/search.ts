@@ -30,8 +30,8 @@ export const search = Effect.fn('effect-ytmusic/search')(function* (
     extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
   ).flatMap(item => {
     const r = SearchParser.parse(item)
-    if (!r || Result.isLeft(r)) return []
-    return [r.right]
+    if (!r || Result.isFailure(r)) return []
+    return [r.success]
   })
 
   yield* Effect.annotateCurrentSpan(

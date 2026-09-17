@@ -404,7 +404,7 @@ export const is: (access: unknown) => access is EMIDIAccessInstance = isImpl
  * modifications.
  *
  * @internal
- * @param polymorphicAccess Either just {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}, or an
+ * @param polymorphicAccess Result just {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}, or an
  * Effect having it in the success channel.
  * @returns An effect with type-asserted at runtime
  * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}.

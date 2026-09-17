@@ -27,7 +27,7 @@ const parseUserCookies = (cookieString: string): Cookies.Cookies => {
     const value = pair.slice(eqIdx + 1).trim()
     if (!name) continue
     const result = Cookies.set(cookies, name, value)
-    if (Result.isRight(result)) cookies = Result.succeed
+    if (Result.isSuccess(result)) cookies = Result.succeed
   }
   return cookies
 }

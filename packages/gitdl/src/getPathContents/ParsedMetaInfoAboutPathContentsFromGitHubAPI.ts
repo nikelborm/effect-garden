@@ -1,5 +1,5 @@
 import * as Effect from 'effect/Effect'
-import * as ParseResult from 'effect/ParseResult'
+import { pipe } from 'effect/Function'
 import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
@@ -9,26 +9,6 @@ import {
 } from '../TaggedErrorVerifyingCause.ts'
 import { RepoPathContentsFromGitHubAPI } from './RepoPathContentsFromGitHubAPI.ts'
 
-export const UnparsedMetaInfoAboutPathContentsFromGitHubAPI =
-  RepoPathContentsFromGitHubAPI('object')
-
-export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.gen(
-  function* () {
-    const response = yield* UnparsedMetaInfoAboutPathContentsFromGitHubAPI
-
-    return yield* Result.mapLeft(
-      decodeResponse(response.data),
-      parseError =>
-        new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(
-          parseError,
-          {
-            response,
-          },
-        ),
-    )
-  },
-)
-
 const GitSomethingFields = {
   size: Schema.Number,
   name: Schema.String,
@@ -37,9 +17,9 @@ const GitSomethingFields = {
 }
 
 const dirLiteral = Schema.Literal('dir')
-const nonDirLiterals = Schema.Literal('file', 'submodule', 'symlink')
+const nonDirLiterals = Schema.Literals(['file', 'submodule', 'symlink'])
 
-export const ResponseSchema = Schema.Union(
+export const ResponseSchema = Schema.Union([
   Schema.Struct({
     type: Schema.Literal('dir'),
     entries: Schema.Struct({
@@ -50,27 +30,45 @@ export const ResponseSchema = Schema.Union(
   }),
   Schema.Struct({
     type: Schema.Literal('file'),
-    encoding: Schema.Literal('base64', 'none'),
+    encoding: Schema.Literals(['base64', 'none']),
     content: Schema.String,
     ...GitSomethingFields,
   }),
-)
+])
 
-const decodeResponse = Schema.decodeUnknownResult(ResponseSchema, {
-  exact: true,
-})
+const decodeResponse = Schema.decodeUnknownResult(ResponseSchema)
+
+export const UnparsedMetaInfoAboutPathContentsFromGitHubAPI =
+  RepoPathContentsFromGitHubAPI('object')
+
+export const ParsedMetaInfoAboutPathContentsFromGitHubAPI = Effect.flatMap(
+  UnparsedMetaInfoAboutPathContentsFromGitHubAPI,
+  response =>
+    pipe(
+      response.data,
+      decodeResponse,
+      Result.mapError(
+        parseError =>
+          new FailedToParseResponseFromRepoPathContentsMetaInfoAPIError(
+            parseError,
+            { response },
+          ),
+      ),
+      Effect.fromResult,
+    ),
+)
 
 // Extracting to a separate type is required by JSR, so that consumers of the
 // library will have much faster type inference
 
 const _1: TaggedErrorClass<{
   ErrorName: 'FailedToParseResponseFromRepoPathContentsMetaInfoAPI'
-  ExpectedCauseClass: typeof ParseResult.ParseError
+  ExpectedCauseClass: typeof Schema.SchemaError
   DynamicContext: { response: unknown }
 }> = buildTaggedErrorClassVerifyingCause<{ response: unknown }>()(
   'FailedToParseResponseFromRepoPathContentsMetaInfoAPI',
   `Failed to parse response from repo path contents meta info API`,
-  ParseResult.ParseError,
+  Schema.SchemaError,
 )
 
 export class FailedToParseResponseFromRepoPathContentsMetaInfoAPIError extends _1 {}

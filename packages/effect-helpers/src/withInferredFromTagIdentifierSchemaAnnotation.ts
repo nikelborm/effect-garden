@@ -6,7 +6,7 @@ import * as SchemaIssue from 'effect/SchemaIssue'
 
 import type { EnsureTaggedStructWithStringLiteral } from './withOpenApiAnnotations.ts'
 
-export const withInferredFromTagIdentifierSchemaAnnotationEither: {
+export const withInferredFromTagIdentifierSchemaAnnotationResult: {
   // data-last
   (
     prefix: string,
@@ -39,7 +39,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
       return Result.fail(
         new SchemaIssue.InvalidValue({
           message:
-            'Argument of withInferredFromTagIdentifierSchemaAnnotationEither is not type literal',
+            'Argument of withInferredFromTagIdentifierSchemaAnnotationResult is not type literal',
         }),
       )
 
@@ -53,7 +53,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationEither: {
     )
       return Result.fail(
         new SchemaIssue.InvalidValue({
-          message: `withInferredFromTagIdentifierSchemaAnnotationEither were not able to find tag field in passed struct. Are you sure it's TaggedStruct?`,
+          message: `withInferredFromTagIdentifierSchemaAnnotationResult were not able to find tag field in passed struct. Are you sure it's TaggedStruct?`,
         }),
       )
 
@@ -85,7 +85,7 @@ export const withInferredFromTagIdentifierSchemaAnnotationSync: {
     self: Self,
     prefix: string,
   ): EnsureTaggedStructWithStringLiteral<Self, never> => {
-    const result = withInferredFromTagIdentifierSchemaAnnotationEither(
+    const result = withInferredFromTagIdentifierSchemaAnnotationResult(
       self,
       prefix,
     )

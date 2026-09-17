@@ -23,7 +23,7 @@ export const ListedRootItemsSchema = Schema.Struct({
   treeLevel: FiniteNonNegativeIntegerFromString,
 }).pipe(Schema.Array)
 
-export const decodeListedRootItems = Schema.decodeUnknownResult(
+export const decodeListedRootItems = Schema.decodeUnknownEffect(
   ListedRootItemsSchema,
 )
 

@@ -30,7 +30,7 @@ const DevEnvSchema = Schema.Struct({
   DATABASE_PORT_EXPOSED_TO_DEV_LOCALHOST: PortSchema,
 })
 
-const decodeDevEnvEither = Schema.decodeUnknownResult(DevEnvSchema)
+const decodeDevEnvResult = Schema.decodeUnknownResult(DevEnvSchema)
 export const decodeDbConfigSync = Schema.decodeUnknownSync(DatabaseConfigSchema)
 
 export async function getDevEnvFromFile() {
@@ -40,9 +40,9 @@ export async function getDevEnvFromFile() {
 
   if (error) throw error
 
-  const envEither = decodeDevEnvEither(parsed)
+  const envResult = decodeDevEnvResult(parsed)
 
-  if (Result.isLeft(envEither)) throw envResult.fail
+  if (Result.isFailure(envResult)) throw envResult.fail
 
   return envResult.succeed
 }

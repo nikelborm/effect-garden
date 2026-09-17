@@ -3,7 +3,7 @@ import {
   annotations,
   Boolean as Boolean$,
   DateFromString,
-  decodeUnknownEither,
+  decodeUnknownResult,
   extend,
   Literal,
   NonEmptyArray,
@@ -709,13 +709,13 @@ export const ClaudeSessionMessage = Union(
 
 export const ClaudeSessionSchema = Array$(ClaudeSessionMessage)
 
-export const decodeClaudeSessionLine = decodeUnknownEither(
+export const decodeClaudeSessionLine = decodeUnknownResult(
   ClaudeSessionMessage,
   { onExcessProperty: 'error' },
 )
 
 export type ClaudeSession = Schema.Type<typeof ClaudeSessionSchema>
 
-export const decodeClaudeSession = decodeUnknownEither(ClaudeSessionSchema, {
+export const decodeClaudeSession = decodeUnknownResult(ClaudeSessionSchema, {
   onExcessProperty: 'error',
 })

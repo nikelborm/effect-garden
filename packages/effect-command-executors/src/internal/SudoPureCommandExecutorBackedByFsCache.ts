@@ -15,7 +15,7 @@ const CacheValueSchema = Schema.Struct({
   exitCode: FiniteNonNegativeInteger.pipe(Schema.brand('ExitCode')),
 })
 type CacheValue = Schema.Schema.Type<typeof CacheValueSchema>
-const decodeCacheEntries = Schema.decodeUnknownResult(
+const decodeCacheEntries = Schema.decodeUnknownEffect(
   Schema.Array(Schema.Tuple([Schema.String, CacheValueSchema])),
 )
 

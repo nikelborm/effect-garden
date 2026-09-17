@@ -29,9 +29,9 @@ export const starredReposOfUser = (username: string, reposPerPage: number) =>
       reposPerPage,
     )
 
-    const firstPageEither = yield* Effect.either(requestPageOfStarredRepos(1))
+    const firstPageResult = yield* Effect.either(requestPageOfStarredRepos(1))
 
-    if (Result.isLeft(firstPageEither))
+    if (Result.isFailure(firstPageResult))
       return Stream.succeed(Result.fail(firstPageResult.fail))
 
     const firstPageStream = firstPageResult.pipe(

@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import { PageType } from '../constants.ts'
 import type { ParseError } from '../errors.ts'
@@ -68,7 +68,7 @@ export const parseHomeSection = (
         default:
           return []
       }
-      return Result.isRight(result) ? [Result.succeed] : []
+      return Result.isSuccess(result) ? [Result.succeed] : []
     },
   )
 

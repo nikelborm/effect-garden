@@ -68,7 +68,7 @@ export const downloadEntityFromRepo = (
   | InconsistentExpectedAndRealContentSizeError
   | FailedToWriteFileStreamToDestinationPathError
   | FailedToUnpackRepoFolderTarGzStreamToFsError
-  | Cause.UnknownException
+  | Cause.UnknownError
   | GitHubApiRepoIsEmptyError
   | GitHubApiNoCommitFoundForGitRefError
   | GitHubApiThingNotExistsOrYouDontHaveAccessError

@@ -64,8 +64,8 @@ const program = Effect.gen(function* () {
         : selfStarredReposOfUser(repoOwner),
     ),
     Stream.mapEffect(
-      Effect.fnUntraced(function* (repoEither) {
-        const repo = yield* repoEither
+      Effect.fnUntraced(function* (repoResult) {
+        const repo = yield* repoResult
 
         yield* Effect.log(
           `Found own starred repo: ${repo.name}, ${repo.lastTimeBeenPushedInto}`,
@@ -92,7 +92,7 @@ const program = Effect.gen(function* () {
     ),
   )
 
-  const [errorStream, repoStream] = yield* Stream.partitionEither(
+  const [errorStream, repoStream] = yield* Stream.partitionResult(
     reposStream,
     Effect.succeed,
   )

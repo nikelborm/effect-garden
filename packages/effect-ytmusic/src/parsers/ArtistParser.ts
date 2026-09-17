@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { ArtistDetailed } from '../schema/ArtistDetailed.ts'
@@ -28,7 +28,7 @@ export const parse = (
     ((carousels[index]?.contents as unknown[] | undefined) ?? []).flatMap(
       item => {
         const r = mapFn(item)
-        return Result.isRight(r) ? [r.right] : []
+        return Result.isSuccess(r) ? [r.success] : []
       },
     )
 
@@ -42,7 +42,7 @@ export const parse = (
         extractList(data, 'musicShelfRenderer', 'contents') as unknown[]
       ).flatMap(item => {
         const r = SongParser.parseArtistTopSong(item, artistBasic)
-        return Result.isRight(r) ? [r.right] : []
+        return Result.isSuccess(r) ? [r.success] : []
       }),
       topAlbums: mapCarousel(0, item =>
         AlbumParser.parseArtistTopAlbum(item, artistBasic),

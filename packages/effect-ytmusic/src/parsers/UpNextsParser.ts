@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import type { ParseError } from '../errors.ts'
 import { UpNextsDetails } from '../schema/UpNextsDetails.ts'
@@ -34,12 +34,12 @@ export const parse = (
   const items = extractList(data, 'playlistPanelVideoRenderer') as unknown[]
 
   const results = items.slice(1).map(parseItem)
-  const firstError = results.find(Result.isLeft)
-  if (firstError && Result.isLeft(firstError)) {
-    return Result.fail(firstError.left)
+  const firstError = results.find(Result.isFailure)
+  if (firstError && Result.isFailure(firstError)) {
+    return Result.fail(firstError.failure)
   }
 
   return Result.succeed(
-    results.map(r => (r as Result.succeed<ParseError, UpNextsDetails>).right),
+    results.map(r => (r as Result.Success<UpNextsDetails, ParseError>).success),
   )
 }

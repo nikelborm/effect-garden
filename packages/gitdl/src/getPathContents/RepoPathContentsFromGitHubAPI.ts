@@ -46,7 +46,7 @@ export const RepoPathContentsFromGitHubAPI = Effect.fn(
       }),
     catch: error => {
       if (!(error instanceof RequestError))
-        return new Cause.UnknownException(
+        return new Cause.UnknownError(
           error,
           'Failed to request contents at the path inside GitHub repo',
         )

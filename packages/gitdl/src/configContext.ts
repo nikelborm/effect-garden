@@ -11,13 +11,19 @@ export type InputConfig = Readonly<{
   gitRef: string
 }>
 
-export const InputConfigTag = Context.GenericTag<InputConfig>('InputConfig')
+export class InputConfigTag extends Context.Service<
+  InputConfigTag,
+  InputConfig
+>()('InputConfig') {}
 
 export type OutputConfig = Readonly<{
   localPathAtWhichEntityFromRepoWillBeAvailable: string
 }>
 
-export const OutputConfigTag = Context.GenericTag<OutputConfig>('OutputConfig')
+export class OutputConfigTag extends Context.Service<
+  OutputConfigTag,
+  OutputConfig
+>()('OutputConfig') {}
 
 const InputConfigLive = (inputConfig: InputConfig) =>
   Layer.succeed(InputConfigTag, InputConfigTag.of(inputConfig))
@@ -35,7 +41,7 @@ export const provideSingleDownloadTargetConfig = ({
   ...inputConfig
 }: SingleTargetConfig): (<A, E, R>(
   self: Effect.Effect<A, E, R>,
-) => Effect.Effect<A, E, Exclude<R, InputConfig | OutputConfig>>) =>
+) => Effect.Effect<A, E, Exclude<R, InputConfigTag | OutputConfigTag>>) =>
   Effect.provide(
     Layer.merge(
       InputConfigLive(inputConfig),

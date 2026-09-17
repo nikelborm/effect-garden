@@ -19,7 +19,7 @@ export const FoundRootsSchema = Schema.Struct({
 export type FoundRoots = (typeof FoundRootsSchema)['Type']
 export type FoundRoot = FoundRoots[number]
 
-const decodeFoundRoots = Schema.decodeUnknownResult(FoundRootsSchema)
+const decodeFoundRoots = Schema.decodeUnknownEffect(FoundRootsSchema)
 
 export interface FindRootsOptions {
   readonly devicePath: string
