@@ -14,12 +14,13 @@ import { pipe } from 'effect/Function'
 import * as Struct from 'effect/Struct'
 
 // a hack because I need this plugin but it's not in exports of the package
-const { remarkMarkAndUnravel } = import.meta.require(
-  path.join(
-    path.dirname(import.meta.resolve('@mdx-js/mdx').slice(7)),
-    './lib/plugin/remark-mark-and-unravel.js',
-  ),
-) as unknown as { remarkMarkAndUnravel: () => Transformer }
+const { remarkMarkAndUnravel } = pipe(
+  import.meta.resolve('@mdx-js/mdx'),
+  s => s.replace('file://', ''),
+  path.dirname,
+  dir => path.join(dir, 'lib/plugin/remark-mark-and-unravel.js'),
+  import.meta.require,
+) as { remarkMarkAndUnravel: () => Transformer }
 
 const processor = unified()
   .use(remarkParse)
@@ -32,13 +33,14 @@ const processor = unified()
 
 export const compileMdx = (mdxContent: string): Effect.Effect<Node, Error> =>
   Effect.tryPromise({
-    try: () => pipe(
-      mdxContent,
-      matter,
-      Struct.get('content'),
-      processor.parse.bind(processor),
-      processor.run.bind(processor),
-    ),
+    try: () =>
+      pipe(
+        mdxContent,
+        matter,
+        Struct.get('content'),
+        processor.parse.bind(processor),
+        processor.run.bind(processor),
+      ),
     catch: cause =>
       new Error(
         `Failed to compile MDX: ${cause instanceof Error ? cause.message : String(cause)}`,
