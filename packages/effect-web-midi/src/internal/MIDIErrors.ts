@@ -7,7 +7,8 @@ import * as EMIDIPort from './EMIDIPort.ts'
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-const PortId = Schema.fromBrand(EMIDIPort.BothId)(
+const PortId = Schema.fromBrand(
+  EMIDIPort.BothId,
   Schema.Trimmed.check(Schema.isNonEmpty()),
 )
 
