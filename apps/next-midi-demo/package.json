@@ -55,7 +55,7 @@
     "react-dom": "catalog:",
     "serwist": "^9.5.12",
     "ts-key-not-enum": "workspace:^",
-    "yak-swc": "^9.9.0"
+    "yak-swc": "^9.10.0"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/apps/next-midi-demo#readme",
   "bugs": {

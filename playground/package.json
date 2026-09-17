@@ -137,7 +137,7 @@
     "smol-toml": "catalog:",
     "sort-package-json": "catalog:",
     "tar-fs": "catalog:",
-    "tinybench": "^6.0.2",
+    "tinybench": "^6.2.0",
     "ts-key-not-enum": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
