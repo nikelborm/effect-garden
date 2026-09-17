@@ -191,7 +191,7 @@ export type Fn = 'Fn'
 export const Fn: Fn = 'Fn'
 
 /**
- * The `FnLock` or `F-Lock` (Function Lock) key.Toggles the function key mode
+ * The `FnLock` or `F-Lock` (Function Lock) key. Toggles the function key mode
  * described by `"Fn"` on and off. Often handled in hardware so that events
  * aren't generated for this key.
  *
@@ -200,7 +200,7 @@ export const Fn: Fn = 'Fn'
 export type FnLock = 'FnLock'
 
 /**
- * The `FnLock` or `F-Lock` (Function Lock) key.Toggles the function key mode
+ * The `FnLock` or `F-Lock` (Function Lock) key. Toggles the function key mode
  * described by `"Fn"` on and off. Often handled in hardware so that events
  * aren't generated for this key.
  *

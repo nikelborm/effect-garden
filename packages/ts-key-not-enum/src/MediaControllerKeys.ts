@@ -189,7 +189,7 @@ export type ColorF3Blue = 'ColorF3Blue'
 export const ColorF3Blue: ColorF3Blue = 'ColorF3Blue'
 
 /**
- * General-purpose media function key, color-coded grey. This has index `4`
+ * General-purpose media function key, color-coded gray. This has index `4`
  * among the colored keys.
  *
  * Windows virtual key code: `VK_COLORED_KEY_4`
@@ -201,7 +201,7 @@ export const ColorF3Blue: ColorF3Blue = 'ColorF3Blue'
 export type ColorF4Grey = 'ColorF4Grey'
 
 /**
- * General-purpose media function key, color-coded grey. This has index `4`
+ * General-purpose media function key, color-coded gray. This has index `4`
  * among the colored keys.
  *
  * Windows virtual key code: `VK_COLORED_KEY_4`

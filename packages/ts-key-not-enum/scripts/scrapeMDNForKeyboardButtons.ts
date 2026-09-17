@@ -1,12 +1,9 @@
 #!/usr/bin/env bun
 
-import { defaultMdxConfigLayer, MdxService, MdxServiceLive } from 'effect-mdx'
-import type { Transformer } from 'unified'
-import type { Node } from 'unist'
-
 import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as ByteSize from 'effect/ByteSize'
 import * as Console from 'effect/Console'
 import * as DateTime from 'effect/DateTime'
@@ -20,12 +17,13 @@ import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
 import type * as Scope from 'effect/Scope'
 import * as EString from 'effect/String'
+import * as Unify from 'effect/Unify'
 import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 import * as HttpClient from 'effect/unstable/http/HttpClient'
-import type * as HttpClientError from 'effect/unstable/http/HttpClientError'
 import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
+import { compileMdx } from './lib/compileMdx.ts'
 import { parseMdxNodes } from './lib/parseMdxNodes.ts'
 import {
   renderFileHeaderTsDocString,
@@ -102,16 +100,14 @@ const makeCacheError = (
     ),
   })
 
-const AppLayer = MdxServiceLive.pipe(
-  Layer.provideMerge(defaultMdxConfigLayer),
-  Layer.provideMerge(FetchHttpClient.layer),
+const AppLayer = FetchHttpClient.layer.pipe(
   Layer.provideMerge(BunChildProcessSpawner.layer),
   Layer.provideMerge(BunFileSystem.layer),
   Layer.provideMerge(Logger.layer([Logger.consolePrettyTty()])),
   Layer.provideMerge(BunPath.layer),
 )
 
-await Effect.gen(function* () {
+const main = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const path = yield* Path.Path
 
@@ -172,11 +168,7 @@ await Effect.gen(function* () {
     }, Effect.ignore()),
   )
 
-  const mdxPageContent = yield* Effect.orDieWith<
-    string,
-    HttpClientError.HttpClientError | LocalCacheError,
-    HttpClient.HttpClient
-  >(
+  const mdxPageContent = yield* Unify.unify(
     preferRefetch
       ? fetchAndCacheLocally.pipe(
           Effect.tapCause(() => Effect.log('Falling back to cache...')),
@@ -186,24 +178,19 @@ await Effect.gen(function* () {
           Effect.tapCause(() => Effect.log('Falling back to GitHub...')),
           Effect.catch(() => fetchAndCacheLocally),
         ),
-    () => 'Failed to both fetch from GitHub and read from cache',
+  ).pipe(
+    Effect.mapError(
+      _cause =>
+        new Error('Failed to both fetch from GitHub and read from cache'),
+    ),
+    Effect.orDie,
   )
 
   yield* Effect.log('Successfully acquired MDN page contents.\n')
   yield* Effect.log('Started parsing mdast contents')
 
-  const service = yield* MdxService
+  const mdast = yield* compileMdx(mdxPageContent)
 
-  let mdast = null as Node | null
-
-  const logAstPlugin = (): Transformer => (tree, _file) => {
-    mdast = tree
-    return tree
-  }
-
-  yield* service.compileMdx(mdxPageContent, { rehypePlugins: [logAstPlugin] })
-
-  if (!mdast) return yield* Effect.die(new Error(`MDX AST plugin didn't work`))
   yield* Effect.log('Parsed mdast by mdx parser\n')
 
   const removeEntries = (
@@ -497,8 +484,9 @@ await Effect.gen(function* () {
   Effect.provide(AppLayer),
   // TODO: make custom runtime
   // https://typeonce.dev/course/effect-beginners-complete-getting-started/effect-in-production/most-common-effect-patterns#use-a-custom-runtime-from-the-beginning
-  Effect.runPromise,
 )
+
+if (import.meta.main) BunRuntime.runMain(main)
 
 interface LocalCacheError {
   _tag: 'LocalCacheError'
