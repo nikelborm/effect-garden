@@ -43,7 +43,7 @@ import {
 
 const program = Effect.gen(function* () {
   // this is also a default environment variable provided by Github Action
-  const repoOwner = yield* Config.string('GITHUB_REPOSITORY_OWNER')
+  const repoOwner = yield* Config.String('GITHUB_REPOSITORY_OWNER')
   // TODO: refactor to to take from context
   const mockApi = process.env['MOCK_API'] === 'true'
   const skipRefreshing = process.env['SKIP_REFRESHING_IMAGES_FOLDER'] === 'true'
@@ -92,7 +92,7 @@ const program = Effect.gen(function* () {
     ),
   )
 
-  const [errorStream, repoStream] = yield* Stream.partitionResult(
+  const [errorStream, repoStream] = yield* Stream.partitionEffect(
     reposStream,
     Effect.succeed,
   )

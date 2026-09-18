@@ -11,7 +11,6 @@ import {
 
 import * as Context from 'effect/Context'
 import * as Schema from 'effect/Schema'
-import { decodeUnknownResult } from 'effect/Schema'
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
@@ -80,7 +79,9 @@ export class UserWithSession extends Context.Service<
   (typeof UserWithSessionSchema)['Type']
 >()('UserWithSession') {}
 
-export const decodeUserWithSession = decodeUnknownResult(UserWithSessionSchema)
+export const decodeUserWithSession = Schema.decodeUnknownResult(
+  UserWithSessionSchema,
+)
 
 export class UserWithSessionMiddleware extends HttpApiMiddleware.Tag<UserWithSessionMiddleware>()(
   'UserWithSessionMiddleware',
