@@ -651,8 +651,8 @@
       "version": "0.1.0",
       "devDependencies": {
         "@effect/tsgo": "catalog:",
+        "@evadev/openapi-gen": "catalog:",
         "@evadev/tsconfig": "workspace:^",
-        "@tim-smart/openapi-gen": "catalog:",
         "ts-namespace-import": "catalog:",
         "ts-patch": "catalog:",
         "typescript": "catalog:",
@@ -951,6 +951,7 @@
         "@evadev/backend-config": "workspace:^",
         "@evadev/effect-helpers": "workspace:^",
         "@evadev/effect-schema-i18n": "workspace:^",
+        "@evadev/openapi-gen": "catalog:",
         "@evadev/scripts": "workspace:^",
         "@evadev/tsconfig": "workspace:^",
         "@fp-ts/optic": "catalog:",
@@ -982,7 +983,6 @@
         "@stryker-mutator/core": "catalog:",
         "@stryker-mutator/instrumenter": "catalog:",
         "@stryker-mutator/vitest-runner": "catalog:",
-        "@tim-smart/openapi-gen": "catalog:",
         "@total-typescript/ts-reset": "catalog:",
         "@trellisform/api": "workspace:^",
         "@trellisform/backend-better-auth-service": "workspace:^",
@@ -1133,6 +1133,7 @@
     "@effect/sql-sqlite-wasm": "4.0.0-rc.115",
     "@effect/tsgo": "0.45.0",
     "@effect/vitest": "4.0.0-rc.115",
+    "@evadev/openapi-gen": "^1.0.1",
     "@fp-ts/optic": "^0.25.0",
     "@handfish/drizzle-effect": "^0.0.17",
     "@microsoft/tsdoc": "^0.17.0",
@@ -1161,7 +1162,6 @@
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/instrumenter": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
-    "@tim-smart/openapi-gen": "^1.0.4",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/bun": "^1.3.14",
     "@types/node": "^22.20.3",
@@ -1587,6 +1587,8 @@
     "@evadev/effect-schema-i18n": ["@evadev/effect-schema-i18n@workspace:ideas/effect-schema-i18n"],
 
     "@evadev/github-extract-issues": ["@evadev/github-extract-issues@workspace:one-offs/github-extract-issues"],
+
+    "@evadev/openapi-gen": ["@evadev/openapi-gen@1.0.1", "", { "dependencies": { "yaml": "^2.8.0" }, "bin": { "@evadev/openapi-gen": "main.js" } }, "sha512-ZNeFjO83LBaKhSv3znt95PGvj6vrhkIEfjByANXe+eB7k1yoy+UvdXm2N4OYbJv+tVojwjAktqfctpCb+2Gh7w=="],
 
     "@evadev/scripts": ["@evadev/scripts@workspace:scripts"],
 
@@ -2275,8 +2277,6 @@
     "@swc/helpers": ["@swc/helpers@0.5.23", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw=="],
 
     "@swc/types": ["@swc/types@0.1.28", "", { "dependencies": { "@swc/counter": "^0.1.3" } }, "sha512-V6Mnml8v09QALx6K0elJ7o9K/MkVDtW3t6L+7Ou/JcWtb3xwId2AH4FeOceySd2JaO87IMw4+6vSZxLm34LPbw=="],
-
-    "@tim-smart/openapi-gen": ["@tim-smart/openapi-gen@1.0.4", "", { "dependencies": { "yaml": "^2.8.0" }, "bin": { "openapi-gen": "main.js" } }, "sha512-wOFcAF45vniZaiqzjR4+lGgjJMrSlLTaZtUdscsOU/YJ6xOLafrQX/qH6wqLSJW4vOfOjHwylIf5EU3adp1jKw=="],
 
     "@tokenizer/inflate": ["@tokenizer/inflate@0.4.1", "", { "dependencies": { "debug": "^4.4.3", "token-types": "^6.1.1" } }, "sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA=="],
 

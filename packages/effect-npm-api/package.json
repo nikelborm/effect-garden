@@ -5,7 +5,7 @@
   "description": "Effect HTTP API declarations for NPM Registry",
   "devDependencies": {
     "@effect/tsgo": "catalog:",
-    "@tim-smart/openapi-gen": "catalog:",
+    "@evadev/openapi-gen": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
@@ -27,7 +27,9 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput false",
-    "gen": "openapi-gen --spec ./npm-registry-open-api.yaml > ./src/internal/API_generated.ts && sed -i \"1i /** biome-ignore-all lint/plugin/drizzle: it's not drizzle */\" ./src/internal/API_generated.ts && biome check --write --unsafe ./src/internal/API_generated.ts",
+    "gen": "openapi-gen --spec ./npm-registry-open-api.yaml > ./src/internal/API_generated.ts && sed -i \"1i /** biome-ignore-all lint/plugin/drizzle: it's not drizzle */\" ./src/internal/API_generated.ts",
+    "lint": "biome check --write --unsafe ./src/internal/API_generated.ts",
+    "gen-lint": "bun --sequential gen lint",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
   },
   "author": {

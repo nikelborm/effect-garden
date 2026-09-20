@@ -118,7 +118,7 @@
     "ts-pattern": "^5.9.0",
     "unified": "^11.0.5",
     "webidl2": "^24.5.0",
-    "@tim-smart/openapi-gen": "^1.0.4",
+    "@evadev/openapi-gen": "^1.0.1",
     "@stryker-mutator/api": "^10.0.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/instrumenter": "^10.0.0",
