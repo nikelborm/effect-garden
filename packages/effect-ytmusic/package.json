@@ -33,7 +33,7 @@
     "directory": "packages/effect-ytmusic"
   },
   "scripts": {
-    "build": "# tsc # TODO: migrate to effect v4",
+    "build": "tsc",
     "test": "vitest run"
   },
   "author": {

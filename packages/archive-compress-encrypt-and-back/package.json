@@ -29,7 +29,7 @@
     "directory": "packages/archive-compress-encrypt-and-back"
   },
   "scripts": {
-    "build": "# tsc # TODO: migrate to effect v4",
+    "build": "tsc",
     "dev": "tsc --watch"
   },
   "author": {
