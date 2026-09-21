@@ -173,6 +173,9 @@ const parseInputDeviceKind = Schema.String.pipe(
   Schema.refine(
     (kind): kind is 'audioinput' | 'videoinput' =>
       kind === 'audioinput' || kind === 'videoinput',
+    {
+      message: `Expected .kind of input device to be either 'audioinput' or 'videoinput'`,
+    },
   ),
   Schema.decodeResult,
   parseKindToResult =>
