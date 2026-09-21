@@ -15,6 +15,8 @@ import pkg from './package.json' with { type: 'json' }
 import { archiveCompressEncryptCommand } from './src/archiveCompressEncryptCommand.ts'
 import { decryptDecompressExtractCommand } from './src/decryptDecompressExtractCommand.ts'
 
+// TODO: just make identical test as gitdl has
+
 // TODO: make sure nounder/fs can properly simulate file permissions
 // TODO: test with nounder/fs
 
