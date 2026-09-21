@@ -15,7 +15,7 @@ export function getCompressedIdentifierName(prefix: string, tokens: string[]) {
       break
     }
     const index = tokens.findLastIndex(e => e.length === maxLength)
-    const val = tokens[index];
+    const val = tokens[index]
     if (val) tokens[index] = val.slice(0, 1)
     else throw new Error('wtf in getCompressedIdentifierName')
     rendered = render()

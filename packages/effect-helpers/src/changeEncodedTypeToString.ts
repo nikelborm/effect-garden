@@ -10,9 +10,7 @@ export const changeEncodedTypeToString = <T>(
   )
 
   return result.annotate({
-    ...(annotations?.title !== undefined
-      ? { title: annotations.title }
-      : {}),
+    ...(annotations?.title !== undefined ? { title: annotations.title } : {}),
     ...(annotations?.description !== undefined
       ? { description: annotations.description }
       : {}),

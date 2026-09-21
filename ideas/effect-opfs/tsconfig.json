@@ -1,10 +1,7 @@
 {
   "extends": "@evadev/tsconfig",
   "compilerOptions": {
-    "declarationDir": "./dist-types",
-    "outDir": "./dist",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "rootDir": "./"
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
   },
   "include": ["**/*.ts"],
   "exclude": [

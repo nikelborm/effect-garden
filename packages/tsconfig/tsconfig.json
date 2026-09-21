@@ -57,6 +57,11 @@
     "useUnknownInCatchVariables": true,
     "strictPropertyInitialization": true,
     "alwaysStrict": true,
+
+    "declarationDir": "${configDir}/dist-types",
+    "outDir": "${configDir}/dist",
+    "rootDir": "${configDir}/",
+
     "plugins": [
       {
         "name": "ts-namespace-import",

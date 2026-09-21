@@ -152,13 +152,12 @@ export const pathToEntityInRepoCLIOptionBackedByEnv: Flag.Flag<string> =
  * @category CLI options
  * @constant
  */
-export const repoOwnerCLIOptionBackedByEnv: Flag.Flag<string> =
-  EFunction.pipe(
-    Flag.String(`repoOwner`),
-    Flag.withDescription(repoOwnerDescription),
-    Flag.withFallbackConfig(RepoOwnerConfig),
-    Flag.withSchema(GitHubSlugStringSchema),
-  )
+export const repoOwnerCLIOptionBackedByEnv: Flag.Flag<string> = EFunction.pipe(
+  Flag.String(`repoOwner`),
+  Flag.withDescription(repoOwnerDescription),
+  Flag.withFallbackConfig(RepoOwnerConfig),
+  Flag.withSchema(GitHubSlugStringSchema),
+)
 
 /**
  * Text parameter containing URL slug of the repo itself.
@@ -180,13 +179,12 @@ export const repoOwnerCLIOptionBackedByEnv: Flag.Flag<string> =
  * @category CLI options
  * @constant
  */
-export const repoNameCLIOptionBackedByEnv: Flag.Flag<string> =
-  EFunction.pipe(
-    Flag.String(`repoName`),
-    Flag.withDescription(repoNameDescription),
-    Flag.withFallbackConfig(RepoNameConfig),
-    Flag.withSchema(GitHubSlugStringSchema),
-  )
+export const repoNameCLIOptionBackedByEnv: Flag.Flag<string> = EFunction.pipe(
+  Flag.String(`repoName`),
+  Flag.withDescription(repoNameDescription),
+  Flag.withFallbackConfig(RepoNameConfig),
+  Flag.withSchema(GitHubSlugStringSchema),
+)
 
 /**
  * Text parameter containing path inside your local file system, your new
@@ -239,9 +237,8 @@ export const destinationPathCLIOptionBackedByEnv: Flag.Flag<string> =
  * @category CLI options
  * @constant
  */
-export const gitRefCLIOptionBackedByEnv: Flag.Flag<string> =
-  EFunction.pipe(
-    Flag.String(`gitRef`),
-    Flag.withDescription(gitRefDescription),
-    Flag.withFallbackConfig(GitRefConfig),
-  )
+export const gitRefCLIOptionBackedByEnv: Flag.Flag<string> = EFunction.pipe(
+  Flag.String(`gitRef`),
+  Flag.withDescription(gitRefDescription),
+  Flag.withFallbackConfig(GitRefConfig),
+)

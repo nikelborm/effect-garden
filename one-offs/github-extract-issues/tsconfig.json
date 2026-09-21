@@ -1,9 +1,6 @@
 {
   "extends": "@evadev/tsconfig",
   "compilerOptions": {
-    "declarationDir": "./dist-types",
-    "outDir": "./dist",
-    "rootDir": "./",
     "types": ["bun"]
   },
   "include": ["**/*.ts"],

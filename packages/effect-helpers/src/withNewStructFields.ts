@@ -22,11 +22,10 @@ export const withNewStructFields: {
     Struct.assign(fields, newFields),
   ) as any
 
-  const {identifier} = Schema.resolveAnnotations(self as Schema.Constraint) ?? {}
+  const { identifier } =
+    Schema.resolveAnnotations(self as Schema.Constraint) ?? {}
 
-  return (
-    identifier ? out.annotate({ identifier }) : out
-  ) as any
+  return (identifier ? out.annotate({ identifier }) : out) as any
 })
 
 // TODO: add also option to throw on duplicates

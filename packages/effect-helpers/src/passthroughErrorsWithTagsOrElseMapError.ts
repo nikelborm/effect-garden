@@ -149,7 +149,8 @@ export const passthroughErrorsWithTagsOrElseMapError = EFunction.dual<
     ElseA,
     ElseE,
     ElseR
-  >>(
+  >
+>(
   (args: any) => Effect.isEffect(args[0]),
   <
     SelfA,

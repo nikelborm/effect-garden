@@ -2,8 +2,6 @@
   "extends": "@evadev/tsconfig",
   "compilerOptions": {
     "noEmit": true,
-    "outDir": "./dist",
-    "rootDir": "./",
     "noUncheckedSideEffectImports": false,
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",

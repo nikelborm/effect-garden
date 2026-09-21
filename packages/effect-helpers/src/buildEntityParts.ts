@@ -19,12 +19,8 @@ const ID = Schema.Int.check(
 // TODO: heavily test
 const makeBrandSchema: <S extends Schema.Constraint, B extends string>(
   brand: B,
-  annotations?: Schema.Annotations.Bottom<
-    S['Type'] & Brand.Brand<B>,
-    any
-  >,
-) => <SubS extends S>(self: SubS) => Schema.brand<SubS, B> =
-  Schema.brand as any
+  annotations?: Schema.Annotations.Bottom<S['Type'] & Brand.Brand<B>, any>,
+) => <SubS extends S>(self: SubS) => Schema.brand<SubS, B> = Schema.brand as any
 
 // TODO: heavily test
 export const buildEntityPartsPrefixed = (prefix: string) => {

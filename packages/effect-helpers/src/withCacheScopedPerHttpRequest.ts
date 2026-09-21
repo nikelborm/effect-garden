@@ -43,7 +43,7 @@ export const withCacheScopedPerHttpRequest =
           cache.set(request, requestCache)
         }
         return Effect.flatMap(Deferred.make<A, E>(), deferred => {
-          requestCache.set(key,deferred)
+          requestCache.set(key, deferred)
           return Effect.onExit(effect, exit => Deferred.done(deferred, exit))
         })
       },

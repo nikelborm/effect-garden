@@ -18,7 +18,11 @@ import {
   GitHubApiRepoIsEmptyError,
   GitHubApiThingNotExistsOrYouDontHaveAccessError,
 } from '../commonErrors.ts'
-import { type InputConfig, InputConfigTag, provideInputConfig } from '../configContext.ts'
+import {
+  type InputConfig,
+  type InputConfigTag,
+  provideInputConfig,
+} from '../configContext.ts'
 import { OctokitLayer } from '../octokit.ts'
 import { UnparsedMetaInfoAboutPathContentsFromGitHubAPI } from './ParsedMetaInfoAboutPathContentsFromGitHubAPI.ts'
 import { PathContentsMetaInfo } from './PathContentsMetaInfo.ts'
