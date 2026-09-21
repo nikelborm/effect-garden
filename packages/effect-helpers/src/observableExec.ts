@@ -27,7 +27,7 @@ export const observableExec = Effect.fn('observableExec')(function* ({
 
   const executor = yield* ChildProcessSpawner.ChildProcessSpawner
   const [head, ...rest] = cmd
-  const process = yield* executor.spawn(
+  const exitCode = yield* executor.exitCode(
     ChildProcess.make(head, rest, {
       cwd,
       stderr: 'inherit',
@@ -35,7 +35,6 @@ export const observableExec = Effect.fn('observableExec')(function* ({
     }),
   )
 
-  const exitCode = yield* process.exitCode
 
   if (exitCode === 0) return yield* Effect.void
 
