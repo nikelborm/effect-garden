@@ -1,5 +1,6 @@
 import '@total-typescript/ts-reset'
 
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
 import * as ConfigProvider from 'effect/ConfigProvider'
@@ -38,19 +39,26 @@ export const layerFromCmdToPipeMdThrough = (
   ...expressions: ReadonlyArray<ChildProcess.TemplateExpression>
 ) =>
   pipe(
-    ChildProcessSpawner.ChildProcessSpawner,
-    Effect.map(
-      executor => (mdContent: string) =>
-        pipe(
-          ChildProcess.make({
-            stdout: 'inherit',
-            stdin: Stream.encodeText(Stream.make(mdContent)),
-          })(templates, ...expressions),
-          cmd => executor.spawn(cmd),
-          Effect.flatMap(process => process.exitCode),
+    ChildProcessSpawner.ChildProcessSpawner.useSync(
+      spawner => (mdContent: string) => {
+        const command = ChildProcess.make({
+          stdout: 'inherit',
+          stdin: Stream.encodeText(Stream.make(mdContent)),
+        })(templates, ...expressions)
+
+        return pipe(
+          spawner.exitCode(command),
+          Effect.filterOrFail(
+            code => code === 0,
+            code =>
+              new Error(
+                `Markdown printer command (${command.command}) exited with code ${code}. Please try another layer, or check if the program is installed`,
+              ),
+          ),
           Effect.scoped,
           Effect.orDie,
-        ),
+        )
+      },
     ),
     Layer.effect(MarkdownStdoutPrinter),
   )
@@ -80,7 +88,7 @@ const AppLayer = pipe(
   Effect.flatMap(path => ConfigProvider.fromDotEnv({ path })),
   Effect.map(ConfigProvider.layer),
   Layer.unwrap,
-  Layer.provideMerge(RichLive),
+  Layer.provideMerge(BatLive),
   Layer.provideMerge(
     Layer.mergeAll(
       Logger.layer([Logger.consolePrettyTty()]),
@@ -134,7 +142,7 @@ const preferHighPriority = Order.mapInput(
 
 const renderIssuesWithCommentsToMd = (issuesWithComments: Issues): string =>
   issuesWithComments
-    .filter(e => e.state === 'open')
+    .filter(e => e.state === 'closed')
     .map(
       flow(
         Struct.evolve({
@@ -195,21 +203,21 @@ type Issue = Issues[number]
 type IssueLabel = Issue['labels'][number]
 type IssueComment = Issue['comments'][number]
 
-export const getMdFromLocalMdFile = Effect.fn('getMdFromLocalMdFile')(
-  function* (repo: RepoArgs) {
-    const fs = yield* FileSystem.FileSystem
-    const path = yield* mdFilePath(repo)
-    return yield* fs.readFileString(path)
-  },
-)
+export const getMdContentFromLocalMdFile = Effect.fn(
+  'getMdContentFromLocalMdFile',
+)(function* (repo: RepoArgs) {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* mdFilePath(repo)
+  return yield* fs.readFileString(path)
+})
 
-export const getMdBasedOnLocalJsonFile = (repo: RepoArgs) =>
+export const getMdContentBasedOnLocalJsonFile = (repo: RepoArgs) =>
   Effect.map(
     getIssuesWithCommentsFromLocalJsonFile(repo),
     renderIssuesWithCommentsToMd,
   )
 
-const getMdBasedOnRemoteAPI = (repo: RepoArgs) =>
+const getMdContentBasedOnRemoteAPI = (repo: RepoArgs) =>
   Effect.map(
     getIssuesWithCommentsFromAPI(repo).pipe(
       saveIssuesWithCommentsToLocalMdFile(repo),
@@ -235,9 +243,9 @@ await pipe(
 
     const renderMdToStdout = yield* MarkdownStdoutPrinter
 
-    // const md = yield* getMdFromLocalMdFile(repo)
-    // const md = yield* getMdBasedOnLocalJsonFile(repo)
-    const md = yield* getMdBasedOnRemoteAPI(repo)
+    // const md = yield* getMdContentFromLocalMdFile(repo)
+    const md = yield* getMdContentBasedOnLocalJsonFile(repo)
+    // const md = yield* getMdContentBasedOnRemoteAPI(repo)
     // yield* writeToMdFile(repo, md)
 
     yield* renderMdToStdout(md)
@@ -245,5 +253,5 @@ await pipe(
   Effect.provide(AppLayer),
   // TODO: make custom runtime
   // https://typeonce.dev/course/effect-beginners-complete-getting-started/effect-in-production/most-common-effect-patterns#use-a-custom-runtime-from-the-beginning
-  Effect.runPromise,
+  BunRuntime.runMain,
 )

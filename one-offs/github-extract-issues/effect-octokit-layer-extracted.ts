@@ -216,34 +216,35 @@ const handleOctokitRequestError = (
 ): RetryAfterTag | GithubApiError =>
   pipe(
     requestError,
-    Schema.decodeUnknownEffect(Schema.toType(OctokitApiRateLimitErrorSchema)),
-    Result.map(({ name, status, request, response }) => {
-      const isRateLimitError =
-        (status === 403 || status === 429) &&
-        response.headers['x-ratelimit-remaining'] === '0'
-      if (isRateLimitError) {
-        return {
-          _tag: 'retry-after' as const,
-          retryAfterInSeconds: response.headers['retry-after'],
-          rateLimiteResource: response.headers['x-ratelimit-resource'],
-          rateLimitReset: response.headers['x-ratelimit-reset'],
-          rateLimit: response.headers['x-ratelimit-limit'],
-          rateLimitUsed: response.headers['x-ratelimit-used'],
-          requestUrl: request.url.replace('https://api.github.com', ''),
+    Schema.decodeUnknownResult(Schema.toType(OctokitApiRateLimitErrorSchema)),
+    Result.match({
+      onSuccess: ({ name, status, request, response }) => {
+        const isRateLimitError =
+          (status === 403 || status === 429) &&
+          response.headers['x-ratelimit-remaining'] === '0'
+        if (isRateLimitError) {
+          return {
+            _tag: 'retry-after' as const,
+            retryAfterInSeconds: response.headers['retry-after'],
+            rateLimiteResource: response.headers['x-ratelimit-resource'],
+            rateLimitReset: response.headers['x-ratelimit-reset'],
+            rateLimit: response.headers['x-ratelimit-limit'],
+            rateLimitUsed: response.headers['x-ratelimit-used'],
+            requestUrl: request.url.replace('https://api.github.com', ''),
+          }
         }
-      }
 
-      return new GithubApiError({
-        message: `${name} ${status} - ${response.data?.message ?? 'Unknown error'}`,
-      })
-    }),
-    Result.mapError(() => {
-      if (requestError instanceof Error)
-        return new GithubApiError({ cause: requestError.message })
+        return new GithubApiError({
+          message: `${name} ${status} - ${response.data?.message ?? 'Unknown error'}`,
+        })
+      },
+      onFailure: () => {
+        if (requestError instanceof Error)
+          return new GithubApiError({ cause: requestError.message })
 
-      return new GithubApiError({ cause: requestError })
+        return new GithubApiError({ cause: requestError })
+      },
     }),
-    Result.merge,
   )
 
 const isApiRateLimitError = (e: unknown): e is ApiRateLimitError =>
@@ -252,23 +253,20 @@ const isApiRateLimitError = (e: unknown): e is ApiRateLimitError =>
   '_tag' in e &&
   e._tag === 'ApiRateLimitError'
 
+// Retry once on `ApiRateLimitError`, waiting for `retryAfterInSeconds + 5`
+// before each retry decision.
+// `Schedule.forever` outputs `attempt - 1`, so `meta.output < 1` is the
+// at-most-once attempt guard, and the effectful branch performs the delay
+// only when the input is a rate-limit error.
 const retryAfterSchedule = pipe(
   Schedule.forever,
-  // TODO migrate to effect v4
-  // @ts-expect-error
-  Schedule.whileOutput(retries => retries < 1),
-  // TODO migrate to effect v4
-  // @ts-expect-error
-  Schedule.whileInputEffect(e => {
-    const isApiRateLimit = isApiRateLimitError(e)
-    if (isApiRateLimit) {
-      return Effect.delay(Duration.seconds(+e.retryAfterInSeconds + 5))(
-        Effect.succeed(true),
-      )
-    }
-
-    return Effect.succeed(false)
-  }),
+  Schedule.while(meta =>
+    meta.output >= 1 || !isApiRateLimitError(meta.input)
+      ? Effect.succeed(false)
+      : Effect.delay(Duration.seconds(+meta.input.retryAfterInSeconds + 5))(
+          Effect.succeed(true),
+        ),
+  ),
 )
 
 interface ResponseWithLinkHeaders {
