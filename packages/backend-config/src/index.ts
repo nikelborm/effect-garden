@@ -1,11 +1,10 @@
 import * as Config from 'effect/Config'
-import * as ConfigError from 'effect/ConfigError'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
-import { pipe } from 'effect/Function'
+import { flow, pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
-import type * as Option from 'effect/Option'
+import * as Option from 'effect/Option'
 import * as Redacted from 'effect/Redacted'
 import * as Schema from 'effect/Schema'
 
@@ -23,24 +22,33 @@ import * as Schema from 'effect/Schema'
 // )
 
 // TODO: replace with just Config.withMissingDataOnlyFallback
-// TODO: contribute to upstream Config.withMissingDataOnlyFallback, which is the same as default, but accepts Config instead of values
+// TODO: contribute to upstream Config.withMissingDataOnlyFallback, which is the same as withDefault, but accepts Config instead of values
 // TODO: make Config.String ensure it's an actual string received, and also add `Config.asIs`, that accepts raw value.
-const ifConfigAbsentFallbackTo =
-  <A2, E2, R2>(fallback: Effect.Effect<A2, E2, R2>) =>
-  <
-    A,
-    E,
-    R,
-    Pack extends ConfigError.ConfigError extends E ? [A2, E2, R2] : never,
-    Res extends Effect.Effect<A | Pack[0], E | Pack[1], R | Pack[2]>,
-  >(
-    self: Effect.Effect<A, E, R>,
-  ): Res =>
-    Effect.catch(self, err =>
-      ConfigError.isConfigError(err) && ConfigError.isMissingDataOnly(err)
-        ? (fallback as Res)
-        : Effect.fail(err),
-    ) as Res
+
+// TODO: extract to helpers
+export const ifConfigAbsentFallbackTo2 =
+  <A>(fallback: Config.Config<A>) =>
+  <B>(
+    self: Config.Config<Option.Option<B>>,
+  ): Config.Config<Option.Option<A | B>> =>
+    Config.mapEffect(
+      self,
+      Option.match({
+        onNone: () => Config.option(fallback),
+        onSome: Effect.succeedSome<A | B>,
+      }),
+    )
+
+export const ifConfigAbsentFallbackTo =
+  <A>(fallback: Config.Config<A>) =>
+  <B>(self: Config.Config<B>): Config.Config<Option.Option<A | B>> =>
+    Config.mapEffect(
+      Config.option(self),
+      Option.match({
+        onNone: () => Config.option(fallback),
+        onSome: Effect.succeedSome<A | B>,
+      }),
+    )
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -55,16 +63,22 @@ const allowedEnvTypeLiterals = [
   'PRODUCTION',
 ] as const
 
-const EnvTypeConfig = Config.Literals(allowedEnvTypeLiterals)
+const EnvTypeConfig = (name: string) =>
+  Config.Literals(allowedEnvTypeLiterals, name)
 
-export class EnvType extends Effect.Tag('@evadev/backend-config/index/EnvType')<
+export class EnvType extends Context.Service<
   EnvType,
   'development' | 'production'
->() {
-  static Live = EnvTypeConfig('NODE_ENV').pipe(
+>()('@evadev/backend-config/index/EnvType') {
+  static readonly layer = EnvTypeConfig('NODE_ENV').pipe(
     ifConfigAbsentFallbackTo(EnvTypeConfig('ENV')),
-    Effect.map(v =>
-      v.toLowerCase().startsWith('dev') ? 'development' : 'production',
+    Effect.flatMapEager(
+      flow(
+        Option.map(v =>
+          v.toLowerCase().startsWith('dev') ? 'development' : 'production',
+        ),
+        Effect.fromOption,
+      ),
     ),
     Effect.orDie,
     Layer.effect(this),
@@ -73,39 +87,53 @@ export class EnvType extends Effect.Tag('@evadev/backend-config/index/EnvType')<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class BackendPort extends Effect.Tag(
+export class BackendPort extends Context.Service<BackendPort, number>()(
   '@evadev/backend-config/index/BackendPort',
-)<BackendPort, number>() {
-  static Live = Config.port('BACKEND_PORT').pipe(
-    ifConfigAbsentFallbackTo(Config.port('PORT')),
-    ifConfigAbsentFallbackTo(Effect.succeed(3001)),
+) {
+  static readonly layer = Config.Port('BACKEND_PORT').pipe(
+    ifConfigAbsentFallbackTo(Config.Port('PORT')),
+    ifConfigAbsentFallbackTo2(Config.succeed(3001)),
+    Effect.flatMapEager(Effect.fromOption),
     Effect.orDie,
     Layer.effect(this),
   )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const externalUrlConfig = Config.URL('EXTERNALLY_AVAILABLE_AT_URL')
 
 export class BackendExternallyAvailableAtURL extends Context.Service<
   BackendExternallyAvailableAtURL,
   URL
 >()('@evadev/backend-config/index/BackendExternallyAvailableAtURL') {
-  static Live = pipe(
-    Config.url('EXTERNALLY_AVAILABLE_AT_URL'),
-    Effect.catch(err =>
+  static readonly layer = pipe(
+    externalUrlConfig,
+    Config.option,
+    Effect.flatMapEager(Effect.fromOption),
+    Effect.catchTag('NoSuchElementError', () =>
       EnvType.use(env =>
-        env === 'development' && ConfigError.isMissingDataOnly(err)
-          ? Config.port('EXTERNAL_PROXIED_PORT').pipe(
-              ifConfigAbsentFallbackTo(BackendPort),
+        env === 'development'
+          ? Config.Port('EXTERNAL_PROXIED_PORT').pipe(
+              Config.option,
+              Effect.flatMapEager(Effect.fromOption),
+              Effect.catchTag('NoSuchElementError', () => BackendPort),
               Effect.map(port => new URL(`http://localhost:${port}/`)),
             )
-          : Effect.fail(err),
+          : // easiest way to create a proper error structure on absence, that
+            // would've been thrown if we didn't map it to option earlier to
+            // handle the actual absence case
+            externalUrlConfig,
       ),
     ),
     Effect.orDie,
     Layer.effect(this),
-    Layer.provide([EnvType.Live, BackendPort.Live]),
   )
+
+  static readonly layerNoConfDeps = Layer.provide(this.layer, [
+    EnvType.layer,
+    BackendPort.layer,
+  ])
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +142,7 @@ export class OpenTelemetryProcessingURL extends Context.Service<
   OpenTelemetryProcessingURL,
   Option.Option<URL>
 >()('@evadev/backend-config/index/OpenTelemetryProcessingURL') {
-  static Live = Config.URL('OTLP_URL').pipe(
+  static readonly layer = Config.URL('OTLP_URL').pipe(
     Config.option,
     // for cases, where env is present, but it's bad, it will be error instead
     // of Option.None, and so we crash on that error
@@ -125,38 +153,37 @@ export class OpenTelemetryProcessingURL extends Context.Service<
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export class BetterAuthSecret extends Context.Service<BetterAuthSecret>()(
-  '@evadev/backend-config/index/BetterAuthSecret',
-  {
-    dependencies: [EnvType.Live],
-    make: Effect.gen(function* () {
-      const env = yield* EnvType
-      const fs = yield* FileSystem.FileSystem
+export class BetterAuthSecret extends Context.Service<
+  BetterAuthSecret,
+  { secret: Redacted.Redacted<string> }
+>()('@evadev/backend-config/index/BetterAuthSecret') {
+  static readonly layer = Effect.gen(function* () {
+    const env = yield* EnvType
+    const fs = yield* FileSystem.FileSystem
 
-      if (env === 'development')
-        return {
-          secret: yield* Config.redacted('BETTER_AUTH_SECRET'),
-        }
+    if (env === 'development')
+      return { secret: yield* Config.Redacted('BETTER_AUTH_SECRET') }
 
-      // using env is actually insecure on most linux machines, because any
-      // process can be easily inspected and their envs too
-      const secretFilePath = yield* Config.NonEmptyString(
-        'BETTER_AUTH_SECRET_FILE_PATH',
-      )
+    // using env is actually insecure on most linux machines, because any
+    // process can be easily inspected and their envs too
+    const secretFilePath = yield* Config.NonEmptyString(
+      'BETTER_AUTH_SECRET_FILE_PATH',
+    )
 
-      return {
-        secret: yield* fs
-          .readFileString(secretFilePath, 'utf8')
-          .pipe(Effect.map(Redacted.make)),
-      }
-    }).pipe(Effect.orDie),
-  },
-) {}
+    return {
+      secret: yield* fs
+        .readFileString(secretFilePath, 'utf8')
+        .pipe(Effect.map(Redacted.make)),
+    }
+  }).pipe(Effect.orDie, Layer.effect(this))
+
+  static readonly layerNoConfDeps = Layer.provide(this.layer, EnvType.layer)
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const ConfigStringWithMinLength2 = (name: string) =>
-  Schema.Config(name, Schema.String.pipe(Schema.minLength(2)))
+  Config.schema(Schema.String.check(Schema.isMinLength(2)), name)
 
 export class DbConfig extends Context.Service<DbConfig>()(
   '@evadev/backend-config/index/DbConfig',
@@ -173,15 +200,17 @@ export class DbConfig extends Context.Service<DbConfig>()(
       Effect.orDie,
     ),
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make)
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const AppConfigLive = Layer.mergeAll(
-  EnvType.Live,
-  BackendPort.Live,
-  BackendExternallyAvailableAtURL.Live,
-  OpenTelemetryProcessingURL.Live,
-  BetterAuthSecret.Default,
-  DbConfig.Default,
+export const AppConfigLayer = Layer.mergeAll(
+  EnvType.layer,
+  BackendPort.layer,
+  BackendExternallyAvailableAtURL.layer,
+  OpenTelemetryProcessingURL.layer,
+  BetterAuthSecret.layer,
+  DbConfig.layer,
 )
