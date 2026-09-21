@@ -1,10 +1,12 @@
 import * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
+import { flow } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
 import * as Result from 'effect/Result'
+import * as Schema from 'effect/Schema'
 import * as EString from 'effect/String'
 
 import * as MediaBrand from './MediaBrand.ts'
@@ -167,10 +169,17 @@ const makeImpl = (
   return instance
 }
 
-const testKind = Result.liftPredicate(
-  (kind: string) => kind === 'audioinput' || kind === 'videoinput',
-  kind =>
-    Brand.error(`kind is "${kind}" when expected "audioinput" or "videoinput"`),
+const parseInputDeviceKind = Schema.String.pipe(
+  Schema.refine(
+    (kind): kind is 'audioinput' | 'videoinput' =>
+      kind === 'audioinput' || kind === 'videoinput',
+  ),
+  Schema.decodeResult,
+  parseKindToResult =>
+    flow(
+      parseKindToResult,
+      Result.mapError(e => new Brand.BrandError(e.issue)),
+    ),
 )
 
 /**
@@ -189,12 +198,14 @@ const testKind = Result.liftPredicate(
  */
 export const make = (
   info: InputDeviceInfo,
-): Result.Result<EInputDeviceInfo, Brand.Brand.BrandErrors> =>
+): Result.Result<EInputDeviceInfo, Brand.BrandError> =>
+  // Result.all takes an array, because it only ensures validity, doesn't
+  // assemble new object, but still not Option, because we want to expose errors
   Result.all([
-    MediaBrand.DeviceId.either(info.deviceId),
-    MediaBrand.DeviceGroupId.either(info.groupId),
-    MediaBrand.DeviceLabel.either(info.label),
-    testKind(info.kind),
+    MediaBrand.DeviceId.result(info.deviceId),
+    MediaBrand.DeviceGroupId.result(info.groupId),
+    MediaBrand.DeviceLabel.result(info.label),
+    parseInputDeviceKind(info.kind),
   ]).pipe(Result.map(() => makeImpl(info)))
 
 /**
