@@ -7,7 +7,9 @@ const now = new Date()
 // const branch = 'claude-test'
 const branch = 'main'
 
+const dayInMinutes = 24 * 60
 const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
+const minutesSincePreviousMidnight = dayInMinutes + minutesSinceMidnight
 
 const url =
   'https://github.com/nikelborm/effect-garden/compare/' +
