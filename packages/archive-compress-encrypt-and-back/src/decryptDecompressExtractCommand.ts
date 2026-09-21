@@ -1,12 +1,12 @@
-import * as Args from '@effect/cli/Args'
-import * as HelpDoc from '@effect/cli/HelpDoc'
-import * as ValidationError from '@effect/cli/ValidationError'
-import * as PlatformCommand from '@effect/platform/Command'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
+import * as Argument from 'effect/unstable/cli/Argument'
+import * as CliError from 'effect/unstable/cli/CliError'
 import * as Command from 'effect/unstable/cli/Command'
 import * as Prompt from 'effect/unstable/cli/Prompt'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.ts'
 
@@ -14,16 +14,16 @@ import { withResolvedToAbsolutePathArg } from './withResolvedToAbsolutePathArg.t
 // they are readable etc
 
 const sourceFilePathArg = pipe(
-  Args.file({ name: 'source file', exists: 'yes' }),
+  Argument.File('source file', { mustExist: true }),
   withResolvedToAbsolutePathArg,
-  Args.withDescription(
+  Argument.withDescription(
     'The source compressed encrypted archive file to unpack',
   ),
-  Args.mapEffect(
+  Argument.mapEffect(
     Effect.fn('Source file arg remap')(function* (sourceFilePath) {
       yield* Effect.annotateCurrentSpan({ sourceFilePath })
 
-      yield* Effect.flatMap(FileSystem.FileSystem, fs =>
+      yield* FileSystem.FileSystem.use(fs =>
         fs.access(sourceFilePath, { readable: true }),
       )
 
@@ -32,12 +32,12 @@ const sourceFilePathArg = pipe(
   ),
 )
 
-const destDirPathArg = Args.directory({ name: 'destination directory' }).pipe(
+const destDirPathArg = Argument.Directory('destination directory').pipe(
   withResolvedToAbsolutePathArg,
-  Args.withDescription(
+  Argument.withDescription(
     'The destination directory that will contain extracted files',
   ),
-  Args.mapEffect(
+  Argument.mapEffect(
     Effect.fn('Destination directory arg remap')(function* (destDirPath) {
       yield* Effect.annotateCurrentSpan({ destDirPath })
 
@@ -46,7 +46,7 @@ const destDirPathArg = Args.directory({ name: 'destination directory' }).pipe(
       const exists = yield* fs.exists(destDirPath)
       if (!exists) return destDirPath
 
-      const overwrite = yield* Prompt.confirm({
+      const overwrite = yield* Prompt.Confirm({
         message: 'Destination path exists. Do you want to overwrite it?',
         initial: true,
       })
@@ -54,12 +54,15 @@ const destDirPathArg = Args.directory({ name: 'destination directory' }).pipe(
       // TODO: smarter mechanism to proceed if the dir is empty
       // TODO: smarter mechanism to merge new files with existing files
 
-      if (!overwrite)
+      if (!overwrite) {
+        const message = `Path '${destDirPath}' should not exist`
         return yield* Effect.fail(
-          ValidationError.invalidArgument(
-            HelpDoc.p(`Path '${destDirPath}' should not exist`),
-          ),
+          new CliError.UserError({
+            cause: new Error(message),
+            userMessage: message,
+          }),
         )
+      }
 
       yield* fs.remove(destDirPath, { recursive: true })
 
@@ -81,20 +84,14 @@ export const decryptDecompressExtractCommand = Command.make(
     yield* fs.makeDirectory(destDirPath, { recursive: true })
 
     // NOTE: `zstd --decompress` replaced by tar's `--zstd` flag
-    const aceUndoCommand = PlatformCommand.pipeTo(
-      PlatformCommand.make('gpg', '--decrypt', '--output', '-', sourceFilePath),
-      PlatformCommand.make(
-        'tar',
-        '--zstd',
-        '--extract',
-        '--file',
-        '-',
-        '--directory',
-        destDirPath,
-      ),
+    const aceUndoCommand = ChildProcess.pipeTo(
+      ChildProcess.make`gpg --decrypt --output - ${sourceFilePath}`,
+      ChildProcess.make`tar --zstd --extract --file - --directory ${destDirPath}`,
     )
 
-    const exitCode = yield* PlatformCommand.exitCode(aceUndoCommand)
+    const exitCode = yield* ChildProcessSpawner.ChildProcessSpawner.use(
+      spawner => spawner.exitCode(aceUndoCommand),
+    )
 
     if (exitCode !== 0)
       return yield* Effect.die(new Error('failed to undo ace'))

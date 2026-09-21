@@ -1,14 +1,12 @@
-import * as Args from '@effect/cli/Args'
 import type * as Brand from 'effect/Brand'
-import * as Effect from 'effect/Effect'
 import * as Path from 'effect/Path'
+import * as Argument from 'effect/unstable/cli/Argument'
 
 export const withResolvedToAbsolutePathArg = <A extends string>(
-  self: Args.Args<A>,
+  self: Argument.Argument<A>,
 ) =>
-  Args.mapEffect(self, relativePath =>
-    Effect.map(
-      Path.Path,
+  Argument.mapEffect(self, relativePath =>
+    Path.Path.useSync(
       path => path.resolve(relativePath) as Brand.Branded<A, 'Absolute'>,
     ),
   )

@@ -1,13 +1,10 @@
 #!/usr/bin/env bun
 
-import { prettyPrint } from 'effect-errors'
-
-import * as CliConfig from '@effect/cli/CliConfig'
-import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as BunChildProcessSpawner from '@effect/platform-bun/BunChildProcessSpawner'
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunPath from '@effect/platform-bun/BunPath'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunStdio from '@effect/platform-bun/BunStdio'
 import * as BunTerminal from '@effect/platform-bun/BunTerminal'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
@@ -36,29 +33,28 @@ import { decryptDecompressExtractCommand } from './src/decryptDecompressExtractC
 const appCommand = Command.withSubcommands(Command.make('ace'), [
   archiveCompressEncryptCommand,
   decryptDecompressExtractCommand,
-])
-
-const cli = Command.run(appCommand, {
-  name: 'ace',
-  version: pkg.version,
-  summary: HelpDocSpan.text(`
+]).pipe(
+  Command.withDescription(`
     The GPG recipient email or key ID can be set using the GPG_RECIPIENT
     environment variable. For example:
     export GPG_RECIPIENT="recipient_email@example.com"
     ace do /path/to/source_dir /path/to/dest_file.tar.zst.gpg
   `),
-})
-
-export const AppLayer = Layer.mergeAll(
-  BunPath.layer,
-  BunTerminal.layer,
-  Layer.provideMerge(BunChildProcessSpawner.layer, BunFileSystem.layer),
-  CliConfig.layer({ showTypes: false }),
+  // TODO: add also Command.withShortDescription
 )
 
+const cli = Command.run(appCommand, { version: pkg.version })
+
+export const AppLayer = BunChildProcessSpawner.layer.pipe(
+  Layer.provideMerge(BunFileSystem.layer),
+  Layer.provideMerge(BunPath.layer),
+  Layer.merge(BunTerminal.layer),
+  Layer.merge(BunStdio.layer),
+)
+
+// TODO: validate if errors are printed nicely
 if (import.meta.main)
   pipe(
-    process.argv,
     cli,
     Effect.withSpan('cli', {
       attributes: {
@@ -66,14 +62,6 @@ if (import.meta.main)
         version: pkg.version,
       },
     }),
-    Effect.sandbox,
-    Effect.catch(e => {
-      console.error(prettyPrint(e))
-
-      return Effect.fail(e)
-    }),
     Effect.provide(AppLayer),
-    BunRuntime.runMain({
-      disableErrorReporting: true,
-    }),
+    BunRuntime.runMain(),
   )

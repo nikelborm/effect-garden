@@ -15,9 +15,6 @@
     "@types/bun": "catalog:",
     "effect": "catalog:"
   },
-  "dependencies": {
-    "effect-errors": "catalog:"
-  },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/archive-compress-encrypt-and-back#readme",
   "bugs": {
     "url": "https://github.com/nikelborm/effect-garden/issues",
