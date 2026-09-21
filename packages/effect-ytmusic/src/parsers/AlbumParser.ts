@@ -1,4 +1,4 @@
-import * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 
 import type { ParseError } from '../errors.ts'
 import { AlbumDetailed } from '../schema/AlbumDetailed.ts'
@@ -14,51 +14,62 @@ const processYear = (year: string | undefined): number | null =>
 export const parse = (
   data: unknown,
   albumId: string,
-): Result.Result<AlbumFull, ParseError> => {
-  const albumBasic = {
-    albumId,
-    name: extractString(data, 'tabs', 'title', 'text'),
-  }
+): Effect.Effect<AlbumFull, ParseError> =>
+  Effect.gen(function* () {
+    const albumBasic = {
+      albumId,
+      name: extractString(data, 'tabs', 'title', 'text'),
+    }
 
-  const artistData = extract(data, 'tabs', 'straplineTextOne', 'runs')
-  const artistBasic: ArtistBasic = {
-    artistId: extractString(artistData, 'browseId') || null,
-    name: extractString(artistData, 'text'),
-  }
+    const artistData = extract(data, 'tabs', 'straplineTextOne', 'runs')
+    const artistBasic: ArtistBasic = {
+      artistId: extractString(artistData, 'browseId') || null,
+      name: extractString(artistData, 'text'),
+    }
 
-  const thumbnails = extractList(data, 'background', 'thumbnails')
+    const thumbnails = extractList(data, 'background', 'thumbnails')
 
-  const songResults = (
-    extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
-  ).map(item =>
-    SongParser.parseAlbumSong(item, artistBasic, albumBasic, thumbnails),
-  )
-  const songs = songResults.flatMap(r =>
-    Result.isSuccess(r) ? [r.success] : [],
-  )
+    const items = extractList(
+      data,
+      'musicResponsiveListItemRenderer',
+    ) as unknown[]
 
-  return checkType(
-    'AlbumFull',
-    {
-      type: 'ALBUM',
-      ...albumBasic,
-      playlistId: extractString(data, 'musicPlayButtonRenderer', 'playlistId'),
-      artist: artistBasic,
-      year: processYear(
-        extractList(data, 'tabs', 'subtitle', 'text').at(-1) as
-          | string
-          | undefined,
-      ),
-      thumbnails,
-      songs,
-    },
-    AlbumFull,
-  )
-}
+    // `Effect.partition` runs every parse, never fails, and splits results
+    // into `[failures, successes]`. We want only the successes to feed the
+    // AlbumFull schema, mirroring the previous `Result.isSuccess` filter.
+    const [, songs] = yield* Effect.partition(
+      items,
+      item =>
+        SongParser.parseAlbumSong(item, artistBasic, albumBasic, thumbnails),
+      { concurrency: 'unbounded' },
+    )
+
+    return yield* checkType(
+      'AlbumFull',
+      {
+        type: 'ALBUM',
+        ...albumBasic,
+        playlistId: extractString(
+          data,
+          'musicPlayButtonRenderer',
+          'playlistId',
+        ),
+        artist: artistBasic,
+        year: processYear(
+          extractList(data, 'tabs', 'subtitle', 'text').at(-1) as
+            | string
+            | undefined,
+        ),
+        thumbnails,
+        songs,
+      },
+      AlbumFull,
+    )
+  })
 
 export const parseSearchResult = (
   item: unknown,
-): Result.Result<AlbumDetailed, ParseError> => {
+): Effect.Effect<AlbumDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
   const artist =
@@ -94,7 +105,7 @@ export const parseSearchResult = (
 export const parseArtistAlbum = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Result.Result<AlbumDetailed, ParseError> =>
+): Effect.Effect<AlbumDetailed, ParseError> =>
   checkType(
     'AlbumDetailed',
     {
@@ -114,7 +125,7 @@ export const parseArtistAlbum = (
 export const parseArtistTopAlbum = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Result.Result<AlbumDetailed, ParseError> =>
+): Effect.Effect<AlbumDetailed, ParseError> =>
   checkType(
     'AlbumDetailed',
     {
@@ -133,7 +144,7 @@ export const parseArtistTopAlbum = (
 
 export const parseHomeSection = (
   item: unknown,
-): Result.Result<AlbumDetailed, ParseError> => {
+): Effect.Effect<AlbumDetailed, ParseError> => {
   const artist = (extractList(item, 'subtitle', 'runs') as unknown[]).at(-1)
 
   return checkType(

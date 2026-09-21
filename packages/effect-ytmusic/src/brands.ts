@@ -1,15 +1,15 @@
 import * as Brand from 'effect/Brand'
 import * as Schema from 'effect/Schema'
 
+const FilterIsVideoId = Schema.isPattern(/^[a-zA-Z0-9-_]{11}$/, {
+  message: 'Invalid YouTube video ID',
+})
+
 export type VideoId = string & Brand.Brand<'VideoId'>
-export const VideoId = Brand.refined<VideoId>(
-  s => /^[a-zA-Z0-9-_]{11}$/.test(s),
-  s => Brand.error(`Invalid YouTube video ID: "${s}"`),
-)
+export const VideoId = Brand.check<VideoId>(FilterIsVideoId)
 
 export const VideoIdSchema = Schema.String.pipe(
-  Schema.pattern(/^[a-zA-Z0-9-_]{11}$/),
-  Schema.brand('VideoId'),
+  Schema.fromBrand('VideoId', VideoId),
 )
 
 export type ArtistId = string & Brand.Brand<'ArtistId'>

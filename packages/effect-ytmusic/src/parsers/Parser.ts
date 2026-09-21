@@ -1,7 +1,7 @@
-import * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 
 import { PageType } from '../constants.ts'
-import type { ParseError } from '../errors.ts'
+import { ParseError } from '../errors.ts'
 import { HomeSection } from '../schema/HomeSection.ts'
 import { checkType } from '../utils/checkType.ts'
 import { extractList, extractString } from '../utils/extract.ts'
@@ -34,43 +34,48 @@ export const parseNumber = (string: string): number => {
 
 export const parseHomeSection = (
   data: unknown,
-): Result.Result<HomeSection, ParseError> => {
-  const pageType = extractString(
-    data,
-    'contents',
-    'title',
-    'browseEndpoint',
-    'pageType',
-  )
-  const playlistId = extractString(
-    data,
-    'navigationEndpoint',
-    'watchPlaylistEndpoint',
-    'playlistId',
-  )
-  const title = extractString(data, 'header', 'title', 'text')
+): Effect.Effect<HomeSection, ParseError> =>
+  Effect.gen(function* () {
+    const pageType = extractString(
+      data,
+      'contents',
+      'title',
+      'browseEndpoint',
+      'pageType',
+    )
+    const playlistId = extractString(
+      data,
+      'navigationEndpoint',
+      'watchPlaylistEndpoint',
+      'playlistId',
+    )
+    const title = extractString(data, 'header', 'title', 'text')
 
-  const contents = (extractList(data, 'contents') as unknown[]).flatMap(
-    item => {
-      let result: Result.Result<unknown, ParseError>
+    const items = extractList(data, 'contents') as unknown[]
+
+    const parseItem = (
+      item: unknown,
+    ): Effect.Effect<unknown, ParseError> | null => {
       switch (pageType) {
         case PageType.MUSIC_PAGE_TYPE_ALBUM:
-          result = AlbumParser.parseHomeSection(item)
-          break
+          return AlbumParser.parseHomeSection(item)
         case PageType.MUSIC_PAGE_TYPE_PLAYLIST:
-          result = PlaylistParser.parseHomeSection(item)
-          break
+          return PlaylistParser.parseHomeSection(item)
         case '':
-          result = playlistId
+          return playlistId
             ? PlaylistParser.parseHomeSection(item)
             : SongParser.parseHomeSection(item)
-          break
         default:
-          return []
+          return null
       }
-      return Result.isSuccess(result) ? [Result.succeed] : []
-    },
-  )
+    }
 
-  return checkType('HomeSection', { title, contents }, HomeSection)
-}
+    // Run every applicable parse in parallel, then keep only the successes.
+    const [, contents] = yield* Effect.partition(
+      items,
+      item => parseItem(item) ?? Effect.fail(new ParseError({} as never)),
+      { concurrency: 'unbounded' },
+    )
+
+    return yield* checkType('HomeSection', { title, contents }, HomeSection)
+  })

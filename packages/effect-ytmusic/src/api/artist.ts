@@ -1,4 +1,3 @@
-import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
@@ -44,7 +43,7 @@ export const getArtistSongs = (artistId: ArtistId) =>
 
       const artistBasic = { artistId, name: artistName }
 
-      return Stream.paginateChunkEffect(
+      return Stream.paginate(
         Option.none<ContinuationToken>(),
         Effect.fn('effect-ytmusic/getArtistSongs.page')(
           function* (continuation) {
@@ -78,7 +77,7 @@ export const getArtistSongs = (artistId: ArtistId) =>
               'effect-ytmusic/page.songCount',
               songs.length,
             )
-            return [Chunk.fromIterable(songs), next] as const
+            return [songs, next] as const
           },
         ),
       )

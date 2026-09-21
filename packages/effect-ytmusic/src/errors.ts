@@ -1,24 +1,22 @@
-import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
 import * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
+// TODO: resolve this mess with causes and separation of NetworkError and
+// HttpStatusError
 export class NetworkError extends Schema.TaggedError<NetworkError>()(
   'NetworkError',
   {
     message: Schema.Trimmed.check(Schema.isNonEmpty()),
-    cause: Schema.Union([
-      Schema.instanceOf(HttpClientError.RequestError),
-      Schema.instanceOf(HttpClientError.ResponseError),
-    ]),
+    cause: HttpClientError.HttpClientErrorSchema,
   },
 ) {}
 
 export class HttpStatusError extends Schema.TaggedError<HttpStatusError>()(
   'HttpStatusError',
   {
-    status: Schema.Int.pipe(Schema.between(100, 599)),
+    status: Schema.Int.check(Schema.isBetween({ minimum: 100, maximum: 599 })),
     endpoint: Schema.Trimmed.check(Schema.isNonEmpty()),
-    cause: Schema.instanceOf(HttpClientError.ResponseError),
+    cause: HttpClientError.HttpClientErrorSchema,
   },
 ) {}
 
@@ -26,14 +24,14 @@ export class ConfigExtractionError extends Schema.TaggedError<ConfigExtractionEr
   'ConfigExtractionError',
   {
     message: Schema.Trimmed.check(Schema.isNonEmpty()),
-    cause: Schema.optional(Schema.Defect),
+    cause: Schema.optional(Schema.Defect()),
   },
 ) {}
 
 export class ParseError extends Schema.TaggedError<ParseError>()('ParseError', {
   schema: Schema.Trimmed.check(Schema.isNonEmpty()),
   data: Schema.Unknown,
-  cause: Schema.instanceOf(ParseResult.ParseError),
+  cause: Schema.instanceOf(Schema.SchemaError),
 }) {}
 
 export class InvalidVideoIdError extends Schema.TaggedError<InvalidVideoIdError>()(

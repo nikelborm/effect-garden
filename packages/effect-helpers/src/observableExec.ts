@@ -35,7 +35,6 @@ export const observableExec = Effect.fn('observableExec')(function* ({
     }),
   )
 
-
   if (exitCode === 0) return yield* Effect.void
 
   const error = new BadExitCodeError({

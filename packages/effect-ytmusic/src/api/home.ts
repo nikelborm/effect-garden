@@ -1,7 +1,5 @@
-import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
-import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 
 import { ContinuationToken } from '../brands.ts'
@@ -11,7 +9,7 @@ import * as Parser from '../parsers/Parser.ts'
 import { extractList, extractString } from '../utils/extract.ts'
 
 export const getHomeSections = () =>
-  Stream.paginateChunkEffect(
+  Stream.paginate(
     Option.none<ContinuationToken>(),
     Effect.fn('effect-ytmusic/getHomeSections.page')(function* (continuation) {
       const data = yield* Option.match(continuation, {
@@ -28,24 +26,24 @@ export const getHomeSections = () =>
             'contents',
           ) as unknown[])
 
-      const sections = rawSections.flatMap(item => {
-        const r = Parser.parseHomeSection(item)
-        return Option.isNone(Option.fromNullishOr(r)) ? [] : [r]
-      })
-
-      const validSections = sections.flatMap(r =>
-        Result.isSuccess(r) ? [r.success] : [],
+      // Parse each section; failures are dropped by `Effect.partition`, which
+      // mirrors the previous `Result.isSuccess` filter that skipped bad items.
+      const [, validSections] = yield* Effect.partition(
+        rawSections,
+        item => Parser.parseHomeSection(item),
+        { concurrency: 'unbounded' },
       )
 
       const nextToken = extractString(data, 'continuation')
-      const next = nextToken
-        ? Option.some(Option.some(ContinuationToken(nextToken)))
-        : Option.none<Option.Option<ContinuationToken>>()
+      const next =
+        nextToken.length > 0
+          ? Option.some(Option.some(ContinuationToken(nextToken)))
+          : Option.none<Option.Option<ContinuationToken>>()
 
       yield* Effect.annotateCurrentSpan(
         'effect-ytmusic/page.sectionCount',
         validSections.length,
       )
-      return [Chunk.fromIterable(validSections), next] as const
+      return [validSections, next] as const
     }),
   )

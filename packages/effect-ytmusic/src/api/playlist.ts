@@ -1,4 +1,3 @@
-import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
@@ -27,7 +26,7 @@ export const getPlaylist = Effect.fn('effect-ytmusic/getPlaylist')(function* (
 })
 
 export const getPlaylistVideos = (playlistId: PlaylistId) =>
-  Stream.paginateChunkEffect(
+  Stream.paginate(
     Option.none<ContinuationToken>(),
     Effect.fn('effect-ytmusic/getPlaylistVideos.page')(
       function* (continuation) {
@@ -57,13 +56,15 @@ export const getPlaylistVideos = (playlistId: PlaylistId) =>
                 'musicResponsiveListItemRenderer',
               ) as unknown[])
 
-        const videos = yield* Effect.forEach(allItems, item => {
-          const r = VideoParser.parsePlaylistVideo(item)
-          return r ? r : Effect.succeed(null)
-        })
-
-        const validVideos = videos.filter(
-          (v): v is NonNullable<typeof v> => v !== null,
+        // `Effect.partition` separates successes from failures so that bad
+        // items are dropped, mirroring the previous `Result.isSuccess` filter.
+        const [, validVideos] = yield* Effect.partition(
+          allItems,
+          item => {
+            const r = VideoParser.parsePlaylistVideo(item)
+            return r ? r : Effect.succeed(null as never)
+          },
+          { concurrency: 'unbounded' },
         )
 
         const rawNext = extract(data, 'continuation')
@@ -76,7 +77,7 @@ export const getPlaylistVideos = (playlistId: PlaylistId) =>
           'effect-ytmusic/page.videoCount',
           validVideos.length,
         )
-        return [Chunk.fromIterable(validVideos), next] as const
+        return [validVideos, next] as const
       },
     ),
   )

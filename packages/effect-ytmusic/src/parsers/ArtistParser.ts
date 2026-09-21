@@ -1,4 +1,4 @@
-import * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 
 import type { ParseError } from '../errors.ts'
 import { ArtistDetailed } from '../schema/ArtistDetailed.ts'
@@ -13,58 +13,75 @@ import * as VideoParser from './VideoParser.ts'
 export const parse = (
   data: unknown,
   artistId: string,
-): Result.Result<ArtistFull, ParseError> => {
-  const artistBasic = {
-    artistId,
-    name: extractString(data, 'header', 'title', 'text'),
-  }
+): Effect.Effect<ArtistFull, ParseError> =>
+  Effect.gen(function* () {
+    const artistBasic = {
+      artistId,
+      name: extractString(data, 'header', 'title', 'text'),
+    }
 
-  const carousels = extractList(data, 'musicCarouselShelfRenderer')
+    const carousels = extractList(data, 'musicCarouselShelfRenderer')
 
-  const mapCarousel = <T>(
-    index: number,
-    mapFn: (item: unknown) => Result.Result<T, ParseError>,
-  ): T[] =>
-    ((carousels[index]?.contents as unknown[] | undefined) ?? []).flatMap(
-      item => {
-        const r = mapFn(item)
-        return Result.isSuccess(r) ? [r.success] : []
-      },
+    // Helper: parse a list of items with an effectful mapper, returning only
+    // the successes (mirroring the prior `Result.isSuccess` filter).
+    const partitionSuccesses = <A, T>(
+      elements: Iterable<A>,
+      f: (a: A) => Effect.Effect<T, ParseError>,
+    ): Effect.Effect<T[], never> =>
+      Effect.map(
+        Effect.partition(elements, f, { concurrency: 'unbounded' }),
+        ([, satisfying]) => satisfying,
+      )
+
+    const carouselItems = (index: number): unknown[] =>
+      (carousels[index]?.contents as unknown[] | undefined) ?? []
+
+    const topAlbums = yield* partitionSuccesses(carouselItems(0), item =>
+      AlbumParser.parseArtistTopAlbum(item, artistBasic),
     )
 
-  return checkType(
-    'ArtistFull',
-    {
-      type: 'ARTIST',
-      ...artistBasic,
-      thumbnails: extractList(data, 'header', 'thumbnails'),
-      topSongs: (
-        extractList(data, 'musicShelfRenderer', 'contents') as unknown[]
-      ).flatMap(item => {
-        const r = SongParser.parseArtistTopSong(item, artistBasic)
-        return Result.isSuccess(r) ? [r.success] : []
-      }),
-      topAlbums: mapCarousel(0, item =>
-        AlbumParser.parseArtistTopAlbum(item, artistBasic),
-      ),
-      topSingles: mapCarousel(1, item =>
-        AlbumParser.parseArtistTopAlbum(item, artistBasic),
-      ),
-      topVideos: mapCarousel(2, item =>
-        VideoParser.parseArtistTopVideo(item, artistBasic),
-      ),
-      featuredOn: mapCarousel(3, item =>
-        PlaylistParser.parseArtistFeaturedOn(item, artistBasic),
-      ),
-      similarArtists: mapCarousel(4, item => parseSimilarArtists(item)),
-    },
-    ArtistFull,
-  )
-}
+    const topSingles = yield* partitionSuccesses(carouselItems(1), item =>
+      AlbumParser.parseArtistTopAlbum(item, artistBasic),
+    )
+
+    const topVideos = yield* partitionSuccesses(carouselItems(2), item =>
+      VideoParser.parseArtistTopVideo(item, artistBasic),
+    )
+
+    const featuredOn = yield* partitionSuccesses(carouselItems(3), item =>
+      PlaylistParser.parseArtistFeaturedOn(item, artistBasic),
+    )
+
+    const similarArtists = yield* partitionSuccesses(
+      carouselItems(4),
+      parseSimilarArtists,
+    )
+
+    const topSongs = yield* partitionSuccesses(
+      extractList(data, 'musicShelfRenderer', 'contents') as unknown[],
+      item => SongParser.parseArtistTopSong(item, artistBasic),
+    )
+
+    return yield* checkType(
+      'ArtistFull',
+      {
+        type: 'ARTIST',
+        ...artistBasic,
+        thumbnails: extractList(data, 'header', 'thumbnails'),
+        topSongs,
+        topAlbums,
+        topSingles,
+        topVideos,
+        featuredOn,
+        similarArtists,
+      },
+      ArtistFull,
+    )
+  })
 
 export const parseSearchResult = (
   item: unknown,
-): Result.Result<ArtistDetailed, ParseError> => {
+): Effect.Effect<ArtistDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns[0]
 
@@ -82,7 +99,7 @@ export const parseSearchResult = (
 
 export const parseSimilarArtists = (
   item: unknown,
-): Result.Result<ArtistDetailed, ParseError> =>
+): Effect.Effect<ArtistDetailed, ParseError> =>
   checkType(
     'ArtistDetailed',
     {

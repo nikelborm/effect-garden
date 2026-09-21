@@ -10,7 +10,9 @@ export const AlbumFull = Schema.Struct({
   playlistId: Schema.Trimmed.check(Schema.isNonEmpty()),
   name: Schema.Trimmed.check(Schema.isNonEmpty()),
   artist: ArtistBasic,
-  year: Schema.NullOr(Schema.Int.pipe(Schema.between(1900, 2100))),
+  year: Schema.NullOr(
+    Schema.Int.check(Schema.isBetween({ minimum: 1900, maximum: 2100 })),
+  ),
   thumbnails: Schema.Array(ThumbnailFull),
   songs: Schema.Array(SongDetailed),
 }).annotateKey({ title: 'AlbumFull' })

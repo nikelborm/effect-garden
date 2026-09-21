@@ -1,4 +1,4 @@
-import * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 
 import type { ParseError } from '../errors.ts'
 import { UpNextsDetails } from '../schema/UpNextsDetails.ts'
@@ -8,7 +8,7 @@ import { parseDuration } from './Parser.ts'
 
 export const parseItem = (
   item: unknown,
-): Result.Result<UpNextsDetails, ParseError> =>
+): Effect.Effect<UpNextsDetails, ParseError> =>
   checkType(
     'UpNextsDetails',
     {
@@ -30,16 +30,10 @@ export const parseItem = (
 
 export const parse = (
   data: unknown,
-): Result.Result<UpNextsDetails[], ParseError> => {
+): Effect.Effect<UpNextsDetails[], ParseError> => {
   const items = extractList(data, 'playlistPanelVideoRenderer') as unknown[]
 
-  const results = items.slice(1).map(parseItem)
-  const firstError = results.find(Result.isFailure)
-  if (firstError && Result.isFailure(firstError)) {
-    return Result.fail(firstError.failure)
-  }
-
-  return Result.succeed(
-    results.map(r => (r as Result.Success<UpNextsDetails, ParseError>).success),
-  )
+  return Effect.all(items.slice(1).map(parseItem), {
+    concurrency: 'unbounded',
+  })
 }

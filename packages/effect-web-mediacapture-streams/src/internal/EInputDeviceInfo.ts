@@ -170,7 +170,7 @@ const makeImpl = (
 }
 
 const parseInputDeviceKind = Schema.String.pipe(
-	Schema.decodeTo(Schema.Literals(['audioinput', 'videoinput'])),
+  Schema.decodeTo(Schema.Literals(['audioinput', 'videoinput'])),
   Schema.decodeResult,
   parseKindToResult =>
     flow(

@@ -1,5 +1,4 @@
 import * as Effect from 'effect/Effect'
-import * as Result from 'effect/Result'
 
 import { constructRequest } from '../client.ts'
 import * as AlbumParser from '../parsers/AlbumParser.ts'
@@ -26,13 +25,17 @@ export const search = Effect.fn('effect-ytmusic/search')(function* (
   yield* Effect.annotateCurrentSpan('effect-ytmusic/query', query)
   const data = yield* constructRequest('search', { query, params: null })
 
-  const results = (
-    extractList(data, 'musicResponsiveListItemRenderer') as unknown[]
-  ).flatMap(item => {
-    const r = SearchParser.parse(item)
-    if (!r || Result.isFailure(r)) return []
-    return [r.success]
-  })
+  // `Effect.partition` runs every parse, never fails, and yields
+  // `[failures, successes]`. Items that fail to parse or that the type-dispatch
+  // rejects are dropped (matching the prior `Result.isFailure` filter).
+  const [, results] = yield* Effect.partition(
+    extractList(data, 'musicResponsiveListItemRenderer') as unknown[],
+    item => {
+      const r = SearchParser.parse(item)
+      return r ?? Effect.fail(new Error('unreachable') as never)
+    },
+    { concurrency: 'unbounded' },
+  )
 
   yield* Effect.annotateCurrentSpan(
     'effect-ytmusic/resultCount',

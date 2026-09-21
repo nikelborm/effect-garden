@@ -2,6 +2,7 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 import * as HttpClient from 'effect/unstable/http/HttpClient'
+import * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
 import { ConfigExtractionError, NetworkError } from './errors.ts'
 
@@ -30,13 +31,14 @@ export const makeLayer = (options?: { GL?: string; HL?: string }) =>
     Effect.gen(function* () {
       const client = yield* HttpClient.HttpClient
 
-      const res = yield* client
-        .get('https://music.youtube.com/')
-        .pipe(
-          Effect.mapError(
-            e => new NetworkError({ message: e.message, cause: e }),
-          ),
-        )
+      const res = yield* Effect.mapError(
+        client.get('https://music.youtube.com/'),
+        e =>
+          new NetworkError({
+            message: e.message,
+            cause: HttpClientError.HttpClientErrorSchema.fromHttpClientError(e),
+          }),
+      )
 
       const html = yield* res.text.pipe(
         Effect.mapError(e => new ConfigExtractionError({ message: e.message })),

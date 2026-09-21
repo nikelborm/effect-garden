@@ -217,7 +217,7 @@ export const getMdContentBasedOnLocalJsonFile = (repo: RepoArgs) =>
     renderIssuesWithCommentsToMd,
   )
 
-const getMdContentBasedOnRemoteAPI = (repo: RepoArgs) =>
+const _getMdContentBasedOnRemoteAPI = (repo: RepoArgs) =>
   Effect.map(
     getIssuesWithCommentsFromAPI(repo).pipe(
       saveIssuesWithCommentsToLocalMdFile(repo),

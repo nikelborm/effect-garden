@@ -27,7 +27,7 @@ const parseUserCookies = (cookieString: string): Cookies.Cookies => {
     const value = pair.slice(eqIdx + 1).trim()
     if (!name) continue
     const result = Cookies.set(cookies, name, value)
-    if (Result.isSuccess(result)) cookies = Result.succeed
+    if (Result.isSuccess(result)) cookies = result.success
   }
   return cookies
 }
@@ -131,40 +131,49 @@ export const constructRequest = Effect.fn('effect-ytmusic/constructRequest')(
         'X-YouTube-Utc-Offset': String(-new Date().getTimezoneOffset()),
         'X-YouTube-Time-Zone': Intl.DateTimeFormat().resolvedOptions().timeZone,
       }),
-      HttpClientRequest.bodyUnsafeJson({
+      HttpClientRequest.bodyJsonUnsafe({
         context: buildContext(config),
         ...body,
       }),
     )
 
-    const response = yield* client
-      .execute(req)
-      .pipe(
-        Effect.mapError(
-          (e): NetworkError =>
-            new NetworkError({ message: e.message, cause: e }),
-        ),
-      )
+    const response = yield* Effect.mapError(
+      client.execute(req),
+      (e): NetworkError =>
+        // `client.execute()` only fails on transport-level errors (no
+        // response), so `e.reason` is always a RequestError variant. We
+        // cast here for the typed cause schema.
+        new NetworkError({
+          message: e.message,
+          cause: HttpClientError.HttpClientErrorSchema.fromHttpClientError(e),
+        }),
+    )
 
     if (response.status >= 400) {
       return yield* new HttpStatusError({
         status: response.status,
         endpoint,
-        cause: new HttpClientError.ResponseError({
-          request: req,
-          response,
-          reason: 'StatusCode',
-        }),
+        cause: HttpClientError.HttpClientErrorSchema.fromHttpClientError(
+          new HttpClientError.HttpClientError({
+            reason: new HttpClientError.StatusCodeError({
+              request: req,
+              response,
+            }),
+          }),
+        ),
       })
     }
 
     const data = yield* response.json.pipe(
       Effect.mapError(
         (e): HttpStatusError =>
+          // `response.json` fails with an `HttpClientError` whose `reason` is
+          // always a ResponseError variant (DecodeError or EmptyBodyError). We
+          // forward the reason and the (best-effort) status to the caller.
           new HttpStatusError({
-            status: e.response.status,
+            status: e.response?.status ?? 0,
             endpoint,
-            cause: e,
+            cause: HttpClientError.HttpClientErrorSchema.fromHttpClientError(e),
           }),
       ),
     )

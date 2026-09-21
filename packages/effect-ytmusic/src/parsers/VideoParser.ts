@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import type * as Effect from 'effect/Effect'
 
 import type { ParseError } from '../errors.ts'
 import type { ArtistBasic } from '../schema/ArtistBasic.ts'
@@ -9,7 +9,7 @@ import { extract, extractList, extractString } from '../utils/extract.ts'
 import { isArtist, isDuration, isTitle } from '../utils/filters.ts'
 import { parseDuration } from './Parser.ts'
 
-export const parse = (data: unknown): Result.Result<VideoFull, ParseError> =>
+export const parse = (data: unknown): Effect.Effect<VideoFull, ParseError> =>
   checkType(
     'VideoFull',
     {
@@ -32,7 +32,7 @@ export const parse = (data: unknown): Result.Result<VideoFull, ParseError> =>
 
 export const parseSearchResult = (
   item: unknown,
-): Result.Result<VideoDetailed, ParseError> => {
+): Effect.Effect<VideoDetailed, ParseError> => {
   const columns = (extractList(item, 'flexColumns', 'runs') as unknown[]).flat()
   const title = columns.find(isTitle)
   const artist = columns.find(isArtist) ?? columns[1]
@@ -58,7 +58,7 @@ export const parseSearchResult = (
 export const parseArtistTopVideo = (
   item: unknown,
   artistBasic: ArtistBasic,
-): Result.Result<VideoDetailed, ParseError> =>
+): Effect.Effect<VideoDetailed, ParseError> =>
   checkType(
     'VideoDetailed',
     {
@@ -74,7 +74,7 @@ export const parseArtistTopVideo = (
 
 export const parsePlaylistVideo = (
   item: unknown,
-): Result.Result<VideoDetailed, ParseError> | null => {
+): Effect.Effect<VideoDetailed, ParseError> | null => {
   const flexColumns = (
     extractList(item, 'flexColumns', 'runs') as unknown[]
   ).flat()

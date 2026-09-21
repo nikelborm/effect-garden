@@ -1,16 +1,14 @@
-import type * as ParseResult from 'effect/ParseResult'
-import type * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import { ParseError } from '../errors.ts'
 
-export const checkType = <A, I>(
+export const checkType = <A>(
   schemaName: string,
   data: unknown,
-  schema: Schema.Schema<A, I>,
-): Result.Result<A, ParseError> =>
-  Result.mapLeft(
-    Schema.decodeUnknownResult(schema)(data),
-    (e: ParseResult.ParseError) =>
-      new ParseError({ schema: schemaName, data, cause: e }),
+  schema: Schema.Decoder<A>,
+): Effect.Effect<A, ParseError> =>
+  Effect.mapError(
+    Effect.fromResult(Schema.decodeUnknownResult(schema)(data)),
+    cause => new ParseError({ schema: schemaName, data, cause }),
   )
