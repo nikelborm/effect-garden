@@ -170,13 +170,7 @@ const makeImpl = (
 }
 
 const parseInputDeviceKind = Schema.String.pipe(
-  Schema.refine(
-    (kind): kind is 'audioinput' | 'videoinput' =>
-      kind === 'audioinput' || kind === 'videoinput',
-    {
-      message: `Expected .kind of input device to be either 'audioinput' or 'videoinput'`,
-    },
-  ),
+	Schema.decodeTo(Schema.Literals(['audioinput', 'videoinput'])),
   Schema.decodeResult,
   parseKindToResult =>
     flow(
