@@ -5,31 +5,32 @@ Zstd de/compression service for effect
 Example:
 
 ```ts
-import { FetchHttpClient, HttpClient } from "@effect/platform";
-import * as NodeRuntime from "@effect/platform-node-shared/NodeRuntime";
-import { Console, Effect, pipe, Stream } from "effect";
-import { ZStd } from "effect-zstd";
+import { ZStd } from 'effect-zstd'
 
-Effect.gen(function* () {
-	const zstd = yield* ZStd.ZStd;
+import * as NodeRuntime from '@effect/platform-node/NodeRuntime'
+import * as Console from 'effect/Console'
+import * as Effect from 'effect/Effect'
+import { pipe } from 'effect/Function'
+import * as Stream from 'effect/Stream'
+import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
+import * as HttpClient from 'effect/unstable/http/HttpClient'
+import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
 
-	const result = yield* pipe(
-		HttpClient.get("https://mit-license.org/license.txt"),
-		Effect.map((response) => response.stream),
-		Stream.unwrap,
-		Stream.tap((e) => Console.log("raw bytes: ", e.byteLength)),
-		zstd.compressStream(),
-		Stream.tap((e) => Console.log("compressed bytes: ", e.byteLength)),
-		zstd.decompressStream(),
-		Stream.decodeText(),
-		Stream.mkString,
-	);
-
-	yield* Console.log(result);
-}).pipe(
-	Effect.provide(FetchHttpClient.layer),
-	Effect.provide(ZStd.ZStd.Default),
-	Effect.scoped,
-	NodeRuntime.runMain,
-);
+ZStd.Service.use(zstd =>
+  pipe(
+    HttpClient.get('https://mit-license.org/license.txt'),
+    HttpClientResponse.stream,
+    Stream.tap(e => Console.log('Raw bytes: ', e.byteLength)),
+    zstd.compressStream(),
+    Stream.tap(e => Console.log('Compressed bytes: ', e.byteLength)),
+    zstd.decompressStream(),
+    Stream.decodeText(),
+    Stream.mkString,
+  ),
+).pipe(
+  Effect.flatMap(Console.log),
+  Effect.provide(FetchHttpClient.layer),
+  Effect.provide(ZStd.layer),
+  NodeRuntime.runMain,
+)
 ```

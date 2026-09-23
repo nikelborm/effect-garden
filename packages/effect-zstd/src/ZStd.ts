@@ -1,5 +1,17 @@
 export {
-  ZStd,
+  type DualCompressStream,
+  type DualDecompressStream,
+  type DualMakeStreamBothSidesBinary,
+  layer,
+  type MakeBinaryStreamTransformerWithInputStreamSuppliedLast,
+  type MakeChannelBothSidesBinary,
+  type MakeCompressionChannel,
+  type MakeDecompressionChannel,
+  type Options,
+  Service,
+  type Shape,
+  type TransformBinaryStream,
+  type TransformBinaryStreamWithInputStreamSuppliedFirst,
   ZstdCompressionError,
   ZstdDecompressionError,
 } from './internal/ZStd.ts'
