@@ -200,6 +200,7 @@
   "packageManager": "bun@1.3.13",
   "scripts": {
     "build": "turbo run build --continue=dependencies-successful",
+    "b": "bun run build",
     "cleanup": "bun ./packages/scripts/cleanup.ts ./",
     "dev": "turbo run dev",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe",
