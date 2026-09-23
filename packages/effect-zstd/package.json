@@ -1,7 +1,7 @@
 {
   "name": "effect-zstd",
   "type": "module",
-  "version": "0.1.6",
+  "version": "1.0.0",
   "description": "Zstd de/compression service for effect",
   "devDependencies": {
     "@effect/tsgo": "catalog:",
