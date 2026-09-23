@@ -1,11 +1,19 @@
-import { BadExitCodeError, ParseErrorSchema } from '@evadev/effect-helpers'
+import { BadExitCodeError } from '@evadev/effect-helpers'
 
-import { PlatformError } from '@effect/platform/Error'
+import { PlatformError } from 'effect/PlatformError'
 import * as Schema from 'effect/Schema'
+
+// TODO: extract to @evadev/effect-helpers
+const PlatformErrorSchema = Schema.instanceOf(PlatformError)
+const SchemaErrorSchema = Schema.instanceOf(Schema.SchemaError)
 
 const fields = {
   args: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
-  cause: Schema.Union([BadExitCodeError, ParseErrorSchema, PlatformError]),
+  cause: Schema.Union([
+    BadExitCodeError,
+    SchemaErrorSchema,
+    PlatformErrorSchema,
+  ]),
 }
 
 export class BtrfsFindRootsError extends Schema.TaggedError<BtrfsFindRootsError>()(

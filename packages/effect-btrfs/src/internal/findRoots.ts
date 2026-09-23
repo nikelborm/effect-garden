@@ -5,8 +5,9 @@ import {
 } from '@evadev/effect-helpers'
 
 import * as Effect from 'effect/Effect'
-import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
+import * as SchemaIssue from 'effect/SchemaIssue'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsFindRootsError } from './Errors.ts'
 
@@ -14,7 +15,9 @@ export const FoundRootsSchema = Schema.Struct({
   byteNumber: FiniteNonNegativeIntegerFromString,
   generation: FiniteNonNegativeIntegerFromString,
   level: FiniteNonNegativeIntegerFromString,
-}).pipe(Schema.Data, Schema.Array, Schema.Data)
+}).pipe(Schema.Array)
+
+// TODO: refactor to use effect-grammar
 
 export type FoundRoots = (typeof FoundRootsSchema)['Type']
 export type FoundRoot = FoundRoots[number]
@@ -49,7 +52,7 @@ export interface FindRootsOptions {
 export const findRoots = Effect.fn('effect-btrfs/Btrfs/findRoots')(
   function* (options: FindRootsOptions | string[]) {
     const { exitCode, stdout, stderr } = yield* simpleExec(
-      Command.make('btrfs-find-root', ...makeFindRootsArgs(options)),
+      ChildProcess.make('btrfs-find-root', makeFindRootsArgs(options)),
     )
 
     if (exitCode !== 0)
@@ -72,11 +75,12 @@ export const findRoots = Effect.fn('effect-btrfs/Btrfs/findRoots')(
     const allOutputLinesCount = stdout.split('\n').filter(Boolean).length
 
     if (allOutputLinesCount !== parsedRoots.length)
-      return yield* ParseResult.parseError(
-        new ParseResult.Type(
-          FoundRootsSchema.ast,
+      return yield* new Schema.SchemaError(
+        new SchemaIssue.InvalidType(
+          FoundRootsSchema.annotate({
+            message: 'Some of the non-empty lines are not parseable by regexp',
+          }).ast,
           stdout,
-          'Some of the non-empty lines are not parseable by regexp',
         ),
       )
 

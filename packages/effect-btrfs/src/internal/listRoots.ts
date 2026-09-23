@@ -8,10 +8,13 @@ import {
 } from '@evadev/effect-helpers'
 
 import * as Effect from 'effect/Effect'
-import * as ParseResult from 'effect/ParseResult'
 import * as Schema from 'effect/Schema'
+import * as SchemaIssue from 'effect/SchemaIssue'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsListRootsError } from './Errors.ts'
+
+// TODO: refactor to use effect-grammar
 
 export const ListedRootItemsSchema = Schema.Struct({
   treeObjectId: Schema.Union([
@@ -37,12 +40,11 @@ export interface ListRootsOptions {
 export const listRoots = Effect.fn('effect-btrfs/Btrfs/listRoots')(
   function* (options: ListRootsOptions | string[]) {
     const { exitCode, stdout, stderr } = yield* simpleExec(
-      Command.make(
-        'btrfs',
+      ChildProcess.make('btrfs', [
         'restore',
         '--list-roots',
         ...makeListRootsArgs(options),
-      ),
+      ]),
     )
 
     if (exitCode !== 0)
@@ -65,11 +67,12 @@ export const listRoots = Effect.fn('effect-btrfs/Btrfs/listRoots')(
     const allOutputLinesCount = stdout.split('\n').filter(Boolean).length
 
     if (allOutputLinesCount !== parsedRoots.length)
-      return yield* ParseResult.parseError(
-        new ParseResult.Type(
-          ListedRootItemsSchema.ast,
+      return yield* new Schema.SchemaError(
+        new SchemaIssue.InvalidType(
+          ListedRootItemsSchema.annotate({
+            message: 'Some of the non-empty lines are not parseable by regexp',
+          }).ast,
           stdout,
-          'Some of the non-empty lines are not parseable by regexp',
         ),
       )
 
