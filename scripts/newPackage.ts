@@ -21,13 +21,14 @@ export const vscodeConfig = Effect.fn('vscodeConfig')(function* (
   const _path = yield* Path.Path
   // path.relative(
   //   packagePath,
-  //   path.join(packagesDirPath, './node_modules/typescript/lib'),
+  //   path.join(packagesDirPath, './node_modules/typescript'),
   // )
 
   return {
     // TODO: make them synced with recomended settings?
     'git.openRepositoryInParentFolders': 'always',
-    'js/ts.tsdk.path': './node_modules/typescript/lib',
+    'js/ts.tsdk.path': './node_modules/typescript',
+    'js/ts.experimental.useTsgo': true,
     'js/ts.tsdk.promptToUseWorkspaceVersion': true,
     'editor.codeActionsOnSave': {
       'source.organizeImports.biome': 'explicit',

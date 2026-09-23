@@ -3,7 +3,6 @@ import { $ } from 'bun'
 
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
-import * as SchemaGetter from 'effect/SchemaGetter'
 import * as SchemaRepresentation from 'effect/SchemaRepresentation'
 
 const simpleSchemas = new Set<Schema.Constraint>([
