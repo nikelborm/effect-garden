@@ -1,4 +1,5 @@
 import * as Schema from 'effect/Schema'
+import * as SchemaGetter from 'effect/SchemaGetter'
 
 const Part15 = Schema.Struct({
   runs: Schema.Array(
@@ -87,8 +88,8 @@ const Part32 = Schema.Struct({
           'https://lh3.googleusercontent.com/9NA8f3tUbSju7zxkVg34dkTDJtE3u3kbBApDPwuptGPKjgioD-NmT4vZUXAjteIzdexC2_YEzn5DLp4=w544-h544-p-l90-rj',
         ],
       }),
-      width: Schema.JsonNumber.annotateKey({ examples: [60, 120, 226, 544] }),
-      height: Schema.JsonNumber.annotateKey({ examples: [60, 120, 226, 544] }),
+      width: Schema.Finite.annotateKey({ examples: [60, 120, 226, 544] }),
+      height: Schema.Finite.annotateKey({ examples: [60, 120, 226, 544] }),
     }),
   ),
 })
@@ -122,7 +123,7 @@ export const MainSchema = Schema.Struct({
                   Schema.Struct({
                     musicResponsiveListItemRenderer: Schema.Struct({
                       flexColumns: Schema.Array(
-                        Schema.Union(
+                        Schema.Union([
                           Schema.Struct({
                             musicResponsiveListItemFlexColumnRenderer:
                               Schema.Struct({
@@ -205,12 +206,15 @@ export const MainSchema = Schema.Struct({
                             musicResponsiveListItemFlexColumnRenderer:
                               Schema.Struct({
                                 text: Schema.Unknown.pipe(
-                                  Schema.filter(
-                                    v => v !== null && v !== undefined,
+                                  Schema.check(
+                                    Schema.makeFilter(
+                                      (v: unknown) =>
+                                        v !== null && v !== undefined,
+                                    ),
                                   ),
-                                  Schema.transform(Schema.Struct({}), {
-                                    decode: () => ({}),
-                                    encode: v => v,
+                                  Schema.decodeTo(Schema.Struct({}), {
+                                    decode: SchemaGetter.transform(() => ({})),
+                                    encode: SchemaGetter.passthrough(),
                                   }),
                                 ),
                               }),
@@ -218,7 +222,7 @@ export const MainSchema = Schema.Struct({
                           Schema.Struct({
                             musicResponsiveListItemFlexColumnRenderer: Part16,
                           }),
-                        ),
+                        ]),
                       ),
                       fixedColumns: Schema.Array(
                         Schema.Struct({

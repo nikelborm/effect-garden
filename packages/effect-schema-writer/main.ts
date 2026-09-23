@@ -3,24 +3,26 @@ import { $ } from 'bun'
 
 import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
+import * as SchemaGetter from 'effect/SchemaGetter'
+import * as SchemaRepresentation from 'effect/SchemaRepresentation'
 
-const simpleSchemas = new Set<Schema.Schema.Any>([
+const simpleSchemas = new Set<Schema.Constraint>([
   Schema.String,
   Schema.Null,
   Schema.Boolean,
-  Schema.JsonNumber,
+  Schema.Finite,
 ])
 
-const toKey = (schema: Schema.Schema.Any) => {
+const toKey = (schema: Schema.Constraint) => {
   // TODO: test if canonicalization is needed here
-  const str = schema.toString()
+  const str = JSON.stringify(SchemaRepresentation.toRepresentation(schema.ast))
   if (!str) throw new Error('wtf failed to canonicalize')
   return str
 }
 
 type FieldExamples = Map<string, Set<string | number>>
 type Subtree = {
-  schema: Schema.Schema.AnyNoContext
+  schema: Schema.Constraint
   code: () => string
   fieldExamples?: FieldExamples
 }
@@ -30,8 +32,8 @@ const data = JSON.parse(await readFile('data/sample1.json', 'utf-8'))
 const stringLeaf = { schema: Schema.String, code: () => 'Schema.String' }
 const booleanLeaf = { schema: Schema.Boolean, code: () => 'Schema.Boolean' }
 const numberLeaf = {
-  schema: Schema.JsonNumber,
-  code: () => 'Schema.JsonNumber',
+  schema: Schema.Finite,
+  code: () => 'Schema.Finite',
 }
 const nullLeaf = { schema: Schema.Null, code: () => 'Schema.Null' }
 
@@ -45,7 +47,7 @@ const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
 
   const updateRegistry = (
     subtree: Subtree,
-    dependencies: Schema.Schema.Any[],
+    dependencies: Schema.Constraint[],
   ) => {
     const key = toKey(subtree.schema)
 
@@ -86,7 +88,7 @@ const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
   const walk = (something: unknown): Subtree => {
     if (Array.isArray(something)) {
       const subtrees: Subtree[] = []
-      const unionMembers = new Set<Schema.Schema.AnyNoContext>()
+      const unionMembers = new Set<Schema.Constraint>()
 
       for (const child of something) {
         const subtree = walk(child)
@@ -108,7 +110,7 @@ const walkRoot = (obj: unknown, options?: { skipFields?: string[] }) => {
 
         return members.length === 1
           ? 'Schema.Array(' + members[0] + ')'
-          : 'Schema.Array(Schema.Union(' + members.join(', ') + '))'
+          : 'Schema.Array(Schema.Union([' + members.join(', ') + ']))'
       }
 
       return updateRegistry({ schema, code }, [...unionMembers])
@@ -245,8 +247,9 @@ for (const [childKey, child] of registry) {
   registry.delete(childKey)
 }
 
-const _file =
-  'import * as Schema from "effect/Schema"\n\n' +
+const file =
+  "import * as Schema from 'effect/Schema'\n" +
+  "import * as SchemaGetter from 'effect/SchemaGetter'\n\n" +
   registry
     .values()
     .toArray()
@@ -257,24 +260,42 @@ const _file =
   '\n\n' +
   `export const MainSchema = ${rootNode.code()}`
 
-// await writeFile('./generated/experiment1_sample_schema.ts', file)
+const generatedPath = './generated/experiment1_sample_schema.ts' as const
+await writeFile(generatedPath, file)
 
-// TODO: replace Schema.Struct({}) with
-Schema.Unknown.pipe(
-  Schema.filter(v => v !== null && v !== undefined),
-  Schema.transform(Schema.Struct({}), {
-    decode: () => ({}),
-    encode: v => v,
-  }),
+const format = () => $`bunx biome format --fix`
+
+await format()
+
+// TODO: make better
+await readFile(generatedPath, 'utf-8').then(e =>
+  writeFile(
+    generatedPath,
+    e.replaceAll(
+      'Schema.Struct({})',
+      `Schema.Unknown.pipe(
+        Schema.check(
+          Schema.makeFilter((v: unknown) => v !== null && v !== undefined),
+        ),
+        Schema.decodeTo(Schema.Struct({}), {
+          decode: SchemaGetter.transform(() => ({})),
+          encode: SchemaGetter.passthrough(),
+        }),
+      )`,
+    ),
+  ),
 )
 
-await $`bunx biome format --fix`
+await format()
+
 await $`bunx tsc --noEmit`
 
-const { MainSchema } = await import('./generated/experiment1_sample_schema.ts')
+const { MainSchema } = await import(generatedPath)
 
 // sanity check of the resulted schema
-const res = Schema.decodeUnknownSync(MainSchema, { exact: true })(data)
+const res = Schema.decodeUnknownSync(MainSchema, {
+  onExcessProperty: 'ignore',
+})(data)
 
 // TODO: report effect issue about redundant fields not being stripped
 await writeFile(

@@ -93,7 +93,7 @@ export const component7 = Schema.Struct({
 
 export const component8 = Schema.Struct({
   menuNavigationItemRenderer: Schema.optional(
-    Schema.Union(
+    Schema.Union([
       Schema.Struct({
         text: Schema.Struct({
           runs: component4,
@@ -197,7 +197,7 @@ export const component8 = Schema.Struct({
         }),
         trackingParams: Schema.String,
       }),
-    ),
+    ]),
   ),
   menuServiceItemRenderer: Schema.optional(
     Schema.Struct({
@@ -398,7 +398,7 @@ export const component10 = Schema.Struct({
 })
 
 export const component11 = Schema.Struct({
-  musicResponsiveListItemFlexColumnRenderer: Schema.Union(
+  musicResponsiveListItemFlexColumnRenderer: Schema.Union([
     Schema.Struct({
       text: Schema.Struct({
         runs: component10,
@@ -420,11 +420,11 @@ export const component11 = Schema.Struct({
       }),
       displayPriority: Schema.String,
     }),
-  ),
+  ]),
 })
 
 export const component12 = Schema.Struct({
-  musicResponsiveListItemRenderer: Schema.Union(
+  musicResponsiveListItemRenderer: Schema.Union([
     Schema.Struct({
       trackingParams: Schema.String,
       overlay: Schema.Struct({
@@ -627,7 +627,7 @@ export const component12 = Schema.Struct({
         }),
       }),
     }),
-  ),
+  ]),
 })
 
 export const component13 = Schema.Struct({
@@ -651,7 +651,7 @@ export const component14 = Schema.Struct({
 
 export const component15 = Schema.Struct({
   menuNavigationItemRenderer: Schema.optional(
-    Schema.Union(
+    Schema.Union([
       Schema.Struct({
         text: Schema.Struct({
           runs: component4,
@@ -744,7 +744,7 @@ export const component15 = Schema.Struct({
         }),
         trackingParams: Schema.String,
       }),
-    ),
+    ]),
   ),
   menuServiceItemRenderer: Schema.optional(
     Schema.Struct({

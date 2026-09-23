@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/style/noNonNullAssertion: <explanation> */
+/** biome-ignore-all lint/plugin/drizzle: <explanation> */
 import * as BunFileSystem from '@effect/platform-bun/BunFileSystem'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as Console from 'effect/Console'
@@ -85,8 +87,8 @@ const schemaEq = (a: SchemaIR, b: SchemaIR): boolean => {
     if (ak.join(',') !== bk.join(',')) return false
     return ak.every(
       k =>
-        a.fields[k]?.optional === b.fields[k]?.optional &&
-        schemaEq(a.fields[k]?.schema, b.fields[k]?.schema),
+        a.fields[k]!.optional === b.fields[k]!.optional &&
+        schemaEq(a.fields[k]!.schema, b.fields[k]!.schema),
     )
   }
   if (a._tag === 'Union' && b._tag === 'Union') {
