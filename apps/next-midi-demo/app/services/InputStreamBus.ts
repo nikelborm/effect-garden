@@ -1,3 +1,4 @@
+import type { NonEmptyReadonlyArray } from 'effect/Array'
 import * as Chunk from 'effect/Chunk'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
@@ -135,12 +136,10 @@ const makeInputBus = Effect.fnUntraced(function* <
       Stream.broadcast({ capacity: 'unbounded' }),
     )
 
-  const register = (
-    registrationsRequests: readonly RegistrationRequest<
-      TPhysicalButtonId,
-      TParamButtonId
-    >[],
-  ) =>
+  const register: RegisterMethod<
+    TPhysicalButtonId,
+    TParamButtonId
+  > = registrationsRequests =>
     inputMap.pipe(
       SubscriptionRef.updateEffect(
         Effect.fnUntraced(function* (existingInputs) {
@@ -183,7 +182,7 @@ const makeInputBus = Effect.fnUntraced(function* <
       }),
     )
 
-  const isPressedStream = (paramButton: ParamButtonIdData<TParamButtonId>) =>
+  const isPressedStream: IsPressedStreamMethod<TParamButtonId> = paramButton =>
     pipe(
       getPressedByPhysicalButtonSetStream(paramButton),
       Stream.map(set => HashSet.size(set) > 0),
@@ -231,23 +230,34 @@ export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
   },
 ) {}
 
+export interface RegisterMethod<
+  TPhysicalButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends TaggedReadonlyObject,
+> {
+  (
+    registrationsRequests: NonEmptyReadonlyArray<
+      RegistrationRequest<TPhysicalButtonId, TParamButtonId>
+    >,
+  ): Effect.Effect<void>
+}
+
 export interface InputBusWriterHandle<
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
 > {
-  readonly register: (
-    registrations: ReadonlyArray<
-      RegistrationRequest<TPhysicalButtonId, TParamButtonId>
-    >,
-  ) => Effect.Effect<void>
+  readonly register: RegisterMethod<TPhysicalButtonId, TParamButtonId>
+}
+
+export interface IsPressedStreamMethod<
+  TParamButtonId extends TaggedReadonlyObject,
+> {
+  (selectionButton: ParamButtonIdData<TParamButtonId>): Stream.Stream<boolean>
 }
 
 export interface InputBusReaderHandle<
   TParamButtonId extends TaggedReadonlyObject,
 > {
-  readonly isPressedStream: (
-    selectionButton: ParamButtonIdData<TParamButtonId>,
-  ) => Stream.Stream<boolean>
+  readonly isPressedStream: IsPressedStreamMethod<TParamButtonId>
 
   readonly pressesOnlyStream: PressesOnlyStream<TParamButtonId>
 }

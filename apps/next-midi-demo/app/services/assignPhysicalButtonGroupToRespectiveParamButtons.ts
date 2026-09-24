@@ -49,7 +49,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
       ),
     )
 
-  const registrations: ReadonlyArray<
+  const registrationsRequests: ReadonlyArray<
     RegistrationRequest<TPhysicalButtonId, TParamButtonId>
   > = yield* Effect.all(
     EArray.zipWith(
@@ -69,7 +69,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   )
 
   const physicalButtonIdToStateHoldingRef = HashMap.make(
-    ...registrations.map(
+    ...registrationsRequests.map(
       reg => [reg.physicalButtonIdData.id, reg.stateRef] as const,
     ),
   )
@@ -95,5 +95,5 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   )
 
   const inputBus = yield* inputBusWriterEffect
-  yield* inputBus.register(registrations)
+  yield* inputBus.register(registrationsRequests)
 })
