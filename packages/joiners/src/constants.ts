@@ -63,13 +63,17 @@ export const joinNames = objectKeys(joinNameToVennDiagramParts);
  * combinations of resulting subsets.
  *
  * ```plaintext
- *      .-"""-. .-"""-.     |
- *    .'     .'‾'.     '.   |
- *   /      /     \      \  | 4 = 0b100 (1 bit representing left outer part)
- *   |   4  |  2  |  1   |  | 2 = 0b010 (1 bit representing middle inner part)
- *   \      \     /      /  | 1 = 0b001 (1 bit representing right outer part)
- *    '.     '. .'     .'   |
- *      '-...-'‾'-...-'     |
+ * 4 = 0b100 (1 bit representing left outer part)
+ * 2 = 0b010 (1 bit representing middle inner part)
+ * 1 = 0b001 (1 bit representing right outer part)
+ *
+ *      .-"""-. .-"""-.
+ *    .'     .'‾'.     '.
+ *   /      /     \      \
+ *   |   4  |  2  |  1   |
+ *   \      \     /      /
+ *    '.     '. .'     .'
+ *      '-...-'‾'-...-'
  * ```
  */
 export const VennDiagramBitMaskFor = {

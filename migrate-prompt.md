@@ -1,0 +1,14 @@
+Fix all issues related to tsc failing
+
+They're caused by migration from effect.ts v3 to effect v4 Release candidate #117. your task is to fix the type issues introduced and migrate the methods.
+
+available resources:
+- You can inspect /home/evadev/projects/effect git repo for effect V4 documentation, tests, source code and migration guides (like MIGRATION.md, which you should NOT read as a whole, it's giant, only grep for certain method names, imports etc).
+- You can also go into the sources of the original effect v3 repo cloned at /home/evadev/projects/effect-v3 to get the sense on how some method worked originally.
+- You're in specific subproject right now, on which you're working. The current folder is the only place where you're allowed to modify anything. It's a part of the larger monorepo that half-migrated to effect v4. This folder you're in is already partially migrated as well, but still has many tsc errors that aren't dealt with. This is a leaf in the graph of unfixed dependencies, and all parents(roots) should listen to their children(leaves). Some packages in the monorepo might depend on the current package, but generally it should be more authoritative and should follow effect v4 typical design patterns and other packages should deal with the consequences and follow the interface declared in here. I create a completely isolated copy of the monorepo and a dedicated git branch for your workflow.
+
+Use bun for commands if needed. Do not make git commits, I'll do them myself! If you see some library like effect-errors that originally depends on effect v3, feel free to throw it away in favor of native effect v4 methods, or vendoring specific functions from that library.
+
+Before commiting to doing any changes, suggest me explicit options of at least a few alternatives that might be considered if something isn't obvious and some pattern from effect v3 can be mapped to potentially more than one implementation in effect v4. prefer to often ask me questions, keep me in the loop. Better ask early than test hypotheses I would potentially reject immediately. When asking me a question, make sure you present me with links to original source code files, examples, relevant entities etc. It's important that for each change you educate me on the mechanism right before asking the question (or directly as part of the question), because I'm the one who will maintain this shit later. It's important I understand what changed how, and why. Comprehensive examples and playgrounds will bring rewards!
+
+There might be errors related to just incompleteness of the project itself, because this monorepo contains a lot of half-backed ideas. If you see something obiously unfinished, don't try to take on it, just state what you saw and maybe report potential proposed solutions, but DONT act on them. Your focus is migrating v3->v4
