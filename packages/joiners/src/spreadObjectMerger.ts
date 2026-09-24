@@ -18,7 +18,7 @@ function doesAHavePriority(
   mergeStrategy: '{ ...B, ...A }' | '{ ...A, ...B }',
 ): mergeStrategy is '{ ...B, ...A }' {
   const firstPriorityIndex = 11
-  // TODO: use charAt from https://github.com/gustavoguichard/string-ts
+  // TODO: use charAt from https://github.com/gustavoguichard/string-ts#charat
   return (
     (mergeStrategy[firstPriorityIndex] as GetNthCharacter<
       typeof mergeStrategy,
