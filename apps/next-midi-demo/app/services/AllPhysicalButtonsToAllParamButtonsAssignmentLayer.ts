@@ -10,6 +10,7 @@ import {
 import { DOMPhysicalButtonData } from '../domain/DOMButton.ts'
 import { KeyboardKeyPhysicalButtonData } from '../domain/KeyboardKey.ts'
 import { NotePhysicalButtonData } from '../domain/MIDIValues.ts'
+import type { ParamButtonIdData } from '../domain/ParamButton.ts'
 import {
   AllPatterns,
   PatternData,
@@ -31,10 +32,16 @@ import {
 } from './InputStreamBus.ts'
 
 const makePhysicalNoteDatas = (notes: Iterable<number>) =>
-  Array.from(notes, NotePhysicalButtonData.makeUnsafe)
+  Array.from(
+    notes,
+    NotePhysicalButtonData.makeUnsafe,
+  ) as unknown as EArray.NonEmptyReadonlyArray<NotePhysicalButtonData>
 
 const makePhysicalKeyDatas = (keys: Iterable<string>) =>
-  Array.from(keys, KeyboardKeyPhysicalButtonData.makeUnsafe)
+  Array.from(
+    keys,
+    KeyboardKeyPhysicalButtonData.makeUnsafe,
+  ) as unknown as EArray.NonEmptyReadonlyArray<KeyboardKeyPhysicalButtonData>
 
 // Keyboard - Accord
 const keyboardAccordKeys = 'qwertyuiйцукенгш'
@@ -85,11 +92,26 @@ const paramButtonIds = Effect.all({
   AllPatterns,
   AllStrengths,
 }).pipe(
-  Effect.map(_ => ({
-    accordParamButtonIds: _.AllAccords.map(AccordParamButtonData.make),
-    patternParamButtonIds: _.AllPatterns.map(PatternParamButtonData.make),
-    strengthParamButtonIds: _.AllStrengths.map(StrengthParamButtonData.make),
-  })),
+  Effect.map(
+    _ =>
+      ({
+        accordParamButtonIds: EArray.map(
+          _.AllAccords,
+          AccordParamButtonData.make,
+        ),
+        patternParamButtonIds: EArray.map(
+          _.AllPatterns,
+          PatternParamButtonData.make,
+        ),
+        strengthParamButtonIds: EArray.map(
+          _.AllStrengths,
+          StrengthParamButtonData.make,
+        ),
+      }) as const satisfies Record<
+        string,
+        EArray.NonEmptyReadonlyArray<ParamButtonIdData<any>>
+      >,
+  ),
   Effect.cached,
   Effect.flatten,
 )
@@ -174,19 +196,28 @@ export const OnScreenButtonMappingLayer = Effect.gen(function* () {
       // for their ids, than the entities they represent
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        accordParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        EArray.map(
+          accordParamButtonIds,
+          DOMPhysicalButtonData.makeFromParamButton,
+        ),
         accordParamButtonIds,
         makeParamButtonTouchStateStream('accord', AccordData.makeUnsafe),
         AccordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        patternParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        EArray.map(
+          patternParamButtonIds,
+          DOMPhysicalButtonData.makeFromParamButton,
+        ),
         patternParamButtonIds,
         makeParamButtonTouchStateStream('pattern', PatternData.makeUnsafe),
         PatternInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        strengthParamButtonIds.map(DOMPhysicalButtonData.makeFromParamButton),
+        EArray.map(
+          strengthParamButtonIds,
+          DOMPhysicalButtonData.makeFromParamButton,
+        ),
         strengthParamButtonIds,
         makeParamButtonTouchStateStream('strength', StrengthData.makeUnsafe),
         StrengthInputBus,

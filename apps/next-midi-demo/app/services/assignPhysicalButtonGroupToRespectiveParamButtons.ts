@@ -14,6 +14,7 @@ import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
 import type {
   InputBusWriterHandle,
   RegistrationRequest,
+  RegistrationRequestArray,
 } from './InputStreamBus.ts'
 
 export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
@@ -24,8 +25,8 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   TStreamR,
   TBusR,
 >(
-  physicalButtonIdsRepresentingPhysicalButtonGroup: readonly PhysicalButtonIdData<TPhysicalButtonId>[],
-  paramButtonIdsRepresentedByPhysicalButtonGroup: readonly ParamButtonIdData<TParamButtonId>[],
+  physicalButtonIdsRepresentingPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<PhysicalButtonIdData<TPhysicalButtonId>>,
+  paramButtonIdsRepresentedByPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<ParamButtonIdData<TParamButtonId>>,
   physicalButtonPressStream: Stream.Stream<
     readonly [
       id: PhysicalButtonIdData<TPhysicalButtonId>,
@@ -49,9 +50,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
       ),
     )
 
-  const registrationsRequests: ReadonlyArray<
-    RegistrationRequest<TPhysicalButtonId, TParamButtonId>
-  > = yield* Effect.all(
+  const registrationsRequests: RegistrationRequestArray<TPhysicalButtonId, TParamButtonId> = yield* Effect.all(
     EArray.zipWith(
       paramButtonIdsRepresentedByPhysicalButtonGroup,
       physicalButtonIdsRepresentingPhysicalButtonGroup,

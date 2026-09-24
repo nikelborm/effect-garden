@@ -30,6 +30,13 @@ export interface RegistrationRequest<
   readonly assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
 }
 
+export type RegistrationRequestArray<
+  TPhysicalButtonId extends TaggedReadonlyObject,
+  TParamButtonId extends TaggedReadonlyObject,
+> = NonEmptyReadonlyArray<
+  RegistrationRequest<TPhysicalButtonId, TParamButtonId>
+>
+
 interface Registration<TPhysicalButtonId extends TaggedReadonlyObject> {
   readonly stateRef: SubscriptionRef.SubscriptionRef<ButtonState.AllSimple>
   readonly physicalButtonId: TPhysicalButtonId
@@ -235,9 +242,7 @@ export interface RegisterMethod<
   TParamButtonId extends TaggedReadonlyObject,
 > {
   (
-    registrationsRequests: NonEmptyReadonlyArray<
-      RegistrationRequest<TPhysicalButtonId, TParamButtonId>
-    >,
+    registrationsRequests: RegistrationRequestArray<TPhysicalButtonId, TParamButtonId>,
   ): Effect.Effect<void>
 }
 
