@@ -59,12 +59,12 @@ export class PhysicalButtonModel<
   TParamButtonId extends TaggedReadonlyObject,
 > extends Data.Class<{
   buttonPressState: ButtonState.AllSimple
-  assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
+  assignedToParamButtonIdData: ParamButtonIdData<TParamButtonId>
 }> {
   constructor(
     buttonPressState: ButtonState.AllSimple,
-    assignedToParamButtonId: ParamButtonIdData<TParamButtonId>,
+    assignedToParamButtonIdData: ParamButtonIdData<TParamButtonId>,
   ) {
-    super({ buttonPressState, assignedToParamButtonId })
+    super({ buttonPressState, assignedToParamButtonIdData })
   }
 }

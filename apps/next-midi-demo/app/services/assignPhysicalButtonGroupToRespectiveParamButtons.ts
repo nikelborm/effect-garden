@@ -25,8 +25,12 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   TStreamR,
   TBusR,
 >(
-  physicalButtonIdsRepresentingPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<PhysicalButtonIdData<TPhysicalButtonId>>,
-  paramButtonIdsRepresentedByPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<ParamButtonIdData<TParamButtonId>>,
+  physicalButtonIdDatasRepresentingPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<
+    PhysicalButtonIdData<TPhysicalButtonId>
+  >,
+  paramButtonIdDatasRepresentedByPhysicalButtonGroup: EArray.NonEmptyReadonlyArray<
+    ParamButtonIdData<TParamButtonId>
+  >,
   physicalButtonPressStream: Stream.Stream<
     readonly [
       id: PhysicalButtonIdData<TPhysicalButtonId>,
@@ -41,8 +45,8 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   >,
 ) {
   if (
-    physicalButtonIdsRepresentingPhysicalButtonGroup.length !==
-    paramButtonIdsRepresentedByPhysicalButtonGroup.length
+    physicalButtonIdDatasRepresentingPhysicalButtonGroup.length !==
+    paramButtonIdDatasRepresentedByPhysicalButtonGroup.length
   )
     return yield* Effect.die(
       new Error(
@@ -50,24 +54,28 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
       ),
     )
 
-  const registrationsRequests: RegistrationRequestArray<TPhysicalButtonId, TParamButtonId> = yield* Effect.all(
+  const registrationsRequests: RegistrationRequestArray<
+    TPhysicalButtonId,
+    TParamButtonId
+  > = yield* Effect.all(
     EArray.zipWith(
-      paramButtonIdsRepresentedByPhysicalButtonGroup,
-      physicalButtonIdsRepresentingPhysicalButtonGroup,
-      (assignedToParamButtonId, physicalButtonIdData) =>
+      paramButtonIdDatasRepresentedByPhysicalButtonGroup,
+      physicalButtonIdDatasRepresentingPhysicalButtonGroup,
+      (assignedToParamButtonIdData, physicalButtonIdData) =>
         Effect.map(
           SubscriptionRef.make<ButtonState.AllSimple>(ButtonState.NotPressed),
-          (stateRef):RegistrationRequest<TPhysicalButtonId, TParamButtonId> => ({
-            physicalButtonIdData,
-            assignedToParamButtonId,
-            stateRef,
-          }),
+          stateRef =>
+            ({
+              physicalButtonIdData,
+              assignedToParamButtonIdData,
+              stateRef,
+            }) satisfies RegistrationRequest<TPhysicalButtonId, TParamButtonId>,
         ),
     ),
     { concurrency: 'unbounded' },
   )
 
-  const physicalButtonIdToStateHoldingRef = HashMap.make(
+  const physicalButtonIdToRefWithState = HashMap.make(
     ...registrationsRequests.map(
       reg => [reg.physicalButtonIdData.id, reg.stateRef] as const,
     ),
@@ -75,18 +83,21 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
 
   yield* physicalButtonPressStream.pipe(
     Stream.runForEach(([physicalButtonIdData, state]) =>
-      Option.match(HashMap.get(physicalButtonIdToStateHoldingRef, physicalButtonIdData.id), {
-        onNone: () => Effect.void,
-        onSome: flow(
-          SubscriptionRef.set(state),
-          Effect.withSpan('physicalButtonRefUpdate', {
-            attributes: {
-              state,
-              physicalButtonId: physicalButtonIdData.id,
-            },
-          }),
-        ),
-      }),
+      Option.match(
+        HashMap.get(physicalButtonIdToRefWithState, physicalButtonIdData.id),
+        {
+          onNone: () => Effect.void,
+          onSome: flow(
+            SubscriptionRef.set(state),
+            Effect.withSpan('physicalButtonRefUpdate', {
+              attributes: {
+                state,
+                physicalButtonId: physicalButtonIdData.id,
+              },
+            }),
+          ),
+        },
+      ),
     ),
     Effect.withSpan('paramButtonStateRefUpdateFiber.lifetime'),
     Effect.tapCause(Effect.logError),

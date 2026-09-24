@@ -27,7 +27,7 @@ export interface RegistrationRequest<
 > {
   readonly stateRef: SubscriptionRef.SubscriptionRef<ButtonState.AllSimple>
   readonly physicalButtonIdData: PhysicalButtonIdData<TPhysicalButtonId>
-  readonly assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
+  readonly assignedToParamButtonIdData: ParamButtonIdData<TParamButtonId>
 }
 
 export type RegistrationRequestArray<
@@ -153,7 +153,7 @@ const makeInputBus = Effect.fnUntraced(function* <
           let newMap = existingInputs
 
           for (const {
-            assignedToParamButtonId: { id: paramButtonId },
+            assignedToParamButtonIdData: { id: paramButtonId },
             physicalButtonIdData: { id: physicalButtonId },
             stateRef,
           } of registrationsRequests) {
@@ -206,6 +206,8 @@ const makeInputBus = Effect.fnUntraced(function* <
 export type SupportedPhysicalButtonIds =
   | KeyboardKeyData
   | NoteIdData
+  // the last three come from onscreen buttons
+  // TODO: probably would be better to wrap them with OnScreenButtonIdData<T>
   | AccordData
   | PatternData
   | StrengthData
@@ -242,7 +244,10 @@ export interface RegisterMethod<
   TParamButtonId extends TaggedReadonlyObject,
 > {
   (
-    registrationsRequests: RegistrationRequestArray<TPhysicalButtonId, TParamButtonId>,
+    registrationsRequests: RegistrationRequestArray<
+      TPhysicalButtonId,
+      TParamButtonId
+    >,
   ): Effect.Effect<void>
 }
 
