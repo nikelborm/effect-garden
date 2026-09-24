@@ -68,7 +68,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
     { concurrency: 'unbounded' },
   )
 
-  const physicalButtonIdToRef = HashMap.make(
+  const physicalButtonIdToStateHoldingRef = HashMap.make(
     ...registrations.map(
       reg => [reg.physicalButtonId.id, reg.stateRef] as const,
     ),
@@ -76,7 +76,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
 
   yield* physicalButtonPressStream.pipe(
     Stream.runForEach(([physicalButtonId, state]) =>
-      Option.match(HashMap.get(physicalButtonIdToRef, physicalButtonId.id), {
+      Option.match(HashMap.get(physicalButtonIdToStateHoldingRef, physicalButtonId.id), {
         onNone: () => Effect.void,
         onSome: flow(
           SubscriptionRef.set(state),
