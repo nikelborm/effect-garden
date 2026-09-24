@@ -75,15 +75,15 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
   )
 
   yield* physicalButtonPressStream.pipe(
-    Stream.runForEach(([physicalButtonId, state]) =>
-      Option.match(HashMap.get(physicalButtonIdToStateHoldingRef, physicalButtonId.id), {
+    Stream.runForEach(([physicalButtonIdData, state]) =>
+      Option.match(HashMap.get(physicalButtonIdToStateHoldingRef, physicalButtonIdData.id), {
         onNone: () => Effect.void,
         onSome: flow(
           SubscriptionRef.set(state),
           Effect.withSpan('physicalButtonRefUpdate', {
             attributes: {
               state,
-              physicalButtonId: physicalButtonId.id,
+              physicalButtonId: physicalButtonIdData.id,
             },
           }),
         ),
