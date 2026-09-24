@@ -25,7 +25,7 @@ export interface RegistrationRequest<
   TParamButtonId extends TaggedReadonlyObject,
 > {
   readonly stateRef: SubscriptionRef.SubscriptionRef<ButtonState.AllSimple>
-  readonly physicalButtonId: PhysicalButtonIdData<TPhysicalButtonId>
+  readonly physicalButtonIdData: PhysicalButtonIdData<TPhysicalButtonId>
   readonly assignedToParamButtonId: ParamButtonIdData<TParamButtonId>
 }
 
@@ -148,7 +148,7 @@ const makeInputBus = Effect.fnUntraced(function* <
 
           for (const {
             assignedToParamButtonId: { id: paramButtonId },
-            physicalButtonId: { id: physicalButtonId },
+            physicalButtonIdData: { id: physicalButtonId },
             stateRef,
           } of registrationsRequests) {
             let bus = Option.getOrNull(HashMap.get(newMap, paramButtonId))

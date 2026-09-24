@@ -145,6 +145,8 @@ export const getStreamOfRemoteAsset = (
       getRemoteAssetPath(asset),
       resumeFromByte ? { headers: { Range: `bytes=${resumeFromByte}-` } } : {},
     )
+    // TODO: use HttpClientResponse.stream
+    // import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
     return response.stream as Stream.Stream<
       Uint8Array<ArrayBuffer>,
       HttpClientError.ResponseError,

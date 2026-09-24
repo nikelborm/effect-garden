@@ -55,11 +55,11 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
     EArray.zipWith(
       paramButtonIdsRepresentedByPhysicalButtonGroup,
       physicalButtonIdsRepresentingPhysicalButtonGroup,
-      (assignedToParamButtonId, physicalButtonId) =>
+      (assignedToParamButtonId, physicalButtonIdData) =>
         Effect.map(
           SubscriptionRef.make<ButtonState.AllSimple>(ButtonState.NotPressed),
-          stateRef => ({
-            physicalButtonId,
+          (stateRef):RegistrationRequest<TPhysicalButtonId, TParamButtonId> => ({
+            physicalButtonIdData,
             assignedToParamButtonId,
             stateRef,
           }),
@@ -70,7 +70,7 @@ export const assignPhysicalButtonGroupToRespectiveParamButtons = Effect.fn(
 
   const physicalButtonIdToStateHoldingRef = HashMap.make(
     ...registrations.map(
-      reg => [reg.physicalButtonId.id, reg.stateRef] as const,
+      reg => [reg.physicalButtonIdData.id, reg.stateRef] as const,
     ),
   )
 
