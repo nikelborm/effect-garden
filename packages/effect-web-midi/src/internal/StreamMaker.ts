@@ -151,11 +151,13 @@ export const createStreamMakerFrom =
           } = buildConfig(cameFrom)
 
           const missingFieldMessage = `Property ${field} of ${tag} is null`
-          const NullCausedErrorEffect = new Cause.NoSuchElementException(
+          const NullCausedErrorEffect = new Cause.NoSuchElementError(
             missingFieldMessage,
           )
 
-          return Stream.fromEventListener(target, type, options).pipe(
+          return Stream.fromEventListener<
+            TEventTypeToEventValueMap[TSelectedEventType]
+          >(target, type, options).pipe(
             Stream.filter(
               // TODO: add `!== null` to all duplicate copies of stream maker
               // `!== null` is to make it more universal like for false, 0 or ''
@@ -261,9 +263,9 @@ export interface StreamMakerOptionsWellknown {
   /**
    * How many elements sent by event target to buffer while waiting for the
    * moment they are consumed. Can be limited to a certain number
-   * @default "unbounded"
+   * @default `Infinity` when not specified
    */
-  readonly bufferSize?: number | 'unbounded' | undefined
+  readonly bufferSize?: number | undefined
 }
 
 export interface StreamMakerOptionsObject<
@@ -330,7 +332,7 @@ export type StreamValue<
 
 export type StreamError<TOnNullStrategy extends OnNullStrategy, E> =
   | E
-  | ([TOnNullStrategy] extends ['fail'] ? Cause.NoSuchElementException : never)
+  | ([TOnNullStrategy] extends ['fail'] ? Cause.NoSuchElementError : never)
 
 export interface BuiltStream<
   TTag extends string,

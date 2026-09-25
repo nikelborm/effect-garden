@@ -7,6 +7,7 @@ import * as Formatter from 'effect/Formatter'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
+import * as Schema from 'effect/Schema'
 
 import type * as EMIDIInput from './EMIDIInput.ts'
 import type * as EMIDIOutput from './EMIDIOutput.ts'
@@ -17,7 +18,7 @@ import type * as Util from './Util.ts'
  * from other objects at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIPort')
+const TypeId = 'effect-web-midi/EMIDIPort'
 
 /**
  * Unique symbol used for distinguishing {@linkcode EMIDIPort} instances
@@ -234,7 +235,10 @@ export type Id<TPortType extends MIDIPortType> =
     : never
 
 export type BothId = Id<MIDIPortType>
-export const BothId = Brand.nominal<BothId>()
+export const BothId = Brand.check<BothId>(
+  Schema.isTrimmed(),
+  Schema.isMinLength(5),
+)
 
 export type BothIdToBothInstanceMap = EMIDIInput.InputIdToInstanceMap &
   EMIDIOutput.OutputIdToInstanceMap

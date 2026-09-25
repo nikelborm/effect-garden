@@ -24,36 +24,38 @@ export const withParsedDataField = <A extends MIDIMessage, E, R>(
     midiMessage: parseMIDIMessagePayload(midiMessage),
   }))
 
+export interface TouchPadPosUpdateSource {
+  midiMessage:
+    | ControlChangePayload
+    | TouchpadReleasePayload
+    | PitchBendChangePayload
+    | { _tag: string & {} }
+}
+
+export type WithTouchpadPosUpdateEmitted<A> =
+  | A
+  | (Omit<A, 'midiMessage'> & {
+      readonly midiMessage: TouchpadPositionUpdatePayload
+    })
+
 /**
  *
  * @param self
  * @returns
  */
 export const withTouchpadPositionUpdates = <
-  A extends {
-    midiMessage:
-      | ControlChangePayload
-      | TouchpadReleasePayload
-      | PitchBendChangePayload
-      | { _tag: string & {} }
-  },
+  A extends TouchPadPosUpdateSource,
   E,
   R,
 >(
   self: Stream.Stream<A, E, R>,
-): Stream.Stream<
-  | A
-  | (Omit<A, 'midiMessage'> & {
-      readonly midiMessage: TouchpadPositionUpdatePayload
-    }),
-  E,
-  R
-> =>
+): Stream.Stream<WithTouchpadPosUpdateEmitted<A>, E, R> =>
   Stream.mapAccum(
     self,
-    { x: null as number | null, y: null as number | null },
+    () => ({ x: null as number | null, y: null as number | null }),
     (ctx, current) => {
       const { midiMessage, ...rest } = current
+
       const state = isControlChangePayload(midiMessage)
         ? { ...ctx, y: midiMessage.value }
         : isPitchBendChangePayload(midiMessage)
@@ -62,21 +64,21 @@ export const withTouchpadPositionUpdates = <
             ? { x: null, y: null }
             : ctx
 
-      return [
-        state,
-        state.x !== null && state.y !== null
-          ? Stream.make(current, {
-              ...rest,
-              midiMessage: {
-                _tag: 'Touchpad Position Update' as const,
-                x: state.x,
-                y: state.y,
-              } satisfies TouchpadPositionUpdatePayload,
-            })
-          : Stream.succeed(current),
-      ]
+      const emit: WithTouchpadPosUpdateEmitted<A>[] = [current]
+
+      if (state.x !== null && state.y !== null)
+        emit.push({
+          ...rest,
+          midiMessage: {
+            _tag: 'Touchpad Position Update',
+            x: state.x,
+            y: state.y,
+          } satisfies TouchpadPositionUpdatePayload,
+        })
+
+      return [state, emit]
     },
-  ).pipe(Stream.flatten())
+  )
 
 export type DefaultParsedMIDIMessagePayload =
   | NoteReleasePayload

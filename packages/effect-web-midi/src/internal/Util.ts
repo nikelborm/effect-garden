@@ -20,7 +20,7 @@ export type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 
 export const getStaticMIDIPortInfo = (
   port: Pick<MIDIPort, MIDIPortStaticFields>,
-) => Struct.pick(port, ...midiPortStaticFields)
+) => Struct.pick(port, midiPortStaticFields)
 
 /**
  * Puts Self into success channel for easier chaining of operations on the same
@@ -110,7 +110,7 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
 
     return Stream.mapAccum(
       self,
-      { text: '', entrySizeLog: [] as number[] },
+      () => ({ text: '', entrySizeLog: [] as number[] }),
       ({ entrySizeLog: oldLog, text: oldText }, current) => {
         const currMapped =
           EFunction.pipe(
@@ -146,7 +146,7 @@ export const mapToGlidingStringLogOfLimitedEntriesCount =
             ? [currMapped.length, ...potentiallyShiftedLog]
             : [...potentiallyShiftedLog, currMapped.length]
 
-        return [{ text, entrySizeLog }, text]
+        return [{ text, entrySizeLog }, [text]]
       },
     )
   }

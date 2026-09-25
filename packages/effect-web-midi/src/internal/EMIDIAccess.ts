@@ -72,7 +72,7 @@ import * as Util from './Util.ts'
  * both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIAccessInstance')
+const TypeId = 'effect-web-midi/EMIDIAccessInstance'
 
 /**
  * Unique symbol used for distinguishing
