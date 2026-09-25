@@ -4,13 +4,25 @@ import type * as Types from 'effect/Types'
 import type * as EMIDIAccess from './EMIDIAccess.ts'
 import * as EMIDIPort from './EMIDIPort.ts'
 
+// TODO: v4 introduced some changes about error stacks. make sure the comment below is relevant and correct
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-const PortId = Schema.fromBrand(
-  EMIDIPort.BothId,
-  Schema.Trimmed.check(Schema.isNonEmpty()),
+// hack around https://github.com/Effect-TS/effect/issues/8538
+const Base = Schema.String.pipe(
+  Schema.fromBrand('MIDIPortId', EMIDIPort.BothId),
 )
+
+// Deliberately not using Schema.toType(Base) to avoid running the checks twice
+const BaseType = Schema.Unknown as unknown as Schema.brand<
+  Schema.String,
+  'MIDIPortId'
+>
+
+const PortId = Schema.Union([
+  BaseType.pipe(Schema.brand('output')),
+  BaseType.pipe(Schema.brand('input')),
+]).pipe(Schema.encodeTo(Base))
 
 const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
 
