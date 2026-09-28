@@ -64,7 +64,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
 
 export const PatternSchema = Schema.Literals(patternsRawBase)
   .annotateKey({ title: 'Pattern' })
-  .pipe(Schema.fromBrand(Pattern))
+  .pipe(Schema.brand('Pattern'))
 
 export type UnbrandedPattern<TPattern extends Pattern> =
   Brand.Brand.Unbranded<TPattern>

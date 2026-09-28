@@ -65,7 +65,7 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
 
 export const AccordSchema = Schema.Literals(accordsRawBase)
   .annotateKey({ title: 'Accord' })
-  .pipe(Schema.fromBrand(Accord))
+  .pipe(Schema.brand('Accord'))
 
 export type UnbrandedAccord<TAccord extends Accord> =
   Brand.Brand.Unbranded<TAccord>

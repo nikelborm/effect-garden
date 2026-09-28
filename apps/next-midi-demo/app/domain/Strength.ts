@@ -66,7 +66,7 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 
 export const StrengthSchema = Schema.Literals(strengthsRawBase)
   .annotateKey({ title: 'Strength' })
-  .pipe(Schema.fromBrand(Strength))
+  .pipe(Schema.brand('Strength'))
 
 export type UnbrandedStrength<TStrength extends Strength> =
   Brand.Brand.Unbranded<TStrength>
