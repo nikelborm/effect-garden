@@ -1,12 +1,10 @@
 import { Octokit } from '@octokit/core'
 import type { RequestError } from '@octokit/request-error'
 
-import * as Chunk from 'effect/Chunk'
 import * as Effect from 'effect/Effect'
 import { flow } from 'effect/Function'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
-import * as Struct from 'effect/Struct'
 
 import { addOrdinalSuffixTo } from './addOrdinalSuffixToNumber.ts'
 import { OctokitError } from './errors.ts'
@@ -14,10 +12,10 @@ import { parseLinkHeader } from './parseLinkHeader.ts'
 import { Repo } from './repo.interface.ts'
 
 const distributeChunkSuccess: <E>(
-  self: Result.Result<{ repos: Chunk.Chunk<Repo> }, E>,
-) => Chunk.Chunk<Result.Result<Repo, E>> = Result.match({
-  onRight: flow(Struct.get('repos'), Chunk.map(Result.succeed)),
-  onLeft: flow(Result.fail, Chunk.make),
+  self: Result.Result<{ repos: Array<Repo> }, E>,
+) => Array<Result.Result<Repo, E>> = Result.match({
+  onSuccess: ({ repos }) => repos.map(Result.succeed),
+  onFailure: error => [Result.fail(error)],
 })
 
 export const starredReposOfUser = (username: string, reposPerPage: number) =>
@@ -29,17 +27,17 @@ export const starredReposOfUser = (username: string, reposPerPage: number) =>
       reposPerPage,
     )
 
-    const firstPageResult = yield* Effect.either(requestPageOfStarredRepos(1))
+    const firstPageResult = yield* Effect.result(requestPageOfStarredRepos(1))
 
     if (Result.isFailure(firstPageResult))
-      return Stream.succeed(Result.fail(firstPageResult.fail))
+      return Stream.succeed(Result.fail(firstPageResult.failure))
 
     const firstPageStream = firstPageResult.pipe(
       distributeChunkSuccess,
-      Stream.fromChunk,
+      Stream.fromArray,
     )
 
-    const firstPage = firstPageResult.succeed
+    const firstPage = firstPageResult.success
 
     const lastPageIndex =
       firstPage.linkHeader.last?.page ?? firstPage.linkHeader.next?.page
@@ -69,12 +67,12 @@ export const starredReposOfUser = (username: string, reposPerPage: number) =>
               `Racingly fetched ${addOrdinalSuffixTo(page)} page out of all ${lastPageIndex} pages`,
             ),
           ),
-          Effect.either,
+          Effect.result,
           Effect.map(distributeChunkSuccess),
         ),
         { concurrency: 'unbounded', unordered: true },
       ),
-      Stream.flattenChunks,
+      Stream.flattenIterable,
     )
 
     return Stream.concat(firstPageStream, remainingPagesStream)
@@ -118,22 +116,20 @@ const makeRequesterOfStarredReposPage = Effect.fnUntraced(function* (
     return {
       page: pageIndex,
       linkHeader,
-      repos: Chunk.unsafeFromArray(
-        data.map(e => {
-          const repo = 'repo' in e ? e.repo : e
-          return Repo.make({
-            name: repo.name,
-            owner: repo.owner.login,
-            isItArchived: repo.archived,
-            isTemplate: !!repo.is_template,
-            starCount: repo.stargazers_count,
-            forkCount: repo.forks_count,
-            lastTimeBeenPushedInto: repo.pushed_at
-              ? new Date(repo.pushed_at)
-              : null,
-          })
-        }),
-      ),
+      repos: data.map(e => {
+        const repo = 'repo' in e ? e.repo : e
+        return Repo.make({
+          name: repo.name,
+          owner: repo.owner.login,
+          isItArchived: repo.archived,
+          isTemplate: !!repo.is_template,
+          starCount: repo.stargazers_count,
+          forkCount: repo.forks_count,
+          lastTimeBeenPushedInto: repo.pushed_at
+            ? new Date(repo.pushed_at)
+            : null,
+        })
+      }),
     }
   })
 })

@@ -11,8 +11,8 @@ const linkField = <const T extends string>(name: T) =>
     per_page: Schema.NumberFromString,
     page: Schema.NumberFromString,
     rel: Schema.Literal(name),
-    direction: Schema.Literal('asc', 'desc'),
-    sort: Schema.Literal('updated', 'created'),
+    direction: Schema.Literals(['asc', 'desc']),
+    sort: Schema.Literals(['updated', 'created']),
     url: Schema.URL,
   })
     .annotateKey({ title: 'Link' })
@@ -29,7 +29,7 @@ export const parseLinkHeader = (linkHeader: string | null | undefined) =>
   pipe(
     linkHeader,
     parseLinkHeaderToObject,
-    Schema.decodeUnknown(LinkHeader),
+    Schema.decodeUnknownEffect(LinkHeader),
     Effect.mapError(
       parseError => new ParseLinkHeaderError({ linkHeader, cause: parseError }),
     ),

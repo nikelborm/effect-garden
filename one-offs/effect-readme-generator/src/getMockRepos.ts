@@ -19,7 +19,7 @@ export const getMockRepos = Effect.fn('getMockRepos')(function* (
   )
 
   return yield* fs.readFileString(previouslySavedFilePath).pipe(
-    Effect.flatMap(Schema.decode(Repo.ChunkFromJSON)),
+    Effect.flatMap(Schema.decodeEffect(Repo.ChunkFromJSON)),
     Effect.tapError(error =>
       Effect.logError(
         `Error loading ${previouslySavedFilePath}, falling back to primitive mock`,

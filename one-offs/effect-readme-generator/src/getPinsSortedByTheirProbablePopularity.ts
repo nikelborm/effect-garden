@@ -50,7 +50,7 @@ export function getPinsSortedByTheirProbablePopularity(
 }
 
 const biggestFirst = (f: Factor) =>
-  Order.mapInput(Order.reverse(Order.Number), (a: Scored) => a[`${f}Factor`])
+  Order.mapInput(Order.flip(Order.Number), (a: Scored) => a[`${f}Factor`])
 
 const smallestFirst = (f: Factor) =>
   Order.mapInput(Order.Number, (a: Scored) => a[`${f}Factor`])

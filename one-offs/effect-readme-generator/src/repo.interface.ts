@@ -8,11 +8,11 @@ export class Repo extends Schema.TaggedClass<Repo>()('Repo', {
   isItArchived: Schema.Boolean,
   isTemplate: Schema.Boolean,
   lastTimeBeenPushedInto: Schema.NullOr(
-    Schema.Union([Schema.DateFromSelf, Schema.DateFromString]),
+    Schema.Union([Schema.Date, Schema.DateFromString]),
   ),
 }) {
   static Chunk = Schema.Chunk(this)
-  static ChunkFromJSON = Schema.parseJson(this.Chunk)
+  static ChunkFromJSON = Schema.fromJsonString(this.Chunk)
 }
 
 export type IMiniRepo = Pick<Repo, 'owner' | 'name'>

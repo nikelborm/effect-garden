@@ -2,7 +2,6 @@ import * as EArray from 'effect/Array'
 import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
-import * as Tuple from 'effect/Tuple'
 import * as HttpClient from 'effect/unstable/http/HttpClient'
 import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
 
@@ -10,7 +9,7 @@ import { FetchPinImageError } from './errors.ts'
 import { getPathToImageInRepoRelativeToRepoRoot } from './getPathToImageInRepo.ts'
 import { getDarkThemePinUrlFromGithubReadmeStatsService } from './getPinURLs.ts'
 import type { IMiniRepo } from './repo.interface.ts'
-import { themes } from './themes.ts'
+import { type Theme, themes } from './themes.ts'
 
 export const refreshScaledRepaintedPinInImagesFolder = Effect.fn(
   'refreshScaledRepaintedPinInImagesFolder',
@@ -25,31 +24,30 @@ export const refreshScaledRepaintedPinInImagesFolder = Effect.fn(
   const fs = yield* FileSystem.FileSystem
 
   const attemptedPaths = yield* Effect.all(
-    Tuple.map(
-      themes,
-      Effect.fn(function* (theme) {
+    themes.map((theme: Theme) =>
+      Effect.fn(function* () {
         const filePath = getPathToImageInRepoRelativeToRepoRoot(repo, theme)
         yield* fs.writeFileString(
           filePath,
           scaledRepaintedPinSVGs[`${theme}ThemePinSVG`],
         )
         return filePath
-      }),
+      })(),
     ),
-    { concurrency: 'unbounded', mode: 'either' },
+    { concurrency: 'unbounded', mode: 'result' },
   )
 
-  const writtenPaths = EArray.getRights(attemptedPaths)
+  const writtenPaths = EArray.getSuccesses(attemptedPaths)
 
   yield* Effect.log(
     'Written files:\n' +
-      writtenPaths.map(v => '- ' + v).join('\n') +
+      writtenPaths.map((v: string) => '- ' + v).join('\n') +
       '\nThose files are transformed versions of ' +
       originalDarkThemePinURL +
       '\n',
   )
 
-  const writeErrors = EArray.getLefts(attemptedPaths)
+  const writeErrors = EArray.getFailures(attemptedPaths)
 
   if (writeErrors.length) {
     yield* Effect.logError(
@@ -59,7 +57,7 @@ export const refreshScaledRepaintedPinInImagesFolder = Effect.fn(
         originalDarkThemePinURL +
         '\n',
     )
-    yield* Effect.failCause(writeErrors.map(Cause.fail).reduce(Cause.parallel))
+    yield* Effect.failCause(writeErrors.map(Cause.fail).reduce(Cause.combine))
   }
 })
 
@@ -79,7 +77,7 @@ const fetchOriginalDarkThemePin = Effect.fn('fetchOriginalDarkThemePin')(
           e =>
             new FetchPinImageError({
               url: originalDarkThemePinURL,
-              statusCode: e._tag === 'ResponseError' ? e.response.status : 0,
+              statusCode: e.response?.status ?? 0,
             }),
         ),
       )
@@ -97,7 +95,7 @@ const fetchOriginalDarkThemePin = Effect.fn('fetchOriginalDarkThemePin')(
           e =>
             new FetchPinImageError({
               url: originalDarkThemePinURL,
-              statusCode: e.response.status,
+              statusCode: e.response?.status ?? 0,
             }),
         ),
       ),

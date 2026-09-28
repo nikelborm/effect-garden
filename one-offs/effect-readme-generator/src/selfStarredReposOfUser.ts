@@ -7,7 +7,7 @@ export const selfStarredReposOfUser = (username: string) =>
   Stream.filter(
     starredReposOfUser(username, 100),
     repoResult =>
-      Result.isFailure(repoResult) || repoResult.succeed.owner === username,
+      Result.isFailure(repoResult) || repoResult.success.owner === username,
   )
 
 // There were generally 2 ways to do it. Lets say we have 1500 stars (A) and
