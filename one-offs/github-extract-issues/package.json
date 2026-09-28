@@ -20,7 +20,6 @@
     "@octokit/types": "^18.0.0",
     "@total-typescript/ts-reset": "catalog:",
     "date-fns": "^4.4.0",
-    "effect-errors": "catalog:",
     "effect-octokit-layer": "catalog:",
     "picocolors": "^1.1.1"
   },

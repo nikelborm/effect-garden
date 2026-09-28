@@ -63,7 +63,6 @@
     "effect-octokit-layer": "^1.15.1",
     "@handfish/drizzle-effect": "^0.0.17",
     "effect-mdx": "^0.2.2",
-    "effect-errors": "^1.10.22",
     "ts-patch": "^4.0.1",
     "@types/bun": "^1.3.14",
     "tsafe": "^1.8.5",

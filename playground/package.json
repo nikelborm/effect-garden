@@ -104,7 +104,6 @@
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "effect-btrfs": "workspace:^",
-    "effect-errors": "catalog:",
     "effect-mdx": "catalog:",
     "effect-octokit-layer": "catalog:",
     "effect-opfs": "workspace:^",

@@ -25,7 +25,6 @@
     "@octokit/types": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
     "@types/tar-fs": "catalog:",
-    "effect-errors": "catalog:",
     "outdent": "catalog:",
     "tar-fs": "catalog:",
     "tsafe": "catalog:"
