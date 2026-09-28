@@ -1,9 +1,13 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
 import * as HttpClient from 'effect/http/HttpClient'
 import type * as HttpClientError from 'effect/http/HttpClientError'
+import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
 import * as Schedule from 'effect/Schedule'
+import * as Semaphore from 'effect/Semaphore'
 import * as Stream from 'effect/Stream'
 
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
@@ -20,7 +24,7 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
     make: Effect.gen(function* () {
       const fiberMap = yield* FiberMap.make<AssetPointer, void, never>()
       const estimationMap = yield* LoadedAssetSizeEstimationMap
-      const assetAdditionSemaphore = yield* Effect.makeSemaphore(1)
+      const assetAdditionSemaphore = yield* Semaphore.make(1)
 
       const isFiberMapFull = Effect.map(
         FiberMap.size(fiberMap),
@@ -35,11 +39,8 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
       const startOrContinueOrIgnoreCompletedCached = Effect.fn(
         'DownloadManager.startOrContinueOrIgnoreCached',
       )(function* (asset: AssetPointer) {
-        const effectWithDownloadFiber = FiberMap.get(fiberMap, asset)
-        let downloadAssetFiber = yield* Effect.catchTag(
-          effectWithDownloadFiber,
-          'NoSuchElementException',
-          () => Effect.succeed(null),
+        let downloadAssetFiber = Option.getOrNull(
+          yield* FiberMap.get(fiberMap, asset),
         )
 
         if (downloadAssetFiber)
@@ -152,7 +153,7 @@ export const getStreamOfRemoteAsset = (
     // import * as HttpClientResponse from 'effect/http/HttpClientResponse'
     return response.stream as Stream.Stream<
       Uint8Array<ArrayBuffer>,
-      HttpClientError.ResponseError,
+      HttpClientError.HttpClientError,
       never
     >
   }).pipe(

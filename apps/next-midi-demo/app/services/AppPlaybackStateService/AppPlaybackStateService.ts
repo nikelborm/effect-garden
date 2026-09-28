@@ -148,7 +148,11 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       }
     }).pipe(Effect.withSpan('AppPlaybackStateService.init'), Effect.orDie),
   },
-) {}
+) {
+  static playStopButtonPressableFlagChangesStream = Stream.unwrap(
+    this.useSync(s => s.playStopButtonPressableFlagChangesStream),
+  )
+}
 
 export const AppPlaybackStateServiceLayer = Layer.effect(
   AppPlaybackStateService,

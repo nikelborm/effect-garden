@@ -175,6 +175,8 @@ const makeParamButtonService = <
     }
   })
 
+// TODO: extract common part of static methods
+
 export class AccordParamButtonService extends Context.Service<AccordParamButtonService>()(
   'next-midi-demo/AccordParamButtonService',
   {
@@ -183,7 +185,19 @@ export class AccordParamButtonService extends Context.Service<AccordParamButtonS
       matches: (asset, value) => asset.accord === value.id.accord,
     }).pipe(Effect.withSpan('AccordParamButtonService.init')),
   },
-) {}
+) {
+  static getIsSelectedStream = (value: ParamButtonIdData<AccordData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsSelectedStream(value)))
+
+  static isPressedFlagChangesStream = (value: ParamButtonIdData<AccordData>) =>
+    Stream.unwrap(this.useSync(s => s.isPressedFlagChangesStream(value)))
+
+  static getIsPlayingStream = (value: ParamButtonIdData<AccordData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsPlayingStream(value)))
+
+  static getDownloadPercent = (value: ParamButtonIdData<AccordData>) =>
+    Stream.unwrap(this.useSync(s => s.getDownloadPercent(value)))
+}
 
 export const AccordParamButtonServiceLayer = Layer.effect(
   AccordParamButtonService,
@@ -199,7 +213,19 @@ export class PatternParamButtonService extends Context.Service<PatternParamButto
         Option.exists(asset.pattern, pattern => pattern === value.id.pattern),
     }).pipe(Effect.withSpan('PatternParamButtonService.init')),
   },
-) {}
+) {
+  static getIsSelectedStream = (value: ParamButtonIdData<PatternData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsSelectedStream(value)))
+
+  static isPressedFlagChangesStream = (value: ParamButtonIdData<PatternData>) =>
+    Stream.unwrap(this.useSync(s => s.isPressedFlagChangesStream(value)))
+
+  static getIsPlayingStream = (value: ParamButtonIdData<PatternData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsPlayingStream(value)))
+
+  static getDownloadPercent = (value: ParamButtonIdData<PatternData>) =>
+    Stream.unwrap(this.useSync(s => s.getDownloadPercent(value)))
+}
 
 export const PatternParamButtonServiceLayer = Layer.effect(
   PatternParamButtonService,
@@ -214,7 +240,20 @@ export class StrengthParamButtonService extends Context.Service<StrengthParamBut
       matches: (asset, value) => asset.strength === value.id.strength,
     }).pipe(Effect.withSpan('StrengthParamButtonService.init')),
   },
-) {}
+) {
+  static getIsSelectedStream = (value: ParamButtonIdData<StrengthData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsSelectedStream(value)))
+
+  static isPressedFlagChangesStream = (
+    value: ParamButtonIdData<StrengthData>,
+  ) => Stream.unwrap(this.useSync(s => s.isPressedFlagChangesStream(value)))
+
+  static getIsPlayingStream = (value: ParamButtonIdData<StrengthData>) =>
+    Stream.unwrap(this.useSync(s => s.getIsPlayingStream(value)))
+
+  static getDownloadPercent = (value: ParamButtonIdData<StrengthData>) =>
+    Stream.unwrap(this.useSync(s => s.getDownloadPercent(value)))
+}
 
 export const StrengthParamButtonServiceLayer = Layer.effect(
   StrengthParamButtonService,

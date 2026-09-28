@@ -11,7 +11,6 @@ import * as AsyncResult from 'effect/reactivity/AsyncResult'
 import * as Atom from 'effect/reactivity/Atom'
 import * as Scope from 'effect/Scope'
 // import * as LogLevel from 'effect/LogLevel'
-import * as Stream from 'effect/Stream'
 
 import {
   type Accord,
@@ -375,7 +374,6 @@ export const isAccordSelectedAtom = Atom.family((accord: Accord) =>
     accord,
     AccordParamButtonData.make,
     AccordParamButtonService.getIsSelectedStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: accord === defaultAccord,
@@ -398,7 +396,6 @@ export const isPatternSelectedAtom = Atom.family((pattern: Pattern) =>
     pattern,
     PatternParamButtonData.make,
     PatternParamButtonService.getIsSelectedStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: false,
@@ -417,7 +414,6 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
     strength,
     StrengthParamButtonData.make,
     StrengthParamButtonService.getIsSelectedStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: strength === defaultStrength,
@@ -440,7 +436,6 @@ export const isAccordPressedAtom = Atom.family((accord: Accord) =>
     accord,
     AccordParamButtonData.make,
     AccordParamButtonService.isPressedFlagChangesStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: false,
@@ -459,7 +454,6 @@ export const isPatternPressedAtom = Atom.family((pattern: Pattern) =>
     pattern,
     PatternParamButtonData.make,
     PatternParamButtonService.isPressedFlagChangesStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: false,
@@ -478,7 +472,6 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
     strength,
     StrengthParamButtonData.make,
     StrengthParamButtonService.isPressedFlagChangesStream,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: false,
@@ -501,7 +494,6 @@ export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
       accord,
       AccordParamButtonData.make,
       AccordParamButtonService.getIsPlayingStream,
-      Stream.unwrap,
       s =>
         builtRuntime.atom(s, {
           initialValue: false,
@@ -521,7 +513,6 @@ export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
       pattern,
       PatternParamButtonData.make,
       PatternParamButtonService.getIsPlayingStream,
-      Stream.unwrap,
       s =>
         builtRuntime.atom(s, {
           initialValue: false,
@@ -541,7 +532,6 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
       strength,
       StrengthParamButtonData.make,
       StrengthParamButtonService.getIsPlayingStream,
-      Stream.unwrap,
       s =>
         builtRuntime.atom(s, {
           initialValue: false,
@@ -560,7 +550,6 @@ export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
     accord,
     AccordParamButtonData.make,
     AccordParamButtonService.getDownloadPercent,
-    Stream.unwrap,
     s =>
       builtRuntime.atom(s, {
         initialValue: 0,
@@ -580,7 +569,6 @@ export const patternButtonDownloadPercentAtom = Atom.family(
       pattern,
       PatternParamButtonData.make,
       PatternParamButtonService.getDownloadPercent,
-      Stream.unwrap,
       s =>
         builtRuntime.atom(s, {
           initialValue: 0,
@@ -600,7 +588,6 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
       strength,
       StrengthParamButtonData.make,
       StrengthParamButtonService.getDownloadPercent,
-      Stream.unwrap,
       s =>
         builtRuntime.atom(s, {
           initialValue: 0,
@@ -616,7 +603,6 @@ export const strengthButtonDownloadPercentAtom = Atom.family(
 
 export const isPlayStopButtonPressableAtom = EFunction.pipe(
   AppPlaybackStateService.playStopButtonPressableFlagChangesStream,
-  Stream.unwrap,
   s =>
     builtRuntime.atom(s, {
       initialValue: false,
