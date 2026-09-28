@@ -6,39 +6,10 @@
  * importance as do keyboard and midi pad
  */
 
-import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import type * as Option from 'effect/Option'
-import type * as Result from 'effect/Result'
 
 import { isData } from '../helpers/isData.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
-
-export type ParamButtonId<T extends string | number> = T extends any
-  ? Brand.Branded<T, 'ParamButtonId'>
-  : never
-
-export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
-  t =>
-    (typeof t === 'number' && !Number.isNaN(t) && Number.isFinite(t)) ||
-    (typeof t === 'string' && t !== ''),
-  t =>
-    Brand.error(
-      `Expected ParamButtonId which is either finite non-NaN number, or non-empty string. Got ${t}`,
-    ),
-) as {
-  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  <T extends string | number = string | number>(i: T): ParamButtonId<T>
-  option<T extends string | number = string | number>(
-    i: T,
-  ): Option.Option<ParamButtonId<T>>
-  either<T extends string | number = string | number>(
-    i: T,
-  ): Result.Result<ParamButtonId<T>, Brand.BrandError>
-  is<T extends string | number = string | number>(
-    i: T,
-  ): i is T & ParamButtonId<T>
-}
 
 export class ParamButtonIdData<
   TId extends TaggedReadonlyObject = TaggedReadonlyObject,

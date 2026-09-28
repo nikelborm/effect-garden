@@ -1,7 +1,6 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import type * as Option from 'effect/Option'
-import type * as Result from 'effect/Result'
+import * as Schema from 'effect/Schema'
 
 import { isData } from '../helpers/isData.ts'
 import type { TaggedReadonlyObject } from '../helpers/TaggedReadonlyObject.ts'
@@ -13,29 +12,15 @@ export type PhysicalButtonId<T extends string | number> = T extends any
   ? Brand.Branded<T, 'PhysicalButtonId'>
   : never
 
-export const PhysicalButtonId = Brand.refined<
-  PhysicalButtonId<string | number>
->(
-  t =>
-    (typeof t === 'number' && !Number.isNaN(t) && Number.isFinite(t)) ||
-    (typeof t === 'string' && t !== ''),
-  t =>
-    Brand.error(
-      `Expected PhysicalButtonId which is either finite non-NaN number, or non-empty string. Got ${t}`,
-    ),
-) as {
-  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  <T extends string | number = string | number>(i: T): PhysicalButtonId<T>
-  option<T extends string | number = string | number>(
-    i: T,
-  ): Option.Option<PhysicalButtonId<T>>
-  either<T extends string | number = string | number>(
-    i: T,
-  ): Result.Result<PhysicalButtonId<T>, Brand.BrandError>
-  is<T extends string | number = string | number>(
-    i: T,
-  ): i is T & PhysicalButtonId<T>
-}
+export type PhysicalButtonStringId = PhysicalButtonId<string>
+export const PhysicalButtonStringId = Brand.check<PhysicalButtonStringId>(
+  Schema.isNonEmpty(),
+)
+
+export type PhysicalButtonNumberId = PhysicalButtonId<number>
+export const PhysicalButtonNumberId = Brand.check<PhysicalButtonNumberId>(
+  Schema.isFinite(),
+)
 
 export class PhysicalButtonIdData<
   TId extends TaggedReadonlyObject = TaggedReadonlyObject,

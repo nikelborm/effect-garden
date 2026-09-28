@@ -1,29 +1,22 @@
 import * as Brand from 'effect/Brand'
 import * as Data from 'effect/Data'
-import { flow } from 'effect/Function'
-import * as Option from 'effect/Option'
-import * as Result from 'effect/Result'
+import * as Schema from 'effect/Schema'
 
 import { makeUnsafeFromData } from '../helpers/makeUnsafeFromData.ts'
-import { PhysicalButtonId, PhysicalButtonIdData } from './PhysicalButton.ts'
+import {
+  PhysicalButtonIdData,
+  PhysicalButtonNumberId,
+} from './PhysicalButton.ts'
 
 export type NoteId = Brand.Branded<
-  PhysicalButtonId<number>,
+  PhysicalButtonNumberId,
   'MIDINoteId: integer in range 0-127'
 >
-export const NoteId = Brand.refined<NoteId>(
-  flow(
-    PhysicalButtonId.either<number>,
-    Result.flatMap(
-      Result.liftPredicate(
-        n => Number.isSafeInteger(n) && n >= 0 && n < 128,
-        n =>
-          Brand.error(
-            `Expected ${JSON.stringify(n)} to be an integer in range 0-127`,
-          ),
-      ),
-    ),
-    Option.getLeft,
+export const NoteId = Brand.all(
+  PhysicalButtonNumberId,
+  Brand.check<NoteId>(
+    Schema.isInt(),
+    Schema.isBetween({ minimum: 0, maximum: 127 }),
   ),
 )
 
@@ -47,9 +40,9 @@ export class NotePhysicalButtonData extends PhysicalButtonIdData<NoteIdData> {
 }
 
 export type Pressure = Brand.Branded<number, 'Pressure: integer in range 1-127'>
-export const Pressure = Brand.refined<Pressure>(
-  n => Number.isSafeInteger(n) && n > 0 && n < 128,
-  n => Brand.error(`Expected ${n} to be an integer in range 1-127`),
+export const Pressure = Brand.check<Pressure>(
+  Schema.isInt(),
+  Schema.isBetween({ minimum: 1, maximum: 127 }),
 )
 
 export type NoteInitialVelocity = Brand.Branded<Pressure, 'NoteInitialVelocity'>

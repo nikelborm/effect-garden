@@ -1,9 +1,8 @@
-import * as Brand from 'effect/Brand'
+import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
-import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -22,22 +21,6 @@ export type Accord = Distribute<
   Brand.Branded<(typeof accordsRawBase)[number], 'Accord'>
 >
 
-export const Accord = Brand.refined<Accord>(
-  candidate => accordSet.has(candidate as any),
-  notAccord =>
-    Brand.error(
-      `Expected ${JSON.stringify(notAccord)} to be a valid accord label`,
-    ),
-) as {
-  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  (a: unknown): Accord
-  option(a: unknown): AccordOption
-  either(a: unknown): Result.Result<Accord, Brand.BrandError>
-  is(a: unknown): a is Accord
-}
-
-export const defaultAccord = Accord(accordsRawBase[0])
-
 export type AccordOption = Option.Option<Accord>
 
 export class AccordData<
@@ -48,7 +31,8 @@ export class AccordData<
   constructor(accord: TAccord) {
     super({ accord })
   }
-  static makeUnsafe = (candidate: string) => new this(Accord(candidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(decodeAccordSyncFromUnknown(candidate))
   static models = (candidate: unknown): candidate is AccordData =>
     candidate instanceof this
 }
@@ -66,6 +50,14 @@ export class AccordParamButtonData extends ParamButtonIdData<AccordData> {
 export const AccordSchema = Schema.Literals(accordsRawBase)
   .annotateKey({ title: 'Accord' })
   .pipe(Schema.brand('Accord'))
+
+export const decodeAccordSync = Schema.decodeSync(AccordSchema)
+export const decodeAccordOptionFromUnknown =
+  Schema.decodeUnknownOption(AccordSchema)
+export const decodeAccordSyncFromUnknown =
+  Schema.decodeUnknownSync(AccordSchema)
+
+export const defaultAccord = decodeAccordSync(accordsRawBase[0])
 
 export type UnbrandedAccord<TAccord extends Accord> =
   Brand.Brand.Unbranded<TAccord>

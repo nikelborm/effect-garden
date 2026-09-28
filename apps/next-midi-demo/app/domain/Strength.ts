@@ -1,9 +1,8 @@
-import * as Brand from 'effect/Brand'
+import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
-import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -22,22 +21,6 @@ export type Strength = Distribute<
   Brand.Branded<(typeof strengthsRawBase)[number], 'Strength'>
 >
 
-export const Strength = Brand.refined<Strength>(
-  candidate => strengthSet.has(candidate as any),
-  notStrength =>
-    Brand.error(
-      `Expected ${JSON.stringify(notStrength)} to be a valid strength label`,
-    ),
-) as {
-  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  (s: unknown): Strength
-  option(s: unknown): StrengthOption
-  either(s: unknown): Result.Result<Strength, Brand.BrandError>
-  is(s: unknown): s is Strength
-}
-
-export const defaultStrength = Strength(strengthsRawBase[1])
-
 export type StrengthOption = Option.Option<Strength>
 
 export class StrengthData<
@@ -48,7 +31,8 @@ export class StrengthData<
   constructor(strength: TStrength) {
     super({ strength })
   }
-  static makeUnsafe = (candidate: string) => new this(Strength(candidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(decodeStrengthSyncFromUnknown(candidate))
   static models = (candidate: unknown): candidate is StrengthData =>
     candidate instanceof this
 }
@@ -67,6 +51,14 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 export const StrengthSchema = Schema.Literals(strengthsRawBase)
   .annotateKey({ title: 'Strength' })
   .pipe(Schema.brand('Strength'))
+
+export const decodeStrengthSync = Schema.decodeSync(StrengthSchema)
+export const decodeStrengthOptionFromUnknown =
+  Schema.decodeUnknownOption(StrengthSchema)
+export const decodeStrengthSyncFromUnknown =
+  Schema.decodeUnknownSync(StrengthSchema)
+
+export const defaultStrength = decodeStrengthSync(strengthsRawBase[1])
 
 export type UnbrandedStrength<TStrength extends Strength> =
   Brand.Brand.Unbranded<TStrength>

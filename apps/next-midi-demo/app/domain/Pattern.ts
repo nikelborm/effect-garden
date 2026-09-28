@@ -1,10 +1,9 @@
-import * as Brand from 'effect/Brand'
+import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
-import type * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -23,20 +22,6 @@ export type Pattern = Distribute<
   Brand.Branded<(typeof patternsRawBase)[number], 'Pattern'>
 >
 
-export const Pattern = Brand.refined<Pattern>(
-  candidate => patternSet.has(candidate as any),
-  notPattern =>
-    Brand.error(
-      `Expected ${JSON.stringify(notPattern)} to be a valid pattern label`,
-    ),
-) as {
-  readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
-  (p: unknown): Pattern
-  option(p: unknown): PatternOption
-  either(p: unknown): Result.Result<Pattern, Brand.BrandError>
-  is(p: unknown): p is Pattern
-}
-
 export type PatternOption = Option.Option<Pattern>
 
 export class PatternData<
@@ -47,7 +32,8 @@ export class PatternData<
   constructor(pattern: TPattern) {
     super({ pattern })
   }
-  static makeUnsafe = (candidate: string) => new this(Pattern(candidate))
+  static makeUnsafe = (candidate: string) =>
+    new this(decodePatternSyncFromUnknown(candidate))
   static models = (candidate: unknown): candidate is PatternData =>
     candidate instanceof this
 }
@@ -65,6 +51,12 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
 export const PatternSchema = Schema.Literals(patternsRawBase)
   .annotateKey({ title: 'Pattern' })
   .pipe(Schema.brand('Pattern'))
+
+export const decodePatternSync = Schema.decodeSync(PatternSchema)
+export const decodePatternOptionFromUnknown =
+  Schema.decodeUnknownOption(PatternSchema)
+export const decodePatternSyncFromUnknown =
+  Schema.decodeUnknownSync(PatternSchema)
 
 export type UnbrandedPattern<TPattern extends Pattern> =
   Brand.Brand.Unbranded<TPattern>
