@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/plugin/drizzle: it's not drizzle */
 import {
   AbstractAnswerOptionIdFromNumberSchema,
   AbstractQuestionIdFromStringSchema,
@@ -5,16 +6,10 @@ import {
 
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
-
-export const AbstractQuestionIdParam = HttpApiSchema.param(
-  'abstractQuestionId',
-  AbstractQuestionIdFromStringSchema,
-)
 
 export const DeleteAbstractQuestionEndpoint = HttpApiEndpoint.delete(
   'Delete abstract question',
-  `/:abstractQuestionId`,
+  '/:abstractQuestionId',
   {
     params: {
       abstractQuestionId: AbstractQuestionIdFromStringSchema,
@@ -24,8 +19,13 @@ export const DeleteAbstractQuestionEndpoint = HttpApiEndpoint.delete(
 
 export const CreateAbstractAnswerOptionEndpoint = HttpApiEndpoint.post(
   'Create abstract answer option',
-)`/${AbstractQuestionIdParam}/answerOption`.addSuccess(
-  AbstractAnswerOptionIdFromNumberSchema,
+  '/:abstractQuestionId/answerOption',
+  {
+    params: {
+      abstractQuestionId: AbstractQuestionIdFromStringSchema,
+    },
+    success: AbstractAnswerOptionIdFromNumberSchema,
+  },
 )
 
 export const AbstractQuestionApiGroup = HttpApiGroup.make('Abstract question')

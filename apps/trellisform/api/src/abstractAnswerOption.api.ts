@@ -1,17 +1,18 @@
+/** biome-ignore-all lint/plugin/drizzle: it's not drizzle */
 import { AbstractAnswerOptionIdFromStringSchema } from '@trellisform/model'
 
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
 
-export const AbstractAnswerOptionIdParam = HttpApiSchema.param(
-  'abstractAnswerOptionId',
-  AbstractAnswerOptionIdFromStringSchema,
-)
-
-export const DeleteAbstractAnswerOptionEndpoint = HttpApiEndpoint.del(
+export const DeleteAbstractAnswerOptionEndpoint = HttpApiEndpoint.delete(
   'Delete abstract answer option',
-)`/${AbstractAnswerOptionIdParam}`
+  '/:abstractAnswerOptionId',
+  {
+    params: {
+      abstractAnswerOptionId: AbstractAnswerOptionIdFromStringSchema,
+    },
+  },
+)
 
 export const AbstractAnswerOptionApiGroup = HttpApiGroup.make(
   'Abstract answer option',

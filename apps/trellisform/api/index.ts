@@ -1,7 +1,7 @@
-import * as Etag from '@effect/platform/Etag'
-import * as HttpApi from '@effect/platform/HttpApi'
-import * as HttpLayerRouter from '@effect/platform/HttpLayerRouter'
 import * as Layer from 'effect/Layer'
+import * as Etag from 'effect/unstable/http/Etag'
+import * as HttpApi from 'effect/unstable/httpapi/HttpApi'
+import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
 
 import { AbstractAnswerOptionApiGroup } from './src/abstractAnswerOption.api.ts'
 import { AbstractQuestionApiGroup } from './src/abstractQuestion.api.ts'
@@ -25,9 +25,7 @@ export const API = HttpApi.make('api')
   .add(AuthApiGroup.prefix('/auth'))
   .prefix('/api')
 
-const _HttpApiRoutes = HttpLayerRouter.addHttpApi(API, {
-  // openapiPath: '/docs/openapi.json',
-}).pipe(
+export const HttpApiRoutes = HttpApiBuilder.layer(API).pipe(
   // Provide the api handlers layer
   // Layer.provide(UsersApiLayer),
   Layer.provide(Etag.layerWeak),

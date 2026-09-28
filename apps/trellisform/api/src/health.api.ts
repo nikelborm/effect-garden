@@ -5,7 +5,10 @@ import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
 export const GetCurrentHealthEndpoint = HttpApiEndpoint.get(
   'Get current health',
   '/',
-).addSuccess(Schema.String)
+  {
+    success: Schema.String,
+  },
+)
 
 export const HealthApiGroup = HttpApiGroup.make('Health').add(
   GetCurrentHealthEndpoint,

@@ -15,29 +15,22 @@ import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
 import * as HttpApiMiddleware from 'effect/unstable/httpapi/HttpApiMiddleware'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
 
-export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>(
-  'BetterAuthApiError',
-)(
+export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>()(
   'BetterAuthApiError',
   {
     cause: Schema.Unknown,
   },
-  HttpApiSchema.annotateKey({
-    status: 500,
-  }),
+  {
+    httpApiStatus: 500,
+  },
 ) {}
 
-const String32Chars = Schema.String.pipe(Schema.length(32))
+const String32Chars = Schema.String.check(Schema.isLengthBetween(32, 32))
 
 const BetterAuthSessionSchema = Schema.Struct({
-  betterAuthSessionId: Schema.propertySignature(String32Chars).pipe(
-    Schema.fromKey('id'),
-  ),
-  betterAuthUserId: Schema.propertySignature(String32Chars).pipe(
-    Schema.fromKey('userId'),
-  ),
+  betterAuthSessionId: String32Chars,
+  betterAuthUserId: String32Chars,
   token: String32Chars,
   // TODO: make sure that in docker, here proper ip address is that and an IP of NGINX
   ipAddress: Schema.String,
@@ -45,27 +38,31 @@ const BetterAuthSessionSchema = Schema.Struct({
   expiresAt: Schema.Date,
   createdAt: Schema.Date,
   updatedAt: Schema.Date,
-})
+}).pipe(
+  Schema.encodeKeys({
+    betterAuthSessionId: 'id',
+    betterAuthUserId: 'userId',
+  }),
+)
 
 const BetterAuthUserSchema = Schema.Struct({
-  id: Schema.propertySignature(UserIdFromNumberSchema).pipe(
-    Schema.fromKey('fastId'),
-  ),
-  betterAuthUserId: Schema.propertySignature(String32Chars).pipe(
-    Schema.fromKey('id'),
-  ),
-  howToAddressMe: Schema.propertySignature(HowToAddressUserFieldSchema).pipe(
-    Schema.fromKey('name'),
-  ),
+  id: UserIdFromNumberSchema,
+  betterAuthUserId: String32Chars,
+  howToAddressMe: HowToAddressUserFieldSchema,
   email: UserEmailFieldSchema,
   emailVerified: IsUserEmailVerifiedFieldSchema,
   canCreateEducationalSpaces: CanUserCreateEducationalSpacesSchema,
-  avatar: Schema.propertySignature(UserAvatarFieldSchema).pipe(
-    Schema.fromKey('image'),
-  ),
+  avatar: UserAvatarFieldSchema,
   createdAt: UserCreatedAtDateFieldSchema,
   updatedAt: UserUpdatedAtDateFieldSchema,
-})
+}).pipe(
+  Schema.encodeKeys({
+    id: 'fastId',
+    betterAuthUserId: 'id',
+    howToAddressMe: 'name',
+    avatar: 'image',
+  }),
+)
 
 const UserWithSessionSchema = Schema.Struct({
   user: BetterAuthUserSchema,
@@ -83,24 +80,25 @@ export const decodeUserWithSession = Schema.decodeUnknownResult(
   UserWithSessionSchema,
 )
 
-export class UserWithSessionMiddleware extends HttpApiMiddleware.Tag<UserWithSessionMiddleware>()(
-  'UserWithSessionMiddleware',
-  {
-    provides: UserWithSession,
-    failure: Unauthorized,
-  },
-) {}
+export class UserWithSessionMiddleware extends HttpApiMiddleware.Service<
+  UserWithSessionMiddleware,
+  { provides: UserWithSession }
+>()('UserWithSessionMiddleware', {
+  error: Unauthorized,
+}) {}
 
 export class AuthApiGroup extends HttpApiGroup.make('Auth')
   .add(
-    HttpApiEndpoint.get('get', '/*')
-      .addSuccess(Schema.Any)
-      .addError(BetterAuthApiError),
+    HttpApiEndpoint.get('get', '/*', {
+      success: Schema.Any,
+      error: BetterAuthApiError,
+    }),
   )
   .add(
-    HttpApiEndpoint.post('post', '/*')
-      .addSuccess(Schema.Any)
-      .addError(BetterAuthApiError),
+    HttpApiEndpoint.post('post', '/*', {
+      success: Schema.Any,
+      error: BetterAuthApiError,
+    }),
   ) {}
 
 // export const EffectAuth = HttpApi.make('Effect.ts Auth')

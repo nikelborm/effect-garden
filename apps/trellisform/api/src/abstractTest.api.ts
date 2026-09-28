@@ -10,16 +10,13 @@ import {
 import * as Schema from 'effect/Schema'
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
+
+import { omitStruct } from './omitStruct.ts'
 
 const withOpenApiAnnotations = _withOpenApiAnnotations('@trellisform/api')
 
-export const AbstractTestIdParam = HttpApiSchema.param(
-  'abstractTestId',
-  AbstractTestIdFromStringSchema,
-)
-
-export const CreateAbstractTestManuallyRequestSchema = AbstractTestSchema.omit(
+export const CreateAbstractTestManuallyRequestSchema = omitStruct(
+  AbstractTestSchema,
   'id',
 ).pipe(
   withNewStructTag('CreateAbstractTestManuallyRequest'),
@@ -32,10 +29,12 @@ export const CreateAbstractTestManuallyRequestSchema = AbstractTestSchema.omit(
 export const CreateAbstractTestManuallyEndpoint = HttpApiEndpoint.post(
   'Create abstract test manually',
   '/manual',
+  {
+    payload: CreateAbstractTestManuallyRequestSchema,
+    success: Schema.Any,
+    error: Schema.Any,
+  },
 )
-  .setPayload(CreateAbstractTestManuallyRequestSchema)
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
 
 // testName: str = "untitled test"
 // topic: str = "integral"
@@ -46,15 +45,23 @@ export const CreateAbstractTestManuallyEndpoint = HttpApiEndpoint.post(
 export const CreateAbstractTestWithAiEndpoint = HttpApiEndpoint.post(
   'Create test with AI',
   '/ai',
+  {
+    success: Schema.Any,
+    error: Schema.Any,
+  },
 )
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
 
 export const GetAbstractTestByIdEndpoint = HttpApiEndpoint.get(
   'Get test',
-)`/${AbstractTestIdParam}`
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
+  '/:abstractTestId',
+  {
+    params: {
+      abstractTestId: AbstractTestIdFromStringSchema,
+    },
+    success: Schema.Any,
+    error: Schema.Any,
+  },
+)
 
 export const AbstractTestApiGroup = HttpApiGroup.make('Abstract test')
   .add(CreateAbstractTestManuallyEndpoint)

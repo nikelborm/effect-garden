@@ -11,54 +11,69 @@ import {
 import * as Schema from 'effect/Schema'
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
+
+import { omitStruct } from './omitStruct.ts'
 
 const withOpenApiAnnotations = _withOpenApiAnnotations('@trellisform/api')
-
-export const AbstractTestVariantIdParam = HttpApiSchema.param(
-  'abstractTestVariantId',
-  AbstractTestVariantIdFromStringSchema,
-)
 
 export const CreateAbstractTestVariantManuallyEndpoint = HttpApiEndpoint.post(
   'Create test variant manually',
   '/manual',
+  {
+    payload: Schema.Any,
+    success: Schema.Any,
+    error: Schema.Any,
+  },
 )
-  .setPayload(Schema.Any)
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
 
 export const CreateAbstractTestVariantWithAiEndpoint = HttpApiEndpoint.post(
   'Create test variant with AI',
   '/ai',
+  {
+    success: Schema.Any,
+    error: Schema.Any,
+  },
 )
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
 
 export const GetAbstractTestVariantByIdEndpoint = HttpApiEndpoint.get(
   'Get test variant',
-)`/${AbstractTestVariantIdParam}`
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
+  '/:abstractTestVariantId',
+  {
+    params: {
+      abstractTestVariantId: AbstractTestVariantIdFromStringSchema,
+    },
+    success: Schema.Any,
+    error: Schema.Any,
+  },
+)
 
-export const CreateTestVariantAttemptRequestSchema =
-  TestVariantAttemptSchema.omit('id').pipe(
-    withNewStructTag('CreateTestVariantAttemptRequest'),
-    withOpenApiAnnotations({
-      title: 'Запрос на создание попытки прохождения варианта теста',
-      description: '',
-    }),
-  )
+export const CreateTestVariantAttemptRequestSchema = omitStruct(
+  TestVariantAttemptSchema,
+  'id',
+).pipe(
+  withNewStructTag('CreateTestVariantAttemptRequest'),
+  withOpenApiAnnotations({
+    title: 'Запрос на создание попытки прохождения варианта теста',
+    description: '',
+  }),
+)
 
 export const CreateTestVariantAttemptResponseSchema = TestVariantAttemptSchema
 
 export const CreateTestVariantAttemptEndpoint = HttpApiEndpoint.post(
   'Create test variant attempt',
-)`/${AbstractTestVariantIdParam}/attempt`
-  .setPayload(CreateTestVariantAttemptRequestSchema)
-  .addSuccess(CreateTestVariantAttemptResponseSchema)
+  '/:abstractTestVariantId/attempt',
+  {
+    params: {
+      abstractTestVariantId: AbstractTestVariantIdFromStringSchema,
+    },
+    payload: CreateTestVariantAttemptRequestSchema,
+    success: CreateTestVariantAttemptResponseSchema,
+  },
+)
 
-export const CreateTestStageRequestSchema = AbstractTestStageSchema.omit(
+export const CreateTestStageRequestSchema = omitStruct(
+  AbstractTestStageSchema,
   'id',
 ).pipe(
   withNewStructTag('CreateTestStageRequest'),
@@ -74,9 +89,15 @@ export const CreateTestStageResponseSchema = AbstractTestStageSchema.pipe(
 
 export const CreateTestStageEndpoint = HttpApiEndpoint.post(
   'Create test stage',
-)`/${AbstractTestVariantIdParam}/`
-  .setPayload(CreateTestStageRequestSchema)
-  .addSuccess(CreateTestStageResponseSchema)
+  '/:abstractTestVariantId/',
+  {
+    params: {
+      abstractTestVariantId: AbstractTestVariantIdFromStringSchema,
+    },
+    payload: CreateTestStageRequestSchema,
+    success: CreateTestStageResponseSchema,
+  },
+)
 
 export const AbstractTestVariantApiGroup = HttpApiGroup.make(
   'Abstract test variant',

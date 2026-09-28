@@ -8,20 +8,20 @@ import {
 import * as Schema from 'effect/Schema'
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
 import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiSchema from 'effect/unstable/httpapi/HttpApiSchema'
 
 const withOpenApiAnnotations = _withOpenApiAnnotations('@trellisform/api')
 
-export const AbstractTestStageIdParam = HttpApiSchema.param(
-  'abstractTestStageId',
-  AbstractTestStageIdFromStringSchema,
-)
-
 export const GetAbstractTestStageByIdEndpoint = HttpApiEndpoint.get(
   'Get test stage',
-)`/${AbstractTestStageIdParam}`
-  .addSuccess(Schema.Any)
-  .addError(Schema.Any)
+  '/:abstractTestStageId',
+  {
+    params: {
+      abstractTestStageId: AbstractTestStageIdFromStringSchema,
+    },
+    success: Schema.Any,
+    error: Schema.Any,
+  },
+)
 
 export const CreateAbstractQuestionResponseSchema = Schema.TaggedStruct(
   'CreateAbstractQuestionResponse',
@@ -40,8 +40,13 @@ export const CreateAbstractQuestionResponseSchema = Schema.TaggedStruct(
 
 export const CreateAbstractQuestionEndpoint = HttpApiEndpoint.post(
   'Create abstract question',
-)`/${AbstractTestStageIdParam}/question`.addSuccess(
-  CreateAbstractQuestionResponseSchema,
+  '/:abstractTestStageId/question',
+  {
+    params: {
+      abstractTestStageId: AbstractTestStageIdFromStringSchema,
+    },
+    success: CreateAbstractQuestionResponseSchema,
+  },
 )
 
 export const AbstractTestStageApiGroup = HttpApiGroup.make(
