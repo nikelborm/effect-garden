@@ -8,21 +8,20 @@ import * as EMIDIPort from './EMIDIPort.ts'
 // NOTE: stacks are properly extracted from error instances into structs, while
 // decoding
 
-// hack around https://github.com/Effect-TS/effect/issues/8538
-const Base = Schema.String.pipe(
+/**
+ * The types of this schema are lying to workaround https://github.com/Effect-TS/effect/issues/8538
+ */
+export const PortIdSchema = Schema.String.pipe(
   Schema.fromBrand('MIDIPortId', EMIDIPort.BothId),
-)
-
-// Deliberately not using Schema.toType(Base) to avoid running the checks twice
-const BaseType = Schema.Unknown as unknown as Schema.brand<
-  Schema.String,
+) as unknown as Schema.brand<
+  Schema.Union<
+    readonly [
+      Schema.brand<Schema.String, 'output'>,
+      Schema.brand<Schema.String, 'input'>,
+    ]
+  >,
   'MIDIPortId'
 >
-
-const PortId = Schema.Union([
-  BaseType.pipe(Schema.brand('output')),
-  BaseType.pipe(Schema.brand('input')),
-]).pipe(Schema.encodeTo(Base))
 
 const NonEmptyTrimmedString = Schema.Trimmed.check(Schema.isNonEmpty())
 
@@ -116,7 +115,7 @@ export class ClearingSendingQueueIsNotSupportedError extends Schema.TaggedError<
   'ClearingSendingQueueIsNotSupportedError',
   {
     cause: ErrorSchema(Schema.Literals(['TypeError', 'NotSupportedError'])),
-    portId: PortId,
+    portId: PortIdSchema,
   },
 ) {
   override get message() {
@@ -143,7 +142,7 @@ export class CannotOpenUnavailablePortError extends Schema.TaggedError<CannotOpe
         'InvalidStateError',
       ]),
     ),
-    portId: PortId,
+    portId: PortIdSchema,
   },
 ) {
   override get message() {
@@ -162,7 +161,7 @@ export class CannotSendToDisconnectedPortError extends Schema.TaggedError<Cannot
   'CannotSendToDisconnectedPortError',
   {
     cause: ErrorSchema(Schema.Literal('InvalidStateError')),
-    portId: PortId,
+    portId: PortIdSchema,
   },
 ) {
   override get message() {
@@ -184,7 +183,7 @@ export class CannotSendSysexMessageError extends Schema.TaggedError<CannotSendSy
     cause: ErrorSchema(
       Schema.Literals(['InvalidAccessError', 'NotAllowedError']),
     ),
-    portId: PortId,
+    portId: PortIdSchema,
   },
 ) {
   override get message() {
@@ -226,7 +225,7 @@ export class MalformedMIDIMessageError extends Schema.TaggedError<MalformedMIDIM
   'MalformedMIDIMessageError',
   {
     cause: ErrorSchema(Schema.Literal('TypeError')),
-    portId: PortId,
+    portId: PortIdSchema,
     midiMessage: Schema.Array(Schema.Int),
   },
 ) {
@@ -243,7 +242,7 @@ export class MalformedMIDIMessageError extends Schema.TaggedError<MalformedMIDIM
  */
 export class PortNotFoundError extends Schema.TaggedError<PortNotFoundError>()(
   'PortNotFound',
-  { portId: PortId },
+  { portId: PortIdSchema },
 ) {
   override get message() {
     return `Port with specific ID wasn't found`
