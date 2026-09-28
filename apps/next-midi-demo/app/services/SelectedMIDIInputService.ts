@@ -2,6 +2,7 @@ import { EMIDIAccess, type EMIDIInput } from 'effect-web-midi'
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -38,7 +39,7 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
         Effect.forkScoped,
       )
 
-      const changes = yield* selectedInputIdRef.changes.pipe(
+      const changes = yield* SubscriptionRef.changes(selectedInputIdRef).pipe(
         Stream.changes,
         Stream.rechunk(1),
         Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
@@ -53,3 +54,8 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
     }).pipe(Effect.withSpan('SelectedMIDIInputService.init')),
   },
 ) {}
+
+export const SelectedMIDIInputServiceLayer = Layer.effect(
+  SelectedMIDIInputService,
+  SelectedMIDIInputService.make,
+)

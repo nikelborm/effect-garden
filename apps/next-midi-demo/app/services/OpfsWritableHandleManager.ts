@@ -5,6 +5,7 @@ import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Queue from 'effect/Queue'
 import * as Ref from 'effect/Ref'
@@ -141,12 +142,12 @@ export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandl
               )
 
               const causeOption = Option.zipWith(
-                Exit.causeOption(writerExit),
-                Exit.causeOption(closeExit),
-                Cause.sequential,
+                Exit.getCause(writerExit),
+                Exit.getCause(closeExit),
+                Cause.combine,
               ).pipe(
-                Option.orElse(() => Exit.causeOption(closeExit)),
-                Option.orElse(() => Exit.causeOption(writerExit)),
+                Option.orElse(() => Exit.getCause(closeExit)),
+                Option.orElse(() => Exit.getCause(writerExit)),
               )
 
               // Only trust the on-disk file when nothing failed. After a write
@@ -192,20 +193,25 @@ export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandl
             ),
           )
 
-          return Sink.flatMap(
+          return Sink.ensuring(
             Sink.forEach((data: Uint8Array<ArrayBuffer>) =>
               Effect.flatMap(Queue.offer(queue, data), accepted =>
                 accepted ? Effect.void : finalizeAndSurface,
               ),
             ),
-            () => Sink.fromEffect(finalizeAndSurface),
+            finalizeAndSurface,
           )
         }).pipe(
           Effect.withSpan('OpfsWritableHandleManager.acquireFileSink'),
-          Sink.unwrapScoped,
+          Sink.unwrap,
         )
 
       return { acquireFileSink }
     }).pipe(Effect.withSpan('OpfsWritableHandleManager.init')),
   },
 ) {}
+
+export const OpfsWritableHandleManagerLayer = Layer.effect(
+  OpfsWritableHandleManager,
+  OpfsWritableHandleManager.make,
+)

@@ -9,13 +9,15 @@ export class RestoreFullVolume extends Context.Service<
   RestoreFullVolume,
   (playback: AudioPlayback, atSecond: number) => Effect.Effect<void>
 >()('next-midi-demo/RestoreFullVolume') {
-  static Live = Layer.succeed(this, (playback, atSecond) =>
+  static run = (playback: AudioPlayback, atSecond: number) =>
+    this.use(restore => restore(playback, atSecond))
+}
+
+export const RestoreFullVolumeLayer = Layer.succeed(
+  RestoreFullVolume,
+  (playback, atSecond) =>
     Effect.sync(() => {
       playback.gainNode.gain.cancelScheduledValues(atSecond)
       playback.gainNode.gain.setValueAtTime(maxLoudness, atSecond)
     }),
-  )
-
-  static run = (playback: AudioPlayback, atSecond: number) =>
-    Effect.flatMap(this, restore => restore(playback, atSecond))
-}
+)

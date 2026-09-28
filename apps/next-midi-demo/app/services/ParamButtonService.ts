@@ -1,5 +1,6 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
@@ -184,6 +185,11 @@ export class AccordParamButtonService extends Context.Service<AccordParamButtonS
   },
 ) {}
 
+export const AccordParamButtonServiceLayer = Layer.effect(
+  AccordParamButtonService,
+  AccordParamButtonService.make,
+)
+
 export class PatternParamButtonService extends Context.Service<PatternParamButtonService>()(
   'next-midi-demo/PatternParamButtonService',
   {
@@ -195,6 +201,11 @@ export class PatternParamButtonService extends Context.Service<PatternParamButto
   },
 ) {}
 
+export const PatternParamButtonServiceLayer = Layer.effect(
+  PatternParamButtonService,
+  PatternParamButtonService.make,
+)
+
 export class StrengthParamButtonService extends Context.Service<StrengthParamButtonService>()(
   'next-midi-demo/StrengthParamButtonService',
   {
@@ -204,3 +215,8 @@ export class StrengthParamButtonService extends Context.Service<StrengthParamBut
     }).pipe(Effect.withSpan('StrengthParamButtonService.init')),
   },
 ) {}
+
+export const StrengthParamButtonServiceLayer = Layer.effect(
+  StrengthParamButtonService,
+  StrengthParamButtonService.make,
+)

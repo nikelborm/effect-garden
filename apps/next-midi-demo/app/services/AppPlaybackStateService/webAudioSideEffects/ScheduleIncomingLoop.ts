@@ -51,45 +51,42 @@ export class ScheduleIncomingLoop extends Context.Service<
     timing: ScheduledNextPlaybackTiming,
   ) => Effect.Effect<AudioPlayback>
 >()('next-midi-demo/ScheduleIncomingLoop') {
-  static Live = Layer.effect(
-    this,
-    Effect.map(
-      EAudioContext.EAudioContext,
-      context =>
-        (
-          audioBuffer: EAudioBuffer.EAudioBuffer,
-          timing: ScheduledNextPlaybackTiming,
-        ) =>
-          Effect.map(
-            createLoopingPlaybackGraph(context, audioBuffer),
-            playback => {
-              playback.gainNode.gain.setValueAtTime(
-                minLoudness,
-                asEarlyAsPossibleInSeconds,
-              )
-              playback.gainNode.gain.setValueAtTime(
-                minLoudness,
-                timing.slot.fadeoutStartsAtSecond,
-              )
-              playback.gainNode.gain.exponentialRampToValueAtTime(
-                maxLoudness,
-                timing.slot.fadeoutEndsAtSecond,
-              )
-              playback.bufferSource.start(
-                timing.startAtSecond,
-                timing.bufferPhaseOffsetSeconds,
-              )
-              return playback
-            },
-          ),
-    ),
-  )
-
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: ScheduledNextPlaybackTiming,
-  ) =>
-    Effect.flatMap(this, scheduleIncoming =>
-      scheduleIncoming(audioBuffer, timing),
-    )
+  ) => this.use(scheduleIncoming => scheduleIncoming(audioBuffer, timing))
 }
+
+export const ScheduleIncomingLoopLayer = Layer.effect(
+  ScheduleIncomingLoop,
+  Effect.map(
+    EAudioContext.EAudioContext,
+    context =>
+      (
+        audioBuffer: EAudioBuffer.EAudioBuffer,
+        timing: ScheduledNextPlaybackTiming,
+      ) =>
+        Effect.map(
+          createLoopingPlaybackGraph(context, audioBuffer),
+          playback => {
+            playback.gainNode.gain.setValueAtTime(
+              minLoudness,
+              asEarlyAsPossibleInSeconds,
+            )
+            playback.gainNode.gain.setValueAtTime(
+              minLoudness,
+              timing.slot.fadeoutStartsAtSecond,
+            )
+            playback.gainNode.gain.exponentialRampToValueAtTime(
+              maxLoudness,
+              timing.slot.fadeoutEndsAtSecond,
+            )
+            playback.bufferSource.start(
+              timing.startAtSecond,
+              timing.bufferPhaseOffsetSeconds,
+            )
+            return playback
+          },
+        ),
+  ),
+)

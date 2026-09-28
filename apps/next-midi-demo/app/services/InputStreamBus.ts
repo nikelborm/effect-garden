@@ -1,10 +1,12 @@
 import type { NonEmptyReadonlyArray } from 'effect/Array'
-import * as Chunk from 'effect/Chunk'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Filter from 'effect/Filter'
 import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as HashSet from 'effect/HashSet'
+import * as Iterable from 'effect/Iterable'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Queue from 'effect/Queue'
 import * as Scope from 'effect/Scope'
@@ -58,21 +60,21 @@ const makeParamSpecificBus = Effect.fn('makeParamSpecificBus')(function* <
         paramButtonId: paramButtonId,
         physicalButtonId: registration.physicalButtonId,
       })
-      yield* registrationsQueue.offer(registration)
+      yield* Queue.offer(registrationsQueue, registration)
     }),
 
     paramPressedByPhysicalButtonSetStream: yield* pipe(
       Stream.fromQueue(registrationsQueue),
       Stream.flatMap(
         ({ stateRef, physicalButtonId }) =>
-          Stream.map(stateRef.changes, state => ({
+          Stream.map(SubscriptionRef.changes(stateRef), state => ({
             physicalButtonId,
             state,
           })),
         { concurrency: 'unbounded' },
       ),
       Stream.scan(
-        HashSet.empty<TPhysicalButtonId>(),
+        () => HashSet.empty<TPhysicalButtonId>(),
         (pressedSet, { physicalButtonId, state }) =>
           ButtonState.isPressed(state)
             ? HashSet.add(pressedSet, physicalButtonId)
@@ -114,27 +116,25 @@ const makeInputBus = Effect.fnUntraced(function* <
     HashMap.HashMap<TParamButtonId, PerParamBus<TPhysicalButtonId>>
   > =>
     Stream.mapAccum(
-      inputMap.changes,
-      HashSet.empty<TParamButtonId>(),
+      SubscriptionRef.changes(inputMap),
+      () => Iterable.empty<TParamButtonId>(),
       (previouslyEmitted, currentMap) => [
-        HashMap.keySet(currentMap),
-        HashMap.removeMany(currentMap, previouslyEmitted),
+        HashMap.keys(currentMap),
+        [HashMap.removeMany(currentMap, previouslyEmitted)],
       ],
     )
 
   const pressesOnlyStream: PressesOnlyStream<TParamButtonId> =
     yield* newBusAdditionsStream().pipe(
       Stream.map(HashMap.entries),
-      Stream.flattenIterables,
+      Stream.flattenIterable,
       Stream.flatMap(
         ([paramButtonId, bus]) =>
           pipe(
             bus.paramPressedByPhysicalButtonSetStream,
             Stream.map(set => HashSet.size(set) > 0),
             Stream.sliding(2),
-            Stream.filter(
-              chunk => !Chunk.unsafeGet(chunk, 0) && Chunk.unsafeGet(chunk, 1),
-            ),
+            Stream.filter(window => window[0] === false && window[1] === true),
             Stream.as(new ParamButtonIdData(paramButtonId)),
           ),
         { concurrency: 'unbounded' },
@@ -163,7 +163,7 @@ const makeInputBus = Effect.fnUntraced(function* <
               bus = yield* makeParamSpecificBus<
                 TParamButtonId,
                 TPhysicalButtonId
-              >(paramButtonId).pipe(Scope.extend(scope))
+              >(paramButtonId).pipe(Scope.provide(scope))
 
               newMap = HashMap.set(newMap, paramButtonId, bus)
             }
@@ -180,8 +180,8 @@ const makeInputBus = Effect.fnUntraced(function* <
   const getPressedByPhysicalButtonSetStream = (
     paramButton: ParamButtonIdData<TParamButtonId>,
   ) =>
-    inputMap.changes.pipe(
-      Stream.filterMap(HashMap.get(paramButton.id)),
+    SubscriptionRef.changes(inputMap).pipe(
+      Stream.filterMap(Filter.fromPredicateOption(HashMap.get(paramButton.id))),
       Stream.take(1),
       Stream.flatMap(bus => bus.paramPressedByPhysicalButtonSetStream),
       Stream.withSpan('paramPressedByPhysicalButtonSetStreamById', {
@@ -219,7 +219,16 @@ export class AccordInputBus extends Context.Service<AccordInputBus>()(
       Effect.withSpan('AccordInputBus.init'),
     ),
   },
-) {}
+) {
+  static pressesOnlyStream = Stream.unwrap(
+    this.useSync(bus => bus.pressesOnlyStream),
+  )
+}
+
+export const AccordInputBusLayer: Layer.Layer<AccordInputBus> = Layer.effect(
+  AccordInputBus,
+  AccordInputBus.make,
+)
 
 export class PatternInputBus extends Context.Service<PatternInputBus>()(
   'next-midi-demo/PatternInputBus',
@@ -228,7 +237,16 @@ export class PatternInputBus extends Context.Service<PatternInputBus>()(
       Effect.withSpan('PatternInputBus.init'),
     ),
   },
-) {}
+) {
+  static pressesOnlyStream = Stream.unwrap(
+    this.useSync(bus => bus.pressesOnlyStream),
+  )
+}
+
+export const PatternInputBusLayer: Layer.Layer<PatternInputBus> = Layer.effect(
+  PatternInputBus,
+  PatternInputBus.make,
+)
 
 export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
   'next-midi-demo/StrengthInputBus',
@@ -237,7 +255,14 @@ export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
       Effect.withSpan('StrengthInputBus.init'),
     ),
   },
-) {}
+) {
+  static pressesOnlyStream = Stream.unwrap(
+    this.useSync(bus => bus.pressesOnlyStream),
+  )
+}
+
+export const StrengthInputBusLayer: Layer.Layer<StrengthInputBus> =
+  Layer.effect(StrengthInputBus, StrengthInputBus.make)
 
 export interface RegisterMethod<
   TPhysicalButtonId extends TaggedReadonlyObject,

@@ -1,4 +1,3 @@
-import * as Data from 'effect/Data'
 import * as EFunction from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
@@ -27,7 +26,7 @@ export const makeParamButtonTouchStateStream = <
         throw new Error(
           "makeParamButtonTouchStateStream can't find proper dataset field in DOM element",
         )
-      return Data.tuple(new DOMPhysicalButtonData(parseField(val)), state)
+      return [new DOMPhysicalButtonData(parseField(val)), state] as const
     },
   )
 
@@ -62,86 +61,95 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     ),
     { concurrency: 'unbounded' },
   ).pipe(
-    Stream.mapAccum(HashMap.empty<number, ElementOrOther>(), (oldMap, ev) => {
-      //                          ^ pointerId
-      const { clientX, clientY, type, currentTarget, pointerId, target } = ev
+    Stream.mapAccum(
+      () => HashMap.empty<number, ElementOrOther>(),
+      //                  ^ pointerId
+      (oldMap, ev) => {
+        const { clientX, clientY, type, currentTarget, pointerId, target } = ev
 
-      const getTargetWithGoodDataset = EFunction.flow(
-        Option.fromNullishOr<unknown>,
-        Option.filter(isElementWithDataset),
-        Option.flatMapNullable(
-          emergeUpToDesiredTarget(
-            parentElement => parentElement !== currentTarget,
-            keysOfDatasetToLookFor,
+        const getTargetWithGoodDataset = EFunction.flow(
+          Option.fromNullishOr<unknown>,
+          Option.filter(isElementWithDataset),
+          Option.flatMapNullishOr(
+            emergeUpToDesiredTarget(
+              parentElement => parentElement !== currentTarget,
+              keysOfDatasetToLookFor,
+            ),
           ),
-        ),
-      )
+        )
 
-      if (type === 'pointerdown') {
-        const latestElement = getValueOrOther(getTargetWithGoodDataset(target))
-        return [
-          HashMap.set(oldMap, pointerId, latestElement),
-          makeStreamWithElementIfMapDidntHaveIt(oldMap, latestElement, Pressed),
-        ]
-      }
+        if (type === 'pointerdown') {
+          const latestElement = getValueOrOther(
+            getTargetWithGoodDataset(target),
+          )
+          return [
+            HashMap.set(oldMap, pointerId, latestElement),
+            edgeTransitionsIfMapLacksIt(oldMap, latestElement, Pressed),
+          ] as const
+        }
 
-      const oldElementOption = HashMap.get(oldMap, pointerId)
-      const mapWithoutCurrentPointerId = HashMap.remove(oldMap, pointerId)
+        const oldElementOption = HashMap.get(oldMap, pointerId)
+        const mapWithoutCurrentPointerId = HashMap.remove(oldMap, pointerId)
 
-      if (type === 'pointerup' || type === 'pointercancel')
-        return [
-          mapWithoutCurrentPointerId,
-          makeStreamWithElementIfMapDidntHaveIt(
+        if (type === 'pointerup' || type === 'pointercancel')
+          return [
             mapWithoutCurrentPointerId,
-            // Realistically pointerId guaranteed to be in oldMap. We can't
-            // expect finger to release or move away from something it haven't
-            // been touching in the first place. We don't crash, just ignore
-            getValueOrOther(oldElementOption),
-            NotPressed,
-          ),
-        ]
+            edgeTransitionsIfMapLacksIt(
+              mapWithoutCurrentPointerId,
+              // Realistically pointerId guaranteed to be in oldMap. We can't
+              // expect finger to release or move away from something it haven't
+              // been touching in the first place. We don't crash, just ignore
+              getValueOrOther(oldElementOption),
+              NotPressed,
+            ),
+          ] as const
 
-      // type === 'pointermove'...
+        // type === 'pointermove'...
 
-      // guard against mouse that doesn't produce preliminary `pointerdown`
-      if (Option.isNone(oldElementOption)) return [oldMap, Stream.empty]
+        // guard against mouse that doesn't produce preliminary `pointerdown`
+        if (Option.isNone(oldElementOption)) return [oldMap, []] as const
 
-      const oldElement = oldElementOption.value
-      const latestElement = EFunction.pipe(
-        document.elementFromPoint(clientX, clientY),
-        getTargetWithGoodDataset,
-        getValueOrOther,
-      )
+        const oldElement = oldElementOption.value
+        const latestElement = EFunction.pipe(
+          document.elementFromPoint(clientX, clientY),
+          getTargetWithGoodDataset,
+          getValueOrOther,
+        )
 
-      const newMap = HashMap.set(oldMap, pointerId, latestElement)
+        const newMap = HashMap.set(oldMap, pointerId, latestElement)
 
-      return [
-        newMap,
-        Stream.concat(
-          makeStreamWithElementIfMapDidntHaveIt(newMap, oldElement, NotPressed),
-          makeStreamWithElementIfMapDidntHaveIt(oldMap, latestElement, Pressed),
-        ),
-      ]
-    }),
-    Stream.flatten(),
-    Stream.map(([element, state]) =>
-      Data.tuple(
-        Schema.decodeUnknownSync(DatasetSchema)(element.dataset) as Dataset,
-        state,
-      ),
+        return [
+          newMap,
+          [
+            ...edgeTransitionsIfMapLacksIt(newMap, oldElement, NotPressed),
+            ...edgeTransitionsIfMapLacksIt(oldMap, latestElement, Pressed),
+          ],
+        ] as const
+      },
+    ),
+    Stream.map(
+      ([element, state]) =>
+        [
+          Schema.decodeUnknownSync(DatasetSchema)(element.dataset) as Dataset,
+          state,
+        ] as const,
     ),
   )
 }
 
-const makeStreamWithElementIfMapDidntHaveIt = (
+const edgeTransitionsIfMapLacksIt = (
   map: HashMap.HashMap<number, ElementOrOther>,
   elementToLookFor: ElementOrOther,
   state: AllSimple,
-) =>
-  elementToLookFor === other ||
-  Iterable.some(map, ([, el]) => el === elementToLookFor)
-    ? Stream.empty
-    : Stream.succeed([elementToLookFor, state] as const)
+): ReadonlyArray<readonly [ElementWithDataset, AllSimple]> => {
+  if (
+    elementToLookFor === other ||
+    Iterable.some(map, ([, el]) => el === elementToLookFor)
+  )
+    return []
+
+  return [[elementToLookFor, state] as const]
+}
 
 const emergeUpToDesiredTarget =
   (

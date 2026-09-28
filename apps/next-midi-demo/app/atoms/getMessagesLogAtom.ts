@@ -6,6 +6,7 @@ import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
 
+import type * as Cause from 'effect/Cause'
 import { pipe } from 'effect/Function'
 import * as AsyncResult from 'effect/reactivity/AsyncResult'
 // import { Atom, Result } from '@effect-atom/atom-react'
@@ -21,6 +22,7 @@ export const getMessagesLogAtom: (
     | MIDIErrors.UnderlyingSystemError
     | MIDIErrors.MIDIAccessNotAllowedError
     | MIDIErrors.PortNotFoundError
+    | Cause.NoSuchElementError
   >
 > = Atom.family(inputId =>
   !inputId
@@ -40,7 +42,7 @@ export const getMessagesLogAtom: (
             ...current.midiMessage,
           }),
         ),
-        Stream.provideLayer(
+        Stream.provide(
           EMIDIAccess.layerSystemExclusiveAndSoftwareSynthSupported,
         ),
         Stream.catchTag('MIDIAccessNotSupportedError', e =>

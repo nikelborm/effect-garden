@@ -36,31 +36,24 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   }
 }
 
+const EffectVoidSchema = Schema.declare(
+  (u): u is Effect.Effect<void> => Effect.isEffect(u),
+  { identifier: 'Effect<void>' },
+)
+
+const FiberVoidSchema = Schema.declare(
+  (u): u is Fiber.Fiber<void> => Fiber.isFiber(u),
+  { identifier: 'Fiber.Fiber<void>' },
+)
+
 export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>()(
   'CleanupFiberToolkit',
   {
-    cancelCleanup: Schema.declare(
-      (u): u is Effect.Effect<void> => Effect.isEffect(u),
-      { identifier: 'Effect<void>' },
-    ),
-    fiberWaitingSignalToStartGarbageCollection: Schema.declare(
-      (u): u is Fiber.RuntimeFiber<void> =>
-        Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
-      { identifier: 'Fiber.RuntimeFiber<void>' },
-    ),
-    fiberWaitingDelayToGiveGarbageCollectionSignal: Schema.declare(
-      (u): u is Fiber.RuntimeFiber<void> =>
-        Fiber.isFiber(u) && Fiber.isRuntimeFiber(u),
-      { identifier: 'Fiber.RuntimeFiber<void>' },
-    ),
-    cancelDelayedCleanupSignal: Schema.declare(
-      (u): u is Effect.Effect<void> => Effect.isEffect(u),
-      { identifier: 'Effect<void>' },
-    ),
-    cleanupImmediately: Schema.declare(
-      (u): u is Effect.Effect<void> => Effect.isEffect(u),
-      { identifier: 'Effect<void>' },
-    ),
+    cancelCleanup: EffectVoidSchema,
+    fiberWaitingSignalToStartGarbageCollection: FiberVoidSchema,
+    fiberWaitingDelayToGiveGarbageCollectionSignal: FiberVoidSchema,
+    cancelDelayedCleanupSignal: EffectVoidSchema,
+    cleanupImmediately: EffectVoidSchema,
   },
 ) {
   declare protected '~brand~': never

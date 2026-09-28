@@ -8,17 +8,17 @@ export class DisposePlayback extends Context.Service<
   DisposePlayback,
   (playback: AudioPlayback) => Effect.Effect<void>
 >()('next-midi-demo/DisposePlayback') {
-  static Live = Layer.succeed(
-    this,
-    ({ bufferSource, gainNode }: AudioPlayback) =>
-      Effect.sync(() => {
-        bufferSource.stop()
-        bufferSource.disconnect()
-        gainNode.gain.cancelScheduledValues(0)
-        gainNode.disconnect()
-      }),
-  )
-
   static run = (playback: AudioPlayback) =>
-    Effect.flatMap(this, dispose => dispose(playback))
+    this.use(dispose => dispose(playback))
 }
+
+export const DisposePlaybackLayer = Layer.succeed(
+  DisposePlayback,
+  ({ bufferSource, gainNode }: AudioPlayback) =>
+    Effect.sync(() => {
+      bufferSource.stop()
+      bufferSource.disconnect()
+      gainNode.gain.cancelScheduledValues(0)
+      gainNode.disconnect()
+    }),
+)

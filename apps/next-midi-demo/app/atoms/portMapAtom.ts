@@ -30,7 +30,7 @@ export const portMapAtom = Effect.gen(function* () {
   )
 }).pipe(
   Stream.unwrap,
-  Stream.provideLayer(EMIDIAccess.layerSoftwareSynthSupported),
+  Stream.provide(EMIDIAccess.layerSoftwareSynthSupported),
   updatesStream => Atom.make(updatesStream),
   Atom.withLabel('portMap'),
   Atom.debounce(Duration.millis(20)),

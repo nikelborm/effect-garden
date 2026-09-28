@@ -8,13 +8,13 @@ export class GetAudioNow extends Context.Service<
   GetAudioNow,
   () => Effect.Effect<number>
 >()('next-midi-demo/GetAudioNow') {
-  static Live = Layer.effect(
-    this,
-    Effect.map(
-      EAudioContext.EAudioContext,
-      context => () => EAudioContext.currentTime(context),
-    ),
-  )
-
-  static run = () => Effect.flatMap(this, getNow => getNow())
+  static run = () => this.use(getNow => getNow())
 }
+
+export const GetAudioNowLayer = Layer.effect(
+  GetAudioNow,
+  Effect.map(
+    EAudioContext.EAudioContext,
+    context => () => EAudioContext.currentTime(context),
+  ),
+)

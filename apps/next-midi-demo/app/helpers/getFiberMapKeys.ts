@@ -1,24 +1,10 @@
 import * as Effect from 'effect/Effect'
-import type * as Fiber from 'effect/Fiber'
 import type * as FiberMap from 'effect/FiberMap'
 import * as MutableHashMap from 'effect/MutableHashMap'
 
-export const getFiberMapKeys = <K, A, E>(self: FiberMap.FiberMap<K, A, E>) => {
-  const state = (
-    self as unknown as {
-      state:
-        | { readonly _tag: 'Closed' }
-        | {
-            readonly _tag: 'Open'
-            readonly backing: MutableHashMap.MutableHashMap<
-              K,
-              Fiber.RuntimeFiber<A, E>
-            >
-          }
-    }
-  ).state
-
-  return Effect.sync(() =>
-    state._tag === 'Closed' ? [] : MutableHashMap.keys(state.backing),
+export const getFiberMapKeys = <K, A, E>(self: FiberMap.FiberMap<K, A, E>) =>
+  Effect.sync(() =>
+    self.state._tag === 'Closed'
+      ? []
+      : Array.from(MutableHashMap.keys(self.state.backing)),
   )
-}

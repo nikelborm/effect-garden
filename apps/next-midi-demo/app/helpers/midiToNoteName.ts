@@ -1,4 +1,4 @@
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 
 const MIDDLE_C_OCTAVE = 5 // Change to 3 or 5 based on preference

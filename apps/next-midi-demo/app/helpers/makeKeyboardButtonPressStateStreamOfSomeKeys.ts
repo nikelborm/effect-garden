@@ -1,5 +1,4 @@
-import * as Data from 'effect/Data'
-import * as Option from 'effect/Option'
+import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
 
 import * as ButtonState from '../domain/ButtonState.ts'
@@ -34,15 +33,13 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
           event.target.tagName === 'TEXTAREA' ||
           event.target.isContentEditable)
       )
-        ? Option.some(
-            Data.tuple(
-              KeyboardKeyPhysicalButtonData.makeUnsafe(event.key),
-              event.type === 'keydown'
-                ? ButtonState.Pressed
-                : ButtonState.NotPressed,
-            ),
-          )
-        : Option.none(),
+        ? Result.succeed([
+            KeyboardKeyPhysicalButtonData.makeUnsafe(event.key),
+            event.type === 'keydown'
+              ? ButtonState.Pressed
+              : ButtonState.NotPressed,
+          ] as const)
+        : Result.failVoid,
     ),
     Stream.changes,
   )

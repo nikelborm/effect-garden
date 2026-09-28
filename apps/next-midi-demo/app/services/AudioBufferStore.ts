@@ -17,31 +17,31 @@ export class AudioBufferStore extends Context.Service<
     readonly getByAsset: (pointer: AssetPointer) => Effect.Effect<EAudioBuffer>
   }
 >()('next-midi-demo/AudioBufferStore') {
-  static Live = Effect.gen(this, function* () {
-    const audioContext = yield* EAudioContext.EAudioContext
-    const rootDirectoryHandle = yield* RootDirectoryHandle
-    const estimationMap = yield* LoadedAssetSizeEstimationMap
-
-    const getByAsset = Effect.fn('AudioBufferStore.getByAsset')(function* (
-      pointer: AssetPointer,
-    ) {
-      yield* estimationMap.assertFinished(pointer)
-
-      const assetFileHandle = yield* getFileHandle({
-        dirHandle: rootDirectoryHandle,
-        fileName: getLocalAssetFileName(pointer),
-      })
-
-      const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
-
-      return yield* EAudioContext.decodeAudioData(audioContext, fileArrayBuffer)
-    }, Effect.orDie)
-
-    return { getByAsset }
-  }).pipe(Layer.effect(this))
-
   static getByAsset = (
     pointer: AssetPointer,
   ): Effect.Effect<EAudioBuffer, never, AudioBufferStore> =>
-    Effect.flatMap(this, store => store.getByAsset(pointer))
+    this.use(store => store.getByAsset(pointer))
 }
+
+export const AudioBufferStoreLayer = Effect.gen(function* () {
+  const audioContext = yield* EAudioContext.EAudioContext
+  const rootDirectoryHandle = yield* RootDirectoryHandle
+  const estimationMap = yield* LoadedAssetSizeEstimationMap
+
+  const getByAsset = Effect.fn('AudioBufferStore.getByAsset')(function* (
+    pointer: AssetPointer,
+  ) {
+    yield* estimationMap.assertFinished(pointer)
+
+    const assetFileHandle = yield* getFileHandle({
+      dirHandle: rootDirectoryHandle,
+      fileName: getLocalAssetFileName(pointer),
+    })
+
+    const fileArrayBuffer = yield* readFileBuffer(assetFileHandle)
+
+    return yield* EAudioContext.decodeAudioData(audioContext, fileArrayBuffer)
+  }, Effect.orDie)
+
+  return { getByAsset }
+}).pipe(Layer.effect(AudioBufferStore))

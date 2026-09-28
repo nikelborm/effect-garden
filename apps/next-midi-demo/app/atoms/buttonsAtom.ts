@@ -16,16 +16,16 @@ import * as Stream from 'effect/Stream'
 import {
   type Accord,
   AccordParamButtonData,
-  AllAccords,
+  AllAccordsLayer,
   defaultAccord,
 } from '../domain/Accord.ts'
 import {
-  AllPatterns,
+  AllPatternsLayer,
   type Pattern,
   PatternParamButtonData,
 } from '../domain/Pattern.ts'
 import {
-  AllStrengths,
+  AllStrengthsLayer,
   defaultStrength,
   type Strength,
   StrengthParamButtonData,
@@ -35,44 +35,50 @@ import {
   MIDIPadButtonMappingLayer,
   OnScreenButtonMappingLayer,
 } from '../services/AllPhysicalButtonsToAllParamButtonsAssignmentLayer.ts'
-import { AppPlaybackStateService } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
 import {
-  DisposePlayback,
-  GetAudioNow,
-  RestoreFullVolume,
-  ScheduleFadeOut,
-  ScheduleIncomingLoop,
-  StartFreshPlayback,
+  AppPlaybackStateService,
+  AppPlaybackStateServiceLayer,
+} from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
+import {
+  DisposePlaybackLayer,
+  GetAudioNowLayer,
+  RestoreFullVolumeLayer,
+  ScheduleFadeOutLayer,
+  ScheduleIncomingLoopLayer,
+  StartFreshPlaybackLayer,
 } from '../services/AppPlaybackStateService/webAudioSideEffects/index.ts'
-import { AssetDownloadSchedulerLive } from '../services/AssetDownloadScheduler.ts'
-import { AudioBufferStore } from '../services/AudioBufferStore.ts'
-import { DownloadManager } from '../services/DownloadManager.ts'
+import { AssetDownloadSchedulerLayer } from '../services/AssetDownloadScheduler.ts'
+import { AudioBufferStoreLayer } from '../services/AudioBufferStore.ts'
+import { DownloadManagerLayer } from '../services/DownloadManager.ts'
 import {
-  AccordInputBus,
-  PatternInputBus,
-  StrengthInputBus,
+  AccordInputBusLayer,
+  PatternInputBusLayer,
+  StrengthInputBusLayer,
 } from '../services/InputStreamBus.ts'
-import { LoadedAssetSizeEstimationMap } from '../services/LoadedAssetSizeEstimationMap.ts'
-import { OpfsWritableHandleManager } from '../services/OpfsWritableHandleManager.ts'
+import { LoadedAssetSizeEstimationMapLayer } from '../services/LoadedAssetSizeEstimationMap.ts'
+import { OpfsWritableHandleManagerLayer } from '../services/OpfsWritableHandleManager.ts'
 import {
   AccordParamButtonService,
+  AccordParamButtonServiceLayer,
   PatternParamButtonService,
+  PatternParamButtonServiceLayer,
   StrengthParamButtonService,
+  StrengthParamButtonServiceLayer,
 } from '../services/ParamButtonService.ts'
-import { RootDirectoryHandle } from '../services/RootDirectoryHandle.ts'
-import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
+import { RootDirectoryHandleLayer } from '../services/RootDirectoryHandle.ts'
+import { SelectedMIDIInputServiceLayer } from '../services/SelectedMIDIInputService.ts'
 import { somebodyKillMe, TracingLive } from './tracing.ts'
 
-const AccordInputBusNoDeps = AccordInputBus.Default.pipe(
-  Layer.withSpan('AccordInputBus.Default'),
+const AccordInputBusNoDeps = AccordInputBusLayer.pipe(
+  Layer.withSpan('AccordInputBusLayer'),
   Layer.satisfiesServicesType<never>(),
 )
-const PatternInputBusNoDeps = PatternInputBus.Default.pipe(
-  Layer.withSpan('PatternInputBus.Default'),
+const PatternInputBusNoDeps = PatternInputBusLayer.pipe(
+  Layer.withSpan('PatternInputBusLayer'),
   Layer.satisfiesServicesType<never>(),
 )
-const StrengthInputBusNoDeps = StrengthInputBus.Default.pipe(
-  Layer.withSpan('StrengthInputBus.Default'),
+const StrengthInputBusNoDeps = StrengthInputBusLayer.pipe(
+  Layer.withSpan('StrengthInputBusLayer'),
   Layer.satisfiesServicesType<never>(),
 )
 
@@ -82,13 +88,13 @@ const AllBusesNoDeps = Layer.mergeAll(
   StrengthInputBusNoDeps,
 ).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.satisfiesServicesType<never>())
 
-const AllAccordsNoDeps = AllAccords.Default.pipe(
+const AllAccordsNoDeps = AllAccordsLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
-const AllPatternsNoDeps = AllPatterns.Default.pipe(
+const AllPatternsNoDeps = AllPatternsLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
-const AllStrengthsNoDeps = AllStrengths.Default.pipe(
+const AllStrengthsNoDeps = AllStrengthsLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 
@@ -107,11 +113,11 @@ const AllConstantsAndBusesNoDeps = Layer.mergeAll(
 )
 
 const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
-  Layer.catchAll(err =>
+  Layer.catchCause(cause =>
     Layer.effectDiscard(
       Effect.logError(
         `MIDI button to param button mapping failed because access wasn't granted and we cannot initialize pressure stream`,
-        err,
+        cause,
       ),
     ),
   ),
@@ -120,7 +126,7 @@ const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
 )
 
 const SelectedMIDIInputWithAccessServiceNoDeps =
-  SelectedMIDIInputService.Default.pipe(
+  SelectedMIDIInputServiceLayer.pipe(
     Layer.provideMerge(MIDIAccessNoDeps),
     Layer.withSpan('SelectedMIDIInputWithAccessServiceNoDeps'),
     Layer.satisfiesServicesType<never>(),
@@ -155,33 +161,33 @@ const AllButtonMappingLayerNoDeps = Layer.mergeAll(
   Layer.satisfiesServicesType<never>(),
 )
 
-const RootDirectoryHandleNoDeps = RootDirectoryHandle.Default.pipe(
+const RootDirectoryHandleNoDeps = RootDirectoryHandleLayer.pipe(
   Layer.withSpan('RootDirectoryHandleNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
 const LoadedAssetSizeEstimationMapNoDeps =
-  LoadedAssetSizeEstimationMap.Default.pipe(
+  LoadedAssetSizeEstimationMapLayer.pipe(
     Layer.provide(RootDirectoryHandleNoDeps),
     Layer.provide(AllConstantsNoDeps),
     Layer.withSpan('LoadedAssetSizeEstimationMapNoDeps'),
     Layer.satisfiesServicesType<never>(),
   )
 
-const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManager.Default.pipe(
+const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManagerLayer.pipe(
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.withSpan('OpfsWritableHandleManagerNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
-const AudioContextLive = EAudioContext.layer().pipe(
+const AudioContextNoDeps = EAudioContext.layer().pipe(
   Layer.orDie,
   Layer.satisfiesServicesType<never>(),
 )
 
-const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
-  Layer.provide(AudioContextLive),
+const AudioBufferStoreNoDeps = AudioBufferStoreLayer.pipe(
+  Layer.provide(AudioContextNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.satisfiesServicesType<never>(),
@@ -192,20 +198,20 @@ const AudioBufferStoreNoDeps = AudioBufferStore.Live.pipe(
 // perform, each scoped to at most one playback. Tests provide their own
 // per-tag spy layers instead of this one.
 const WebAudioSideEffectsNoDeps = Layer.mergeAll(
-  DisposePlayback.Live,
-  GetAudioNow.Live,
-  RestoreFullVolume.Live,
-  ScheduleFadeOut.Live,
-  ScheduleIncomingLoop.Live,
-  StartFreshPlayback.Live,
+  DisposePlaybackLayer,
+  GetAudioNowLayer,
+  RestoreFullVolumeLayer,
+  ScheduleFadeOutLayer,
+  ScheduleIncomingLoopLayer,
+  StartFreshPlaybackLayer,
 ).pipe(
-  Layer.provide(AudioContextLive),
+  Layer.provide(AudioContextNoDeps),
   Layer.withSpan('WebAudioSideEffectsNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
-const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
-  Layer.provide(AudioContextLive),
+const AppPlaybackStateServiceNoDeps = AppPlaybackStateServiceLayer.pipe(
+  Layer.provide(AudioContextNoDeps),
   Layer.provide(AudioBufferStoreNoDeps),
   Layer.provide(AllBusesNoDeps),
   Layer.provide(WebAudioSideEffectsNoDeps),
@@ -213,7 +219,7 @@ const AppPlaybackStateServiceNoDeps = AppPlaybackStateService.Default.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 
-const DownloadManagerNoDeps = DownloadManager.Default.pipe(
+const DownloadManagerNoDeps = DownloadManagerLayer.pipe(
   Layer.provide(FetchHttpClient.layer),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.provide(OpfsWritableHandleManagerNoDeps),
@@ -222,33 +228,32 @@ const DownloadManagerNoDeps = DownloadManager.Default.pipe(
 )
 
 // background
-const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLive.pipe(
+const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLayer.pipe(
   Layer.provide(DownloadManagerNoDeps),
   Layer.withSpan('AssetDownloadSchedulerNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
-const AccordParamButtonServiceNoDeps = AccordParamButtonService.Default.pipe(
+const AccordParamButtonServiceNoDeps = AccordParamButtonServiceLayer.pipe(
   Layer.provide(AccordInputBusNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('AccordParamButtonServiceNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
-const PatternParamButtonServiceNoDeps = PatternParamButtonService.Default.pipe(
+const PatternParamButtonServiceNoDeps = PatternParamButtonServiceLayer.pipe(
   Layer.provide(PatternInputBusNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
   Layer.withSpan('PatternParamButtonServiceNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
-const StrengthParamButtonServiceNoDeps =
-  StrengthParamButtonService.Default.pipe(
-    Layer.provide(StrengthInputBusNoDeps),
-    Layer.provide(AppPlaybackStateServiceNoDeps),
-    Layer.withSpan('StrengthParamButtonServiceNoDeps'),
-    Layer.satisfiesServicesType<never>(),
-  )
+const StrengthParamButtonServiceNoDeps = StrengthParamButtonServiceLayer.pipe(
+  Layer.provide(StrengthInputBusNoDeps),
+  Layer.provide(AppPlaybackStateServiceNoDeps),
+  Layer.withSpan('StrengthParamButtonServiceNoDeps'),
+  Layer.satisfiesServicesType<never>(),
+)
 
 const ParamButtonServiceNoDeps = Layer.mergeAll(
   AccordParamButtonServiceNoDeps,
@@ -267,7 +272,6 @@ export const AppLayer = Layer.mergeAll(
 ).pipe(
   Layer.provideMerge(Logger.layer([Logger.consolePrettyBrowser()])),
   Layer.withSpan('AppLayer'),
-
   Layer.provide(TracingLive),
   Layer.satisfiesServicesType<never>(),
   // Layer.provideMerge(Logger.minimumLogLevel(LogLevel.Warning)),
@@ -278,13 +282,8 @@ const builtRuntime = Atom.runtime(AppLayer)
 // BrowserRuntime.runMain
 export const testAtom = builtRuntime.atom(() =>
   Effect.gen(function* () {
-    // const scope = (yield* Effect.scope) as Scope.CloseableScope
-
-    const innerRuntime = yield* Effect.runtime()
-
-    const scope = innerRuntime.context.unsafeMap.get(
-      Scope.Scope.key,
-    ) as Scope.CloseableScope
+    // TODO: verify the actual internal scope is acquired
+    const scope = (yield* Effect.scope) as Scope.Closeable
 
     yield* Effect.sync(() => {
       global.window.addEventListener(

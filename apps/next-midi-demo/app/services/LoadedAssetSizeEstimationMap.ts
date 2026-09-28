@@ -1,9 +1,11 @@
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
+import * as Filter from 'effect/Filter'
 import { flow, pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
+import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
@@ -35,13 +37,15 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
         Effect.flatMap(
           flow(
             Iterable.filter(dirOrFileEntry => dirOrFileEntry.kind === 'file'),
-            Iterable.filterMap(({ name, size }) =>
-              Option.map(
-                getAssetFromLocalFileName(name),
-                (asset): AssetToSizeHashMapEntry => [
-                  asset,
-                  new VerifiedPresentOnDiskEstimation(size),
-                ],
+            Iterable.filterMap(
+              Filter.fromPredicateOption(({ name, size }) =>
+                Option.map(
+                  getAssetFromLocalFileName(name),
+                  (asset): AssetToSizeHashMapEntry => [
+                    asset,
+                    new VerifiedPresentOnDiskEstimation(size),
+                  ],
+                ),
               ),
             ),
             HashMap.fromIterable,
@@ -73,12 +77,15 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
       const getCurrentDownloadedBytes = (
         asset: AssetPointer,
       ): Effect.Effect<AssetSizeEstimation> =>
-        Effect.map(assetToSizeHashMapRef, getOrThrowBy(asset))
+        Effect.map(
+          SubscriptionRef.get(assetToSizeHashMapRef),
+          getOrThrowBy(asset),
+        )
 
       const getCurrentDownloadedBytesStream = (
         asset: AssetPointer,
       ): Stream.Stream<AssetSizeEstimation> =>
-        assetToSizeHashMapRef.changes.pipe(
+        SubscriptionRef.changes(assetToSizeHashMapRef).pipe(
           Stream.map(getOrThrowBy(asset)),
           Stream.changes,
           Stream.withSpan(
@@ -88,7 +95,7 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
         )
 
       const awaitVerified = (asset: AssetPointer) =>
-        assetToSizeHashMapRef.changes.pipe(
+        SubscriptionRef.changes(assetToSizeHashMapRef).pipe(
           Stream.map(getOrThrowBy(asset)),
           Stream.filter(isVerified),
           Stream.take(1),
@@ -122,7 +129,7 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
           ),
           Effect.tap(newMap =>
             Effect.annotateLogs(Effect.log('Modified estimationMap'), {
-              newValue: HashMap.unsafeGet(newMap, asset),
+              newValue: HashMap.getUnsafe(newMap, asset),
               asset,
             }),
           ),
@@ -223,9 +230,14 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
   },
 ) {}
 
-export const AlmostFinished = Data.struct({
-  status: 'almost finished: fetched, but not written' as const,
-})
+export const LoadedAssetSizeEstimationMapLayer = Layer.effect(
+  LoadedAssetSizeEstimationMap,
+  LoadedAssetSizeEstimationMap.make,
+)
+
+export const AlmostFinished = {
+  status: 'almost finished: fetched, but not written',
+} as const
 export type AlmostFinished = typeof AlmostFinished
 
 export class NotFinished extends Data.Class<{
@@ -237,7 +249,7 @@ export class NotFinished extends Data.Class<{
   }
 }
 
-export const Finished = Data.struct({ status: 'finished' as const })
+export const Finished = { status: 'finished' } as const
 export type Finished = typeof Finished
 
 export type AssetCompletionStatus = NotFinished | AlmostFinished | Finished
@@ -246,15 +258,15 @@ export interface AssetToSizeHashMap
   extends HashMap.HashMap<AssetPointer, AssetSizeEstimation> {}
 export type AssetToSizeHashMapEntry = [AssetPointer, AssetSizeEstimation]
 
-export const VerifiedAbsentOnDiskEstimation = Data.struct({
+export const VerifiedAbsentOnDiskEstimation = {
   status: 'verifiedAbsentOnDisk',
-} as const)
+} as const
 export type VerifiedAbsentOnDiskEstimation =
   typeof VerifiedAbsentOnDiskEstimation
 
-export const UndeterminedEstimation = Data.struct({
+export const UndeterminedEstimation = {
   status: 'unknownWhileFetchingInitial',
-} as const)
+} as const
 export type UndeterminedEstimation = typeof UndeterminedEstimation
 
 export class InProgressWriteEstimation extends Data.Class<{

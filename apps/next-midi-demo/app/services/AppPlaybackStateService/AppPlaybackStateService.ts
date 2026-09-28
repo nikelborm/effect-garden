@@ -1,5 +1,6 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
@@ -16,6 +17,7 @@ import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { SilenceBoundPlayback } from './types/SilenceBoundPlayback.ts'
+
 export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
@@ -49,7 +51,9 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
 
       const makeCleanupFibers = makeCleanupFibersFactory(stateRef)
 
-      const latestIsPlayingFlagStream = yield* stateRef.changes.pipe(
+      const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
+        stateRef,
+      ).pipe(
         // Sound is audible unless we are in pure silence (an empty
         // SilenceBoundPlayback queue); a fading-out loop still counts as playing.
         Stream.map(
@@ -83,9 +87,8 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //         } as const),
       // )
       yield* AccordInputBus.pressesOnlyStream.pipe(
-        Stream.unwrap,
-        Stream.merge(Stream.unwrap(PatternInputBus.pressesOnlyStream)),
-        Stream.merge(Stream.unwrap(StrengthInputBus.pressesOnlyStream)),
+        Stream.merge(PatternInputBus.pressesOnlyStream),
+        Stream.merge(StrengthInputBus.pressesOnlyStream),
         Stream.runForEach(signal =>
           SubscriptionRef.updateEffect(stateRef, state =>
             advancePlayback(state, signal.id).pipe(
@@ -141,8 +144,13 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         // switchPlayPauseFromCurrentlySelected,
         latestIsPlayingFlagStream,
         // тупо потому что не хочу усложнять себе работу
-        playbackPublicInfoChangesStream: stateRef.changes,
+        playbackPublicInfoChangesStream: SubscriptionRef.changes(stateRef),
       }
     }).pipe(Effect.withSpan('AppPlaybackStateService.init'), Effect.orDie),
   },
 ) {}
+
+export const AppPlaybackStateServiceLayer = Layer.effect(
+  AppPlaybackStateService,
+  AppPlaybackStateService.make,
+)

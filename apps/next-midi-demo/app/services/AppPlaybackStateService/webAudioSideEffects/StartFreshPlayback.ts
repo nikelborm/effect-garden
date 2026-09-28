@@ -42,26 +42,26 @@ export class StartFreshPlayback extends Context.Service<
     timing: FreshPlaybackTiming,
   ) => Effect.Effect<AudioPlayback>
 >()('next-midi-demo/StartFreshPlayback') {
-  static Live = Layer.effect(
-    this,
-    Effect.map(
-      EAudioContext.EAudioContext,
-      context =>
-        (audioBuffer: EAudioBuffer.EAudioBuffer, timing: FreshPlaybackTiming) =>
-          Effect.map(createPlaybackGraph(context, audioBuffer), playback => {
-            playback.bufferSource.loop = timing.isLooping
-            playback.gainNode.gain.setValueAtTime(
-              maxLoudness,
-              asEarlyAsPossibleInSeconds,
-            )
-            playback.bufferSource.start(timing.startAtSecond)
-            return playback
-          }),
-    ),
-  )
-
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,
-  ) => Effect.flatMap(this, startFresh => startFresh(audioBuffer, timing))
+  ) => this.use(startFresh => startFresh(audioBuffer, timing))
 }
+
+export const StartFreshPlaybackLayer = Layer.effect(
+  StartFreshPlayback,
+  Effect.map(
+    EAudioContext.EAudioContext,
+    context =>
+      (audioBuffer: EAudioBuffer.EAudioBuffer, timing: FreshPlaybackTiming) =>
+        Effect.map(createPlaybackGraph(context, audioBuffer), playback => {
+          playback.bufferSource.loop = timing.isLooping
+          playback.gainNode.gain.setValueAtTime(
+            maxLoudness,
+            asEarlyAsPossibleInSeconds,
+          )
+          playback.bufferSource.start(timing.startAtSecond)
+          return playback
+        }),
+  ),
+)

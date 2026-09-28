@@ -19,7 +19,7 @@ import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
 import { DownloadManager } from './DownloadManager.ts'
 
-export const AssetDownloadSchedulerLive = Effect.gen(function* () {
+export const AssetDownloadSchedulerLayer = Effect.gen(function* () {
   const downloadManager = yield* DownloadManager
   const allDownloadedRef = yield* Ref.make(false)
 
@@ -39,7 +39,7 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
 
       const log = (message: string) =>
         logWithPriorityTier(message, {
-          downloadAttempt: Struct.pick(result, '_tag', 'message'),
+          downloadAttempt: Struct.pick(result, ['_tag', 'message']),
           asset,
         })
 
@@ -124,7 +124,7 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
   const executeLatestPlan = Effect.fn(
     'AssetDownloadScheduler.executeLatestPlan',
   )(function* (currentlySelectedAsset: AssetPointer) {
-    if (yield* allDownloadedRef) return
+    if (yield* Ref.get(allDownloadedRef)) return
 
     for (const priorityTier of [0, 1, 2, 3] as const)
       yield* downloadTier(priorityTier, currentlySelectedAsset)
@@ -146,4 +146,7 @@ export const AssetDownloadSchedulerLive = Effect.gen(function* () {
     ),
     executeLatestPlan,
   )
-}).pipe(Effect.withSpan('AssetDownloadSchedulerLive.init'), Layer.scopedDiscard)
+}).pipe(
+  Effect.withSpan('AssetDownloadSchedulerLayer.init'),
+  Layer.effectDiscard,
+)

@@ -75,9 +75,9 @@ export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
 
 export class AllAccords extends Context.Service<AllAccords, AllAccordTuple>()(
   'next-midi-demo/AllAccords',
-) {
-  static readonly Default: Layer.Layer<AllAccords> = Layer.succeed(
-    this,
-    allAccords,
-  )
-}
+) {}
+
+export const AllAccordsLayer: Layer.Layer<AllAccords> = Layer.succeed(
+  AllAccords,
+  allAccords,
+)

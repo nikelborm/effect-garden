@@ -10,7 +10,13 @@ export class ScheduleFadeOut extends Context.Service<
   ScheduleFadeOut,
   (playback: AudioPlayback, slot: Slot) => Effect.Effect<void>
 >()('next-midi-demo/ScheduleFadeOut') {
-  static Live = Layer.succeed(this, (playback: AudioPlayback, slot: Slot) =>
+  static run = (playback: AudioPlayback, slot: Slot) =>
+    this.use(scheduleFadeOut => scheduleFadeOut(playback, slot))
+}
+
+export const ScheduleFadeOutLayer = Layer.succeed(
+  ScheduleFadeOut,
+  (playback: AudioPlayback, slot: Slot) =>
     Effect.sync(() => {
       playback.gainNode.gain.setValueAtTime(
         maxLoudness,
@@ -21,8 +27,4 @@ export class ScheduleFadeOut extends Context.Service<
         slot.fadeoutEndsAtSecond,
       )
     }),
-  )
-
-  static run = (playback: AudioPlayback, slot: Slot) =>
-    Effect.flatMap(this, scheduleFadeOut => scheduleFadeOut(playback, slot))
-}
+)

@@ -46,7 +46,7 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
           return {
             _tag: 'AssetIsInProgress' as const,
             message: `Asset download is in progress`,
-            awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
+            awaitCompletion: Effect.asVoid(Fiber.await(downloadAssetFiber)),
           }
 
         if (yield* estimationMap.areAllBytesFetchedAwaitVerified(asset))
@@ -60,9 +60,7 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
             _tag: 'DownloadManagerAtMaximumCapacity' as const,
             message: `It's reasonable to start download, but the limit of parallel downloads is reached`,
             awaitFreeSlot: getFibersOfFiberMap(fiberMap).pipe(
-              Effect.flatMap(fibers =>
-                Effect.raceAll(fibers.map(fiber => fiber.await)),
-              ),
+              Effect.flatMap(fibers => Effect.raceAll(fibers.map(Fiber.await))),
               Effect.asVoid,
             ),
           }
@@ -74,7 +72,7 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
         return {
           _tag: 'StartedDownloadingAsset' as const,
           message: `Asset downloading started`,
-          awaitCompletion: Effect.asVoid(downloadAssetFiber.await),
+          awaitCompletion: Effect.asVoid(Fiber.await(downloadAssetFiber)),
         }
       }, assetAdditionSemaphore.withPermits(1))
 
@@ -96,6 +94,11 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
   },
 ) {}
 
+export const DownloadManagerLayer = Layer.effect(
+  DownloadManager,
+  DownloadManager.make,
+)
+
 const downloadRemainingAssetPart = Effect.fn(
   'DownloadManager.downloadRemainingAssetPart',
 )(function* (asset: AssetPointer) {
@@ -111,14 +114,14 @@ const downloadRemainingAssetPart = Effect.fn(
   const estimationMap = yield* LoadedAssetSizeEstimationMap
 
   yield* Effect.gen(function* () {
-    const meta = yield* Schedule.CurrentIterationMetadata
-    yield* Effect.annotateCurrentSpan({ asset, attemptIndex: meta.recurrence })
+    const meta = yield* Schedule.CurrentMetadata
+    yield* Effect.annotateCurrentSpan({ asset, attemptIndex: meta.attempt })
 
     const currentBytes = yield* estimationMap.awaitVerifiedOnDiskBytes(asset)
 
     yield* getStreamOfRemoteAsset(asset, currentBytes).pipe(
       Stream.withSpan('DownloadManager.assetDownloadingAttemptLocalStream', {
-        attributes: { asset, attemptIndex: meta.recurrence },
+        attributes: { asset, attemptIndex: meta.attempt },
       }),
       Stream.run(opfs.acquireFileSink(asset)),
     )
@@ -128,7 +131,7 @@ const downloadRemainingAssetPart = Effect.fn(
     ),
     Effect.withSpan('DownloadManager.assetDownloadingAttempt'),
     Effect.retry(
-      Schedule.intersect(Schedule.recurs(3), Schedule.exponential('1 second')),
+      Schedule.max([Schedule.recurs(3), Schedule.exponential('1 second')]),
     ),
     Effect.withSpan('DownloadManager.assetDownload', { attributes: { asset } }),
     Effect.orDie,
