@@ -13,8 +13,7 @@ const BooleanFromString = Schema.Literals(['true', 'false']).pipe(
     Schema.Boolean,
     SchemaTransformation.transform({
       decode: (literal: 'true' | 'false') => literal === 'true',
-      encode: (value: boolean): 'true' | 'false' =>
-        value ? 'true' : 'false',
+      encode: (value: boolean): 'true' | 'false' => (value ? 'true' : 'false'),
     }),
   ),
 )
@@ -100,9 +99,7 @@ const MetadataValue = Schema.Struct({
         encode: topicCategories => ({ topicCategories }),
       }),
     ),
-    Schema.withDecodingDefaultType(
-      Effect.succeed([] as ReadonlyArray<string>),
-    ),
+    Schema.withDecodingDefaultType(Effect.succeed([] as ReadonlyArray<string>)),
   ),
 })
 

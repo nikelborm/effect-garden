@@ -65,10 +65,7 @@ const config = Schema.UndefinedOr(
       ]),
     ),
     renderSizeHint: Schema.optionalKey(
-      Schema.Union([
-        Schema.Literals(['hardware', 'default']),
-        Schema.Number,
-      ]),
+      Schema.Union([Schema.Literals(['hardware', 'default']), Schema.Number]),
     ),
   }),
 )

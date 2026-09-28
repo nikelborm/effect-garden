@@ -12,7 +12,8 @@ export const omitStruct: {
     ...keys: ReadonlyArray<keyof Self['fields'] & PropertyKey>
   ): Self
 } = ((...args: Array<any>) => {
-  const hasSelf = args.length > 1 || (args.length === 1 && Schema.isSchema(args[0] as any))
+  const hasSelf =
+    args.length > 1 || (args.length === 1 && Schema.isSchema(args[0] as any))
   if (hasSelf) {
     const [self, ...keys] = args as [AnyStruct, ...Array<PropertyKey>]
     return omitStructImpl(self, keys)

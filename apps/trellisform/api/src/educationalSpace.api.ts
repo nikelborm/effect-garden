@@ -2,9 +2,7 @@ import {
   withOpenApiAnnotationsForStructs as _withOpenApiAnnotations,
   withNewStructTag,
 } from '@evadev/effect-helpers'
-import {
-  EducationalSpaceSchema,
-} from '@trellisform/model'
+import { EducationalSpaceSchema } from '@trellisform/model'
 
 import * as Schema from 'effect/Schema'
 import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'

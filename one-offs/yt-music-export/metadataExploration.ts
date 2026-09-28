@@ -26,9 +26,7 @@ export const ReducedMetadataValueSchema = Schema.Struct({
   }),
 
   topicDetails: Schema.Array(Schema.String).pipe(
-    Schema.withDecodingDefaultType(
-      Effect.succeed([] as ReadonlyArray<string>),
-    ),
+    Schema.withDecodingDefaultType(Effect.succeed([] as ReadonlyArray<string>)),
   ),
 })
 

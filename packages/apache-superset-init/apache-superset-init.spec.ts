@@ -35,7 +35,7 @@ const MainLive = Layer.merge(NodeServices.layer, OctokitLayer())
 it.layer(MainLive)('CLI', it => {
   it.effect(
     'downloads needed files and folders',
-    Effect.fnUntraced(function*(ctx) {
+    Effect.fnUntraced(function* (ctx) {
       const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
       const destinationPath = path.join(
