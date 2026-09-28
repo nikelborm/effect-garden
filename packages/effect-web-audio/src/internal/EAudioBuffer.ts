@@ -225,6 +225,7 @@ export const make = (
   EAudioBuffer,
   | AudioErrors.CannotMakeEAudioBufferInvalidOptions
   | AudioErrors.CannotMakeEAudioBufferNotEnoughMemory
+  | AudioErrors.CannotMakeEAudioBufferWrongRuntime
 > =>
   Result.try({
     try: () => makeImpl(new AudioBuffer(config)),
@@ -232,6 +233,7 @@ export const make = (
       {
         NotSupportedError: AudioErrors.CannotMakeEAudioBufferInvalidOptions,
         RangeError: AudioErrors.CannotMakeEAudioBufferNotEnoughMemory,
+        ReferenceError: AudioErrors.CannotMakeEAudioBufferWrongRuntime,
       },
       'new AudioBuffer(config) error remapping absurd',
       { config },

@@ -125,6 +125,13 @@ export class CannotMakeEAudioBufferInvalidOptions extends Schema.TaggedError<Can
   },
 ) {}
 
+export class CannotMakeEAudioBufferWrongRuntime extends Schema.TaggedError<CannotMakeEAudioBufferWrongRuntime>()(
+  'CannotMakeEAudioBufferWrongRuntime',
+  {
+    cause: ErrorSchema(Schema.Literal('ReferenceError')),
+  },
+) {}
+
 /**
  * I'm not sure if this error will actually be thrown, since the spec doesn't say it would. But MDN for some reason says it would.
  *
