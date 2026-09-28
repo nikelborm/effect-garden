@@ -3,7 +3,7 @@ Fix all issues related to tsc failing
 They're caused by migration from effect.ts v3 to effect v4 Release candidate #118. your task is to fix the type issues introduced and migrate the methods.
 
 available resources:
-- You can inspect /home/evadev/projects/effect git repo for effect V4 documentation, tests, source code and migration guides (like MIGRATION.md, which you should NOT read as a whole, it's giant, only grep for certain method names, imports etc).
+- You can inspect /home/evadev/projects/effect@4.0.0-rc.118 git repo for effect V4 documentation, tests, source code and migration guides (like MIGRATION.md, which you should NOT read as a whole, it's giant, only grep for certain method names, imports etc).
 - You can also go into the sources of the original effect v3 repo cloned at /home/evadev/projects/effect-v3 to get the sense on how some method worked originally.
 - You're in specific subproject right now, on which you're working. The current folder is the only place where you're allowed to modify anything. It's a part of the larger monorepo that half-migrated to effect v4. This folder you're in is already partially migrated as well, but still has many tsc errors that aren't dealt with. This is a leaf in the graph of unfixed dependencies, and all parents(roots) should listen to their children(leaves). Some packages in the monorepo might depend on the current package, but generally it should be more authoritative and should follow effect v4 typical design patterns and other packages should deal with the consequences and follow the interface declared in here. I create a completely isolated copy of the monorepo and a dedicated git branch for your workflow.
 

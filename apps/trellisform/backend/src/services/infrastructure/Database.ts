@@ -1,7 +1,6 @@
 import { DbConfig } from '@evadev/backend-config'
 import { schemaWithRelations } from '@trellisform/database'
 
-import * as PgDrizzlePg from '@effect/sql-drizzle/Pg'
 import * as PgClient from '@effect/sql-pg/PgClient'
 import * as Context from 'effect/Context'
 import * as Layer from 'effect/Layer'
@@ -20,6 +19,7 @@ export const SqlLive = Layer.unwrap(
 export class Database extends Context.Service<Database>()(
   '@trellisform/EffectfulDrizzle',
   {
+    // TODO: migrate to drizzle native pattern
     make: PgDrizzlePg.make({
       schema: schemaWithRelations,
       casing: 'snake_case',

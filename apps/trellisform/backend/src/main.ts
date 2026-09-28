@@ -121,7 +121,7 @@ const OptionalDevToolsLayer = Layer.unwrap(
       if (env !== 'development') return Layer.empty
 
       const DevTools = yield* Effect.tryPromise(
-        () => import('@effect/experimental/DevTools'),
+        () => import('effect/devtools/DevTools'),
       ).pipe(Effect.option)
 
       if (Option.isSome(DevTools))
