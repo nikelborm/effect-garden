@@ -5,13 +5,13 @@ import {
 } from 'gitdl'
 import { parse } from 'yaml'
 
-import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
 import * as NodeServices from '@effect/platform-node/NodeServices'
-import { describe, it } from '@effect/vitest'
+import { it } from '@effect/vitest'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Layer from 'effect/Layer'
 import * as Path from 'effect/Path'
+import * as Stdio from 'effect/Stdio'
 import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
@@ -26,16 +26,16 @@ const appCommand = Command.make(
   createApacheSupersetFolder,
 )
 
-const cli = (args: ReadonlyArray<string>) =>
-  Command.run(appCommand, {
-    name: pkg.name,
-    version: pkg.version,
-    summary: HelpDocSpan.text(pkg.description),
-  })(['node', '-', ...args])
+const cliEffect = Command.run(appCommand, {
+  version: pkg.version,
+})
 
-describe('CLI', { concurrent: true }, () => {
-  it.scoped('downloads needed files and folders', ctx =>
-    Effect.gen(function* () {
+const MainLive = Layer.merge(NodeServices.layer, OctokitLayer())
+
+it.layer(MainLive)('CLI', it => {
+  it.effect(
+    'downloads needed files and folders',
+    Effect.fnUntraced(function*(ctx) {
       const [fs, path] = yield* Effect.all([FileSystem.FileSystem, Path.Path])
 
       const destinationPath = path.join(
@@ -43,7 +43,12 @@ describe('CLI', { concurrent: true }, () => {
         'superset',
       )
 
-      yield* cli([`--destinationPath=${destinationPath}`])
+      yield* Effect.provide(
+        cliEffect,
+        Stdio.layerTest({
+          args: Effect.succeed([`--destinationPath=${destinationPath}`]),
+        }),
+      )
 
       const composeFileAsString = yield* fs.readFileString(
         path.join(destinationPath, 'compose.yml'),
@@ -96,6 +101,6 @@ describe('CLI', { concurrent: true }, () => {
           'jwtSecret',
           'CHANGE-ME-IN-PRODUCTION-GOTTA-BE-LONG-AND-SECRET',
         )
-    }).pipe(Effect.provide(Layer.merge(NodeServices.layer, OctokitLayer()))),
+    }),
   )
 })

@@ -1,23 +1,25 @@
 #!/usr/bin/env node
 
-import { prettyPrint } from 'effect-errors'
 import {
   destinationPathCLIOptionBackedByEnv,
   gitRefCLIOptionBackedByEnv,
   OctokitLayer,
 } from 'gitdl'
 
-import * as CliConfig from '@effect/cli/CliConfig'
-import * as HelpDocSpan from '@effect/cli/HelpDoc/Span'
-import * as CLIOptions from '@effect/cli/Options'
-import * as NodeFileSystem from '@effect/platform-node-shared/NodeFileSystem'
-import * as NodePath from '@effect/platform-node-shared/NodePath'
-import * as NodeRuntime from '@effect/platform-node-shared/NodeRuntime'
-import * as NodeTerminal from '@effect/platform-node-shared/NodeTerminal'
+import * as NodeChildProcessSpawner from '@effect/platform-node/NodeChildProcessSpawner'
+import * as NodeFileSystem from '@effect/platform-node/NodeFileSystem'
+import * as NodePath from '@effect/platform-node/NodePath'
+import * as NodeRuntime from '@effect/platform-node/NodeRuntime'
+import * as NodeStdio from '@effect/platform-node/NodeStdio'
+import * as NodeTerminal from '@effect/platform-node/NodeTerminal'
+import * as Cause from 'effect/Cause'
+import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
-import * as EFunction from 'effect/Function'
+import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as CliConfig from 'effect/unstable/cli/CliConfig'
 import * as Command from 'effect/unstable/cli/Command'
+import * as Flag from 'effect/unstable/cli/Flag'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/createApacheSupersetFolder.ts'
@@ -30,46 +32,44 @@ const appCommand = Command.make(
     // comparing them to the hardcoded default value. Also document the helpers
     // for overriding defaults in TSDoc of exported CLIOptions objects
     destinationPath: destinationPathCLIOptionBackedByEnv.pipe(
-      CLIOptions.map(e => (e === './destination' ? './superset' : e)),
+      Flag.map(e => (e === './destination' ? './superset' : e)),
     ),
     gitRef: gitRefCLIOptionBackedByEnv,
   },
   createApacheSupersetFolder,
-)
+).pipe(Command.withDescription(pkg.description))
 
 const cli = Command.run(appCommand, {
-  name: pkg.name,
   version: pkg.version,
-  summary: HelpDocSpan.text(pkg.description),
 })
 
-const AppLayer = Layer.mergeAll(
-  NodeFileSystem.layer,
-  NodePath.layer,
-  NodeTerminal.layer,
-  CliConfig.layer({ showTypes: false }),
-  OctokitLayer({
-    // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
-  }),
+const AppLayer = NodeChildProcessSpawner.layer.pipe(
+  Layer.provideMerge(NodeFileSystem.layer),
+  Layer.provideMerge(NodePath.layer),
+  Layer.merge(NodeTerminal.layer),
+  Layer.merge(CliConfig.layer()),
+  Layer.merge(NodeStdio.layer),
+  Layer.merge(
+    OctokitLayer({
+      // auth: getEnvVarOrFail('GITHUB_ACCESS_TOKEN'),
+    }),
+  ),
 )
 
-EFunction.pipe(
-  process.argv,
-  cli,
-  Effect.provide(AppLayer),
-  Effect.sandbox,
-  Effect.catch(e => {
-    console.error(prettyPrint(e))
-
-    return Effect.fail(e)
-  }),
-  Effect.withSpan('cli', {
-    attributes: {
-      name: pkg.name,
-      version: pkg.version,
-    },
-  }),
-  NodeRuntime.runMain({
-    disableErrorReporting: true,
-  }),
-)
+if (import.meta.main)
+  pipe(
+    cli,
+    Effect.withSpan('cli', {
+      attributes: {
+        name: pkg.name,
+        version: pkg.version,
+      },
+    }),
+    Effect.catchCause(cause =>
+      Console.error(Cause.pretty(cause)).pipe(
+        Effect.andThen(Effect.failCause(cause)),
+      ),
+    ),
+    Effect.provide(AppLayer),
+    NodeRuntime.runMain(),
+  )

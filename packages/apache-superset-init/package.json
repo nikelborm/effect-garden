@@ -24,7 +24,6 @@
     "@evadev/effect-helpers": "workspace:^",
     "@octokit/core": "catalog:",
     "@total-typescript/ts-reset": "catalog:",
-    "effect-errors": "catalog:",
     "gitdl": "workspace:^",
     "outdent": "catalog:",
     "yaml": "catalog:"

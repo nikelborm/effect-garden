@@ -34,16 +34,13 @@ export const updateJwtSecretInSupersetWebsocketConfig = Effect.fn(
   yield* fs.writeFileString(websocketConfigPath, config, { mode: 0o600 })
 })
 
-const SupersetWebsocketConfigSchema = Schema.parseJson(
-  Schema.Record({
-    key: Schema.NonEmptyString,
-    value: Schema.Any,
-  }),
+const SupersetWebsocketConfigSchema = Schema.fromJsonString(
+  Schema.Record(Schema.NonEmptyString, Schema.Unknown),
 )
 
-const decodeSupersetWebsocketConfig = Schema.decode(
+const decodeSupersetWebsocketConfig = Schema.decodeEffect(
   SupersetWebsocketConfigSchema,
 )
-const encodeSupersetWebsocketConfig = Schema.encode(
+const encodeSupersetWebsocketConfig = Schema.encodeEffect(
   SupersetWebsocketConfigSchema,
 )
