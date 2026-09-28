@@ -2,16 +2,16 @@ import { allFast } from '@evadev/effect-helpers'
 
 import * as NodeServices from '@effect/platform-node/NodeServices'
 import { it } from '@effect/vitest'
+import * as Command from 'effect/cli/Command'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Path from 'effect/Path'
+import * as ChildProcess from 'effect/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as Stdio from 'effect/Stdio'
 import * as Stream from 'effect/Stream'
-import * as Command from 'effect/unstable/cli/Command'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
-import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import pkg from './package.json' with { type: 'json' }
 import {

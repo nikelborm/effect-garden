@@ -4,9 +4,9 @@ import { styled } from 'next-yak'
 import * as Hooks from '@effect/atom-react/Hooks'
 import * as EArray from 'effect/Array'
 import * as EFunction from 'effect/Function'
+import * as AsyncResult from 'effect/reactivity/AsyncResult'
+import type * as Atom from 'effect/reactivity/Atom'
 import * as EString from 'effect/String'
-import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
-import type * as Atom from 'effect/unstable/reactivity/Atom'
 
 import {
   type CleanupPortType,

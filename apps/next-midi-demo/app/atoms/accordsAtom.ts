@@ -1,4 +1,4 @@
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
 
 import { AllAccords } from '../domain/Accord.ts'
 

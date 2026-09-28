@@ -1,5 +1,5 @@
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
 import * as Layer from 'effect/Layer'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 
 import { makeCookieAwareLayer } from './client.ts'
 import { makeLayer as makeConfigLayer } from './config.ts'

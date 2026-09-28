@@ -4,7 +4,7 @@ import { Button as BaseButton } from '@base-ui/react/button'
 import { styled } from 'next-yak'
 
 import * as Hooks from '@effect/atom-react/Hooks'
-import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+import * as AsyncResult from 'effect/reactivity/AsyncResult'
 
 import { accordsAtom } from '../atoms/accordsAtom.ts'
 import {

@@ -7,12 +7,12 @@ import { parse } from 'yaml'
 
 import * as NodeServices from '@effect/platform-node/NodeServices'
 import { it } from '@effect/vitest'
+import * as Command from 'effect/cli/Command'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Layer from 'effect/Layer'
 import * as Path from 'effect/Path'
 import * as Stdio from 'effect/Stdio'
-import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import { createApacheSupersetFolder } from './src/index.ts'

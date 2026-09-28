@@ -8,7 +8,7 @@ import {
 import { eq } from 'drizzle-orm'
 
 import * as Effect from 'effect/Effect'
-import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
+import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
 
 import { Database } from '../infrastructure/Database.ts'
 

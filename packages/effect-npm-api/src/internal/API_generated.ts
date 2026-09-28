@@ -2,10 +2,10 @@
 
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
-import type * as HttpClient from 'effect/unstable/http/HttpClient'
-import * as HttpClientError from 'effect/unstable/http/HttpClientError'
-import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
-import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
+import type * as HttpClient from 'effect/http/HttpClient'
+import * as HttpClientError from 'effect/http/HttpClientError'
+import * as HttpClientRequest from 'effect/http/HttpClientRequest'
+import * as HttpClientResponse from 'effect/http/HttpClientResponse'
 
 export interface RegistryMetadataOther {
   readonly data_size: number

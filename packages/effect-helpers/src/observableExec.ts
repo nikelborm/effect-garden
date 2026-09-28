@@ -1,9 +1,9 @@
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
+import * as ChildProcess from 'effect/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as EString from 'effect/String'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
-import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import { BadExitCodeError } from './BadExitCodeError.ts'
 

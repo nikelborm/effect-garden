@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 
 import * as Hooks from '@effect/atom-react/Hooks'
 import * as Effect from 'effect/Effect'
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
 
 import { ConnectionEventsLog } from './components/ConnectionEventsLog.tsx'
 // import { fetchAudioAsset, runnable } from './lib/dataFetcher.ts'

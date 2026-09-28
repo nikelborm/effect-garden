@@ -1,7 +1,7 @@
+import * as Etag from 'effect/http/Etag'
+import * as HttpApi from 'effect/httpapi/HttpApi'
+import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
 import * as Layer from 'effect/Layer'
-import * as Etag from 'effect/unstable/http/Etag'
-import * as HttpApi from 'effect/unstable/httpapi/HttpApi'
-import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
 
 import { AbstractAnswerOptionApiGroup } from './src/abstractAnswerOption.api.ts'
 import { AbstractQuestionApiGroup } from './src/abstractQuestion.api.ts'

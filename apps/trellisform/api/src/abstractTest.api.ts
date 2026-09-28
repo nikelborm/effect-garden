@@ -7,9 +7,9 @@ import {
   AbstractTestSchema,
 } from '@trellisform/model'
 
+import * as HttpApiEndpoint from 'effect/httpapi/HttpApiEndpoint'
+import * as HttpApiGroup from 'effect/httpapi/HttpApiGroup'
 import * as Schema from 'effect/Schema'
-import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
-import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
 
 import { omitStruct } from './omitStruct.ts'
 

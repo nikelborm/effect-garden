@@ -2,7 +2,7 @@
 
 import * as Hooks from '@effect/atom-react/Hooks'
 import * as Cause from 'effect/Cause'
-import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+import * as AsyncResult from 'effect/reactivity/AsyncResult'
 
 import { MIDIDeviceConnectionEventsStringLogAtom } from '../atoms/MIDIDeviceConnectionEventsStringLogAtom.ts'
 

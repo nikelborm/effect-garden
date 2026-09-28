@@ -2,18 +2,18 @@
  * preserve JSDoc comments attached to the function signature */
 
 import * as Context from 'effect/Context'
+import * as Prompt from 'effect/cli/Prompt'
 import * as Effect from 'effect/Effect'
 import { dual } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type { PlatformError } from 'effect/PlatformError'
+import * as ChildProcess from 'effect/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as Redacted from 'effect/Redacted'
 import type * as Scope from 'effect/Scope'
 import * as Stdio from 'effect/Stdio'
 import * as Stream from 'effect/Stream'
 import type * as Terminal from 'effect/Terminal'
-import * as Prompt from 'effect/unstable/cli/Prompt'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
-import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 /**
  * Password for `sudo --stdin` calls.

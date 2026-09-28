@@ -12,9 +12,9 @@ import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Stream from 'effect/Stream'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
-import * as HttpClient from 'effect/unstable/http/HttpClient'
-import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
+import * as HttpClient from 'effect/http/HttpClient'
+import * as HttpClientResponse from 'effect/http/HttpClientResponse'
 
 ZStd.Service.use(zstd =>
   pipe(

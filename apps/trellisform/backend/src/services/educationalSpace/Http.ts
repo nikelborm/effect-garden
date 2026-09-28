@@ -1,8 +1,8 @@
 import { API } from '@trellisform/api'
 
 import * as Effect from 'effect/Effect'
-import * as HttpServerResponse from 'effect/unstable/http/HttpServerResponse'
-import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
+import * as HttpServerResponse from 'effect/http/HttpServerResponse'
+import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
 
 export const EducationalSpaceHttpGroupLive = HttpApiBuilder.group(
   API,

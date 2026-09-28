@@ -9,12 +9,12 @@
 import * as BigDecimal from 'effect/BigDecimal'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import * as HttpClient from 'effect/http/HttpClient'
+import * as HttpClientRequest from 'effect/http/HttpClientRequest'
+import * as HttpIncomingMessage from 'effect/http/HttpIncomingMessage'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
-import * as HttpClient from 'effect/unstable/http/HttpClient'
-import * as HttpClientRequest from 'effect/unstable/http/HttpClientRequest'
-import * as HttpIncomingMessage from 'effect/unstable/http/HttpIncomingMessage'
 
 export class CurrencyConverter extends Context.Service<
   CurrencyConverter,

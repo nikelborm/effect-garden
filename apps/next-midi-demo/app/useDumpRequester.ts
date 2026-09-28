@@ -4,7 +4,7 @@ import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 
 import * as Hooks from '@effect/atom-react/Hooks'
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
 
 import { nanoPadOutputId } from './constants.ts'
 

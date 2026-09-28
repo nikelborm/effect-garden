@@ -6,10 +6,10 @@ import * as BunPath from '@effect/platform-bun/BunPath'
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunStdio from '@effect/platform-bun/BunStdio'
 import * as BunTerminal from '@effect/platform-bun/BunTerminal'
+import * as Command from 'effect/cli/Command'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
-import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import { archiveCompressEncryptCommand } from './src/archiveCompressEncryptCommand.ts'

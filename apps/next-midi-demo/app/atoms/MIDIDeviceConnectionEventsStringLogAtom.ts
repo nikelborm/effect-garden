@@ -4,7 +4,7 @@ import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as Util from 'effect-web-midi/Util'
 
 import * as EFunction from 'effect/Function'
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
 
 const MIDIDeviceConnectionEventsStringLogStream = EFunction.pipe(
   EMIDIAccess.request(),

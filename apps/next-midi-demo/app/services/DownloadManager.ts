@@ -1,10 +1,10 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as FiberMap from 'effect/FiberMap'
+import * as HttpClient from 'effect/http/HttpClient'
+import type * as HttpClientError from 'effect/http/HttpClientError'
 import * as Schedule from 'effect/Schedule'
 import * as Stream from 'effect/Stream'
-import * as HttpClient from 'effect/unstable/http/HttpClient'
-import type * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
 import type { AssetPointer } from '../domain/AssetPointer.ts'
@@ -146,7 +146,7 @@ export const getStreamOfRemoteAsset = (
       resumeFromByte ? { headers: { Range: `bytes=${resumeFromByte}-` } } : {},
     )
     // TODO: use HttpClientResponse.stream
-    // import * as HttpClientResponse from 'effect/unstable/http/HttpClientResponse'
+    // import * as HttpClientResponse from 'effect/http/HttpClientResponse'
     return response.stream as Stream.Stream<
       Uint8Array<ArrayBuffer>,
       HttpClientError.ResponseError,

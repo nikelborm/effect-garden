@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
-import type * as ChildProcess from 'effect/unstable/process/ChildProcess'
-import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
+import type * as ChildProcess from 'effect/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 
 import { Uint8ArrayStreamToString } from './Uint8ArrayStreamToString.ts'
 

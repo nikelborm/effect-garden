@@ -1,6 +1,6 @@
 import type * as Brand from 'effect/Brand'
+import * as Argument from 'effect/cli/Argument'
 import * as Path from 'effect/Path'
-import * as Argument from 'effect/unstable/cli/Argument'
 
 export const withResolvedToAbsolutePathArg = <A extends string>(
   self: Argument.Argument<A>,

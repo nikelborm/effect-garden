@@ -4,9 +4,9 @@ import { abstractTest } from '@trellisform/database/schema'
 
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
+import * as HttpServerResponse from 'effect/http/HttpServerResponse'
+import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
 import * as Struct from 'effect/Struct'
-import * as HttpServerResponse from 'effect/unstable/http/HttpServerResponse'
-import * as HttpApiBuilder from 'effect/unstable/httpapi/HttpApiBuilder'
 
 import { Database } from '../infrastructure/Database.ts'
 

@@ -7,10 +7,10 @@ import * as Parsing from 'effect-web-midi/Parsing'
 import * as Util from 'effect-web-midi/Util'
 
 import { pipe } from 'effect/Function'
-import * as Stream from 'effect/Stream'
-import * as AsyncResult from 'effect/unstable/reactivity/AsyncResult'
+import * as AsyncResult from 'effect/reactivity/AsyncResult'
 // import { Atom, Result } from '@effect-atom/atom-react'
-import * as Atom from 'effect/unstable/reactivity/Atom'
+import * as Atom from 'effect/reactivity/Atom'
+import * as Stream from 'effect/Stream'
 
 export const getMessagesLogAtom: (
   inputId: EMIDIInput.Id | null,

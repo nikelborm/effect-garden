@@ -5,9 +5,9 @@ import {
 } from '@evadev/effect-helpers'
 
 import * as Effect from 'effect/Effect'
+import * as ChildProcess from 'effect/process/ChildProcess'
 import * as Schema from 'effect/Schema'
 import * as SchemaIssue from 'effect/SchemaIssue'
-import * as ChildProcess from 'effect/unstable/process/ChildProcess'
 
 import { BtrfsFindRootsError } from './Errors.ts'
 

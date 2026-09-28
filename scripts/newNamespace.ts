@@ -3,10 +3,10 @@
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as Cause from 'effect/Cause'
+import * as Prompt from 'effect/cli/Prompt'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Path from 'effect/Path'
-import * as Prompt from 'effect/unstable/cli/Prompt'
 
 import { myMonorepoPackagesEffect } from './fix_monorepo.ts'
 

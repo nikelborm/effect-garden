@@ -8,11 +8,11 @@ import * as NodeStdio from '@effect/platform-node/NodeStdio'
 import * as NodeTerminal from '@effect/platform-node/NodeTerminal'
 import * as Cause from 'effect/Cause'
 import * as Console from 'effect/Console'
+import * as CliConfig from 'effect/cli/CliConfig'
+import * as Command from 'effect/cli/Command'
 import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
-import * as CliConfig from 'effect/unstable/cli/CliConfig'
-import * as Command from 'effect/unstable/cli/Command'
 
 import pkg from './package.json' with { type: 'json' }
 import {

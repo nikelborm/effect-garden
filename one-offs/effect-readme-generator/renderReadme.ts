@@ -15,6 +15,7 @@ import * as Fiber from 'effect/Fiber'
 import * as FileSystem from 'effect/FileSystem'
 import * as Filter from 'effect/Filter'
 import { flow, pipe } from 'effect/Function'
+import * as FetchHttpClient from 'effect/http/FetchHttpClient'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
 import type * as Path from 'effect/Path'
@@ -22,7 +23,6 @@ import type { PlatformError } from 'effect/PlatformError'
 import * as Ref from 'effect/Ref'
 import * as Result from 'effect/Result'
 import * as Stream from 'effect/Stream'
-import * as FetchHttpClient from 'effect/unstable/http/FetchHttpClient'
 
 import {
   AMOUNT_OF_COLUMNS,

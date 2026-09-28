@@ -1,5 +1,5 @@
+import * as HttpClientError from 'effect/http/HttpClientError'
 import * as Schema from 'effect/Schema'
-import * as HttpClientError from 'effect/unstable/http/HttpClientError'
 
 // TODO: resolve this mess with causes and separation of NetworkError and
 // HttpStatusError

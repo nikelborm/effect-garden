@@ -2,9 +2,9 @@
 
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Prompt from 'effect/cli/Prompt'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
-import * as Prompt from 'effect/unstable/cli/Prompt'
 
 Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem

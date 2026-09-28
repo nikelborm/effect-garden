@@ -10,11 +10,11 @@ import {
 } from '@trellisform/model'
 
 import * as Context from 'effect/Context'
+import * as HttpApiEndpoint from 'effect/httpapi/HttpApiEndpoint'
+import { Unauthorized } from 'effect/httpapi/HttpApiError'
+import * as HttpApiGroup from 'effect/httpapi/HttpApiGroup'
+import * as HttpApiMiddleware from 'effect/httpapi/HttpApiMiddleware'
 import * as Schema from 'effect/Schema'
-import * as HttpApiEndpoint from 'effect/unstable/httpapi/HttpApiEndpoint'
-import { Unauthorized } from 'effect/unstable/httpapi/HttpApiError'
-import * as HttpApiGroup from 'effect/unstable/httpapi/HttpApiGroup'
-import * as HttpApiMiddleware from 'effect/unstable/httpapi/HttpApiMiddleware'
 
 export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>()(
   'BetterAuthApiError',

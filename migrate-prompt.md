@@ -1,6 +1,6 @@
 Fix all issues related to tsc failing
 
-They're caused by migration from effect.ts v3 to effect v4 Release candidate #117. your task is to fix the type issues introduced and migrate the methods.
+They're caused by migration from effect.ts v3 to effect v4 Release candidate #118. your task is to fix the type issues introduced and migrate the methods.
 
 available resources:
 - You can inspect /home/evadev/projects/effect git repo for effect V4 documentation, tests, source code and migration guides (like MIGRATION.md, which you should NOT read as a whole, it's giant, only grep for certain method names, imports etc).

@@ -8,8 +8,8 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
+import * as Atom from 'effect/reactivity/Atom'
 import * as Stream from 'effect/Stream'
-import * as Atom from 'effect/unstable/reactivity/Atom'
 
 export const portMapAtom = Effect.gen(function* () {
   const initialValue = yield* EMIDIAccess.AllPortsRecord
