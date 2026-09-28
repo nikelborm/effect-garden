@@ -19,7 +19,10 @@ export default defineConfig({
     join(databasePackageDirPath, 'src', 'schema.ts'),
   ),
   dialect: 'postgresql',
-  casing: 'snake_case',
+  // TODO(drizzle-kit rc): top-level `casing: 'snake_case'` was removed in
+  // drizzle-kit 1.0.0-rc. Only `introspect.casing: 'camel' | 'preserve'`
+  // remains, so snake_case mapping must now live in the schema definition
+  // itself (e.g. pgTable column names) or a future drizzle-kit option.
   dbCredentials: {
     ssl: false,
     password: env.DATABASE_PASSWORD,

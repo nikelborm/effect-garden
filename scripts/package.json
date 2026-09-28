@@ -20,7 +20,6 @@
     "@evadev/effect-helpers": "workspace:^",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
-    "effect-errors": "catalog:",
     "smol-toml": "catalog:",
     "sort-package-json": "catalog:",
     "tslib": "catalog:"

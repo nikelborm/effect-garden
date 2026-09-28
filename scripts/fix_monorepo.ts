@@ -7,13 +7,13 @@ import {
   NonEmptyRecord,
   observableExec,
 } from '@evadev/effect-helpers'
-import { prettyPrint } from 'effect-errors'
 import { parse as parseTOML, stringify as stringifyTOML } from 'smol-toml'
 import sortPackageJson from 'sort-package-json'
 
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
 import * as EArray from 'effect/Array'
+import * as Cause from 'effect/Cause'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
@@ -22,6 +22,7 @@ import * as Option from 'effect/Option'
 import * as Path from 'effect/Path'
 import * as Predicate from 'effect/Predicate'
 import * as Record from 'effect/Record'
+import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
 import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
@@ -48,9 +49,9 @@ const deps = NonEmptyRecord(
   Schema.Trimmed.check(Schema.isNonEmpty()),
 )
 
-export const RootPackageJsonFromStringSchema = Schema.parseJson(
-  Schema.Struct(
-    {
+export const RootPackageJsonFromStringSchema = Schema.fromJsonString(
+  Schema.StructWithRest(
+    Schema.Struct({
       name: Schema.Trimmed.check(Schema.isNonEmpty()),
       // to avoid accidental publishs
       private: Schema.Literal(true),
@@ -60,15 +61,15 @@ export const RootPackageJsonFromStringSchema = Schema.parseJson(
       devDependencies: AbsentProperty,
       workspaces: Schema.NonEmptyArray(
         Schema.Union([
-          Schema.TemplateLiteralParser(
+          Schema.TemplateLiteralParser([
             Schema.Trimmed.check(Schema.isNonEmpty()),
             '/*',
-          ),
+          ]),
           Schema.Trimmed.check(Schema.isNonEmpty()),
         ]),
       ),
-    },
-    { key: Schema.String, value: Schema.Unknown },
+    }),
+    [Schema.Record(Schema.String, Schema.Unknown)],
   ).annotateKey({ title: 'RootPackageJson' }),
   { space: 2 },
 )
@@ -95,70 +96,76 @@ const userSchema = Schema.Struct({
 
 // TODO: make effect peer deps sorter put into prod deps for frontend or
 // end-apps, which bundle them into final build/binary
-export const SubPackageJsonSchema = Schema.Struct(
-  {
-    name: Schema.Trimmed.check(Schema.isNonEmpty()),
-    type: Schema.Literal('module'),
-    version: Schema.Trimmed.check(Schema.isNonEmpty()),
+const subPackageBaseFields = {
+  name: Schema.Trimmed.check(Schema.isNonEmpty()),
+  type: Schema.Literal('module'),
+  version: Schema.Trimmed.check(Schema.isNonEmpty()),
 
-    description: Schema.Trimmed.check(Schema.isNonEmpty()),
-    devDependencies: deps.pipe(Schema.optionalKey),
-    peerDependencies: deps.pipe(Schema.optionalKey),
+  description: Schema.Trimmed.check(Schema.isNonEmpty()),
+  devDependencies: deps.pipe(Schema.optionalKey),
+  peerDependencies: deps.pipe(Schema.optionalKey),
 
-    catalog: AbsentProperty,
-    dependencies: deps.pipe(Schema.optionalKey),
-    homepage: Schema.TemplateLiteralParser(
-      `${httpsRepoLink}/tree/main/`,
-      Schema.Trimmed.check(Schema.isNonEmpty()),
-      `#readme`,
-    ),
-    bugs: Schema.Struct({
-      url: Schema.Literal(issuesLink),
-      email: emailSchema,
+  catalog: AbsentProperty,
+  dependencies: deps.pipe(Schema.optionalKey),
+  homepage: Schema.TemplateLiteralParser([
+    `${httpsRepoLink}/tree/main/`,
+    Schema.Trimmed.check(Schema.isNonEmpty()),
+    `#readme`,
+  ]),
+  bugs: Schema.Struct({
+    url: Schema.Literal(issuesLink),
+    email: emailSchema,
+  }),
+  keywords: Schema.NonEmptyArray(
+    Schema.Trimmed.check(Schema.isNonEmpty()),
+  ).pipe(Schema.optionalKey),
+  repository: Schema.Struct({
+    type: Schema.Literal('git'),
+    url: Schema.Literal(gitSshUrl),
+    directory: Schema.Trimmed.check(Schema.isNonEmpty()),
+  }),
+  scripts: NonEmptyRecord(
+    Schema.Trimmed.check(Schema.isNonEmpty()),
+    Schema.Trimmed.check(Schema.isNonEmpty()),
+  ).pipe(Schema.optionalKey),
+  author: myUserSchema,
+  contributors: Schema.TupleWithRest(Schema.Tuple([myUserSchema]), [
+    userSchema,
+  ]),
+  maintainers: Schema.TupleWithRest(Schema.Tuple([myUserSchema]), [userSchema]),
+} as const
+
+const subPackageRest = [Schema.Record(Schema.String, Schema.Unknown)] as const
+
+export const SubPackageJsonSchema = Schema.Union([
+  Schema.StructWithRest(
+    Schema.Struct({
+      ...subPackageBaseFields,
+      license: Schema.Literal('UNLICENSED'),
+      private: Schema.Literal(true),
+      publishConfig: AbsentProperty,
     }),
-    keywords: Schema.NonEmptyArray(
-      Schema.Trimmed.check(Schema.isNonEmpty()),
-    ).pipe(Schema.optionalKey),
-    repository: Schema.Struct({
-      type: Schema.Literal('git'),
-      url: Schema.Literal(gitSshUrl),
-      directory: Schema.Trimmed.check(Schema.isNonEmpty()),
-    }),
-    scripts: NonEmptyRecord(
-      Schema.Trimmed.check(Schema.isNonEmpty()),
-      Schema.Trimmed.check(Schema.isNonEmpty()),
-    ).pipe(Schema.optionalKey),
-    author: myUserSchema,
-    contributors: Schema.TupleWithRest(myUserSchema, userSchema),
-    maintainers: Schema.TupleWithRest(myUserSchema, userSchema),
-  },
-  { key: Schema.String, value: Schema.Unknown },
-).pipe(
-  Schema.extend(
-    Schema.Union([
-      Schema.Struct({
-        license: Schema.Literal('UNLICENSED'),
-        private: Schema.Literal(true),
-        publishConfig: AbsentProperty,
-      }),
-      Schema.Struct({
-        license: Schema.Literal('MIT'),
-        private: Schema.Literal(false),
-        publishConfig: Schema.Struct({
-          access: Schema.Literal('public'),
-          // TODO: my github actions are a mess right now
-          provenance: Schema.Literal(false),
-          // TODO: should make creating a separate package.json as well as README, and use this, to create a crafted package folder. for example to not publish "scripts" and other repo-only fields
-          // directory: Schema.Literal('dist'),
-          // linkDirectory: Schema.Literal(false),
-        }),
-      }),
-    ]),
+    [...subPackageRest],
   ),
-  Schema.annotateKey({ title: 'SubPackageJson' }),
-)
+  Schema.StructWithRest(
+    Schema.Struct({
+      ...subPackageBaseFields,
+      license: Schema.Literal('MIT'),
+      private: Schema.Literal(false),
+      publishConfig: Schema.Struct({
+        access: Schema.Literal('public'),
+        // TODO: my github actions are a mess right now
+        provenance: Schema.Literal(false),
+        // TODO: should make creating a separate package.json as well as README, and use this, to create a crafted package folder. for example to not publish "scripts" and other repo-only fields
+        // directory: Schema.Literal('dist'),
+        // linkDirectory: Schema.Literal(false),
+      }),
+    }),
+    [...subPackageRest],
+  ),
+]).pipe(Schema.annotateKey({ title: 'SubPackageJson' }))
 
-export const SubPackageJsonSchemaFromString = Schema.parseJson(
+export const SubPackageJsonSchemaFromString = Schema.fromJsonString(
   SubPackageJsonSchema,
   { space: 2 },
 )
@@ -167,7 +174,7 @@ export type SubPackageJson = (typeof SubPackageJsonSchema)['Encoded']
 
 export const rootPackageJsonEffect = FileSystem.FileSystem.pipe(
   Effect.flatMap(fs => fs.readFileString(rootPackageJsonPath, 'utf-8')),
-  Effect.flatMap(Schema.decode(RootPackageJsonFromStringSchema)),
+  Effect.flatMap(Schema.decodeEffect(RootPackageJsonFromStringSchema)),
   Effect.withSpan('rootPackageJson'),
   // do not cache them! They change over time, especially because you execute
   // the program twice
@@ -179,9 +186,8 @@ export const MyMonorepoPackagePathsSchema = Schema.Struct({
 }).pipe(
   schema =>
     Schema.Union([
-      Schema.extend(
-        schema,
-        Schema.Struct({
+      schema.pipe(
+        Schema.fieldsAssign({
           workspaceDirName: Schema.Trimmed.check(Schema.isNonEmpty()),
           absoluteWorkspaceDirPath: Schema.Trimmed.check(Schema.isNonEmpty()),
         }),
@@ -229,7 +235,7 @@ export const myMonorepoPackagePathsEffect = pipe(
     }),
   ),
   Effect.map(EArray.flatten),
-  Effect.flatMap(Schema.decodeUnknown(MyMonorepoPackagePathsSchema)),
+  Effect.flatMap(Schema.decodeUnknownEffect(MyMonorepoPackagePathsSchema)),
   Effect.withSpan('myMonorepoPackagesDirectoryPaths'),
   // do not cache them! They change over time, especially because you execute
   // the program twice
@@ -264,7 +270,7 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
 
     const pkg = yield* Effect.flatMap(
       fs.readFileString(packageJsonPath),
-      Schema.decode(SubPackageJsonSchemaFromString),
+      Schema.decodeEffect(SubPackageJsonSchemaFromString),
     )
 
     yield* Effect.annotateCurrentSpan({
@@ -293,7 +299,7 @@ export const getMyMonorepoPackage = Effect.fn('getMyMonorepoPackage')(
     return {
       pkg,
       update: flow(
-        Schema.encode(SubPackageJsonSchemaFromString),
+        Schema.encodeEffect(SubPackageJsonSchemaFromString),
         Effect.flatMap(encoded =>
           fs.writeFileString(packageJsonPath, encoded + '\n'),
         ),
@@ -326,10 +332,10 @@ export const getPackagesInfoEffect = Effect.all({
 export class AmbiguousDependencyVersions extends Schema.TaggedError<AmbiguousDependencyVersions>()(
   'AmbiguousDependencyVersions',
   {
-    conflicts: Schema.Record({
-      key: Schema.Trimmed.check(Schema.isNonEmpty()),
-      value: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
-    }),
+    conflicts: Schema.Record(
+      Schema.Trimmed.check(Schema.isNonEmpty()),
+      Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
+    ),
   },
 ) {
   override get message(): string {
@@ -341,13 +347,13 @@ export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<Intersectio
   'IntersectionOfDevAndProdDeps',
   {
     packageName: Schema.Trimmed.check(Schema.isNonEmpty()),
-    intersection: Schema.Record({
-      key: Schema.Trimmed.check(Schema.isNonEmpty()),
-      value: Schema.Struct({
+    intersection: Schema.Record(
+      Schema.Trimmed.check(Schema.isNonEmpty()),
+      Schema.Struct({
         devVersion: Schema.Trimmed.check(Schema.isNonEmpty()),
         prodVersion: Schema.Trimmed.check(Schema.isNonEmpty()),
       }),
-    }),
+    ),
   },
 ) {
   override get message(): string {
@@ -358,10 +364,10 @@ export class IntersectionOfDevAndProdDeps extends Schema.TaggedError<Intersectio
 export class DuplicatePackageNames extends Schema.TaggedError<DuplicatePackageNames>()(
   'DuplicatePackageNames',
   {
-    duplicates: Schema.Record({
-      key: Schema.Trimmed.check(Schema.isNonEmpty()),
-      value: Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
-    }),
+    duplicates: Schema.Record(
+      Schema.Trimmed.check(Schema.isNonEmpty()),
+      Schema.Array(Schema.Trimmed.check(Schema.isNonEmpty())),
+    ),
   },
 ) {
   override get message(): string {
@@ -466,7 +472,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
     const badDeps = Record.filterMap(
       dependencyNameToItsInstances,
       (dependencyInstances, dependencyName) => {
-        if (dependencyInstances.length < 2) return Option.none()
+        if (dependencyInstances.length < 2) return Result.failVoid
 
         const uniqueVersions = new Set(
           dependencyInstances.map(_ => _.dependency.version),
@@ -475,14 +481,14 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
         const dependencyVersionPointsOnlyAtWorkspace =
           !withoutWorkspace(uniqueVersions).size
 
-        if (dependencyVersionPointsOnlyAtWorkspace) return Option.none()
+        if (dependencyVersionPointsOnlyAtWorkspace) return Result.failVoid
 
         const uniqueVersionsWithoutCatalog = withoutCatalog(uniqueVersions)
 
         const dependencyVersionPointsOnlyAtCatalog =
           !uniqueVersionsWithoutCatalog.size
 
-        if (dependencyVersionPointsOnlyAtCatalog) return Option.none()
+        if (dependencyVersionPointsOnlyAtCatalog) return Result.failVoid
 
         const versionPresentInCatalog =
           rootPackageJson.catalog[dependencyName] || null
@@ -490,7 +496,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
         const wouldRequireChoosingVersionToPutIntoCatalog =
           !versionPresentInCatalog && uniqueVersionsWithoutCatalog.size > 1
 
-        return Option.some({
+        return Result.succeed({
           dependencyInstances: dependencyInstances,
           uniqueVersionsWithoutCatalog: uniqueVersionsWithoutCatalog,
           versionPresentInCatalog,
@@ -563,7 +569,7 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
           Struct.get('uniqueVersions'),
           EArray.fromIterable,
           Option.liftPredicate(Predicate.isTupleOf(1)),
-          Option.map(Tuple.at(0)),
+          Option.map(tuple => Tuple.get(tuple, 0)),
           Option.getOrThrow,
         ),
       ),
@@ -586,7 +592,8 @@ const ensureDependenciesOfWorkspacePackagesAreNotDuplicatedAndCatalogized =
 
       yield* fs.writeFileString(
         rootPackageJsonPath,
-        (yield* Schema.encode(RootPackageJsonFromStringSchema)(newRoot)) + '\n',
+        (yield* Schema.encodeEffect(RootPackageJsonFromStringSchema)(newRoot)) +
+          '\n',
       )
 
       yield* observableExec({
@@ -638,8 +645,8 @@ const ensureNoPackagesWithSameName = myMonorepoPackagesEffect.pipe(
       EArray.groupBy(_ => _.pkg.name),
       Record.filterMap(packages =>
         packages.length > 1
-          ? Option.some(packages.map(_ => _.absolutePackageDirPath))
-          : Option.none(),
+          ? Result.succeed(packages.map(_ => _.absolutePackageDirPath))
+          : Result.failVoid,
       ),
     )
 
@@ -815,8 +822,8 @@ const fixNonWorkspaceDeps = Effect.gen(function* () {
   const fixable = flow(
     Record.filterMap((version: string, name: string) =>
       workspacePackageNames.has(name) && version !== 'workspace:^'
-        ? Option.some(version)
-        : Option.none(),
+        ? Result.succeed(version)
+        : Result.failVoid,
     ),
     Record.keys,
   )
@@ -1029,14 +1036,16 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
         const localDepVersion = pkg[depType]?.[depName]
         if (localDepVersion === undefined) continue
         if (localDepVersion !== 'catalog:')
-          return yield* Effect.dieMessage(
-            'Found package pointing at non-catalog version, while catalog were available\n' +
-              JSON.stringify({
-                depName,
-                catalogDepVersion,
-                depType,
-                installedInto: pkg.name,
-              }),
+          return yield* Effect.die(
+            new Error(
+              'Found package pointing at non-catalog version, while catalog were available\n' +
+                JSON.stringify({
+                  depName,
+                  catalogDepVersion,
+                  depType,
+                  installedInto: pkg.name,
+                }),
+            ),
           )
 
         const seen = catalogPackageNameToUsage.get(depName)
@@ -1085,7 +1094,7 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
 
   yield* fs.writeFileString(
     rootPackageJsonPath,
-    (yield* Schema.encode(RootPackageJsonFromStringSchema)({
+    (yield* Schema.encodeEffect(RootPackageJsonFromStringSchema)({
       ...rootPackageJson,
       catalog: newCatalog,
     })) + '\n',
@@ -1107,13 +1116,13 @@ const program = Effect.all([
   ensureCatalogHasNoUnusedOrUsedOnceEntries,
   sortPackageJsonEffect,
 ]).pipe(
-  Effect.repeatN(2),
+  Effect.repeat({ times: 2 }),
   Effect.scoped,
   Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catch(e => {
-    console.error(prettyPrint(e))
+    console.error(Cause.pretty(e))
 
     return Effect.fail(e)
   }),

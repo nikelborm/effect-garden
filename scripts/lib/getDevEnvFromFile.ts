@@ -6,9 +6,9 @@ import * as Schema from 'effect/Schema'
 import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
 import { devEnvFilePath } from './paths.ts'
 
-const PortSchema = Schema.compose(
-  Schema.NumberFromString,
-  Schema.Positive.pipe(Schema.lessThanOrEqualTo(65535)),
+const PortSchema = Schema.NumberFromString.check(
+  Schema.isInt(),
+  Schema.isBetween({ maximum: 65535, minimum: 1 }),
 )
 
 const DatabaseConfigSchema = Schema.Struct({
@@ -42,7 +42,7 @@ export async function getDevEnvFromFile() {
 
   const envResult = decodeDevEnvResult(parsed)
 
-  if (Result.isFailure(envResult)) throw envResult.fail
+  if (Result.isFailure(envResult)) throw envResult.failure
 
-  return envResult.succeed
+  return envResult.success
 }

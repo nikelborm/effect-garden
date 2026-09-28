@@ -1,13 +1,11 @@
 #!/usr/bin/env bun
 
-import { prettyPrint } from 'effect-errors'
-
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Path from 'effect/Path'
-import * as Result from 'effect/Result'
 import * as Prompt from 'effect/unstable/cli/Prompt'
 
 import { myMonorepoPackagesEffect } from './fix_monorepo.ts'
@@ -20,18 +18,18 @@ import * as Effect from 'effect/Effect'
 
 export const namespaceDelimiter = ' '
 
-export const listOfNamespacesPrompt = Prompt.list({
+export const listOfNamespacesPrompt = Prompt.List({
   delimiter: namespaceDelimiter,
   message:
     'Enter a list of namespaces to create empty files for, delimited by space',
-  validate: value =>
-    value.split(namespaceDelimiter).some(el => el.length <= 3)
-      ? Result.fail(
+  validate: (value: string) =>
+    value.split(namespaceDelimiter).some((el: string) => el.length <= 3)
+      ? Effect.fail(
           'Some of the names are too short. Should be at least 3 characters',
         )
       : value.split(namespaceDelimiter).length === 0
-        ? Result.fail('Too little namespaces specified. Should be at least 1')
-        : Result.succeed(value),
+        ? Effect.fail('Too little namespaces specified. Should be at least 1')
+        : Effect.succeed(value),
 })
 
 export const createNamespaceRelatedFiles = Effect.fn(
@@ -72,7 +70,7 @@ const program = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
 
   const { namespaces, absolutePackageDirPath } = yield* Prompt.all({
-    absolutePackageDirPath: Prompt.select({
+    absolutePackageDirPath: Prompt.Select({
       message: `Choose a package:`,
       choices: myMonorepoPackages.map(pkg => ({
         title: pkg.pkg.name,
@@ -88,7 +86,7 @@ const program = Effect.gen(function* () {
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catch(e => {
-    console.error(prettyPrint(e))
+    console.error(Cause.pretty(e))
 
     return Effect.fail(e)
   }),

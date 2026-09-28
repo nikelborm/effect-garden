@@ -1,16 +1,15 @@
 #!/usr/bin/env bun
 
-import { prettyPrint } from 'effect-errors'
-
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
-import * as BunSink from '@effect/platform-bun/BunSink'
+import * as Cause from 'effect/Cause'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 import * as Path from 'effect/Path'
 import * as Record from 'effect/Record'
-import * as Stream from 'effect/Stream'
 import * as Prompt from 'effect/unstable/cli/Prompt'
+import * as ChildProcess from 'effect/unstable/process/ChildProcess'
+import * as ChildProcessSpawner from 'effect/unstable/process/ChildProcessSpawner'
 
 import type { SubPackageJson } from './fix_monorepo.ts'
 import { packagesDirPath, projectRootAbsolutePath } from './lib/paths.ts'
@@ -235,23 +234,28 @@ const program = Effect.gen(function* () {
     fs.writeFileString(path, content),
   )
 
-  yield* Command.make('bun', 'add', config.name + '@workspace:^').pipe(
-    Command.workingDirectory(projectRootAbsolutePath),
-    Command.stream,
-    Stream.concat(
-      Command.make('bun', 'install').pipe(
-        Command.workingDirectory(packagePath),
-        Command.stream,
-      ),
-    ),
-    Stream.run(BunSink.stdout),
+  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+
+  yield* spawner.exitCode(
+    ChildProcess.make('bun', ['add', config.name + '@workspace:^'], {
+      cwd: projectRootAbsolutePath,
+      stderr: 'inherit',
+      stdout: 'inherit',
+    }),
+  )
+  yield* spawner.exitCode(
+    ChildProcess.make('bun', ['install'], {
+      cwd: packagePath,
+      stderr: 'inherit',
+      stdout: 'inherit',
+    }),
   )
 }).pipe(
   Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
   Effect.sandbox,
   Effect.catch(e => {
-    console.error(prettyPrint(e))
+    console.error(Cause.pretty(e))
 
     return Effect.fail(e)
   }),

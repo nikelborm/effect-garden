@@ -1,25 +1,38 @@
 import * as Result from 'effect/Result'
 import * as Schema from 'effect/Schema'
+import * as SchemaGetter from 'effect/SchemaGetter'
 
 import { devComposePs } from './composeCommands.ts'
 
-const PsCommandOutputSchema = Schema.compose(
-  Schema.compose(Schema.Trim, Schema.split('\n')),
-  Schema.parseJson(
-    Schema.Struct({
-      Service: Schema.NonEmptyString,
-      State: Schema.Literal(
-        'paused',
-        'restarting',
-        'removing',
-        'running',
-        'dead',
-        'created',
-        'exited',
-      ),
-    }),
-  ).pipe(Schema.Array),
-).pipe(Schema.asSchema)
+const ContainerSchema = Schema.Struct({
+  Service: Schema.NonEmptyString,
+  State: Schema.Literals([
+    'paused',
+    'restarting',
+    'removing',
+    'running',
+    'dead',
+    'created',
+    'exited',
+  ]),
+})
+
+// TODO: refactor to SchemaGetter.split?
+const LinesSchema = Schema.Trim.pipe(
+  Schema.decodeTo(Schema.Array(Schema.String), {
+    decode: SchemaGetter.transform((s: string) =>
+      s === '' ? [] : s.split('\n'),
+    ),
+    encode: SchemaGetter.transform((lines: ReadonlyArray<string>) =>
+      lines.join('\n'),
+    ),
+  }),
+)
+
+const PsCommandOutputSchema = LinesSchema.pipe(
+  Schema.decodeTo(Schema.Array(Schema.fromJsonString(ContainerSchema))),
+  Schema.revealCodec,
+)
 
 const decodePsCommandOutput = Schema.decodeResult(PsCommandOutputSchema)
 
@@ -42,8 +55,8 @@ export async function getDevComposeContainers() {
 
   if (Result.isFailure(containersResult))
     throw new Error(`Failed to parse \`${cmd}\` command output`, {
-      cause: containersResult.fail,
+      cause: containersResult.failure,
     })
 
-  return containersResult.succeed
+  return containersResult.success
 }

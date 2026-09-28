@@ -38,12 +38,7 @@ const schema = await import(
   join(databasePackageDirPath, 'dist', 'src', 'schema.js')
 )
 
-const newSnapshot = await generateDrizzleJson(
-  schema,
-  void 0,
-  void 0,
-  'snake_case',
-)
+const newSnapshot = await generateDrizzleJson(schema)
 
 // TODO: this shit needs a complete rewrite after they updated the format of the
 // migrations folder

@@ -89,7 +89,7 @@ Effect.gen(function* () {
     }
 
     const confirmed = yield* Prompt.run(
-      Prompt.confirm({
+      Prompt.Confirm({
         message: `Kill PID ${targetPid} with SIGKILL (signal 9)?`,
         initial: false,
       }),
