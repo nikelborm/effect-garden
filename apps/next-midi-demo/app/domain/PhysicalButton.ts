@@ -31,7 +31,7 @@ export const PhysicalButtonId = Brand.refined<
   ): Option.Option<PhysicalButtonId<T>>
   either<T extends string | number = string | number>(
     i: T,
-  ): Result.Result<PhysicalButtonId<T>, Brand.Brand.BrandErrors>
+  ): Result.Result<PhysicalButtonId<T>, Brand.BrandError>
   is<T extends string | number = string | number>(
     i: T,
   ): i is T & PhysicalButtonId<T>

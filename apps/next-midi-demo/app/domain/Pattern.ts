@@ -33,7 +33,7 @@ export const Pattern = Brand.refined<Pattern>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (p: unknown): Pattern
   option(p: unknown): PatternOption
-  either(p: unknown): Result.Result<Pattern, Brand.Brand.BrandErrors>
+  either(p: unknown): Result.Result<Pattern, Brand.BrandError>
   is(p: unknown): p is Pattern
 }
 

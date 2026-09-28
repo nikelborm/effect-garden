@@ -34,7 +34,7 @@ export const ParamButtonId = Brand.refined<ParamButtonId<string | number>>(
   ): Option.Option<ParamButtonId<T>>
   either<T extends string | number = string | number>(
     i: T,
-  ): Result.Result<ParamButtonId<T>, Brand.Brand.BrandErrors>
+  ): Result.Result<ParamButtonId<T>, Brand.BrandError>
   is<T extends string | number = string | number>(
     i: T,
   ): i is T & ParamButtonId<T>

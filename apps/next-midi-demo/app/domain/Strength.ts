@@ -32,7 +32,7 @@ export const Strength = Brand.refined<Strength>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (s: unknown): Strength
   option(s: unknown): StrengthOption
-  either(s: unknown): Result.Result<Strength, Brand.Brand.BrandErrors>
+  either(s: unknown): Result.Result<Strength, Brand.BrandError>
   is(s: unknown): s is Strength
 }
 

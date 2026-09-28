@@ -32,7 +32,7 @@ export const Accord = Brand.refined<Accord>(
   readonly [Brand.RefinedConstructorsTypeId]: Brand.RefinedConstructorsTypeId
   (a: unknown): Accord
   option(a: unknown): AccordOption
-  either(a: unknown): Result.Result<Accord, Brand.Brand.BrandErrors>
+  either(a: unknown): Result.Result<Accord, Brand.BrandError>
   is(a: unknown): a is Accord
 }
 
