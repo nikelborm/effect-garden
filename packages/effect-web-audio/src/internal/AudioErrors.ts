@@ -195,7 +195,7 @@ export class CannotChannelDataOfEAudioBufferWrongChannelIndex extends Schema.Tag
  * Can be thrown for example in the case of insufficient memory
  */
 export class CannotChannelDataOfEAudioBufferUnknownError extends Schema.TaggedError<CannotChannelDataOfEAudioBufferUnknownError>()(
-  'CannotCopyToChannelOfEAudioBufferUnknownError',
+  'CannotChannelDataOfEAudioBufferUnknownError',
   {
     cause: ErrorSchema(Schema.Literal('UnknownError')),
     channelIndex: Schema.Number,
