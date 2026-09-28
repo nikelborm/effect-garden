@@ -781,6 +781,7 @@ const ensureEffectDepsArePeerDeps = Effect.gen(function* () {
 
 const addAllDepsToPlayground = Effect.gen(function* () {
   const myMonorepoPackages = yield* myMonorepoPackagesEffect
+  const { catalog } = yield* rootPackageJsonEffect
 
   const allDeps: Record<string, string> = pipe(
     myMonorepoPackages,
@@ -800,8 +801,13 @@ const addAllDepsToPlayground = Effect.gen(function* () {
   const depsToInstall = pipe(
     allDeps,
     Record.toEntries,
-    EArray.filter(([name, version]) => existingDevDeps[name] !== version),
-    EArray.map(([name, version]) => ({ dep: name, version })),
+    // deps that live in the root catalog are installed as "catalog:", so that
+    // playground never carries a concrete version conflicting with the catalog
+    EArray.map(([name, version]) => ({
+      dep: name,
+      version: name in catalog ? 'catalog:' : version,
+    })),
+    EArray.filter(({ dep, version }) => existingDevDeps[dep] !== version),
   )
 
   yield* reinstallDepsInCategory({
@@ -1074,6 +1080,21 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
   }
 
   const newCatalog = { ...catalog }
+  // A catalog entry used by exactly one package gets inlined into that package
+  // as an explicit version. This must not go through
+  // `bun add <dep>@<version>`: when the requested specifier equals the catalog
+  // value, bun rewrites it back to "catalog:", which would leave a reference to
+  // the entry we are deleting.
+  // Every `usage.pkg` is a snapshot taken during the same read, so all inlines
+  // of one package are collected into a single mutable copy and written once,
+  // otherwise each write would clobber the inlines of the previous one.
+  const packagesToUpdate: Record<
+    string,
+    {
+      pkg: Struct.Mutable<(typeof myMonorepoPackages)[number]['pkg']>
+      update: (typeof myMonorepoPackages)[number]['update']
+    }
+  > = {}
   let changed = false
 
   for (const [depName, usage] of catalogPackageNameToUsage) {
@@ -1081,14 +1102,33 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
       changed = true
       delete newCatalog[depName]
     }
-    if (usage.type === 'once')
-      yield* reinstallDepsInCategory({
-        deps: [{ dep: depName, version: usage.catalogDepVersion }],
-        depType: usage.depType,
-        cwd: usage.absolutePackageDirPath,
-        packageName: usage.pkg.name,
-      })
+    if (usage.type === 'once') {
+      const { absolutePackageDirPath, catalogDepVersion } = usage
+      const entry = packagesToUpdate[absolutePackageDirPath] ?? {
+        pkg: { ...usage.pkg },
+        update: usage.update,
+      }
+      if (usage.depType === 'dependencies')
+        entry.pkg.dependencies = {
+          ...entry.pkg.dependencies,
+          [depName]: catalogDepVersion,
+        }
+      else if (usage.depType === 'devDependencies')
+        entry.pkg.devDependencies = {
+          ...entry.pkg.devDependencies,
+          [depName]: catalogDepVersion,
+        }
+      else
+        entry.pkg.peerDependencies = {
+          ...entry.pkg.peerDependencies,
+          [depName]: catalogDepVersion,
+        }
+      packagesToUpdate[absolutePackageDirPath] = entry
+    }
   }
+
+  for (const { pkg, update } of Object.values(packagesToUpdate))
+    yield* update(pkg)
 
   if (!changed) return
 
@@ -1099,6 +1139,14 @@ const ensureCatalogHasNoUnusedOrUsedOnceEntries = Effect.gen(function* () {
       catalog: newCatalog,
     })) + '\n',
   )
+
+  if (Object.keys(packagesToUpdate).length)
+    yield* observableExec({
+      cmd: ['bun', 'install'],
+      cwd: projectRootAbsolutePath,
+      badExitCodeErrorMessage:
+        'Failed to install after inlining single-use catalog deps',
+    }).pipe(Effect.withSpan('bunInstallAfterCatalogCleanup'))
 }).pipe(Effect.withSpan('ensureCatalogHasNoUnusedOrSinglyUsedEntries'))
 
 const program = Effect.all([

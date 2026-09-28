@@ -5,8 +5,8 @@
   "description": "My relatively strict tsconfig just how I like it",
   "dependencies": {
     "@effect/tsgo": "catalog:",
-    "typescript": "catalog:",
-    "ts-namespace-import": "catalog:"
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/packages/tsconfig#readme",
   "bugs": {
