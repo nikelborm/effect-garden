@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 
 import * as Schema from 'effect/Schema'
 
-const artistsSchema = Schema.parseJson(
+const artistsSchema = Schema.fromJsonString(
   Schema.NonEmptyArray(
     Schema.Struct({
       image: Schema.Trimmed.check(Schema.isNonEmpty()),

@@ -13,7 +13,7 @@ const videoMetadataFetchedFromYoutubeDataApi = Schema.decodeSync(
     './rawData/videoMetadataFetchedFromYoutubeDataApi.json',
     'utf-8',
   ),
-  { exact: true, onExcessProperty: 'error' },
+  { onExcessProperty: 'error' },
 )
 
 const youtubeDataApiIds = Record.keys(videoMetadataFetchedFromYoutubeDataApi)

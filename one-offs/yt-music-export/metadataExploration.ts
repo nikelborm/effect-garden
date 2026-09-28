@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 
+import * as Effect from 'effect/Effect'
 import { pipe } from 'effect/Function'
 import * as Option from 'effect/Option'
 import * as Record from 'effect/Record'
@@ -24,9 +25,11 @@ export const ReducedMetadataValueSchema = Schema.Struct({
     defaultAudioLanguage: Schema.optional(Schema.String),
   }),
 
-  topicDetails: Schema.optionalWith(Schema.Array(Schema.String), {
-    default: () => [],
-  }),
+  topicDetails: Schema.Array(Schema.String).pipe(
+    Schema.withDecodingDefaultType(
+      Effect.succeed([] as ReadonlyArray<string>),
+    ),
+  ),
 })
 
 const _interestingCandidates = new Set([

@@ -1,14 +1,17 @@
 import * as Schema from 'effect/Schema'
 
-export const TracksFromGoogleExportSchema = Schema.Struct({
+const TracksFromGoogleExportValue = Schema.Struct({
   songTitle: Schema.Trimmed.check(Schema.isNonEmpty()),
   albumTitle: Schema.Trimmed.check(Schema.isNonEmpty()),
-  artists: Schema.NonEmptyArray(Schema.Trimmed.check(Schema.isNonEmpty())).pipe(
-    Schema.Data,
+  artists: Schema.NonEmptyArray(
+    Schema.Trimmed.check(Schema.isNonEmpty()),
   ),
-}).pipe(Schema.Data, value =>
-  Schema.Record({ key: Schema.Trimmed.check(Schema.isNonEmpty()), value }),
+})
+
+export const TracksFromGoogleExportSchema = Schema.Record(
+  Schema.Trimmed.check(Schema.isNonEmpty()),
+  TracksFromGoogleExportValue,
 )
-export const TracksFromGoogleExportFromString = Schema.parseJson(
+export const TracksFromGoogleExportFromString = Schema.fromJsonString(
   TracksFromGoogleExportSchema,
 )
