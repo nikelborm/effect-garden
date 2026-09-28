@@ -1,11 +1,9 @@
 import * as Brand from 'effect/Brand'
+import * as Schema from 'effect/Schema'
 // import * as Order from 'effect/Order'
 
 export type InHertz = Brand.Branded<number, 'InHertz'>
-export const InHertz = Brand.refined<InHertz>(
-  hz => typeof hz === 'number',
-  hz => Brand.error(`Expected ${hz} to be a number`),
-)
+export const InHertz = Brand.check<InHertz>(Schema.isFinite())
 
 export type SampleRate = Brand.Branded<
   InHertz,
@@ -13,54 +11,42 @@ export type SampleRate = Brand.Branded<
 >
 export const SampleRate = Brand.all(
   InHertz,
-  Brand.refined<SampleRate>(
-    rate => rate > 0,
-    rate => Brand.error(`Expected sample rate ${rate} to be greater than 0`),
-  ),
+  Brand.check<SampleRate>(Schema.isGreaterThan(0)),
 )
 
 export type SampleFrameAmount = Brand.Branded<
   number,
   'SampleFrameAmount: positive non-zero integer'
 >
-export const SampleFrameAmount = Brand.refined<SampleFrameAmount>(
-  amount => Number.isSafeInteger(amount) && amount > 0,
-  amount =>
-    Brand.error(
-      `Expected sample-frame amount ${amount} to be an integer greater than 0`,
-    ),
+
+export const SampleFrameAmount = Brand.check<SampleFrameAmount>(
+  Schema.isInt(),
+  Schema.isGreaterThan(0),
 )
 
 export type ChannelAmount = Brand.Branded<
   number,
   'ChannelAmount: positive non-zero integer'
 >
-export const ChannelAmount = Brand.refined<ChannelAmount>(
-  amount => Number.isSafeInteger(amount) && amount > 0,
-  amount =>
-    Brand.error(
-      `Expected channel amount ${amount} to be an integer greater than 0`,
-    ),
+export const ChannelAmount = Brand.check<ChannelAmount>(
+  Schema.isInt(),
+  Schema.isGreaterThan(0),
 )
 
 export type ChannelIndex = Brand.Branded<
   number,
   'ChannelIndex: positive integer'
 >
-export const ChannelIndex = Brand.refined<ChannelIndex>(
-  amount => Number.isSafeInteger(amount) && amount >= 0,
-  amount =>
-    Brand.error(
-      `Expected channel index ${amount} to be an integer greater than 0`,
-    ),
+export const ChannelIndex = Brand.check<ChannelIndex>(
+  Schema.isInt(),
+  Schema.isGreaterThanOrEqualTo(0),
 )
 
 export type PositiveSeconds = Brand.Branded<
   number,
-  'PositiveSeconds: positive non-zero number'
+  'PositiveSeconds: positive non-zero float'
 >
-export const PositiveSeconds = Brand.refined<PositiveSeconds>(
-  amount => typeof amount === 'number' && amount > 0,
-  amount =>
-    Brand.error(`Expected seconds ${amount} to be a number greater than 0`),
+export const PositiveSeconds = Brand.check<PositiveSeconds>(
+  Schema.isFinite(),
+  Schema.isGreaterThan(0),
 )

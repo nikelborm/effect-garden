@@ -1,4 +1,3 @@
-import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
 import type * as Types from 'effect/Types'
 
@@ -50,20 +49,26 @@ export const remapErrorByName =
 
 const config = Schema.UndefinedOr(
   Schema.Struct({
-    latencyHint: Schema.Union([
-      Schema.Literal('balanced', 'interactive', 'playback'),
-      Schema.Number,
-    ]).pipe(Schema.optionalWith({ exact: true })),
-    sampleRate: Schema.Number.pipe(Schema.optionalWith({ exact: true })),
-    sinkId: Schema.Union([
-      Schema.String,
-      Schema.Struct({
-        type: Schema.Literal('none'),
-      }),
-    ]).pipe(Schema.optionalWith({ exact: true })),
-    renderSizeHint: EFunction.pipe(
-      Schema.Union([Schema.Literals('hardware', 'default'), Schema.Number]),
-      Schema.optionalWith({ exact: true }),
+    latencyHint: Schema.optionalKey(
+      Schema.Union([
+        Schema.Literals(['balanced', 'interactive', 'playback']),
+        Schema.Number,
+      ]),
+    ),
+    sampleRate: Schema.optionalKey(Schema.Number),
+    sinkId: Schema.optionalKey(
+      Schema.Union([
+        Schema.String,
+        Schema.Struct({
+          type: Schema.Literal('none'),
+        }),
+      ]),
+    ),
+    renderSizeHint: Schema.optionalKey(
+      Schema.Union([
+        Schema.Literals(['hardware', 'default']),
+        Schema.Number,
+      ]),
     ),
   }),
 )

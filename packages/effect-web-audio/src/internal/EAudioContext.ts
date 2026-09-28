@@ -14,7 +14,7 @@ import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Layer from 'effect/Layer'
 import * as Pipeable from 'effect/Pipeable'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import type * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
@@ -474,4 +474,4 @@ export const currentTime = (context: EAudioContextInstance) =>
 export const currentTimeFromContext = Effect.flatMap(EAudioContext, currentTime)
 
 export const layer = (config?: Readonly<MakeAudioContextOptions>) =>
-  Layer.effect(EAudioContext, make(config))
+  Layer.effect(EAudioContext, Effect.fromResult(make(config)))

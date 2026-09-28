@@ -3,7 +3,7 @@ import { dual } from 'effect/Function'
 import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
-import type * as Result from 'effect/Result'
+import * as Result from 'effect/Result'
 
 import * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
