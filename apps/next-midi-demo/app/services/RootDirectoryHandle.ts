@@ -2,7 +2,7 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import { OPFSError } from './opfs.ts'
+import { OPFSError } from './opfsErrors.ts'
 
 export class RootDirectoryHandle extends Context.Service<RootDirectoryHandle>()(
   'next-midi-demo/RootDirectoryHandle',

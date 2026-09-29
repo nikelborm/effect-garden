@@ -16,7 +16,7 @@ declare const self: ServiceWorkerGlobalScope
 const manifest = self.__SW_MANIFEST
 
 const serwist = new Serwist({
-  precacheEntries: manifest!,
+  ...(manifest && { precacheEntries: manifest }),
 
   skipWaiting: true,
   clientsClaim: true,

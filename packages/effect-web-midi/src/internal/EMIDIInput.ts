@@ -1,4 +1,5 @@
 import * as Brand from 'effect/Brand'
+import * as Struct from 'effect/Struct'
 
 import * as EMIDIPort from './EMIDIPort.ts'
 import * as StreamMaker from './StreamMaker.ts'
@@ -108,7 +109,11 @@ export type PolymorphicInput<E, R> = EMIDIPort.PolymorphicPort<E, R, 'input'>
  */
 export type PolymorphicInputClean = EMIDIPort.PolymorphicPortClean<'input'>
 
+
+// export interface AsId extends Brand.Constructor, Struct.Lambda {}
+
+
 export type Id = EMIDIPort.Id<'input'>
-export const Id = Brand.nominal<Id>()
+export const Id = EMIDIPort.BothId as Brand.Constructor<Id>
 
 export interface InputIdToInstanceMap extends Record<Id, EMIDIInput> {}

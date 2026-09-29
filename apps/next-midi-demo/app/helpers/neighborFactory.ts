@@ -8,7 +8,9 @@ function getCombinations<T>(size: number, array: T[]): T[][] {
     }
 
     for (let i = start; i < array.length; i++) {
-      path.push(array[i]!)
+      const pathSegment = array[i]
+      if (!pathSegment) throw new Error('absurd')
+      path.push(pathSegment)
       backtrack(i + 1, path)
       path.pop()
     }
@@ -60,8 +62,9 @@ export const neighborFactory =
           currentSetCombinationIndex >= 0;
           currentSetCombinationIndex--
         ) {
-          const { reducedArr, setName } =
-            setCombination[currentSetCombinationIndex]!
+          const val = setCombination[currentSetCombinationIndex]
+          if (!val) throw new Error('absurd')
+          const { reducedArr, setName } = val
           const size = reducedArr.length
 
           currentCombination[setName] = reducedArr[temp % size]

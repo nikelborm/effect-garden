@@ -9,6 +9,7 @@ import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
+import { OPFSError } from './opfsErrors.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 /**
@@ -47,7 +48,8 @@ export const prettyBytes = (bytes: number): string => {
     UNITS.length - 1,
   )
   const value = absoluteBytes / 1000 ** exponent
-  const unit = UNITS[exponent]!
+  const unit = UNITS[exponent]
+  if (!unit) throw new Error('absurd')
 
   const formatted = value.toLocaleString('en-US', {
     maximumFractionDigits: 2,
@@ -84,15 +86,6 @@ export class OPFSNotSupportedError extends Schema.TaggedError<OPFSNotSupportedEr
       'OPFS is not available: navigator.storage.getDirectory is not supported',
   })
 }
-
-/**
- * Error thrown when an OPFS operation fails.
- */
-export class OPFSError extends Schema.TaggedError<OPFSError>()('OPFSError', {
-  operation: Schema.String,
-  path: Schema.optional(Schema.String),
-  cause: Schema.optional(Schema.Unknown),
-}) {}
 
 /**
  * Checks if OPFS is supported in the current environment.

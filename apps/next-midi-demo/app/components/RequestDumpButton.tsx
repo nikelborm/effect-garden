@@ -8,6 +8,7 @@ export const RequestDumpButton = () => {
 
   return (
     <>
+      {/** biome-ignore lint/performance/noJsxPropsBind: it's a debugging component */}
       <button type="button" onClick={() => requestDump()}>
         Request dump
       </button>

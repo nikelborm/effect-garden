@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: these are not hooks> */
 import type { NonEmptyReadonlyArray } from 'effect/Array'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'

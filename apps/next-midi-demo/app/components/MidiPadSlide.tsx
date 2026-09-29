@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noLeakedRender: it complains about normal ifs returning jsx elements */
 'use client'
 
 import { Button as BaseButton } from '@base-ui/react/button'
