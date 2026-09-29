@@ -31,13 +31,15 @@ export const reactivelySchedule = Effect.fnUntraced(function* <
       Effect.fnUntraced(function* (executionFiber) {
         if (executionFiber) yield* Fiber.interrupt(executionFiber)
 
-        return runForkLogErr(execute(a))
+        return yield* Effect.sync(() => runForkLogErr(execute(a)))
       }),
     )
 
-  stream.pipe(
-    Stream.runForEach(scheduleNew),
-    Effect.withParentSpan(span),
-    runForkLogErr,
+  yield* Effect.sync(() =>
+    stream.pipe(
+      Stream.runForEach(scheduleNew),
+      Effect.withParentSpan(span),
+      runForkLogErr,
+    ),
   )
 })
