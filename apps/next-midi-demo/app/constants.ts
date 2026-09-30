@@ -1,12 +1,22 @@
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 
+import type { Brand } from 'effect'
+import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
 export const ASSET_SIZE_BYTES = 2117490
 export const MAX_PARALLEL_ASSET_DOWNLOADS = 5
 export const LAYOUT_HEIGHT = 2
 export const LAYOUT_WIDTH = 8
+
+interface AsInputBrand extends Struct.Lambda {
+  (
+    unbranded: string,
+  ): string & Brand.Brand<'MIDIPortId'> & Brand.Brand<'input'>
+  readonly '~lambda.in': string
+  readonly '~lambda.out': EMIDIInput.Id
+}
 
 export const [
   midiInputThroughPort0,
@@ -20,8 +30,16 @@ export const [
     'A3008DE411F375E270B506F5BA840A8ED818A8F7A755575A73DF1C3B772E60DD',
     '380CB1F6BC0A21C5AAA0CDF95170A996937337454636CDDE223EEA6812283B07',
   ],
-  EMIDIInput.Id,
+  Struct.lambda<AsInputBrand>(EMIDIInput.Id),
 )
+
+interface AsOutputBrand extends Struct.Lambda {
+  (
+    unbranded: string,
+  ): string & Brand.Brand<'MIDIPortId'> & Brand.Brand<'output'>
+  readonly '~lambda.in': string
+  readonly '~lambda.out': EMIDIOutput.Id
+}
 
 export const [
   midiOutputThroughPort0,
@@ -35,5 +53,5 @@ export const [
     'C1666E3E80830F9EE44DFC6447B613D6BF98E08599E8782226034EA0D6AEA3A8',
     '045297AACE044DA224B59E92DBC0E874160B85D0D43BE505CBB053747F4AA90A',
   ],
-  EMIDIOutput.Id,
+  Struct.lambda<AsOutputBrand>(EMIDIOutput.Id),
 )
