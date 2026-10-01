@@ -111,7 +111,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //       if (state._tag !== 'PlayingSlowStrum') return
       //       const [{ playback, durationSeconds }] = state.transitionQueue
       //       const secondsSinceAudioContextInit =
-      //         yield* EAudioContext.currentTime(audioContext)
+      //         yield* DeferredAudioContextService.use(context => context.currentTime)
       //       const remainingSeconds =
       //         state.playbackStartedAtSecond +
       //         durationSeconds -
