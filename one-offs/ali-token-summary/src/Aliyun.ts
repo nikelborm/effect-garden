@@ -219,8 +219,11 @@ export interface Endpoint {
 }
 
 const urlEncodeChar = (char: TemplateStringsArray) => (base: string) =>
-  // biome-ignore lint/style/noNonNullAssertion: implicit
-  base.replaceAll(char[0]!, '%' + char[0]!.charCodeAt(0).toString(16))
+  base.replaceAll(
+    // biome-ignore lint/style/noNonNullAssertion: implicit
+    char[0]!,
+    '%' + char[0]?.charCodeAt(0).toString(16).toUpperCase(),
+  )
 
 /**
  * Alibaba's canonicalisation treats only `A-Za-z0-9-_.~` as unreserved, which

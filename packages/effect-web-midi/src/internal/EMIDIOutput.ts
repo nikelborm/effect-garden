@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/style/useShorthandFunctionType: It's a nice way to
  * preserve JSDoc comments attached to the function signature */
 
-import * as Brand from 'effect/Brand'
+import type * as Brand from 'effect/Brand'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
 

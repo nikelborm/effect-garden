@@ -1,7 +1,7 @@
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as EMIDIOutput from 'effect-web-midi/EMIDIOutput'
 
-import type { Brand } from 'effect'
+import type * as Brand from 'effect/Brand'
 import * as Struct from 'effect/Struct'
 import * as Tuple from 'effect/Tuple'
 
@@ -11,9 +11,7 @@ export const LAYOUT_HEIGHT = 2
 export const LAYOUT_WIDTH = 8
 
 interface AsInputBrand extends Struct.Lambda {
-  (
-    unbranded: string,
-  ): string & Brand.Brand<'MIDIPortId'> & Brand.Brand<'input'>
+  (unbranded: string): string & Brand.Brand<'MIDIPortId'> & Brand.Brand<'input'>
   readonly '~lambda.in': string
   readonly '~lambda.out': EMIDIInput.Id
 }

@@ -1,7 +1,7 @@
 {
   "name": "ali-token-summary",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.5",
   "description": "Summarize your Alibaba API LLM token usage",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
