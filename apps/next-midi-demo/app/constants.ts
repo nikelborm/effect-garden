@@ -7,7 +7,7 @@ import * as Tuple from 'effect/Tuple'
 
 export const ASSET_SIZE_BYTES = 2117490
 export const MAX_PARALLEL_ASSET_DOWNLOADS = 5
-export const LAYOUT_HEIG2HT = 2
+export const LAYOUT_HEIGHT = 2
 export const LAYOUT_WIDTH = 8
 
 interface AsInputBrand extends Struct.Lambda {
