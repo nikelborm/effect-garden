@@ -1,4 +1,3 @@
-import { EAudioContext } from 'effect-web-audio'
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 
 import * as Effect from 'effect/Effect'
@@ -48,6 +47,7 @@ import {
 } from '../services/AppPlaybackStateService/webAudioSideEffects/index.ts'
 import { AssetDownloadSchedulerLayer } from '../services/AssetDownloadScheduler.ts'
 import { AudioBufferStoreLayer } from '../services/AudioBufferStore.ts'
+import { DeferredAudioContextServiceLayer } from '../services/DeferredAudioContextService.ts'
 import { DownloadManagerLayer } from '../services/DownloadManager.ts'
 import {
   AccordInputBusLayer,
@@ -180,13 +180,12 @@ const OpfsWritableHandleManagerNoDeps = OpfsWritableHandleManagerLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 
-const AudioContextNoDeps = EAudioContext.layer().pipe(
-  Layer.orDie,
+const DeferredAudioContextNoDeps = DeferredAudioContextServiceLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 
 const AudioBufferStoreNoDeps = AudioBufferStoreLayer.pipe(
-  Layer.provide(AudioContextNoDeps),
+  Layer.provide(DeferredAudioContextNoDeps),
   Layer.provide(RootDirectoryHandleNoDeps),
   Layer.provide(LoadedAssetSizeEstimationMapNoDeps),
   Layer.satisfiesServicesType<never>(),
@@ -204,13 +203,15 @@ const WebAudioSideEffectsNoDeps = Layer.mergeAll(
   ScheduleIncomingLoopLayer,
   StartFreshPlaybackLayer,
 ).pipe(
-  Layer.provide(AudioContextNoDeps),
+  Layer.provide(DeferredAudioContextNoDeps),
   Layer.withSpan('WebAudioSideEffectsNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateServiceLayer.pipe(
-  Layer.provide(AudioContextNoDeps),
+  // TODO: research why DeferredAudioContextNoDeps no longer needed here. This
+  // might come back after uncommenting code there
+  // Layer.provide(DeferredAudioContextNoDeps),
   Layer.provide(AudioBufferStoreNoDeps),
   Layer.provide(AllBusesNoDeps),
   Layer.provide(WebAudioSideEffectsNoDeps),

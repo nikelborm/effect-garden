@@ -1,46 +1,25 @@
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
+import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
+import { DeferredAudioContextService } from '../../DeferredAudioContextService.ts'
 import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
-import { AudioPlayback } from '../types/common.ts'
+import type { AudioPlayback } from '../types/common.ts'
 
 export interface FreshPlaybackTiming {
   readonly isLooping: boolean
   readonly startAtSecond: number
 }
 
-const createPlaybackGraph = (
-  eAudioContext: EAudioContext.Instance,
-  eAudioBuffer: EAudioBuffer.EAudioBuffer,
-) =>
-  Effect.sync<AudioPlayback>(() => {
-    const audioBufferImplHack = eAudioBuffer as EAudioBuffer.EAudioBuffer & {
-      _audioBuffer: AudioBuffer
-    }
-    const audioContextImplHack = eAudioContext as EAudioContext.Instance & {
-      _audioContext: AudioContext
-    }
-    const audioContext = audioContextImplHack._audioContext
-    const bufferSource = audioContext.createBufferSource()
-    const gainNode = audioContext.createGain()
-    bufferSource.buffer = audioBufferImplHack._audioBuffer
-    bufferSource.connect(gainNode)
-
-    gainNode.connect(audioContext.destination)
-
-    return AudioPlayback.make({ bufferSource, gainNode })
-  })
-
 export class StartFreshPlayback extends Context.Service<
   StartFreshPlayback,
   (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,
-  ) => Effect.Effect<AudioPlayback>
+  ) => Effect.Effect<AudioPlayback, AudioContextInitError>
 >()('next-midi-demo/StartFreshPlayback') {
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
@@ -51,10 +30,10 @@ export class StartFreshPlayback extends Context.Service<
 export const StartFreshPlaybackLayer = Layer.effect(
   StartFreshPlayback,
   Effect.map(
-    EAudioContext.EAudioContext,
+    DeferredAudioContextService,
     context =>
       (audioBuffer: EAudioBuffer.EAudioBuffer, timing: FreshPlaybackTiming) =>
-        Effect.map(createPlaybackGraph(context, audioBuffer), playback => {
+        Effect.map(context.createPlayback(audioBuffer), playback => {
           playback.bufferSource.loop = timing.isLooping
           playback.gainNode.gain.setValueAtTime(
             maxLoudness,

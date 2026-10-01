@@ -1,12 +1,13 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
+import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
+import * as DeferredAudioContextService from '../../DeferredAudioContextService.ts'
+
 export class GetAudioNow extends Context.Service<
   GetAudioNow,
-  () => Effect.Effect<number>
+  () => Effect.Effect<number, AudioContextInitError>
 >()('next-midi-demo/GetAudioNow') {
   static run = () => this.use(getNow => getNow())
 }
@@ -14,7 +15,7 @@ export class GetAudioNow extends Context.Service<
 export const GetAudioNowLayer = Layer.effect(
   GetAudioNow,
   Effect.map(
-    EAudioContext.EAudioContext,
-    context => () => EAudioContext.currentTime(context),
+    DeferredAudioContextService.DeferredAudioContextService,
+    context => () => context.currentTime,
   ),
 )

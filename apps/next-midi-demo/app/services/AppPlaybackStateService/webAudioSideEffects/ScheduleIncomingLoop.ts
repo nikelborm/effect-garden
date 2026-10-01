@@ -1,10 +1,11 @@
 import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
+import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
+import { DeferredAudioContextService } from '../../DeferredAudioContextService.ts'
 import {
   asEarlyAsPossibleInSeconds,
   maxLoudness,
@@ -21,35 +22,12 @@ export interface ScheduledNextPlaybackTiming {
   readonly slot: Slot
 }
 
-const createLoopingPlaybackGraph = (
-  eAudioContext: EAudioContext.Instance,
-  eAudioBuffer: EAudioBuffer.EAudioBuffer,
-) =>
-  Effect.sync<AudioPlayback>(() => {
-    const audioBufferImplHack = eAudioBuffer as EAudioBuffer.EAudioBuffer & {
-      _audioBuffer: AudioBuffer
-    }
-    const audioContextImplHack = eAudioContext as EAudioContext.Instance & {
-      _audioContext: AudioContext
-    }
-    const audioContext = audioContextImplHack._audioContext
-    const bufferSource = audioContext.createBufferSource()
-    const gainNode = audioContext.createGain()
-    bufferSource.buffer = audioBufferImplHack._audioBuffer
-    bufferSource.connect(gainNode)
-    bufferSource.loop = true
-
-    gainNode.connect(audioContext.destination)
-
-    return AudioPlayback.make({ bufferSource, gainNode })
-  })
-
 export class ScheduleIncomingLoop extends Context.Service<
   ScheduleIncomingLoop,
   (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: ScheduledNextPlaybackTiming,
-  ) => Effect.Effect<AudioPlayback>
+  ) => Effect.Effect<AudioPlayback, AudioContextInitError>
 >()('next-midi-demo/ScheduleIncomingLoop') {
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
@@ -60,15 +38,17 @@ export class ScheduleIncomingLoop extends Context.Service<
 export const ScheduleIncomingLoopLayer = Layer.effect(
   ScheduleIncomingLoop,
   Effect.map(
-    EAudioContext.EAudioContext,
+    DeferredAudioContextService,
     context =>
       (
         audioBuffer: EAudioBuffer.EAudioBuffer,
         timing: ScheduledNextPlaybackTiming,
       ) =>
         Effect.map(
-          createLoopingPlaybackGraph(context, audioBuffer),
-          playback => {
+          context.createPlayback(audioBuffer),
+          ({ bufferSource, gainNode }) => {
+            const playback = AudioPlayback.make({ bufferSource, gainNode })
+            playback.bufferSource.loop = true
             playback.gainNode.gain.setValueAtTime(
               minLoudness,
               asEarlyAsPossibleInSeconds,

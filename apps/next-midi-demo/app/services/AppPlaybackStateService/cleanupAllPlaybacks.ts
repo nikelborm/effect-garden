@@ -1,15 +1,13 @@
-import * as EAudioContext from 'effect-web-audio/EAudioContext'
-
 import * as Effect from 'effect/Effect'
 
+import { DeferredAudioContextService } from '../DeferredAudioContextService.ts'
 import type { AppPlaybackState } from './types/index.ts'
 
 export const cleanupAllPlaybacks = Effect.fn('cleanupAllPlaybacks')(function* (
   state: AppPlaybackState,
 ) {
-  const audioContext = yield* EAudioContext.EAudioContext
-  const _secondsSinceAudioContextInit =
-    yield* EAudioContext.currentTime(audioContext)
+  const audioContext = yield* DeferredAudioContextService
+  const _secondsSinceAudioContextInit = yield* audioContext.currentTime
 
   // yield* Effect.forEach(
   //   state.transitionQueue.map(_ => _.playback),
