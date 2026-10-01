@@ -12,7 +12,7 @@ import * as EMIDIPort from './EMIDIPort.ts'
  * The types of this schema are lying to workaround https://github.com/Effect-TS/effect/issues/8538
  */
 export const PortIdSchema = Schema.String.pipe(
-  Schema.fromBrand('MIDIPortId', EMIDIPort.BothId),
+  Schema.fromBrand('MIDIPortId', EMIDIPort.BothId as never),
 ) as unknown as Schema.brand<
   Schema.Union<
     readonly [

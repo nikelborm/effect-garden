@@ -10,10 +10,10 @@ import {
 } from '@trellisform/model'
 
 import * as Context from 'effect/Context'
-import * as HttpApiEndpoint from 'effect/httpapi/HttpApiEndpoint'
-import { Unauthorized } from 'effect/httpapi/HttpApiError'
-import * as HttpApiGroup from 'effect/httpapi/HttpApiGroup'
-import * as HttpApiMiddleware from 'effect/httpapi/HttpApiMiddleware'
+import * as HttpApiEndpoint from 'effect/http-api/HttpApiEndpoint'
+import { Unauthorized } from 'effect/http-api/HttpApiError'
+import * as HttpApiGroup from 'effect/http-api/HttpApiGroup'
+import * as HttpApiMiddleware from 'effect/http-api/HttpApiMiddleware'
 import * as Schema from 'effect/Schema'
 
 export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>()(
@@ -26,7 +26,7 @@ export class BetterAuthApiError extends Schema.TaggedError<BetterAuthApiError>()
   },
 ) {}
 
-const String32Chars = Schema.String.check(Schema.isLengthBetween(32, 32))
+const String32Chars = Schema.String.check(Schema.isBetweenLength(32, 32))
 
 const BetterAuthSessionSchema = Schema.Struct({
   betterAuthSessionId: String32Chars,

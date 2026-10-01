@@ -22,10 +22,10 @@ import {
   createWritable,
   getFile,
   getFileHandle,
-  type OPFSError,
   seek,
   write,
 } from './opfs.ts'
+import type { OPFSError } from './opfsErrors.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandleManager>()(

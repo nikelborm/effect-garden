@@ -97,7 +97,7 @@ above apply when omitted.
       {
         // Packages the rule applies to. Exact names or a single-segment
         // trailing glob ('@effect/*' matches '@effect/platform' but not
-        // 'effect/httpapi/HttpApiError'). Default: ["effect", "@effect/*"].
+        // 'effect/http-api/HttpApiError'). Default: ["effect", "@effect/*"].
         "autoPackages": ["effect", "@effect/*", "my-effect-lib"],
 
         // Per-package, per-name overrides. Replaces the built-in defaults
@@ -123,7 +123,7 @@ above apply when omitted.
 **`autoPackages`** — the list of packages to lint. A trailing `/*` matches
 exactly one extra path segment, so it targets package roots (`@effect/platform`)
 without touching specifiers that are already subpaths
-(`effect/httpapi/HttpApiError`).
+(`effect/http-api/HttpApiError`).
 
 **`overrides`** — `Record<pkg, Record<importName, override>>`, where each
 override is one of:

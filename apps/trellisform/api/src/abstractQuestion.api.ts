@@ -4,8 +4,8 @@ import {
   AbstractQuestionIdFromStringSchema,
 } from '@trellisform/model'
 
-import * as HttpApiEndpoint from 'effect/httpapi/HttpApiEndpoint'
-import * as HttpApiGroup from 'effect/httpapi/HttpApiGroup'
+import * as HttpApiEndpoint from 'effect/http-api/HttpApiEndpoint'
+import * as HttpApiGroup from 'effect/http-api/HttpApiGroup'
 
 export const DeleteAbstractQuestionEndpoint = HttpApiEndpoint.delete(
   'Delete abstract question',

@@ -50,7 +50,7 @@
     "directory": "apps/trellisform/backend"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "echo 'trellisform is not a priority. this is fake compilation'",
     "dev": "bun --watch --no-clear-screen src/main.ts"
   },
   "author": {

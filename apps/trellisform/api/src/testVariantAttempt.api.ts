@@ -1,5 +1,5 @@
-import * as HttpApiEndpoint from 'effect/httpapi/HttpApiEndpoint'
-import * as HttpApiGroup from 'effect/httpapi/HttpApiGroup'
+import * as HttpApiEndpoint from 'effect/http-api/HttpApiEndpoint'
+import * as HttpApiGroup from 'effect/http-api/HttpApiGroup'
 import * as Schema from 'effect/Schema'
 
 // const withOpenApiAnnotations = _withOpenApiAnnotations('@trellisform/api');

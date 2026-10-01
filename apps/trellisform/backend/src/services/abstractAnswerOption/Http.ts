@@ -3,7 +3,7 @@ import { abstractAnswerOption } from '@trellisform/database/schema'
 import { eq } from 'drizzle-orm'
 
 import * as Effect from 'effect/Effect'
-import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
+import * as HttpApiBuilder from 'effect/http-api/HttpApiBuilder'
 
 import { Database } from '../infrastructure/Database.ts'
 

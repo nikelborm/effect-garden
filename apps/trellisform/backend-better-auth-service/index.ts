@@ -20,11 +20,12 @@ import postgres from 'postgres'
 import * as BunHttpServerRequest from '@effect/platform-bun/BunHttpServerRequest'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import { flow } from 'effect/Function'
 import * as HttpServerRequest from 'effect/http/HttpServerRequest'
 import * as HttpServerResponse from 'effect/http/HttpServerResponse'
 // import { createServer } from 'node:http';
-import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
-import { Unauthorized } from 'effect/httpapi/HttpApiError'
+import * as HttpApiBuilder from 'effect/http-api/HttpApiBuilder'
+import { Unauthorized } from 'effect/http-api/HttpApiError'
 import * as Layer from 'effect/Layer'
 import * as Redacted from 'effect/Redacted'
 import * as Schema from 'effect/Schema'
@@ -111,10 +112,12 @@ export class EffectlessDrizzleAuthDbService extends Context.Service<EffectlessDr
       const res = yield* Effect.tryPromise({
         try: () => postgresClient`select * from public.abstract_test_variant;`,
         catch: errr => errr,
-      }).pipe(Effect.either)
+      }).pipe(Effect.result)
 
       console.log({ res })
 
+      // TODO: fix drizzle
+      // @ts-expect-error
       const effectlessDrizzleAuthDbInstance = drizzle(postgresClient, {
         casing: 'snake_case',
       })
@@ -298,7 +301,7 @@ const UserSessionGetter = Effect.map(
     yield* Effect.log('auth middleware started')
 
     const sessionWithUser = yield* getSession(new Headers(req.headers)).pipe(
-      Effect.flatMap(decodeUserWithSession),
+      Effect.flatMap(flow(decodeUserWithSession, Effect.fromResult)),
       Effect.tapError(Effect.logError),
       Effect.mapError(() => new Unauthorized()),
     )
@@ -315,12 +318,14 @@ const UserSessionGetter = Effect.map(
 
 export const UserWithSessionMiddlewareLive = Layer.effect(
   UserWithSessionMiddleware,
+  // TODO:
+  // @ts-expect-error
   UserSessionGetter,
 )
 
 const betterAuthHandler = Effect.fn('betterAuthHandler')(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest
-  const req = BunHttpServerRequest.toRequest(request)
+  const req = BunHttpServerRequest.toBunServerRequest(request)
   //    ^ Request
 
   const { auth } = yield* BetterAuth

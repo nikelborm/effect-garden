@@ -30,7 +30,7 @@ export const parse = (
     ): Effect.Effect<T[], never> =>
       Effect.map(
         Effect.partition(elements, f, { concurrency: 'unbounded' }),
-        ([, satisfying]) => satisfying,
+        ([satisfying]) => satisfying,
       )
 
     const carouselItems = (index: number): unknown[] =>

@@ -5,7 +5,7 @@ import { abstractTestStage } from '@trellisform/database/schema'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as HttpServerResponse from 'effect/http/HttpServerResponse'
-import * as HttpApiBuilder from 'effect/httpapi/HttpApiBuilder'
+import * as HttpApiBuilder from 'effect/http-api/HttpApiBuilder'
 
 import { Database } from '../infrastructure/Database.ts'
 
