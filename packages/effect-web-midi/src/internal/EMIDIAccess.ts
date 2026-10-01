@@ -16,6 +16,7 @@ import * as Option from 'effect/Option'
 import * as Pipeable from 'effect/Pipeable'
 import * as Record from 'effect/Record'
 import * as Ref from 'effect/Ref'
+import type * as Stream from 'effect/Stream'
 import type * as Types from 'effect/Types'
 import * as Unify from 'effect/Unify'
 
@@ -163,6 +164,15 @@ export interface RequestMIDIAccessOptions {
    */
   readonly software?: boolean
 }
+
+/**
+ * Failure modes of {@linkcode request}.
+ */
+export type RequestError =
+  | MIDIErrors.AbortError
+  | MIDIErrors.UnderlyingSystemError
+  | MIDIErrors.MIDIAccessNotAllowedError
+  | MIDIErrors.MIDIAccessNotSupportedError
 
 /**
  * Prototype of all objects satisfying the
@@ -743,12 +753,22 @@ export interface OutputsRecordInContextEffect
 export const OutputsRecord: OutputsRecordInContextEffect =
   getOutputsRecord(EMIDIAccess)
 
-export interface AllPortsRecordInContextEffect
-  extends Effect.Effect<
+/**
+ * Snapshot of all currently known ports, generalized over additional error
+ * and requirement so deferred/optional-access services can reuse it instead
+ * of spelling out the `Effect` inline.
+ */
+export interface AllPortsRecordEffect<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> extends Effect.Effect<
     EMIDIPort.BothIdToBothInstanceMap,
-    never,
-    EMIDIAccess
+    TAdditionalError,
+    TAdditionalRequirement
   > {}
+
+export interface AllPortsRecordInContextEffect
+  extends AllPortsRecordEffect<never, EMIDIAccess> {}
 
 /**
  *
@@ -835,10 +855,22 @@ export const AllPortsArray: AllPortsArrayInContextEffect =
   getAllPortsArray(EMIDIAccess)
 
 /**
+ * Dual constructor of {@linkcode AllPortsStateChangesStream}. Dogfoods
+ * {@linkcode AllPortsStateChangesContainer} so the container alias cannot go
+ * stale.
+ */
+export interface DualMakeAllPortsStateChangesStream
+  extends StreamMaker.DualStreamMaker<
+    EMIDIAccessInstance,
+    'MIDIPortStateChange',
+    AllPortsStateChangesContainer
+  > {}
+
+/**
  * [MIDIConnectionEvent MDN
  * Reference](https://developer.mozilla.org/docs/Web/API/MIDIConnectionEvent)
  */
-export const makeAllPortsStateChangesStream =
+export const makeAllPortsStateChangesStream: DualMakeAllPortsStateChangesStream =
   StreamMaker.createStreamMakerFrom<MIDIPortEventMap>()(
     is,
     access => ({
@@ -853,22 +885,70 @@ export const makeAllPortsStateChangesStream =
       },
       nullableFieldName: 'port',
     }),
-    rawPort =>
-      ({
-        newState: rawPort
-          ? ({
-              ofDevice: rawPort.state,
-              ofConnection: rawPort.connection,
-            } as const)
-          : null,
-        port:
-          rawPort instanceof globalThis.MIDIInput
-            ? EMIDIInput.make(rawPort)
-            : rawPort instanceof globalThis.MIDIOutput
-              ? EMIDIOutput.make(rawPort)
-              : null,
-      }) as const,
+    (rawPort): AllPortsStateChangesContainer => ({
+      newState: rawPort
+        ? ({
+            ofDevice: rawPort.state,
+            ofConnection: rawPort.connection,
+          } as const)
+        : null,
+      port:
+        rawPort instanceof globalThis.MIDIInput
+          ? EMIDIInput.make(rawPort)
+          : rawPort instanceof globalThis.MIDIOutput
+            ? EMIDIOutput.make(rawPort)
+            : null,
+    }),
   )
+
+/**
+ * Raw event payload remapped into the success channel of
+ * {@linkcode makeAllPortsStateChangesStream}. The `port` is already wrapped,
+ * the `newState` mirrors the raw port's mutable state at event time.
+ */
+export interface AllPortsStateChangesContainer {
+  readonly newState: {
+    readonly ofDevice: MIDIPortDeviceState
+    readonly ofConnection: MIDIPortConnectionState
+  } | null
+  readonly port: EMIDIInput.EMIDIInput | EMIDIOutput.EMIDIOutput | null
+}
+
+/**
+ * Single element of {@linkcode AllPortsStateChangesStream}.
+ */
+export type AllPortsStateChangesValue<
+  TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
+> = Stream.Success<AllPortsStateChangesStream<TOnNullStrategy>>
+
+/**
+ * Failures of {@linkcode AllPortsStateChangesStream}. `E` is the error of
+ * acquiring the access handle (e.g. never when it is already awaited).
+ */
+export type AllPortsStateChangesError<
+  TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
+  E = never,
+> = Stream.Error<AllPortsStateChangesStream<TOnNullStrategy, E>>
+
+/**
+ * Stream of `statechange` events of a MIDI access handle.
+ *
+ * Generalizes over the null-handling strategy, acquisition error and
+ * requirements, so deferred/optional-access services can reuse it instead of
+ * re-deriving it via `ReturnType` + `Stream.Success` / `Stream.Error`.
+ */
+export interface AllPortsStateChangesStream<
+  TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
+  E = never,
+  R = never,
+> extends StreamMaker.BuiltStream<
+    'MIDIPortStateChange',
+    EMIDIAccessInstance,
+    AllPortsStateChangesContainer,
+    TOnNullStrategy,
+    E,
+    R
+  > {}
 
 /**
  * beware that it's not possible to ensure the messages will either be all
@@ -965,16 +1045,49 @@ export const send: DualSendMIDIMessageFromAccess = EFunction.dual<
   ),
 )
 
+export interface MessagesStreamExtractedByPortId<
+  TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> extends EMIDIInput.MessagesStream<
+    TOnNullStrategy,
+    TAdditionalError | MIDIErrors.PortNotFoundError,
+    TAdditionalRequirement | EMIDIAccess
+  > {}
+
+/**
+ * Creates a `midimessage` stream of a single MIDI input looked up by id,
+ * generalized over additional error and requirement so
+ * deferred/optional-access services can reuse it instead of spelling out the
+ * function type inline.
+ */
+export interface MakeMessagesStreamByInputId<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> {
+  /**
+   * @param id Branded id of the input port to listen on.
+   * @param options Passing a value of a `boolean` type is equivalent to setting
+   * `options.capture` property
+   */
+  <const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined>(
+    id: EMIDIInput.Id,
+    options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
+  ): MessagesStreamExtractedByPortId<
+    TOnNullStrategy,
+    TAdditionalError,
+    TAdditionalRequirement
+  >
+}
+
 /**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeMessagesStreamByInputId = <
-  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
->(
-  id: EMIDIInput.Id,
-  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
-) =>
+export const makeMessagesStreamByInputId: MakeMessagesStreamByInputId<
+  never,
+  EMIDIAccess
+> = (id, options) =>
   EMIDIInput.makeMessagesStreamByPort(
     GetPort.getInputByPortIdInContext(id),
     options,
@@ -991,10 +1104,18 @@ export const makeMessagesStreamByInputIdAndAccess = () => {
 export const sendToPortById = (
   id: EMIDIOutput.Id,
   ...args: EMIDIOutput.SendFromPortArgs
-) =>
+): Effect.Effect<void, SendToOutputByIdError, EMIDIAccess> =>
   Effect.asVoid(
     EMIDIOutput.send(GetPort.getOutputByPortIdInContext(id), ...args),
   )
+
+/**
+ * Failure modes of {@linkcode sendToPortById}: the port may be missing, or the
+ * send itself may fail.
+ */
+export type SendToOutputByIdError =
+  | MIDIErrors.PortNotFoundError
+  | EMIDIOutput.SendError
 
 /**
  *
@@ -1006,14 +1127,35 @@ export const clearPortById = EFunction.flow(
 )
 
 /**
+ * Creates a `statechange` stream of a MIDI access handle, generalized over
+ * additional error and requirement so deferred/optional-access services can
+ * reuse it instead of spelling out the function type inline.
+ */
+export interface MakeAllPortsStateChangesStream<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> {
+  /**
+   * @param options Passing a value of a `boolean` type is equivalent to setting
+   * `options.capture` property
+   */
+  <const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined>(
+    options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
+  ): AllPortsStateChangesStream<
+    TOnNullStrategy,
+    TAdditionalError,
+    TAdditionalRequirement
+  >
+}
+
+/**
  * @param options Passing a value of a `boolean` type is equivalent to setting
  * `options.capture` property
  */
-export const makeAllPortsStateChangesStreamInContext = <
-  const TOnNullStrategy extends StreamMaker.OnNullStrategy = undefined,
->(
-  options?: StreamMaker.StreamMakerOptions<TOnNullStrategy>,
-) => makeAllPortsStateChangesStream(EMIDIAccess, options)
+export const makeAllPortsStateChangesStreamInContext: MakeAllPortsStateChangesStream<
+  never,
+  EMIDIAccess
+> = options => makeAllPortsStateChangesStream(EMIDIAccess, options)
 
 /**
  *
@@ -1030,7 +1172,7 @@ export const sendInContext = (...args: SendFromAccessArgs) =>
  */
 export const request = Effect.fn('EMIDIAccess.request')(function* (
   options?: RequestMIDIAccessOptions,
-) {
+): Effect.fn.Return<EMIDIAccessInstance, RequestError> {
   yield* Effect.annotateCurrentSpan({ options })
 
   const rawAccess = yield* Effect.tryPromise({
@@ -1106,7 +1248,7 @@ export const layerSystemExclusiveAndSoftwareSynthSupported = layer({
 })
 
 export interface SentMessageEffectFromAccess<E = never, R = never>
-  extends Util.SentMessageEffectFrom<EMIDIAccessInstance, E, R> {}
+  extends EMIDIOutput.SentMessageEffectFrom<EMIDIAccessInstance, E, R> {}
 
 export type TargetPortSelector =
   | 'all existing outputs at effect execution'

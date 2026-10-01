@@ -6,8 +6,6 @@ import * as Record from 'effect/Record'
 import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
-import type * as MIDIErrors from './MIDIErrors.ts'
-
 export const midiPortStaticFields = [
   'id',
   'name',
@@ -21,20 +19,6 @@ export type MIDIPortStaticFields = (typeof midiPortStaticFields)[number]
 export const getStaticMIDIPortInfo = (
   port: Pick<MIDIPort, MIDIPortStaticFields>,
 ) => Struct.pick(port, midiPortStaticFields)
-
-/**
- * Puts Self into success channel for easier chaining of operations on the same
- * entity
- */
-export interface SentMessageEffectFrom<Self, E = never, R = never>
-  extends Effect.Effect<
-    Self,
-    | E
-    | MIDIErrors.CannotSendSysexMessageError
-    | MIDIErrors.MalformedMIDIMessageError
-    | MIDIErrors.CannotSendToDisconnectedPortError,
-    R
-  > {}
 
 export type PolymorphicEffect<A, E, R> = A | Effect.Effect<A, E, R>
 

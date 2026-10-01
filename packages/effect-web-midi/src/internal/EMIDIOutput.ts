@@ -184,6 +184,22 @@ export type PolymorphicOutput<E, R> = EMIDIPort.PolymorphicPort<E, R, 'output'>
  */
 export type PolymorphicOutputClean = EMIDIPort.PolymorphicPortClean<'output'>
 
+/**
+ * Failure modes of {@linkcode send} that do not depend on how the output port
+ * was acquired.
+ */
+export type SendError =
+  | MIDIErrors.CannotSendSysexMessageError
+  | MIDIErrors.CannotSendToDisconnectedPortError
+  | MIDIErrors.MalformedMIDIMessageError
+
+/**
+ * Puts Self into success channel for easier chaining of operations on the same
+ * entity
+ */
+export interface SentMessageEffectFrom<Self, E = never, R = never>
+  extends Effect.Effect<Self, E | SendError, R> {}
+
 export type SendFromPortArgs = [
   midiMessage: Iterable<number>,
   timestamp?: DOMHighResTimeStamp,
@@ -220,10 +236,11 @@ export interface SendMIDIMessagePortFirst {
 }
 
 /**
- *
+ * Result of {@linkcode send}: the same port for chaining. Adds
+ * {@linkcode SendError} to error channel
  */
 export interface SentMessageEffectFromPort<E = never, R = never>
-  extends Util.SentMessageEffectFrom<EMIDIOutput, E, R> {}
+  extends SentMessageEffectFrom<EMIDIOutput, E, R> {}
 
 export type Id = EMIDIPort.Id<'output'>
 export const Id = EMIDIPort.BothId as Brand.Constructor<Id>

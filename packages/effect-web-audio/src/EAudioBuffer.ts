@@ -23,4 +23,5 @@ export {
   type MakeAudioBufferOptions,
   make,
   type TypeId,
+  unsafeNativeAudioBuffer,
 } from './internal/EAudioBuffer.ts'

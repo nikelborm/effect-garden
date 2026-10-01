@@ -1,5 +1,3 @@
-import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
-
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import * as EFunction from 'effect/Function'
@@ -48,6 +46,7 @@ import {
 import { AssetDownloadSchedulerLayer } from '../services/AssetDownloadScheduler.ts'
 import { AudioBufferStoreLayer } from '../services/AudioBufferStore.ts'
 import { DeferredAudioContextServiceLayer } from '../services/DeferredAudioContextService.ts'
+import { DeferredMIDIAccessServiceLayer } from '../services/DeferredMIDIAccessService.ts'
 import { DownloadManagerLayer } from '../services/DownloadManager.ts'
 import {
   AccordInputBusLayer,
@@ -111,22 +110,14 @@ const AllConstantsAndBusesNoDeps = Layer.mergeAll(
   Layer.satisfiesServicesType<never>(),
 )
 
-const MIDIAccessNoDeps = EMIDIAccess.layerSoftwareSynthSupported.pipe(
-  Layer.catchCause(cause =>
-    Layer.effectDiscard(
-      Effect.logError(
-        `MIDI button to param button mapping failed because access wasn't granted and we cannot initialize pressure stream`,
-        cause,
-      ),
-    ),
-  ),
-  Layer.withSpan('EMIDIAccess.layerSoftwareSynthSupported'),
+const DeferredMIDIAccessNoDeps = DeferredMIDIAccessServiceLayer.pipe(
+  Layer.withSpan('DeferredMIDIAccessServiceLayer'),
   Layer.satisfiesServicesType<never>(),
 )
 
 const SelectedMIDIInputWithAccessServiceNoDeps =
   SelectedMIDIInputServiceLayer.pipe(
-    Layer.provideMerge(MIDIAccessNoDeps),
+    Layer.provideMerge(DeferredMIDIAccessNoDeps),
     Layer.withSpan('SelectedMIDIInputWithAccessServiceNoDeps'),
     Layer.satisfiesServicesType<never>(),
   )

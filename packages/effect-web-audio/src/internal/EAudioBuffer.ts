@@ -303,6 +303,25 @@ export const assert: (audioBuffer: unknown) => EAudioBuffer = assertImpl
 export const assumeImpl = (audioBuffer: EAudioBuffer) =>
   audioBuffer as EAudioBufferImpl
 
+// TODO: eventually should be removed
+/**
+ * Escape hatch to the raw `AudioBuffer` wrapped by `effect-web-audio`.
+ *
+ * Useful when you need an API that is not (yet) wrapped by this library, e.g.
+ * assigning a decoded buffer to a natively created `AudioBufferSourceNode`.
+ *
+ * @example
+ * ```ts
+ * import * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
+ *
+ * declare const buffer: EAudioBuffer.EAudioBuffer
+ * const native: AudioBuffer = EAudioBuffer.unsafeNativeAudioBuffer(buffer)
+ * ```
+ */
+export const unsafeNativeAudioBuffer = (
+  audioBuffer: EAudioBuffer,
+): AudioBuffer => assumeImpl(audioBuffer)._audioBuffer
+
 /**
  * @internal
  * @example
@@ -397,7 +416,7 @@ export const copyFromChannel: CopyFromChannel = dual<
   (source, destination, channelIndex, bufferOffset) =>
     Result.try({
       try: () =>
-        assumeImpl(source)._audioBuffer.copyFromChannel(
+        unsafeNativeAudioBuffer(source).copyFromChannel(
           destination,
           channelIndex,
           bufferOffset,
@@ -490,7 +509,7 @@ export const copyToChannel: CopyToChannel = dual<
   (destination, source, channelIndex, bufferOffset) =>
     Result.try({
       try: () =>
-        assumeImpl(destination)._audioBuffer.copyToChannel(
+        unsafeNativeAudioBuffer(destination).copyToChannel(
           source,
           channelIndex,
           bufferOffset,
@@ -584,7 +603,7 @@ export const getChannelData: GetChannelData = dual<
   args => is(args[0]),
   (source, channelIndex) =>
     Result.try({
-      try: () => assumeImpl(source)._audioBuffer.getChannelData(channelIndex),
+      try: () => unsafeNativeAudioBuffer(source).getChannelData(channelIndex),
       catch: AudioErrors.remapErrorByName(
         {
           IndexSizeError:

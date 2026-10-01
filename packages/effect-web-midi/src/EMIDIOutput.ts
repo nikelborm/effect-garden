@@ -62,9 +62,11 @@ export {
   type OutputIdToInstanceMap as IdToInstanceMap,
   type PolymorphicOutput as PolymorphicInstance,
   type PolymorphicOutputClean as PolymorphicCleanInstance,
+  type SendError,
   type SendFromPortArgs,
   type SendMIDIMessagePortFirst,
   type SendMIDIMessagePortLast,
+  type SentMessageEffectFrom,
   type SentMessageEffectFromPort,
   send,
 } from './internal/EMIDIOutput.ts'

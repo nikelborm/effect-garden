@@ -1,4 +1,4 @@
-import type * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
+import * as EAudioBuffer from 'effect-web-audio/EAudioBuffer'
 import * as EAudioContext from 'effect-web-audio/EAudioContext'
 
 import * as Context from 'effect/Context'
@@ -9,37 +9,27 @@ import type * as Scope from 'effect/Scope'
 
 import { AudioPlayback } from './AppPlaybackStateService/types/common.ts'
 
-// TODO: need to handle the path of crash
-// export type AudioContextInitError = Effect.Error<
-//   ReturnType<typeof EAudioContext.make>
-// >
+// TODO: need to handle the path of crash (DONT FUCKING DELETE THIS COMMENT)
+// export type AudioContextInitError = EAudioContext.MakeError
 export type AudioContextInitError = never
 
-export type AudioContextDecodeError =
-  Effect.Error<EAudioContext.DecodedAudioDataEffect>
+export type AudioContextDecodeError = EAudioContext.DecodeAudioDataError
 
-
-// TODO: fix upstream effect-web-audio, to avoid this hack
-const unwrapNativeContext = (instance: EAudioContext.Instance): AudioContext =>
-  (instance as EAudioContext.Instance & { _audioContext: AudioContext })
-    ._audioContext
-
-// TODO: fix upstream effect-web-audio, to avoid this hack
-const unwrapNativeBuffer = (buffer: EAudioBuffer.EAudioBuffer): AudioBuffer =>
-  (buffer as EAudioBuffer.EAudioBuffer & { _audioBuffer: AudioBuffer })
-    ._audioBuffer
+export interface CreatePlayback {
+  /**
+   * @param audioBuffer An already decoded buffer to play.
+   */
+  (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+  ): Effect.Effect<AudioPlayback, AudioContextInitError>
+}
 
 export interface DeferredAudioContextServiceShape {
-  readonly currentTime: Effect.Effect<number, AudioContextInitError>
-  readonly decodeAudioData: (
-    encodedAudioBuffer: ArrayBuffer,
-  ) => Effect.Effect<
-    EAudioBuffer.EAudioBuffer,
-    AudioContextInitError | AudioContextDecodeError
-  >
-  readonly createPlayback: (
-    audioBuffer: EAudioBuffer.EAudioBuffer,
-  ) => Effect.Effect<AudioPlayback, AudioContextInitError>
+  readonly currentTime: EAudioContext.CurrentTimeEffect<AudioContextInitError>
+
+  readonly decodeAudioData: EAudioContext.DecodeAudioDataWith<AudioContextInitError>
+
+  readonly createPlayback: CreatePlayback
 }
 
 export class DeferredAudioContextService extends Context.Service<
@@ -62,7 +52,7 @@ export const layer = (
 
     yield* EAudioContext.make(config).pipe(
       // TODO: show the user nice warning about audio context not supported in
-      // their browser
+      // their browser (DONT FUCKING DELETE THIS COMMENT)
       Effect.orDie,
       Deferred.into(deferred),
       Effect.forkScoped,
@@ -85,17 +75,17 @@ export const layer = (
       createPlayback: (
         audioBuffer: EAudioBuffer.EAudioBuffer,
       ): Effect.Effect<AudioPlayback, AudioContextInitError> =>
-        Effect.flatMap(deferredAudioContext, instance =>
-          Effect.sync(() => {
-            const nativeAudioContext = unwrapNativeContext(instance)
-            const bufferSource = nativeAudioContext.createBufferSource()
-            const gainNode = nativeAudioContext.createGain()
-            bufferSource.buffer = unwrapNativeBuffer(audioBuffer)
-            bufferSource.connect(gainNode)
-            gainNode.connect(nativeAudioContext.destination)
-            return AudioPlayback.make({ bufferSource, gainNode })
-          }),
-        ),
+        Effect.map(deferredAudioContext, instance => {
+          const nativeAudioContext =
+            EAudioContext.unsafeNativeAudioContext(instance)
+          const bufferSource = nativeAudioContext.createBufferSource()
+          const gainNode = nativeAudioContext.createGain()
+          bufferSource.buffer =
+            EAudioBuffer.unsafeNativeAudioBuffer(audioBuffer)
+          bufferSource.connect(gainNode)
+          gainNode.connect(nativeAudioContext.destination)
+          return AudioPlayback.make({ bufferSource, gainNode })
+        }),
     }
   }).pipe(Layer.effect(DeferredAudioContextService))
 

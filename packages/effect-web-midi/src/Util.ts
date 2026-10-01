@@ -15,5 +15,4 @@ export {
   mapToGlidingStringLogOfLimitedEntriesCount,
   midiPortStaticFields,
   type PolymorphicEffect,
-  type SentMessageEffectFrom,
 } from './internal/Util.ts'

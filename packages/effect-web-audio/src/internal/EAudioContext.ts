@@ -163,6 +163,15 @@ const makeImpl = (
 // TODO: update MDN here on AudioContextOptions https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext
 
 /**
+ * Failure modes of {@linkcode make}.
+ */
+export type MakeError =
+  | AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive
+  | AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate
+  | AudioErrors.CannotMakeEAudioContextInvalidLatencyHint
+  | AudioErrors.CannotMakeEAudioContextWrongRuntime
+
+/**
  * Creates a public-facing {@linkcode EAudioContextInstance|EAudioContext.Instance}
  * from a raw {@linkcode AudioContext} object and optional configuration options
  * used to acquire it. Prevents revealing internal fields set by
@@ -176,13 +185,7 @@ const makeImpl = (
  */
 export const make = (
   config?: Readonly<MakeAudioContextOptions>,
-): Effect.Effect<
-  EAudioContextInstance,
-  | AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive
-  | AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate
-  | AudioErrors.CannotMakeEAudioContextInvalidLatencyHint
-  | AudioErrors.CannotMakeEAudioContextWrongRuntime
-> =>
+): Effect.Effect<EAudioContextInstance, MakeError> =>
   Effect.try({
     try: () => makeImpl(new AudioContext(config), config),
     catch: AudioErrors.remapErrorByName(
@@ -279,6 +282,31 @@ export const assert: (audioContext: unknown) => EAudioContextInstance =
  */
 export const assumeImpl = (audioContext: EAudioContextInstance) =>
   audioContext as EAudioContextImplementationInstance
+
+// TODO: eventually should be removed
+/**
+ * Escape hatch to the raw `AudioContext` wrapped by `effect-web-audio`.
+ *
+ * Useful when you need an API that is not (yet) wrapped by this library, e.g.
+ * creating `AudioBufferSourceNode`s for deferred playback services.
+ *
+ * Prefer wrapped helpers like {@linkcode currentTime} or
+ * {@linkcode decodeAudioData} when they cover your use case.
+ *
+ * @example
+ * ```ts
+ * import * as EAudioContext from 'effect-web-audio/EAudioContext'
+ * import * as Effect from 'effect/Effect'
+ *
+ * const program = Effect.flatMap(
+ *   EAudioContext.EAudioContext,
+ *   context => Effect.sync(() => EAudioContext.unsafeNativeAudioContext(context).currentTime),
+ * )
+ * ```
+ */
+export const unsafeNativeAudioContext = (
+  audioContext: EAudioContextInstance,
+): AudioContext => assumeImpl(audioContext)._audioContext
 
 /**
  * @internal
@@ -402,7 +430,7 @@ export const decodeAudioData: DecodeAudioData = EFunction.dual<
   args => is(args[0]),
   (context, audioBuffer) =>
     Effect.tryPromise({
-      try: () => assumeImpl(context)._audioContext.decodeAudioData(audioBuffer),
+      try: () => unsafeNativeAudioContext(context).decodeAudioData(audioBuffer),
       catch: AudioErrors.remapErrorByName(
         {
           InvalidStateError:
@@ -458,17 +486,88 @@ export interface DecodeAudioDataSourceLastSecondPart {
   (context: EAudioContextInstance): DecodedAudioDataEffect
 }
 
-export type DecodedAudioDataEffect = Effect.Effect<
-  EAudioBuffer.EAudioBuffer,
+export interface DecodedAudioDataEffect
+  extends DecodedAudioDataEffectWith<never, never> {}
+
+/**
+ * Success channel of {@linkcode decodeAudioData}, generalized over additional
+ * error and requirement so deferred services can reuse it instead of spelling
+ * out the `Effect` inline.
+ */
+export interface DecodedAudioDataEffectWith<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> extends Effect.Effect<
+    EAudioBuffer.EAudioBuffer,
+    DecodeAudioDataError | TAdditionalError,
+    TAdditionalRequirement
+  > {}
+
+/**
+ * Decodes an encoded buffer without taking the context as an argument (it is
+ * captured, e.g. awaited from a `Deferred`), generalized over additional error
+ * and requirement so deferred services can reuse it instead of spelling out
+ * the function type inline.
+ */
+export interface DecodeAudioDataWith<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> {
+  /**
+   * @param encodedAudioBuffer Raw bytes of an encoded audio asset.
+   */
+  (
+    encodedAudioBuffer: ArrayBuffer,
+  ): DecodedAudioDataEffectWith<TAdditionalError, TAdditionalRequirement>
+}
+
+/**
+ * Failure modes of {@linkcode decodeAudioData}.
+ */
+export type DecodeAudioDataError =
   | AudioErrors.CannotDecodeAudioDataDocumentIsNotFullyActive
   | AudioErrors.CannotDecodeAudioDataEmptyBufferError
   | AudioErrors.CannotDecodeAudioDataUnrecognizedEncodingFormat
->
 
-export const currentTime = (context: EAudioContextInstance) =>
-  Effect.sync(() => assumeImpl(context)._audioContext.currentTime)
+/**
+ * Reads `currentTime` of an already acquired context, generalized over
+ * additional error and requirement so deferred services can reuse it instead
+ * of spelling out the `Effect` inline.
+ */
+export interface CurrentTimeEffect<
+  TAdditionalError = never,
+  TAdditionalRequirement = never,
+> extends Effect.Effect<number, TAdditionalError, TAdditionalRequirement> {}
 
-export const currentTimeFromContext = Effect.flatMap(EAudioContext, currentTime)
+/**
+ * Reads `currentTime` from a context passed as an argument.
+ */
+export interface CurrentTime {
+  /**
+   * @param context An already acquired audio context.
+   */
+  (context: EAudioContextInstance): CurrentTimeEffect
+}
+
+export const currentTime: CurrentTime = (context: EAudioContextInstance) =>
+  Effect.sync(() => unsafeNativeAudioContext(context).currentTime)
+
+export const currentTimeFromContext: CurrentTimeEffect<never, EAudioContext> =
+  Effect.flatMap(EAudioContext, currentTime)
+
+export interface DecodeAudioDataFromContext
+  extends DecodeAudioDataWith<never, EAudioContext> {}
+
+/**
+ * Decodes an encoded buffer with the context taken from the `Effect` context,
+ * mirroring {@linkcode currentTimeFromContext}. Annotated with
+ * {@linkcode DecodeAudioDataWith} so the alias cannot go stale.
+ *
+ * @param encodedAudioBuffer Raw bytes of an encoded audio asset.
+ */
+export const decodeAudioDataFromContext: DecodeAudioDataFromContext =
+  encodedAudioBuffer =>
+    Effect.flatMap(EAudioContext, decodeAudioData(encodedAudioBuffer))
 
 export const layer = (config?: Readonly<MakeAudioContextOptions>) =>
   Layer.effect(EAudioContext, make(config))

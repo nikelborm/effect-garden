@@ -9,9 +9,8 @@ import * as Stream from 'effect/Stream'
 
 import * as ButtonState from '../domain/ButtonState.ts'
 import { type NoteId, NotePhysicalButtonData } from '../domain/MIDIValues.ts'
+import { DeferredMIDIAccessService } from '../services/DeferredMIDIAccessService.ts'
 import { SelectedMIDIInputService } from '../services/SelectedMIDIInputService.ts'
-
-Effect.serviceOption
 
 export const makeMIDINoteButtonPressStream = (
   notesToFocusOn: Set<NoteId>,
@@ -21,7 +20,8 @@ export const makeMIDINoteButtonPressStream = (
   SelectedMIDIInputService
 > =>
   Effect.gen(function* () {
-    const accessOption = yield* Effect.serviceOption(EMIDIAccess.EMIDIAccess)
+    const accessOption = yield* DeferredMIDIAccessService.accessOptionInContext
+
     if (Option.isNone(accessOption)) return Stream.empty
 
     const selectedMIDIInputService = yield* SelectedMIDIInputService

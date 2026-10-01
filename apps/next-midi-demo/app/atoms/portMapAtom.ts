@@ -1,8 +1,8 @@
 import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
-import type * as MIDIErrors from 'effect-web-midi/MIDIErrors'
 
 import * as EArray from 'effect/Array'
+import type * as Cause from 'effect/Cause'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as EFunction from 'effect/Function'
@@ -66,13 +66,10 @@ export interface MapPortTypeFilterArgToPort<T extends MIDIPortType | undefined>
   extends EMIDIPort.EMIDIPort<CleanupPortType<T>> {}
 
 export interface MapPortTypeFilterArgToEffect<
-  T extends MIDIPortType | undefined,
+  in out T extends MIDIPortType | undefined,
 > extends Effect.Effect<
     MapPortTypeFilterArgToPort<T>[],
-    | MIDIErrors.AbortError
-    | MIDIErrors.UnderlyingSystemError
-    | MIDIErrors.MIDIAccessNotSupportedError
-    | MIDIErrors.MIDIAccessNotAllowedError
+    EMIDIAccess.RequestError | Cause.NoSuchElementError
   > {}
 
 export interface UpdatePortMapFn {

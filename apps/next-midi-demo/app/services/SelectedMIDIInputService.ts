@@ -7,6 +7,8 @@ import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
+import { DeferredMIDIAccessService } from './DeferredMIDIAccessService.ts'
+
 export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputService>()(
   'next-midi-demo/SelectedMIDIInputService',
   {
@@ -14,9 +16,10 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
       const selectedInputIdRef =
         yield* SubscriptionRef.make<EMIDIInput.Id | null>(null)
 
-      const access = yield* Effect.serviceOption(EMIDIAccess.EMIDIAccess)
+      const accessOption =
+        yield* DeferredMIDIAccessService.accessOptionInContext
 
-      if (Option.isNone(access))
+      if (Option.isNone(accessOption))
         return {
           selectInput: () =>
             Effect.die(
@@ -27,7 +30,8 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
           changes: Stream.succeed(null),
         }
 
-      yield* EMIDIAccess.makeAllPortsStateChangesStream(access.value).pipe(
+      yield* accessOption.value.pipe(
+        EMIDIAccess.makeAllPortsStateChangesStream(),
         Stream.runForEach(({ port, newState }) =>
           SubscriptionRef.update(selectedInputIdRef, selectedId =>
             port.id === selectedId && newState.ofDevice === 'disconnected'
@@ -55,7 +59,5 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
   },
 ) {}
 
-export const SelectedMIDIInputServiceLayer = Layer.effect(
-  SelectedMIDIInputService,
-  SelectedMIDIInputService.make,
-)
+export const SelectedMIDIInputServiceLayer: Layer.Layer<SelectedMIDIInputService> =
+  Layer.effect(SelectedMIDIInputService, SelectedMIDIInputService.make)
