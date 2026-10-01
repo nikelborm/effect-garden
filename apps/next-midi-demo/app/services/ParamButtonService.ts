@@ -58,7 +58,6 @@ const makeParamButtonService = <
     //   selectedChangesStream.pipe(
     //     Stream.map(Equal.equals(toCompareValue(value))),
     //     Stream.changes,
-    //
     //     Stream.tap(isSelected =>
     //       Effect.log(
     //         `${toLabel(value)} is ${isSelected ? '' : 'not '}selected`,
@@ -85,7 +84,6 @@ const makeParamButtonService = <
     //             'finished'),
     //     ),
     //     Stream.changes,
-    //
     //   )
 
     // const isCurrentlyPlaying = (value: ParamButtonIdData<TParamButtonId>) =>
@@ -94,7 +92,6 @@ const makeParamButtonService = <
     //       pb => pb._tag !== 'Silence' && isCurrentlyPlayingPredicate(pb, value),
     //     ),
     //     Stream.changes,
-    //
     //     Stream.tap(a =>
     //       Effect.log(`${toLabel(value)} button is ${a ? '' : 'not '}playing`),
     //     ),
@@ -112,7 +109,6 @@ const makeParamButtonService = <
     //             : 100,
     //       ),
     //       Stream.changes,
-    //
     //       Stream.tap(percent =>
     //         Effect.log(`${toLabel(value)} download percent=${percent}`),
     //       ),

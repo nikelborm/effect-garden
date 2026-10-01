@@ -82,7 +82,6 @@ const makeParamSpecificBus = Effect.fn('makeParamSpecificBus')(function* <
             : HashSet.remove(pressedSet, physicalButtonId),
       ),
       Stream.changes,
-
       Stream.withSpan('paramPressedByPhysicalButtonSetStream', {
         attributes: { paramButtonId },
       }),
@@ -195,7 +194,6 @@ const makeInputBus = Effect.fnUntraced(function* <
       getPressedByPhysicalButtonSetStream(paramButton),
       Stream.map(set => HashSet.size(set) > 0),
       Stream.changes,
-
       Stream.withSpan('isPressedStream', {
         attributes: { paramButtonId: paramButton.id },
       }),
