@@ -13,6 +13,6 @@ const _minutesSincePreviousMidnight = dayInMinutes + minutesSinceMidnight
 
 const url =
   'https://diffshub.com/nikelborm/effect-garden/compare/' +
-  encodeURIComponent(`${branch}@{${_minutesSincePreviousMidnight}minutes}...${branch}`)
+  encodeURIComponent(`${branch}@{${minutesSinceMidnight}minutes}...${branch}`)
 
 await $`xdg-open ${url}`
