@@ -7,8 +7,6 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import type * as Scope from 'effect/Scope'
 
-export type MIDIAccessInitError = EMIDIAccess.RequestError
-
 export interface DeferredMIDIAccessServiceShape {
   readonly accessOption: Effect.Effect<
     Option.Option<EMIDIAccess.Instance>,
