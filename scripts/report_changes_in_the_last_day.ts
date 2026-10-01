@@ -12,7 +12,7 @@ const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes()
 const _minutesSincePreviousMidnight = dayInMinutes + minutesSinceMidnight
 
 const url =
-  'https://github.com/nikelborm/effect-garden/compare/' +
+  'https://diffshub.com/nikelborm/effect-garden/compare/' +
   encodeURIComponent(`${branch}@{${minutesSinceMidnight}minutes}...${branch}`)
 
 await $`xdg-open ${url}`
