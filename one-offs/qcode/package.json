@@ -1,0 +1,62 @@
+{
+  "name": "@evadev/qcode",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Quick fuzzy finder and opener for my projects",
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@effect/tsgo": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "@types/bun": "catalog:",
+    "rolldown": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "@effect/platform-bun": "catalog:",
+    "effect": "catalog:"
+  },
+  "dependencies": {
+    "tslib": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/qcode#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "one-offs/qcode"
+  },
+  "scripts": {
+    "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
+    "lint": "oxlint --fix --quiet && biome check --write --unsafe"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "module": "index.ts"
+}

@@ -12,6 +12,7 @@
         "@evadev/effect-landscape": "workspace:^",
         "@evadev/effect-schema-i18n": "workspace:^",
         "@evadev/github-extract-issues": "workspace:^",
+        "@evadev/qcode": "workspace:^",
         "@evadev/scripts": "workspace:^",
         "@evadev/ts-better-tuple": "workspace:^",
         "@evadev/tsconfig": "workspace:^",
@@ -439,6 +440,26 @@
       },
       "peerDependencies": {
         "oxlint": "catalog:",
+      },
+    },
+    "one-offs/qcode": {
+      "name": "@evadev/qcode",
+      "version": "0.1.0",
+      "dependencies": {
+        "tslib": "catalog:",
+      },
+      "devDependencies": {
+        "@biomejs/biome": "catalog:",
+        "@effect/tsgo": "catalog:",
+        "@evadev/tsconfig": "workspace:^",
+        "@types/bun": "catalog:",
+        "rolldown": "catalog:",
+        "ts-namespace-import": "catalog:",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "@effect/platform-bun": "catalog:",
+        "effect": "catalog:",
       },
     },
     "one-offs/webref-idl-types": {
@@ -1602,6 +1623,8 @@
     "@evadev/github-extract-issues": ["@evadev/github-extract-issues@workspace:one-offs/github-extract-issues"],
 
     "@evadev/openapi-gen": ["@evadev/openapi-gen@1.0.1", "", { "dependencies": { "yaml": "^2.8.0" }, "bin": { "@evadev/openapi-gen": "main.js" } }, "sha512-ZNeFjO83LBaKhSv3znt95PGvj6vrhkIEfjByANXe+eB7k1yoy+UvdXm2N4OYbJv+tVojwjAktqfctpCb+2Gh7w=="],
+
+    "@evadev/qcode": ["@evadev/qcode@workspace:one-offs/qcode"],
 
     "@evadev/scripts": ["@evadev/scripts@workspace:scripts"],
 

@@ -8,6 +8,7 @@
     "@evadev/backend-config": "workspace:^",
     "@evadev/effect-helpers": "workspace:^",
     "@evadev/effect-landscape": "workspace:^",
+    "@evadev/qcode": "workspace:^",
     "@evadev/effect-schema-i18n": "workspace:^",
     "@evadev/github-extract-issues": "workspace:^",
     "@evadev/scripts": "workspace:^",
