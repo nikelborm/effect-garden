@@ -63,7 +63,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
             current.transitionQueue.length > 0,
         ),
         Stream.changes,
-        Stream.rechunk(1),
+
         Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
       )
 

@@ -45,7 +45,7 @@ export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputS
 
       const changes = yield* SubscriptionRef.changes(selectedInputIdRef).pipe(
         Stream.changes,
-        Stream.rechunk(1),
+
         Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
       )
 

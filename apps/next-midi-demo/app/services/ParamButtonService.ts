@@ -58,7 +58,7 @@ const makeParamButtonService = <
     //   selectedChangesStream.pipe(
     //     Stream.map(Equal.equals(toCompareValue(value))),
     //     Stream.changes,
-    //     Stream.rechunk(1),
+    //
     //     Stream.tap(isSelected =>
     //       Effect.log(
     //         `${toLabel(value)} is ${isSelected ? '' : 'not '}selected`,
@@ -85,7 +85,7 @@ const makeParamButtonService = <
     //             'finished'),
     //     ),
     //     Stream.changes,
-    //     Stream.rechunk(1),
+    //
     //   )
 
     // const isCurrentlyPlaying = (value: ParamButtonIdData<TParamButtonId>) =>
@@ -94,7 +94,7 @@ const makeParamButtonService = <
     //       pb => pb._tag !== 'Silence' && isCurrentlyPlayingPredicate(pb, value),
     //     ),
     //     Stream.changes,
-    //     Stream.rechunk(1),
+    //
     //     Stream.tap(a =>
     //       Effect.log(`${toLabel(value)} button is ${a ? '' : 'not '}playing`),
     //     ),
@@ -112,7 +112,7 @@ const makeParamButtonService = <
     //             : 100,
     //       ),
     //       Stream.changes,
-    //       Stream.rechunk(1),
+    //
     //       Stream.tap(percent =>
     //         Effect.log(`${toLabel(value)} download percent=${percent}`),
     //       ),
@@ -131,7 +131,7 @@ const makeParamButtonService = <
     //     ),
     //   ),
     //   // rechunk because of the damn bug in effect
-    //   Stream.rechunk(1),
+    //
     //   Stream.broadcast({ capacity: 'unbounded' }),
     // )
 
@@ -146,7 +146,6 @@ const makeParamButtonService = <
       selectionChangesStream.pipe(
         Stream.map(selection => matches(selection, value)),
         Stream.changes,
-        Stream.rechunk(1),
       )
 
     const getIsPlayingStream = (value: ParamButtonIdData<TParamButtonId>) =>
@@ -158,7 +157,6 @@ const makeParamButtonService = <
           }),
         ),
         Stream.changes,
-        Stream.rechunk(1),
       )
 
     // STUB: download progress. Under the "all assets are downloaded" assumption
