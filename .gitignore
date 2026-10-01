@@ -35,8 +35,7 @@ superset
 temp.json
 tmp
 .swc/
-sw.js
-public/sw*
+**/public/sw.js*
 certificates/
 
 # temporarily
