@@ -332,15 +332,15 @@ import * as Util from './Util.ts'
 
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}s from other objects at
  * both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for('effect-web-midi/EMIDIAccessInstance')
+const TypeId = 'effect-web-midi/EMIDIAccessInstance'
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EMIDIAccessInstance|EMIDIAccess.Instance}s from other objects at
  * both runtime and type-level
  */

@@ -14,16 +14,14 @@ import * as MediaBrand from './MediaBrand.ts'
 // TODO: fuzzing property-based testing all of the arrays to catch more errors
 
 /**
- * Unique symbol used for distinguishing {@linkcode EInputDeviceInfo}s from
+ * Unique id used for distinguishing {@linkcode EInputDeviceInfo}s from
  * other objects at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for(
-  'effect-web-mediacapture-streams/EInputDeviceInfo',
-)
+const TypeId = 'effect-web-mediacapture-streams/EInputDeviceInfo'
 
 /**
- * Unique symbol used for distinguishing {@linkcode EInputDeviceInfo}s from
+ * Unique id used for distinguishing {@linkcode EInputDeviceInfo}s from
  * other objects at both runtime and type-level
  */
 export type TypeId = typeof TypeId

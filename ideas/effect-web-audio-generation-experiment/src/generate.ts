@@ -71,7 +71,7 @@ import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Pipeable from 'effect/Pipeable'
 
-const TypeId: unique symbol = Symbol.for("effect-web-audio/${interfaceName}")
+const TypeId = "effect-web-audio/${interfaceName}"
 
 export type TypeId = typeof TypeId
 

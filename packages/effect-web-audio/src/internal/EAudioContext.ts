@@ -14,24 +14,21 @@ import * as Hash from 'effect/Hash'
 import * as Inspectable from 'effect/Inspectable'
 import * as Layer from 'effect/Layer'
 import * as Pipeable from 'effect/Pipeable'
-import * as Result from 'effect/Result'
 
 import type * as AudioBrand from './AudioBrand.ts'
 import * as AudioErrors from './AudioErrors.ts'
 import * as EAudioBuffer from './EAudioBuffer.ts'
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EAudioContextInstance|EAudioContext.Instance}s from other objects
  * at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for(
-  'effect-web-audio/EAudioContextInstance',
-)
+const TypeId = 'effect-web-audio/EAudioContextInstance'
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EAudioContextInstance|EAudioContext.Instance}s from other objects
  * at both runtime and type-level
  */
@@ -179,14 +176,14 @@ const makeImpl = (
  */
 export const make = (
   config?: Readonly<MakeAudioContextOptions>,
-): Result.Result<
+): Effect.Effect<
   EAudioContextInstance,
   | AudioErrors.CannotMakeEAudioContextDocumentIsNotFullyActive
   | AudioErrors.CannotMakeEAudioContextUnsupportedSampleRate
   | AudioErrors.CannotMakeEAudioContextInvalidLatencyHint
   | AudioErrors.CannotMakeEAudioContextWrongRuntime
 > =>
-  Result.try({
+  Effect.try({
     try: () => makeImpl(new AudioContext(config), config),
     catch: AudioErrors.remapErrorByName(
       {
@@ -438,7 +435,7 @@ export interface DecodeAudioDataSourceFirst {
   (
     context: EAudioContextInstance,
     encodedAudioBuffer: ArrayBuffer,
-  ): DecodeAudioDataResult
+  ): DecodedAudioDataEffect
 }
 
 // TODO: example in JSDoc
@@ -458,10 +455,10 @@ export interface DecodeAudioDataSourceLastSecondPart {
    *
    * @param context
    */
-  (context: EAudioContextInstance): DecodeAudioDataResult
+  (context: EAudioContextInstance): DecodedAudioDataEffect
 }
 
-export type DecodeAudioDataResult = Effect.Effect<
+export type DecodedAudioDataEffect = Effect.Effect<
   EAudioBuffer.EAudioBuffer,
   | AudioErrors.CannotDecodeAudioDataDocumentIsNotFullyActive
   | AudioErrors.CannotDecodeAudioDataEmptyBufferError
@@ -474,4 +471,4 @@ export const currentTime = (context: EAudioContextInstance) =>
 export const currentTimeFromContext = Effect.flatMap(EAudioContext, currentTime)
 
 export const layer = (config?: Readonly<MakeAudioContextOptions>) =>
-  Layer.effect(EAudioContext, Effect.fromResult(make(config)))
+  Layer.effect(EAudioContext, make(config))

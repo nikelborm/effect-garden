@@ -11,15 +11,15 @@ import * as AudioErrors from './AudioErrors.ts'
 // TODO: fuzzing property-based testing all of the arrays to catch more errors
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EAudioBuffer}s from other objects
  * at both runtime and type-level
  * @internal
  */
-const TypeId: unique symbol = Symbol.for('effect-web-audio/EAudioBuffer')
+const TypeId = 'effect-web-audio/EAudioBuffer'
 
 /**
- * Unique symbol used for distinguishing
+ * Unique id used for distinguishing
  * {@linkcode EAudioBuffer}s from other objects
  * at both runtime and type-level
  */
