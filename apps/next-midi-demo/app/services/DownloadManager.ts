@@ -1,3 +1,4 @@
+import { pipe } from 'effect'
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
@@ -149,16 +150,11 @@ export const getStreamOfRemoteAsset = (
   asset: AssetPointer,
   resumeFromByte?: number,
 ) =>
-  HttpClient.HttpClient.pipe(
-    Effect.map(HttpClient.filterStatusOk),
-    Effect.flatMap(client =>
-      client.get(
-        getRemoteAssetPath(asset),
-        resumeFromByte
-          ? { headers: { Range: `bytes=${resumeFromByte}-` } }
-          : {},
-      ),
-    ),
+  HttpClient.get(
+    getRemoteAssetPath(asset),
+    resumeFromByte ? { headers: { Range: `bytes=${resumeFromByte}-` } } : {},
+  ).pipe(
+    Effect.flatMap(HttpClientResponse.filterStatusOk),
     Effect.withSpan('DownloadManager.getStreamOfRemoteAsset', {
       attributes: { asset, resumeFromByte: resumeFromByte ?? null },
     }),
