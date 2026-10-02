@@ -24,8 +24,6 @@ export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSiz
       const rootDirectoryHandle = yield* RootDirectoryHandle
 
       const makeEmptyAssetToSizeHashMap =
-        // TODO: await https://github.com/biomejs/biome/pull/10747
-        // biome-ignore format: bug in biome. should not remove parentheses
         (yield* makeAssetPointerMapFactory)<AssetSizeEstimation>
 
       const assetToSizeHashMapRef = yield* SubscriptionRef.make(

@@ -4,6 +4,7 @@ import * as Struct from 'effect/Struct'
 
 import {
   type Accord,
+  accordFileNameRegExpSource,
   decodeAccordOptionFromUnknown,
   type UnbrandedAccord,
 } from '../domain/Accord.ts'
@@ -15,11 +16,13 @@ import {
 import {
   decodePatternOptionFromUnknown,
   type Pattern,
+  patternFileNameRegExpSource,
   UnbrandedPattern,
 } from '../domain/Pattern.ts'
 import {
   decodeStrengthOptionFromUnknown,
   type Strength,
+  strengthFileNameRegExpSource,
   UnbrandedStrength,
 } from '../domain/Strength.ts'
 import type { StringToArray } from './StringToArray.ts'
@@ -226,13 +229,14 @@ export type LocalAssetFilePath<TAsset extends AssetPointer> =
 
 ///
 
-// TODO: move regexeps into brandsAndData/{Accord,Pattern,Strength}.ts etc and import here
 // _? in regexp moved outside the group to make sure this padding is not included in the group
-const localPatternAssetFileNameRegExp =
-  /^pattern_(?<pattern>\d)_accord_(?<accord>[A-G][m#b]?)_?_strength_(?<strength>[smv])\.wav$/
+const localPatternAssetFileNameRegExp = new RegExp(
+  `^pattern_(?<pattern>${patternFileNameRegExpSource})_accord_(?<accord>${accordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
+)
 
-const localSlowStrumAssetFileNameRegExp =
-  /^slow_strum_accord_(?<accord>[A-G][m#b]?)_?_strength_(?<strength>[smv])\.wav$/
+const localSlowStrumAssetFileNameRegExp = new RegExp(
+  `^slow_strum_accord_(?<accord>${accordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
+)
 
 export const getAssetFromLocalFileName = (
   fileName: string,

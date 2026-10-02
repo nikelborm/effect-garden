@@ -58,6 +58,10 @@ export const decodePatternOptionFromUnknown =
 export const decodePatternSyncFromUnknown =
   Schema.decodeUnknownSync(PatternSchema)
 
+// Unbranded pattern as it appears in asset file names. Used to compose
+// `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.
+export const patternFileNameRegExpSource = '[1-8]'
+
 export type UnbrandedPattern<TPattern extends Pattern> =
   Brand.Brand.Unbranded<TPattern>
 

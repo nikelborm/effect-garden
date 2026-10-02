@@ -58,6 +58,10 @@ export const decodeStrengthOptionFromUnknown =
 export const decodeStrengthSyncFromUnknown =
   Schema.decodeUnknownSync(StrengthSchema)
 
+// Unbranded strength as it appears in asset file names. Used to compose
+// `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.
+export const strengthFileNameRegExpSource = '[smv]'
+
 export const defaultStrength = decodeStrengthSync(strengthsRawBase[1])
 
 export type UnbrandedStrength<TStrength extends Strength> =

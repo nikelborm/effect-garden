@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as FiberMap from 'effect/FiberMap'
 import * as HttpClient from 'effect/http/HttpClient'
-import type * as HttpClientError from 'effect/http/HttpClientError'
+import * as HttpClientResponse from 'effect/http/HttpClientResponse'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Schedule from 'effect/Schedule'
@@ -139,28 +139,35 @@ const downloadRemainingAssetPart = Effect.fn(
   )
 })
 
+function isNonShared(
+  c: Uint8Array<ArrayBufferLike>,
+): c is Uint8Array<ArrayBuffer> {
+  return c.buffer instanceof ArrayBuffer
+}
+
 export const getStreamOfRemoteAsset = (
   asset: AssetPointer,
   resumeFromByte?: number,
 ) =>
-  Effect.gen(function* () {
-    const client = HttpClient.filterStatusOk(yield* HttpClient.HttpClient)
-    const response = yield* client.get(
-      getRemoteAssetPath(asset),
-      resumeFromByte ? { headers: { Range: `bytes=${resumeFromByte}-` } } : {},
-    )
-    // TODO: use HttpClientResponse.stream
-    // import * as HttpClientResponse from 'effect/http/HttpClientResponse'
-    return response.stream as Stream.Stream<
-      Uint8Array<ArrayBuffer>,
-      HttpClientError.HttpClientError,
-      never
-    >
-  }).pipe(
+  HttpClient.HttpClient.pipe(
+    Effect.map(HttpClient.filterStatusOk),
+    Effect.flatMap(client =>
+      client.get(
+        getRemoteAssetPath(asset),
+        resumeFromByte
+          ? { headers: { Range: `bytes=${resumeFromByte}-` } }
+          : {},
+      ),
+    ),
     Effect.withSpan('DownloadManager.getStreamOfRemoteAsset', {
       attributes: { asset, resumeFromByte: resumeFromByte ?? null },
     }),
-    Stream.unwrap,
+    HttpClientResponse.stream,
+    Stream.map(chunk => {
+      if (!isNonShared(chunk)) throw new Error('absurd')
+
+      return chunk
+    }),
     Stream.withSpan('DownloadManager.remoteAssetContentStream', {
       attributes: { asset, resumeFromByte: resumeFromByte ?? null },
     }),

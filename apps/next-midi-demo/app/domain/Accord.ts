@@ -57,6 +57,11 @@ export const decodeAccordOptionFromUnknown =
 export const decodeAccordSyncFromUnknown =
   Schema.decodeUnknownSync(AccordSchema)
 
+// Unbranded accord as it appears in asset file names (without padding `_`).
+// Used to compose `local*AssetFileNameRegExp` in
+// `helpers/audioAssetFileNameAndPath.ts`.
+export const accordFileNameRegExpSource = '[A-G][m#b]?'
+
 export const defaultAccord = decodeAccordSync(accordsRawBase[0])
 
 export type UnbrandedAccord<TAccord extends Accord> =
