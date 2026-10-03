@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 
 import type { SlowStrumHandoverState } from '../types/LoopBoundPlayback.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 // A slow strum handing over to a loop (queue = [strum, scheduledPattern]). Like
 // advancePlayingSlowStrum this is part of the deferred slow-strum problem; any
@@ -9,9 +9,12 @@ import type { Signal } from './signal.ts'
 // midi_scheduling_findings memory.
 export const advanceSlowStrumPatternTransition = Effect.fn(
   'advanceSlowStrumPatternTransition',
-)(function* (oldState: SlowStrumHandoverState, signal: Signal) {
+)(function* (
+  oldState: SlowStrumHandoverState,
+  pressedParamButtonId: PressedParamButtonId,
+) {
   const [strum, scheduled] = oldState.transitionQueue
-  yield* Effect.logError({ strum, scheduled, signal })
+  yield* Effect.logError({ strum, scheduled, pressedParamButtonId })
   return yield* Effect.die(
     new Error('slow strums are deferred (SlowStrumPattern)'),
   )

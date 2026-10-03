@@ -9,21 +9,27 @@ import {
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
 import { advanceSilence } from './advanceSilence.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 import { queueIs } from './queueIs.ts'
-import type { Signal } from './signal.ts'
 
 export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
   oldState: SilenceBoundPlayback,
-  signal: Signal,
+  pressedParamButtonId: PressedParamButtonId,
 ) {
   if (queueIs(PureSilenceQueue)(oldState))
-    return yield* advanceSilence(oldState, signal)
+    return yield* advanceSilence(oldState, pressedParamButtonId)
 
   if (queueIs(LoopFadingToSilenceQueue)(oldState))
-    return yield* advancePatternSilenceTransition(oldState, signal)
+    return yield* advancePatternSilenceTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   if (queueIs(TwoLoopsFadingToSilenceQueue)(oldState))
-    return yield* advancePatternPatternSilenceTransition(oldState, signal)
+    return yield* advancePatternPatternSilenceTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   return yield* Effect.die(
     new Error('advanceSilenceBound: unreachable queue shape'),

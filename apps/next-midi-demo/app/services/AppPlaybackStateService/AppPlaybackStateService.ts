@@ -86,12 +86,12 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //           ) as ReadonlyArray<AssetPointer>,
       //         } as const),
       // )
-      yield* AccordInputBus.pressesOnlyStream.pipe(
-        Stream.merge(PatternInputBus.pressesOnlyStream),
-        Stream.merge(StrengthInputBus.pressesOnlyStream),
-        Stream.runForEach(signal =>
+      yield* AccordInputBus.pressedDownParamButtonIdDataStream.pipe(
+        Stream.merge(PatternInputBus.pressedDownParamButtonIdDataStream),
+        Stream.merge(StrengthInputBus.pressedDownParamButtonIdDataStream),
+        Stream.runForEach(({ id: pressedDownParamButtonId }) =>
           SubscriptionRef.updateEffect(stateRef, state =>
-            advancePlayback(state, signal.id).pipe(
+            advancePlayback(state, pressedDownParamButtonId).pipe(
               Effect.provideService(CleanupFiberMaker, makeCleanupFibers),
               Effect.tapCause(Effect.logError),
             ),

@@ -105,7 +105,7 @@ export interface ParsedMIDIMessage<
   readonly midiMessage: Payload
 }
 
-const unknown = (rawPayload: Uint8Array<ArrayBuffer>,) => {
+const unknown = (rawPayload: Uint8Array<ArrayBuffer>) => {
   let stack = ''
   if (
     'stackTraceLimit' in Error &&
@@ -134,7 +134,6 @@ const unknown = (rawPayload: Uint8Array<ArrayBuffer>,) => {
 function parseMIDIMessagePayload(
   rawPayload: Uint8Array<ArrayBuffer>,
 ): DefaultParsedMIDIMessagePayload {
-
   const status = rawPayload.at(0)
   if (status === undefined) return unknown(rawPayload)
 

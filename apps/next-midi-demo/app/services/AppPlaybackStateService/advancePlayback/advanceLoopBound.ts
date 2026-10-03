@@ -15,30 +15,42 @@ import { advancePatternSilencePatternTransition } from './advancePatternSilenceP
 import { advancePlayingPattern } from './advancePlayingPattern.ts'
 import { advancePlayingSlowStrum } from './advancePlayingSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 import { queueIs } from './queueIs.ts'
-import type { Signal } from './signal.ts'
 
 export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
   oldState: LoopBoundPlayback,
-  signal: Signal,
+  pressedParamButtonId: PressedParamButtonId,
 ) {
   if (queueIs(PlayingLoopQueue)(oldState))
-    return yield* advancePlayingPattern(oldState, signal)
+    return yield* advancePlayingPattern(oldState, pressedParamButtonId)
 
   if (queueIs(LoopRolloverHandoverQueue)(oldState))
-    return yield* advancePatternPatternTransition(oldState, signal)
+    return yield* advancePatternPatternTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   if (queueIs(LoopSilenceHandoverQueue)(oldState))
-    return yield* advancePatternSilencePatternTransition(oldState, signal)
+    return yield* advancePatternSilencePatternTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   if (queueIs(FullLoopQueue)(oldState))
-    return yield* advancePatternPatternPatternTransition(oldState, signal)
+    return yield* advancePatternPatternPatternTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   if (queueIs(PlayingSlowStrumQueue)(oldState))
-    return yield* advancePlayingSlowStrum(oldState, signal)
+    return yield* advancePlayingSlowStrum(oldState, pressedParamButtonId)
 
   if (queueIs(SlowStrumHandoverQueue)(oldState))
-    return yield* advanceSlowStrumPatternTransition(oldState, signal)
+    return yield* advanceSlowStrumPatternTransition(
+      oldState,
+      pressedParamButtonId,
+    )
 
   // Every LoopBoundQueue member is handled above.
   return yield* Effect.die(

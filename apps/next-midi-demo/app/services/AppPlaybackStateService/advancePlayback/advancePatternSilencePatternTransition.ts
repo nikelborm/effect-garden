@@ -12,16 +12,21 @@ import {
 import { getAudioNow } from '../types/loopElements.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternSilencePatternTransition = Effect.fn(
   'advancePatternSilencePatternTransition',
-)(function* (oldState: LoopSilenceHandoverState, signal: Signal) {
+)(function* (
+  oldState: LoopSilenceHandoverState,
+  pressedParamButtonId: PressedParamButtonId,
+) {
   const [dying, incoming] = oldState.transitionQueue
 
   if (
-    (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||
-    (StrengthData.models(signal) && signal.strength === incoming.asset.strength)
+    (AccordData.models(pressedParamButtonId) &&
+      pressedParamButtonId.accord === incoming.asset.accord) ||
+    (StrengthData.models(pressedParamButtonId) &&
+      pressedParamButtonId.strength === incoming.asset.strength)
   )
     return oldState
 
@@ -30,7 +35,10 @@ export const advancePatternSilencePatternTransition = Effect.fn(
   const isInGreenZone =
     now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
-  if (PatternData.models(signal) && signal.pattern === incoming.asset.pattern) {
+  if (
+    PatternData.models(pressedParamButtonId) &&
+    pressedParamButtonId.pattern === incoming.asset.pattern
+  ) {
     if (isInGreenZone) {
       yield* incoming.drop()
       return SilenceBoundPlayback.make({
@@ -47,7 +55,10 @@ export const advancePatternSilencePatternTransition = Effect.fn(
     })
   }
 
-  const desiredAsset = desiredAssetFromSignal(signal, incoming.asset)
+  const desiredAsset = desiredAssetFromSignal(
+    pressedParamButtonId,
+    incoming.asset,
+  )
 
   if (isInGreenZone && Equal.equals(desiredAsset, dying.asset)) {
     const revived = yield* dying.cancelFadeoutAndRestore()

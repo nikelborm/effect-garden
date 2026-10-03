@@ -69,6 +69,7 @@
   },
   "scripts": {
     "build": "next build && serwist build",
+    "b": "bun run build",
     "dev": "next dev --experimental-https",
     "format": "biome format --write",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe",

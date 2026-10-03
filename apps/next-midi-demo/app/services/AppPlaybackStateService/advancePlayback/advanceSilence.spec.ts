@@ -6,7 +6,7 @@ describe('advanceSilence', () => {
     'accord 1 in',
     Effect.fnUntraced(function* () {
       // const oldState: PureSilenceState = SilenceBoundPlayback.make()
-      // const signal: Signal =
+      // const pressedParamButtonId: ParamButtonId =
     }),
   )
 })

@@ -114,7 +114,7 @@ const makeParamButtonService = <
     //       ),
     //     )
 
-    // const validPressesOnlyStream = yield* bus.pressesOnlyStream.pipe(
+    // const validPressesOnlyStream = yield* bus.pressedDownParamButtonIdDataStream.pipe(
     //   // Do we need { switch: true, concurrency: 1 } in flatMap? Seems like we
     //   // don't, because inner stream is short-lived and emits only 1 value
     //   Stream.flatMap(buttonAssignedAt =>

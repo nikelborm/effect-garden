@@ -9,27 +9,34 @@ import {
 } from '../types/LoopBoundPlayback.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
-  function* (oldState: PlayingLoopState, signal: Signal) {
+  function* (
+    oldState: PlayingLoopState,
+    pressedParamButtonId: PressedParamButtonId,
+  ) {
     const [playing] = oldState.transitionQueue
 
     if (
-      (AccordData.models(signal) && signal.accord === playing.asset.accord) ||
-      (StrengthData.models(signal) &&
-        signal.strength === playing.asset.strength)
+      (AccordData.models(pressedParamButtonId) &&
+        pressedParamButtonId.accord === playing.asset.accord) ||
+      (StrengthData.models(pressedParamButtonId) &&
+        pressedParamButtonId.strength === playing.asset.strength)
     )
       return oldState
 
-    if (PatternData.models(signal) && signal.pattern === playing.asset.pattern)
+    if (
+      PatternData.models(pressedParamButtonId) &&
+      pressedParamButtonId.pattern === playing.asset.pattern
+    )
       return SilenceBoundPlayback.make({
         accord: playing.asset.accord,
         strength: playing.asset.strength,
         transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
       })
 
-    const asset = desiredAssetFromSignal(signal, playing.asset)
+    const asset = desiredAssetFromSignal(pressedParamButtonId, playing.asset)
     return LoopBoundPlayback.make({
       playbackStartedAtSecond: playing.playbackStartedAtSecond,
       transitionQueue: [

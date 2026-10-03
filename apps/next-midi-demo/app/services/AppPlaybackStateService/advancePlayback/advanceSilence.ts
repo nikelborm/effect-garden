@@ -16,34 +16,37 @@ import {
   SilenceBoundPlayback,
 } from '../types/SilenceBoundPlayback.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
   oldState: PureSilenceState,
-  signal: Signal,
+  pressedParamButtonId: PressedParamButtonId,
 ) {
   const { accord, strength } = oldState
 
-  if (StrengthData.models(signal))
+  if (StrengthData.models(pressedParamButtonId))
     return SilenceBoundPlayback.make({
       accord,
-      strength: signal.strength,
+      strength: pressedParamButtonId.strength,
       transitionQueue: [],
     })
 
-  const asset: AssetPointer = PatternData.models(signal)
+  const asset: AssetPointer = PatternData.models(pressedParamButtonId)
     ? TaggedPatternPointer.make({
-        pattern: signal.pattern,
+        pattern: pressedParamButtonId.pattern,
         accord,
         strength,
       })
-    : TaggedSlowStrumPointer.make({ accord: signal.accord, strength })
+    : TaggedSlowStrumPointer.make({
+        accord: pressedParamButtonId.accord,
+        strength,
+      })
 
   const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
   const playbackStartedAtSecond = yield* getAudioNow
 
   const playback = yield* StartFreshPlayback.run(audioBuffer, {
-    isLooping: PatternData.models(signal),
+    isLooping: PatternData.models(pressedParamButtonId),
     startAtSecond: playbackStartedAtSecond,
   })
 

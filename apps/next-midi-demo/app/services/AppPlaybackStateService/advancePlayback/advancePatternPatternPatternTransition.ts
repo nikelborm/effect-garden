@@ -11,16 +11,21 @@ import {
 import { getAudioNow } from '../types/loopElements.ts'
 import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternPatternPatternTransition = Effect.fn(
   'advancePatternPatternPatternTransition',
-)(function* (oldState: FullLoopState, signal: Signal) {
+)(function* (
+  oldState: FullLoopState,
+  pressedParamButtonId: PressedParamButtonId,
+) {
   const [oldest, middle, incoming] = oldState.transitionQueue
 
   if (
-    (AccordData.models(signal) && signal.accord === incoming.asset.accord) ||
-    (StrengthData.models(signal) && signal.strength === incoming.asset.strength)
+    (AccordData.models(pressedParamButtonId) &&
+      pressedParamButtonId.accord === incoming.asset.accord) ||
+    (StrengthData.models(pressedParamButtonId) &&
+      pressedParamButtonId.strength === incoming.asset.strength)
   )
     return oldState
 
@@ -29,7 +34,10 @@ export const advancePatternPatternPatternTransition = Effect.fn(
   const isInGreenZone =
     now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
-  if (PatternData.models(signal) && signal.pattern === incoming.asset.pattern) {
+  if (
+    PatternData.models(pressedParamButtonId) &&
+    pressedParamButtonId.pattern === incoming.asset.pattern
+  ) {
     if (isInGreenZone) {
       yield* incoming.drop()
       return SilenceBoundPlayback.make({
@@ -39,7 +47,7 @@ export const advancePatternPatternPatternTransition = Effect.fn(
         transitionQueue: [oldest, middle],
       })
     }
-    yield* Effect.logError({ oldest, middle, incoming, signal })
+    yield* Effect.logError({ oldest, middle, incoming, pressedParamButtonId })
     return yield* Effect.die(
       new Error(
         'red-zone deselect during a full queue (a 4th input): would need a 3rd fading-to-silence loop — excluded from the MVP',
@@ -48,7 +56,7 @@ export const advancePatternPatternPatternTransition = Effect.fn(
   }
 
   if (!isInGreenZone) {
-    yield* Effect.logError({ oldest, middle, incoming, signal })
+    yield* Effect.logError({ oldest, middle, incoming, pressedParamButtonId })
     return yield* Effect.die(
       new Error(
         'red-zone switch during a full queue (a 4th input): would need a 4th queue element — excluded from the MVP',
@@ -56,7 +64,10 @@ export const advancePatternPatternPatternTransition = Effect.fn(
     )
   }
 
-  const desiredAsset = desiredAssetFromSignal(signal, incoming.asset)
+  const desiredAsset = desiredAssetFromSignal(
+    pressedParamButtonId,
+    incoming.asset,
+  )
   yield* incoming.drop()
   return LoopBoundPlayback.make({
     playbackStartedAtSecond: oldest.playbackStartedAtSecond,

@@ -8,23 +8,26 @@ import {
   SilenceBoundPlayback,
   type TwoLoopsFadingToSilenceState,
 } from '../types/SilenceBoundPlayback.ts'
-import type { Signal } from './signal.ts'
+import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternPatternSilenceTransition = Effect.fn(
   'advancePatternPatternSilenceTransition',
-)(function* (oldState: TwoLoopsFadingToSilenceState, signal: Signal) {
+)(function* (
+  oldState: TwoLoopsFadingToSilenceState,
+  pressedParamButtonId: PressedParamButtonId,
+) {
   const { accord, strength } = oldState
   const [oldest, fading] = oldState.transitionQueue
 
-  if (StrengthData.models(signal))
+  if (StrengthData.models(pressedParamButtonId))
     return SilenceBoundPlayback.make({
       // playbackStartedAtSecond: oldest.playbackStartedAtSecond,
       accord,
-      strength: signal.strength,
+      strength: pressedParamButtonId.strength,
       transitionQueue: [oldest, fading],
     })
 
-  if (AccordData.models(signal))
+  if (AccordData.models(pressedParamButtonId))
     return yield* Effect.die(
       new Error(
         'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
@@ -32,7 +35,7 @@ export const advancePatternPatternSilenceTransition = Effect.fn(
     )
 
   const asset = TaggedPatternPointer.make({
-    pattern: signal.pattern,
+    pattern: pressedParamButtonId.pattern,
     accord,
     strength,
   })

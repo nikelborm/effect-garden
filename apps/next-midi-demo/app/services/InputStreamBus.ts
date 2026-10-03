@@ -124,7 +124,7 @@ const makeInputBus = Effect.fnUntraced(function* <
       ],
     )
 
-  const pressesOnlyStream: PressesOnlyStream<TParamButtonId> =
+  const pressedDownParamButtonIdDataStream: PressedDownParamButtonIdDataStream<TParamButtonId> =
     yield* newBusAdditionsStream().pipe(
       Stream.map(HashMap.entries),
       Stream.flattenIterable,
@@ -139,7 +139,7 @@ const makeInputBus = Effect.fnUntraced(function* <
           ),
         { concurrency: 'unbounded' },
       ),
-      Stream.withSpan('pressesOnlyStream'),
+      Stream.withSpan('pressedDownParamButtonIdDataStream'),
       Stream.broadcast({ capacity: 'unbounded' }),
     )
 
@@ -199,7 +199,7 @@ const makeInputBus = Effect.fnUntraced(function* <
       }),
     )
 
-  return { register, isPressedStream, pressesOnlyStream }
+  return { register, isPressedStream, pressedDownParamButtonIdDataStream }
 })
 
 export type SupportedPhysicalButtonIds =
@@ -219,8 +219,8 @@ export class AccordInputBus extends Context.Service<AccordInputBus>()(
     ),
   },
 ) {
-  static pressesOnlyStream = Stream.unwrap(
-    this.useSync(bus => bus.pressesOnlyStream),
+  static pressedDownParamButtonIdDataStream = Stream.unwrap(
+    this.useSync(bus => bus.pressedDownParamButtonIdDataStream),
   )
 }
 
@@ -237,8 +237,8 @@ export class PatternInputBus extends Context.Service<PatternInputBus>()(
     ),
   },
 ) {
-  static pressesOnlyStream = Stream.unwrap(
-    this.useSync(bus => bus.pressesOnlyStream),
+  static pressedDownParamButtonIdDataStream = Stream.unwrap(
+    this.useSync(bus => bus.pressedDownParamButtonIdDataStream),
   )
 }
 
@@ -255,8 +255,8 @@ export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
     ),
   },
 ) {
-  static pressesOnlyStream = Stream.unwrap(
-    this.useSync(bus => bus.pressesOnlyStream),
+  static pressedDownParamButtonIdDataStream = Stream.unwrap(
+    this.useSync(bus => bus.pressedDownParamButtonIdDataStream),
   )
 }
 
@@ -293,7 +293,7 @@ export interface InputBusReaderHandle<
 > {
   readonly isPressedStream: IsPressedStreamMethod<TParamButtonId>
 
-  readonly pressesOnlyStream: PressesOnlyStream<TParamButtonId>
+  readonly pressedDownParamButtonIdDataStream: PressedDownParamButtonIdDataStream<TParamButtonId>
 }
 
 export interface InputBusHandle<
@@ -302,5 +302,6 @@ export interface InputBusHandle<
 > extends InputBusWriterHandle<TPhysicalButtonId, TParamButtonId>,
     InputBusReaderHandle<TParamButtonId> {}
 
-export interface PressesOnlyStream<TParamButtonId extends TaggedReadonlyObject>
-  extends Stream.Stream<ParamButtonIdData<TParamButtonId>> {}
+export interface PressedDownParamButtonIdDataStream<
+  TParamButtonId extends TaggedReadonlyObject,
+> extends Stream.Stream<ParamButtonIdData<TParamButtonId>> {}
