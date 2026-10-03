@@ -105,40 +105,41 @@ export interface ParsedMIDIMessage<
   readonly midiMessage: Payload
 }
 
+const unknown = (rawPayload: Uint8Array<ArrayBuffer>,) => {
+  let stack = ''
+  if (
+    'stackTraceLimit' in Error &&
+    'captureStackTrace' in Error &&
+    typeof Error.captureStackTrace === 'function'
+  ) {
+    const { stackTraceLimit } = Error
+    Error.stackTraceLimit = 4
+    const stackHolder = {} as { stack: string }
+    Error.captureStackTrace(stackHolder)
+    // TODO: some environments forbid captureStackTrace and throw errors. Not
+    // browsers though, but some parts of the lib can also run elsewhere.
+    // Running tests and mocks on durable objects? Insane, but possible.
+    // Anyway need to handle this obscurity
+    Error.stackTraceLimit = stackTraceLimit
+    stack = stackHolder.stack ?? new Error().stack ?? ''
+  }
+  const result = {
+    _tag: 'Unknown Reply' as const,
+    unexpectedData: rawPayload.toString(),
+    stack,
+  }
+  return result
+}
+
 function parseMIDIMessagePayload(
   rawPayload: Uint8Array<ArrayBuffer>,
 ): DefaultParsedMIDIMessagePayload {
-  const unknown = () => {
-    let stack = ''
-    if (
-      'stackTraceLimit' in Error &&
-      'captureStackTrace' in Error &&
-      typeof Error.captureStackTrace === 'function'
-    ) {
-      const { stackTraceLimit } = Error
-      Error.stackTraceLimit = 4
-      const stackHolder = {} as { stack: string }
-      Error.captureStackTrace(stackHolder)
-      // TODO: some environments forbid captureStackTrace and throw errors. Not
-      // browsers though, but some parts of the lib can also run elsewhere.
-      // Running tests and mocks on durable objects? Insane, but possible.
-      // Anyway need to handle this obscurity
-      Error.stackTraceLimit = stackTraceLimit
-      stack = stackHolder.stack ?? new Error().stack ?? ''
-    }
-    const result = {
-      _tag: 'Unknown Reply' as const,
-      unexpectedData: rawPayload.toString(),
-      stack,
-    }
-    return result
-  }
 
   const status = rawPayload.at(0)
-  if (status === undefined) return unknown()
+  if (status === undefined) return unknown(rawPayload)
 
   const second = rawPayload.at(1)
-  if (second === undefined) return unknown()
+  if (second === undefined) return unknown(rawPayload)
 
   const code = status >> 4
   const channel = status & 0b1111
@@ -148,10 +149,10 @@ function parseMIDIMessagePayload(
       return { _tag: 'Channel Pressure', channel, velocity: second }
   }
 
-  if (rawPayload.length !== 3) return unknown()
+  if (rawPayload.length !== 3) return unknown(rawPayload)
 
   const third = rawPayload.at(2)
-  if (third === undefined) return unknown()
+  if (third === undefined) return unknown(rawPayload)
 
   if (code === 0x8)
     return { _tag: 'Note Release', channel, note: second, velocity: third }
@@ -172,10 +173,10 @@ function parseMIDIMessagePayload(
     if (second === third)
       return { _tag: 'Pitch Bend Change', channel, value: second }
 
-    return unknown()
+    return unknown(rawPayload)
   }
 
-  return unknown()
+  return unknown(rawPayload)
 }
 
 const isSpecificPayload =
