@@ -40,6 +40,8 @@ export class PureSilenceState extends SilenceBoundPlaybackBase.extend<PureSilenc
   transitionQueue: PureSilenceQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is PureSilenceState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -56,6 +58,8 @@ export class LoopFadingToSilenceState extends SilenceBoundPlaybackBase.extend<Lo
   transitionQueue: LoopFadingToSilenceQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is LoopFadingToSilenceState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -67,6 +71,8 @@ export class TwoLoopsFadingToSilenceState extends SilenceBoundPlaybackBase.exten
   transitionQueue: TwoLoopsFadingToSilenceQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is TwoLoopsFadingToSilenceState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }

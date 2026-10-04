@@ -4,7 +4,6 @@ import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as Latch from 'effect/Latch'
 import * as Layer from 'effect/Layer'
-import * as Schema from 'effect/Schema'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
@@ -85,7 +84,7 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
 ): Effect.fn.Return<AppPlaybackState, never, DisposePlayback> {
   yield* Effect.logTrace('Playback cleanup')
 
-  if (Schema.is(TwoLoopsFadingToSilenceState)(state)) {
+  if (TwoLoopsFadingToSilenceState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
     return LoopFadingToSilenceState.make({
@@ -95,7 +94,7 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     })
   }
 
-  if (Schema.is(LoopFadingToSilenceState)(state)) {
+  if (LoopFadingToSilenceState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
     return PureSilenceState.make({
@@ -105,7 +104,7 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     })
   }
 
-  if (Schema.is(FullLoopState)(state)) {
+  if (FullLoopState.models(state)) {
     const q = state.transitionQueue
     const [, middle, incoming] = q
     yield* q[0].dispose()
@@ -123,8 +122,8 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
   }
 
   if (
-    Schema.is(LoopRolloverHandoverState)(state) ||
-    Schema.is(LoopSilenceHandoverState)(state)
+    LoopRolloverHandoverState.models(state) ||
+    LoopSilenceHandoverState.models(state)
   ) {
     const q = state.transitionQueue
     yield* q[0].dispose()

@@ -16,4 +16,11 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
     case 'LoopBoundPlaybackBase':
       return yield* advanceLoopBound(oldState, pressedParamButtonId)
   }
+
+  // @ts-expect-error
+  oldState satisfies never
+
+  return yield* Effect.die(
+    new Error('advancePlayback: unreachable state shape'),
+  )
 })

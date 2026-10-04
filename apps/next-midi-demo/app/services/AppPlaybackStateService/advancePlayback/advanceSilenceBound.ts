@@ -1,5 +1,4 @@
 import * as Effect from 'effect/Effect'
-import * as Schema from 'effect/Schema'
 
 import {
   LoopFadingToSilenceState,
@@ -16,22 +15,24 @@ export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
   oldState: SilenceBoundPlayback,
   pressedParamButtonId: PressedParamButtonId,
 ) {
-  if (Schema.is(PureSilenceState)(oldState))
+  if (PureSilenceState.models(oldState))
     return yield* advanceSilence(oldState, pressedParamButtonId)
 
-  if (Schema.is(LoopFadingToSilenceState)(oldState))
+  if (LoopFadingToSilenceState.models(oldState))
     return yield* advancePatternSilenceTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (Schema.is(TwoLoopsFadingToSilenceState)(oldState))
+  if (TwoLoopsFadingToSilenceState.models(oldState))
     return yield* advancePatternPatternSilenceTransition(
       oldState,
       pressedParamButtonId,
     )
 
+  oldState satisfies never
+
   return yield* Effect.die(
-    new Error('advanceSilenceBound: unreachable queue shape'),
+    new Error('advanceSilenceBound: unreachable state shape'),
   )
 })

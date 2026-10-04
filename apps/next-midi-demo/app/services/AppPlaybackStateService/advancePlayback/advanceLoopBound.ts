@@ -1,5 +1,4 @@
 import * as Effect from 'effect/Effect'
-import * as Schema from 'effect/Schema'
 
 import {
   FullLoopState,
@@ -22,38 +21,40 @@ export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
   oldState: LoopBoundPlayback,
   pressedParamButtonId: PressedParamButtonId,
 ) {
-  if (Schema.is(PlayingLoopState)(oldState))
+  if (PlayingLoopState.models(oldState))
     return yield* advancePlayingPattern(oldState, pressedParamButtonId)
 
-  if (Schema.is(LoopRolloverHandoverState)(oldState))
+  if (LoopRolloverHandoverState.models(oldState))
     return yield* advancePatternPatternTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (Schema.is(LoopSilenceHandoverState)(oldState))
+  if (LoopSilenceHandoverState.models(oldState))
     return yield* advancePatternSilencePatternTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (Schema.is(FullLoopState)(oldState))
+  if (FullLoopState.models(oldState))
     return yield* advancePatternPatternPatternTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (Schema.is(PlayingSlowStrumState)(oldState))
+  if (PlayingSlowStrumState.models(oldState))
     return yield* advancePlayingSlowStrum(oldState, pressedParamButtonId)
 
-  if (Schema.is(SlowStrumHandoverState)(oldState))
+  if (SlowStrumHandoverState.models(oldState))
     return yield* advanceSlowStrumPatternTransition(
       oldState,
       pressedParamButtonId,
     )
 
+  oldState satisfies never
+
   // Every LoopBoundPlayback member is handled above.
   return yield* Effect.die(
-    new Error('advanceLoopBound: unreachable queue shape'),
+    new Error('advanceLoopBound: unreachable state shape'),
   )
 })

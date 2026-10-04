@@ -73,6 +73,8 @@ export class PlayingLoopState extends LoopBoundPlaybackBase.extend<PlayingLoopSt
   transitionQueue: PlayingLoopQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is PlayingLoopState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -84,6 +86,8 @@ export class LoopRolloverHandoverState extends LoopBoundPlaybackBase.extend<Loop
   transitionQueue: LoopRolloverHandoverQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is LoopRolloverHandoverState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -95,6 +99,8 @@ export class LoopSilenceHandoverState extends LoopBoundPlaybackBase.extend<LoopS
   transitionQueue: LoopSilenceHandoverQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is LoopSilenceHandoverState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -106,6 +112,8 @@ export class FullLoopState extends LoopBoundPlaybackBase.extend<FullLoopState>(
   transitionQueue: FullLoopQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is FullLoopState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -117,6 +125,8 @@ export class PlayingSlowStrumState extends LoopBoundPlaybackBase.extend<PlayingS
   transitionQueue: PlayingSlowStrumQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is PlayingSlowStrumState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -128,6 +138,8 @@ export class SlowStrumHandoverState extends LoopBoundPlaybackBase.extend<SlowStr
   transitionQueue: SlowStrumHandoverQueue,
 }) {
   declare protected '~brand~': never
+  static models: (candidate: unknown) => candidate is SlowStrumHandoverState =
+    Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
