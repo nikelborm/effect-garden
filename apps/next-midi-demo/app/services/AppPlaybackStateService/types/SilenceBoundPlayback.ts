@@ -71,8 +71,9 @@ export class TwoLoopsFadingToSilenceState extends SilenceBoundPlaybackBase.exten
   transitionQueue: TwoLoopsFadingToSilenceQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is TwoLoopsFadingToSilenceState =
-    Schema.is(this)
+  static models: (
+    candidate: unknown,
+  ) => candidate is TwoLoopsFadingToSilenceState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }

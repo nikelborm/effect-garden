@@ -7,7 +7,7 @@ import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import {
   FullLoopState,
-  LoopRolloverHandoverState,
+  PatternPatternTransitionState,
   PlayingLoopState,
 } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
@@ -21,7 +21,7 @@ import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 export const advancePatternPatternTransition = Effect.fn(
   'advancePatternPatternTransition',
 )(function* (
-  oldState: LoopRolloverHandoverState,
+  oldState: PatternPatternTransitionState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   const [current, incoming] = oldState.transitionQueue
@@ -85,7 +85,7 @@ export const advancePatternPatternTransition = Effect.fn(
   }
 
   yield* incoming.drop()
-  return LoopRolloverHandoverState.make({
+  return PatternPatternTransitionState.make({
     playbackStartedAtSecond: current.playbackStartedAtSecond,
     transitionQueue: [
       yield* current.reanchorFadeoutOnto(),

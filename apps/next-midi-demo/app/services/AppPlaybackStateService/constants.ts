@@ -1,8 +1,8 @@
-// The near-instant gain ramp for a pattern->pattern roll-over: just enough to
-// avoid a click while one full-volume loop hands over to the next on the tick.
+// The near-instant gain ramp for a pattern-pattern: just enough to
+// avoid a click while one full-volume pattern hands over to the next on the tick.
 export const transitionTimeInSeconds = 0.001
 // A genuine, audible fade used when a loop is STOPPING into silence (the
-// "silence" trajectory). Much longer than a roll-over so stopping reads as a
+// "silence" trajectory). Much longer than a pattern-pattern so stopping reads as a
 // graceful ending rather than a cut. Placeholder value — will likely grow,
 // possibly to multiple ticks, once the feel is dialed in.
 export const fadeToSilenceTimeInSeconds = 0.3

@@ -3,11 +3,11 @@ import * as Effect from 'effect/Effect'
 import {
   FullLoopState,
   type LoopBoundPlayback,
-  LoopRolloverHandoverState,
-  LoopSilenceHandoverState,
+  LoopSilenceTransitionState,
+  PatternPatternTransitionState,
   PlayingLoopState,
   PlayingSlowStrumState,
-  SlowStrumHandoverState,
+  SlowStrumTransitionState,
 } from '../types/LoopBoundPlayback.ts'
 import { advancePatternPatternPatternTransition } from './advancePatternPatternPatternTransition.ts'
 import { advancePatternPatternTransition } from './advancePatternPatternTransition.ts'
@@ -24,13 +24,13 @@ export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
   if (PlayingLoopState.models(oldState))
     return yield* advancePlayingPattern(oldState, pressedParamButtonId)
 
-  if (LoopRolloverHandoverState.models(oldState))
+  if (PatternPatternTransitionState.models(oldState))
     return yield* advancePatternPatternTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (LoopSilenceHandoverState.models(oldState))
+  if (LoopSilenceTransitionState.models(oldState))
     return yield* advancePatternSilencePatternTransition(
       oldState,
       pressedParamButtonId,
@@ -45,7 +45,7 @@ export const advanceLoopBound = Effect.fn('advanceLoopBound')(function* (
   if (PlayingSlowStrumState.models(oldState))
     return yield* advancePlayingSlowStrum(oldState, pressedParamButtonId)
 
-  if (SlowStrumHandoverState.models(oldState))
+  if (SlowStrumTransitionState.models(oldState))
     return yield* advanceSlowStrumPatternTransition(
       oldState,
       pressedParamButtonId,

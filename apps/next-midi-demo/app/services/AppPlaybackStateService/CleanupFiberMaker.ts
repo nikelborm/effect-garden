@@ -10,8 +10,8 @@ import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import {
   FullLoopState,
-  LoopRolloverHandoverState,
-  LoopSilenceHandoverState,
+  LoopSilenceTransitionState,
+  PatternPatternTransitionState,
   PlayingLoopState,
 } from './types/LoopBoundPlayback.ts'
 import {
@@ -111,19 +111,19 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     if (
       middle._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
     )
-      return LoopRolloverHandoverState.make({
+      return PatternPatternTransitionState.make({
         playbackStartedAtSecond: state.playbackStartedAtSecond,
         transitionQueue: [middle, incoming],
       })
-    return LoopSilenceHandoverState.make({
+    return LoopSilenceTransitionState.make({
       playbackStartedAtSecond: state.playbackStartedAtSecond,
       transitionQueue: [middle, incoming],
     })
   }
 
   if (
-    LoopRolloverHandoverState.models(state) ||
-    LoopSilenceHandoverState.models(state)
+    PatternPatternTransitionState.models(state) ||
+    LoopSilenceTransitionState.models(state)
   ) {
     const q = state.transitionQueue
     yield* q[0].dispose()

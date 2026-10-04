@@ -57,7 +57,7 @@ export const zoneAt = (
   } as const
 }
 
-export type Zone = ReturnType<typeof zoneAt>
+export interface Zone extends ReturnType<typeof zoneAt> {}
 
 export const chosenSlot = (zone: Zone): Slot =>
   zone.isInGoodZone ? zone.immediateSlot : zone.postponedSlot

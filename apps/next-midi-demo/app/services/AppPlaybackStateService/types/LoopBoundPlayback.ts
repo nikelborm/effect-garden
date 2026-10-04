@@ -16,17 +16,19 @@ import { PlayingSlowStrum } from './PlayingSlowStrum.ts'
 export const PlayingLoopQueue = Schema.Tuple([PlayingLoopPlayback])
 export const isPlayingLoopQueue = Schema.is(PlayingLoopQueue)
 
-export const LoopRolloverHandoverQueue = Schema.Tuple([
+export const PatternPatternTransitionQueue = Schema.Tuple([
   LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
   IncomingLoopFadingIn,
 ])
-export const isLoopRolloverHandoverQueue = Schema.is(LoopRolloverHandoverQueue)
+export const isPatternPatternTransitionQueue = Schema.is(
+  PatternPatternTransitionQueue,
+)
 
-export const LoopSilenceHandoverQueue = Schema.Tuple([
+export const LoopSilenceTransitionQueue = Schema.Tuple([
   LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
   IncomingLoopFadingIn,
 ])
-export const isLoopSilenceHandoverQueue = Schema.is(LoopSilenceHandoverQueue)
+export const isLoopSilenceTransitionQueue = Schema.is(LoopSilenceTransitionQueue)
 
 export const FullLoopQueue = Schema.Tuple([
   FadingOutLoopPlayback,
@@ -38,19 +40,19 @@ export const isFullLoopQueue = Schema.is(FullLoopQueue)
 export const PlayingSlowStrumQueue = Schema.Tuple([PlayingSlowStrum])
 export const isPlayingSlowStrumQueue = Schema.is(PlayingSlowStrumQueue)
 
-export const SlowStrumHandoverQueue = Schema.Tuple([
+export const SlowStrumTransitionQueue = Schema.Tuple([
   SlowStrumTransitionQueueElement,
   ScheduledPatternTransitionQueueElement,
 ])
-export const isSlowStrumHandoverQueue = Schema.is(SlowStrumHandoverQueue)
+export const isSlowStrumTransitionQueue = Schema.is(SlowStrumTransitionQueue)
 
 export const LoopBoundQueue = Schema.Union([
   PlayingLoopQueue,
-  LoopRolloverHandoverQueue,
-  LoopSilenceHandoverQueue,
+  PatternPatternTransitionQueue,
+  LoopSilenceTransitionQueue,
   FullLoopQueue,
   PlayingSlowStrumQueue,
-  SlowStrumHandoverQueue,
+  SlowStrumTransitionQueue,
 ])
 export type LoopBoundQueue = typeof LoopBoundQueue.Type
 
@@ -80,26 +82,27 @@ export class PlayingLoopState extends LoopBoundPlaybackBase.extend<PlayingLoopSt
   }
 }
 
-export class LoopRolloverHandoverState extends LoopBoundPlaybackBase.extend<LoopRolloverHandoverState>(
-  'LoopRolloverHandoverState',
+export class PatternPatternTransitionState extends LoopBoundPlaybackBase.extend<PatternPatternTransitionState>(
+  'PatternPatternTransitionState',
 )({
-  transitionQueue: LoopRolloverHandoverQueue,
+  transitionQueue: PatternPatternTransitionQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is LoopRolloverHandoverState =
-    Schema.is(this)
+  static models: (
+    candidate: unknown,
+  ) => candidate is PatternPatternTransitionState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
 }
 
-export class LoopSilenceHandoverState extends LoopBoundPlaybackBase.extend<LoopSilenceHandoverState>(
-  'LoopSilenceHandoverState',
+export class LoopSilenceTransitionState extends LoopBoundPlaybackBase.extend<LoopSilenceTransitionState>(
+  'LoopSilenceTransitionState',
 )({
-  transitionQueue: LoopSilenceHandoverQueue,
+  transitionQueue: LoopSilenceTransitionQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is LoopSilenceHandoverState =
+  static models: (candidate: unknown) => candidate is LoopSilenceTransitionState =
     Schema.is(this)
   static {
     this.make = this.make.bind(this)
@@ -132,13 +135,13 @@ export class PlayingSlowStrumState extends LoopBoundPlaybackBase.extend<PlayingS
   }
 }
 
-export class SlowStrumHandoverState extends LoopBoundPlaybackBase.extend<SlowStrumHandoverState>(
-  'SlowStrumHandoverState',
+export class SlowStrumTransitionState extends LoopBoundPlaybackBase.extend<SlowStrumTransitionState>(
+  'SlowStrumTransitionState',
 )({
-  transitionQueue: SlowStrumHandoverQueue,
+  transitionQueue: SlowStrumTransitionQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SlowStrumHandoverState =
+  static models: (candidate: unknown) => candidate is SlowStrumTransitionState =
     Schema.is(this)
   static {
     this.make = this.make.bind(this)
@@ -147,10 +150,10 @@ export class SlowStrumHandoverState extends LoopBoundPlaybackBase.extend<SlowStr
 
 export const LoopBoundPlayback = Schema.Union([
   PlayingLoopState,
-  LoopRolloverHandoverState,
-  LoopSilenceHandoverState,
+  PatternPatternTransitionState,
+  LoopSilenceTransitionState,
   FullLoopState,
   PlayingSlowStrumState,
-  SlowStrumHandoverState,
+  SlowStrumTransitionState,
 ])
 export type LoopBoundPlayback = typeof LoopBoundPlayback.Type

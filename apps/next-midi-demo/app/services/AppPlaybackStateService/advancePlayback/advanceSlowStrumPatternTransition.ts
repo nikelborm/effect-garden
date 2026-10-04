@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { SlowStrumHandoverState } from '../types/LoopBoundPlayback.ts'
+import type { SlowStrumTransitionState } from '../types/LoopBoundPlayback.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 // A slow strum handing over to a loop (queue = [strum, scheduledPattern]). Like
@@ -10,7 +10,7 @@ import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 export const advanceSlowStrumPatternTransition = Effect.fn(
   'advanceSlowStrumPatternTransition',
 )(function* (
-  oldState: SlowStrumHandoverState,
+  oldState: SlowStrumTransitionState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   const [strum, scheduled] = oldState.transitionQueue

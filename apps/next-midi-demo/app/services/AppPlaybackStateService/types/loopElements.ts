@@ -26,7 +26,9 @@ interface FadingOutLoopFields {
 
 export const getAudioNow = GetAudioNow.run()
 
-const scheduleRolloverFadeout = Effect.fn('scheduleRolloverFadeout')(function* (
+const schedulePatternPatternFadeout = Effect.fn(
+  'schedulePatternPatternFadeout',
+)(function* (
   playback: AudioPlayback,
   asset: TaggedPatternPointer,
   playbackStartedAtSecond: number,
@@ -107,18 +109,18 @@ const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
   })
 })
 
-const reanchorToRollover = Effect.fn('reanchorToRollover')(function* (
-  el: FadingOutLoopFields,
-) {
-  const now = yield* getAudioNow
-  yield* el.cleanupFiberToolkit.cancelCleanup
-  yield* RestoreFullVolume.run(el.playback, now)
-  return yield* scheduleRolloverFadeout(
-    el.playback,
-    el.asset,
-    el.playbackStartedAtSecond,
-  )
-})
+const reanchorToPatternPattern = Effect.fn('reanchorToPatternPattern')(
+  function* (el: FadingOutLoopFields) {
+    const now = yield* getAudioNow
+    yield* el.cleanupFiberToolkit.cancelCleanup
+    yield* RestoreFullVolume.run(el.playback, now)
+    return yield* schedulePatternPatternFadeout(
+      el.playback,
+      el.asset,
+      el.playbackStartedAtSecond,
+    )
+  },
+)
 
 export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>()(
   'PlayingLoopPlayback',
@@ -134,7 +136,7 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
   }
 
   beginShortFadeoutBeforeAnotherLoop() {
-    return scheduleRolloverFadeout(
+    return schedulePatternPatternFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
@@ -188,7 +190,7 @@ export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingI
   }
 
   promoteToFadingOut() {
-    return scheduleRolloverFadeout(
+    return schedulePatternPatternFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
@@ -233,7 +235,7 @@ export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Sche
   }
 
   reanchorFadeoutOnto() {
-    return reanchorToRollover(this)
+    return reanchorToPatternPattern(this)
   }
 
   scheduleNextLoop(desiredAsset: TaggedPatternPointer) {
@@ -266,7 +268,7 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
   }
 
   reanchorFadeoutOnto() {
-    return reanchorToRollover(this)
+    return reanchorToPatternPattern(this)
   }
 
   scheduleNextLoop(desiredAsset: TaggedPatternPointer) {

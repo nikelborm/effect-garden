@@ -5,8 +5,8 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import {
-  LoopRolloverHandoverState,
-  LoopSilenceHandoverState,
+  LoopSilenceTransitionState,
+  PatternPatternTransitionState,
   PlayingLoopState,
 } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
@@ -64,12 +64,12 @@ export const advancePatternSilenceTransition = Effect.fn(
   const incoming = yield* current.scheduleNextLoop(asset)
 
   if (current._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop')
-    return LoopRolloverHandoverState.make({
+    return PatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [current, incoming],
     })
 
-  return LoopSilenceHandoverState.make({
+  return LoopSilenceTransitionState.make({
     playbackStartedAtSecond: current.playbackStartedAtSecond,
     transitionQueue: [current, incoming],
   })
