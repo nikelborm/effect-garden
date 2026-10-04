@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
+import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { fadeToSilenceTimeInSeconds } from '../constants.ts'
 import {
   DisposePlayback,
@@ -14,7 +15,7 @@ import {
   ScheduleIncomingLoop,
 } from '../webAudioSideEffects/index.ts'
 import { chosenSlot, zoneAt } from '../zones.ts'
-import { AudioPlayback, CleanupFiberToolkit } from './common.ts'
+import { AudioPlayback } from './common.ts'
 
 interface FadingOutLoopFields {
   readonly asset: TaggedPatternPointer

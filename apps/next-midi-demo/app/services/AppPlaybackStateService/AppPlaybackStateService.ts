@@ -5,8 +5,6 @@ import * as Layer from 'effect/Layer'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import { defaultAccord } from '../../domain/Accord.ts'
-import { defaultStrength } from '../../domain/Strength.ts'
 import {
   AccordInputBus,
   PatternInputBus,
@@ -14,7 +12,6 @@ import {
 } from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
-import { makeCleanupFibersFactory } from './makeCleanupFibers.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { SilenceBoundPlayback } from './types/SilenceBoundPlayback.ts'
@@ -24,11 +21,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
   {
     make: Effect.gen(function* () {
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
-        SilenceBoundPlayback.make({
-          accord: defaultAccord,
-          strength: defaultStrength,
-          transitionQueue: [],
-        }),
+        SilenceBoundPlayback.default,
       )
 
       // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
@@ -50,7 +43,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //   ),
       // )
 
-      const makeCleanupFibers = makeCleanupFibersFactory(stateRef)
+      const CleanupFiberMakerLayer = CleanupFiberMaker.layer(stateRef)
 
       const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
         stateRef,
@@ -92,7 +85,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         Stream.runForEach(({ id: pressedDownParamButtonId }) =>
           SubscriptionRef.updateEffect(stateRef, state =>
             advancePlayback(state, pressedDownParamButtonId).pipe(
-              Effect.provideService(CleanupFiberMaker, makeCleanupFibers),
+              Effect.provide(CleanupFiberMakerLayer),
               Effect.tapCause(Effect.logError),
             ),
           ),
@@ -100,6 +93,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
 
         Effect.tapCause(Effect.logError),
         Effect.forkScoped,
+        e => e,
       )
       // Stream.mergeAll([,], { concurrency: 'unbounded' })
 

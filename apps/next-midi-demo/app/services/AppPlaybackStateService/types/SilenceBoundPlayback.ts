@@ -1,7 +1,7 @@
 import * as Schema from 'effect/Schema'
 
-import { AccordSchema } from '../../../domain/Accord.ts'
-import { StrengthSchema } from '../../../domain/Strength.ts'
+import { AccordSchema, defaultAccord } from '../../../domain/Accord.ts'
+import { defaultStrength, StrengthSchema } from '../../../domain/Strength.ts'
 import { FadingOutLoopPlayback } from './loopElements.ts'
 
 export const PureSilenceQueue = Schema.Tuple([])
@@ -32,6 +32,11 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
   static {
     this.make = this.make.bind(this)
   }
+  static default = this.make({
+    accord: defaultAccord,
+    strength: defaultStrength,
+    transitionQueue: [],
+  })
 }
 
 export interface PureSilenceState extends SilenceBoundPlayback {
