@@ -1,5 +1,5 @@
 import * as Effect from 'effect/Effect'
-import { apply } from 'effect/Function'
+import { apply, flow } from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
@@ -25,10 +25,6 @@ interface FadingOutLoopFields {
 }
 
 export const getAudioNow = GetAudioNow.run()
-
-const disposeOf = Effect.fn('disposeOf')((playback: AudioPlayback) =>
-  Effect.as(DisposePlayback.run(playback), DisposedLoopPlayback.make({})),
-)
 
 const scheduleRolloverFadeout = Effect.fn('scheduleRolloverFadeout')(function* (
   playback: AudioPlayback,
@@ -124,16 +120,6 @@ const reanchorToRollover = Effect.fn('reanchorToRollover')(function* (
   )
 })
 
-export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlayback>()(
-  'DisposedLoopPlayback',
-  {},
-) {
-  declare protected '~brand~': never
-  static {
-    this.make = this.make.bind(this)
-  }
-}
-
 export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>()(
   'PlayingLoopPlayback',
   {
@@ -167,6 +153,20 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
     return scheduleIncomingLoop(this.playbackStartedAtSecond, desiredAsset)
   }
 }
+
+export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlayback>()(
+  'DisposedLoopPlayback',
+  {},
+) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
+}
+
+const disposeOf = Effect.fn('disposeOf')(
+  flow(DisposePlayback.run, Effect.as(DisposedLoopPlayback.make({}))),
+)
 
 export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingIn>()(
   'IncomingLoopFadingIn',
