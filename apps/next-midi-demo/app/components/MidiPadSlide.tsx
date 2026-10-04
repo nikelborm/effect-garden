@@ -7,7 +7,6 @@ import { styled } from 'next-yak'
 import * as Hooks from '@effect/atom-react/Hooks'
 import * as AsyncResult from 'effect/reactivity/AsyncResult'
 
-import { accordsAtom } from '../atoms/accordsAtom.ts'
 import {
   accordButtonDownloadPercentAtom,
   // isAccordButtonCurrentlyPlayingAtom,
@@ -26,25 +25,15 @@ import {
   strengthButtonDownloadPercentAtom,
   testAtom,
 } from '../atoms/buttonsAtom.ts'
-import { patternsAtom } from '../atoms/patternsAtom.ts'
-import { strengthsAtom } from '../atoms/strengthAtom.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from '../constants.ts'
-import type { Accord } from '../domain/Accord.ts'
-import type { Pattern } from '../domain/Pattern.ts'
-import type { Strength } from '../domain/Strength.ts'
+import { type Accord, allAccords } from '../domain/Accord.ts'
+import { allPatterns, type Pattern } from '../domain/Pattern.ts'
+import { allStrengths, type Strength } from '../domain/Strength.ts'
 
 export const MidiPadSlide = () => {
-  const res = AsyncResult.all({
-    accords: Hooks.useAtomValue(accordsAtom),
-    patterns: Hooks.useAtomValue(patternsAtom),
-    strengths: Hooks.useAtomValue(strengthsAtom),
-  })
-
   Hooks.useAtomMount(testAtom)
-
-  if (!AsyncResult.isSuccess(res)) return 'wtf'
-  const { accords, patterns, strengths } = res.value
-
+  // TODO: use actual atoms for allPatterns, allAccords, allStrengths resolving
+  // from context instead of direct addressing
   return (
     <ButtonGrid
       role="grid"
@@ -52,17 +41,17 @@ export const MidiPadSlide = () => {
       aria-colcount={LAYOUT_WIDTH}
     >
       <DisplayContentsWrapper role="row" aria-rowindex={0}>
-        {Array.from(patterns, pattern => (
+        {Array.from(allPatterns, pattern => (
           <PatternButton pattern={pattern} key={pattern} />
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={1}>
-        {Array.from(accords, accord => (
+        {Array.from(allAccords, accord => (
           <AccordButton accord={accord} key={accord} />
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={2}>
-        {Array.from(strengths, strength => (
+        {Array.from(allStrengths, strength => (
           <StrengthButton strength={strength} key={strength} />
         ))}
         {/* <PlaybackButton /> */}
