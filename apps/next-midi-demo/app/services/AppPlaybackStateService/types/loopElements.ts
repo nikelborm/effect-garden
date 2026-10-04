@@ -26,103 +26,103 @@ interface FadingOutLoopFields {
 
 export const getAudioNow = GetAudioNow.run()
 
-const disposeOf = (playback: AudioPlayback) =>
-  Effect.as(DisposePlayback.run(playback), DisposedLoopPlayback.make({}))
+const disposeOf = Effect.fn('disposeOf')((playback: AudioPlayback) =>
+  Effect.as(DisposePlayback.run(playback), DisposedLoopPlayback.make({})),
+)
 
-const scheduleRolloverFadeout = (
+const scheduleRolloverFadeout = Effect.fn('scheduleRolloverFadeout')(function* (
   playback: AudioPlayback,
   asset: TaggedPatternPointer,
   playbackStartedAtSecond: number,
-) =>
-  Effect.gen(function* () {
-    const now = yield* getAudioNow
-    const slot = chosenSlot(zoneAt(playbackStartedAtSecond, now))
-    yield* ScheduleFadeOut.run(playback, slot)
-    const cleanupFiberToolkit = yield* Effect.flatMap(
-      CleanupFiberMaker,
-      apply(slot.fadeoutEndsAtSecond - now),
-    )
-    return LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop.make({
-      asset,
-      playback,
-      playbackStartedAtSecond,
-      cleanupFiberToolkit,
-      fadeoutStartsAtSecond: slot.fadeoutStartsAtSecond,
-      fadeoutEndsAtSecond: slot.fadeoutEndsAtSecond,
-    })
+) {
+  const now = yield* getAudioNow
+  const slot = chosenSlot(zoneAt(playbackStartedAtSecond, now))
+  yield* ScheduleFadeOut.run(playback, slot)
+  const cleanupFiberToolkit = yield* Effect.flatMap(
+    CleanupFiberMaker,
+    apply(slot.fadeoutEndsAtSecond - now),
+  )
+  return LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop.make({
+    asset,
+    playback,
+    playbackStartedAtSecond,
+    cleanupFiberToolkit,
+    fadeoutStartsAtSecond: slot.fadeoutStartsAtSecond,
+    fadeoutEndsAtSecond: slot.fadeoutEndsAtSecond,
   })
+})
 
-const scheduleSilenceFadeout = (
+const scheduleSilenceFadeout = Effect.fn('scheduleSilenceFadeout')(function* (
   playback: AudioPlayback,
   asset: TaggedPatternPointer,
   playbackStartedAtSecond: number,
-) =>
-  Effect.gen(function* () {
-    const now = yield* getAudioNow
-    const slot = chosenSlot(
-      zoneAt(playbackStartedAtSecond, now, fadeToSilenceTimeInSeconds),
-    )
-    yield* ScheduleFadeOut.run(playback, slot)
-    const cleanupFiberToolkit = yield* Effect.flatMap(
-      CleanupFiberMaker,
-      apply(slot.fadeoutEndsAtSecond - now),
-    )
-    return LoopPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
-      asset,
-      playback,
-      playbackStartedAtSecond,
-      cleanupFiberToolkit,
-      fadeoutStartsAtSecond: slot.fadeoutStartsAtSecond,
-      fadeoutEndsAtSecond: slot.fadeoutEndsAtSecond,
-    })
+) {
+  const now = yield* getAudioNow
+  const slot = chosenSlot(
+    zoneAt(playbackStartedAtSecond, now, fadeToSilenceTimeInSeconds),
+  )
+  yield* ScheduleFadeOut.run(playback, slot)
+  const cleanupFiberToolkit = yield* Effect.flatMap(
+    CleanupFiberMaker,
+    apply(slot.fadeoutEndsAtSecond - now),
+  )
+  return LoopPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
+    asset,
+    playback,
+    playbackStartedAtSecond,
+    cleanupFiberToolkit,
+    fadeoutStartsAtSecond: slot.fadeoutStartsAtSecond,
+    fadeoutEndsAtSecond: slot.fadeoutEndsAtSecond,
   })
+})
 
-const scheduleIncomingLoop = (
+const scheduleIncomingLoop = Effect.fn('scheduleIncomingLoop')(function* (
   playbackStartedAtSecond: number,
   asset: TaggedPatternPointer,
-) =>
-  Effect.gen(function* () {
-    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-    const now = yield* getAudioNow
-    const zone = zoneAt(playbackStartedAtSecond, now)
-    const slot = chosenSlot(zone)
-    const playback = yield* ScheduleIncomingLoop.run(audioBuffer, {
-      startAtSecond: now,
-      bufferPhaseOffsetSeconds: zone.bufferPhaseOffsetSeconds,
-      slot,
-    })
-    return IncomingLoopFadingIn.make({
-      asset,
-      playback,
-      fadeInStartsAtSecond: slot.fadeoutStartsAtSecond,
-      fadeInEndsAtSecond: slot.fadeoutEndsAtSecond,
-      playbackStartedAtSecond,
-    })
+) {
+  const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
+  const now = yield* getAudioNow
+  const zone = zoneAt(playbackStartedAtSecond, now)
+  const slot = chosenSlot(zone)
+  const playback = yield* ScheduleIncomingLoop.run(audioBuffer, {
+    startAtSecond: now,
+    bufferPhaseOffsetSeconds: zone.bufferPhaseOffsetSeconds,
+    slot,
   })
+  return IncomingLoopFadingIn.make({
+    asset,
+    playback,
+    fadeInStartsAtSecond: slot.fadeoutStartsAtSecond,
+    fadeInEndsAtSecond: slot.fadeoutEndsAtSecond,
+    playbackStartedAtSecond,
+  })
+})
 
-const reviveToPlaying = (el: FadingOutLoopFields) =>
-  Effect.gen(function* () {
-    const now = yield* getAudioNow
-    yield* RestoreFullVolume.run(el.playback, now)
-    yield* el.cleanupFiberToolkit.cancelCleanup
-    return PlayingLoopPlayback.make({
-      asset: el.asset,
-      playback: el.playback,
-      playbackStartedAtSecond: el.playbackStartedAtSecond,
-    })
+const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
+  el: FadingOutLoopFields,
+) {
+  const now = yield* getAudioNow
+  yield* RestoreFullVolume.run(el.playback, now)
+  yield* el.cleanupFiberToolkit.cancelCleanup
+  return PlayingLoopPlayback.make({
+    asset: el.asset,
+    playback: el.playback,
+    playbackStartedAtSecond: el.playbackStartedAtSecond,
   })
+})
 
-const reanchorToRollover = (el: FadingOutLoopFields) =>
-  Effect.gen(function* () {
-    const now = yield* getAudioNow
-    yield* el.cleanupFiberToolkit.cancelCleanup
-    yield* RestoreFullVolume.run(el.playback, now)
-    return yield* scheduleRolloverFadeout(
-      el.playback,
-      el.asset,
-      el.playbackStartedAtSecond,
-    )
-  })
+const reanchorToRollover = Effect.fn('reanchorToRollover')(function* (
+  el: FadingOutLoopFields,
+) {
+  const now = yield* getAudioNow
+  yield* el.cleanupFiberToolkit.cancelCleanup
+  yield* RestoreFullVolume.run(el.playback, now)
+  return yield* scheduleRolloverFadeout(
+    el.playback,
+    el.asset,
+    el.playbackStartedAtSecond,
+  )
+})
 
 export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlayback>()(
   'DisposedLoopPlayback',
