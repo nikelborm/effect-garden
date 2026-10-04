@@ -11,7 +11,7 @@ import {
 } from '../services/AppPlaybackStateService/types/LoopBoundPlayback.ts'
 import type { TupleIndices } from './TupleIndices.ts'
 
-// TODO: determine how did we endup with this helper
+// TODO: determine how did we endup with this helper. Dead code
 export function isValidQueueSignalSequence(queue: LoopBoundQueue) {
   if (isPlayingLoopQueue(queue)) return true
   if (isLoopRolloverHandoverQueue(queue))
