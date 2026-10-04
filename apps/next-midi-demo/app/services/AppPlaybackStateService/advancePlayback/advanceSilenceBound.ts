@@ -1,31 +1,31 @@
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 
 import {
-  LoopFadingToSilenceQueue,
-  PureSilenceQueue,
+  LoopFadingToSilenceState,
+  PureSilenceState,
   type SilenceBoundPlayback,
-  TwoLoopsFadingToSilenceQueue,
+  TwoLoopsFadingToSilenceState,
 } from '../types/SilenceBoundPlayback.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
 import { advanceSilence } from './advanceSilence.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
-import { queueIs } from './queueIs.ts'
 
 export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
   oldState: SilenceBoundPlayback,
   pressedParamButtonId: PressedParamButtonId,
 ) {
-  if (queueIs(PureSilenceQueue)(oldState))
+  if (Schema.is(PureSilenceState)(oldState))
     return yield* advanceSilence(oldState, pressedParamButtonId)
 
-  if (queueIs(LoopFadingToSilenceQueue)(oldState))
+  if (Schema.is(LoopFadingToSilenceState)(oldState))
     return yield* advancePatternSilenceTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (queueIs(TwoLoopsFadingToSilenceQueue)(oldState))
+  if (Schema.is(TwoLoopsFadingToSilenceState)(oldState))
     return yield* advancePatternPatternSilenceTransition(
       oldState,
       pressedParamButtonId,

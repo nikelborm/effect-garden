@@ -11,9 +11,9 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
 ) {
   yield* Effect.log('advancePlayback', { oldState, pressedParamButtonId })
   switch (oldState._tag) {
-    case 'SilenceBoundPlayback':
+    case 'SilenceBoundPlaybackBase':
       return yield* advanceSilenceBound(oldState, pressedParamButtonId)
-    case 'LoopBoundPlayback':
+    case 'LoopBoundPlaybackBase':
       return yield* advanceLoopBound(oldState, pressedParamButtonId)
   }
 })

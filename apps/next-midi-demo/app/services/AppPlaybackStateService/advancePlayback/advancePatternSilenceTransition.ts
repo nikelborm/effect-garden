@@ -4,12 +4,13 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import { getAudioNow } from '../types/loopElements.ts'
 import {
-  type LoopFadingToSilenceState,
-  SilenceBoundPlayback,
-} from '../types/SilenceBoundPlayback.ts'
+  LoopRolloverHandoverState,
+  LoopSilenceHandoverState,
+  PlayingLoopState,
+} from '../types/LoopBoundPlayback.ts'
+import { getAudioNow } from '../types/loopElements.ts'
+import { LoopFadingToSilenceState } from '../types/SilenceBoundPlayback.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternSilenceTransition = Effect.fn(
@@ -22,7 +23,7 @@ export const advancePatternSilenceTransition = Effect.fn(
   const [current] = oldState.transitionQueue
 
   if (StrengthData.models(pressedParamButtonId))
-    return SilenceBoundPlayback.make({
+    return LoopFadingToSilenceState.make({
       accord,
       strength: pressedParamButtonId.strength,
       transitionQueue: [current],
@@ -49,7 +50,7 @@ export const advancePatternSilenceTransition = Effect.fn(
       )
 
     const revived = yield* current.cancelFadeoutAndRestore()
-    return LoopBoundPlayback.make({
+    return PlayingLoopState.make({
       playbackStartedAtSecond: revived.playbackStartedAtSecond,
       transitionQueue: [revived],
     })
@@ -62,11 +63,14 @@ export const advancePatternSilenceTransition = Effect.fn(
   })
   const incoming = yield* current.scheduleNextLoop(asset)
 
-  return LoopBoundPlayback.make({
+  if (current._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop')
+    return LoopRolloverHandoverState.make({
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      transitionQueue: [current, incoming],
+    })
+
+  return LoopSilenceHandoverState.make({
     playbackStartedAtSecond: current.playbackStartedAtSecond,
-    transitionQueue:
-      current._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
-        ? [current, incoming]
-        : [current, incoming],
+    transitionQueue: [current, incoming],
   })
 })

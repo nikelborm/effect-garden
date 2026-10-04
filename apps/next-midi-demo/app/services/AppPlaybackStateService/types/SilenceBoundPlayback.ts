@@ -20,14 +20,25 @@ export const SilenceBoundQueue = Schema.Union([
 ])
 export type SilenceBoundQueue = typeof SilenceBoundQueue.Type
 
-export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlayback>()(
-  'SilenceBoundPlayback',
+export class SilenceBoundPlaybackBase extends Schema.TaggedClass<SilenceBoundPlaybackBase>()(
+  'SilenceBoundPlaybackBase',
   {
     accord: AccordSchema,
     strength: StrengthSchema,
     transitionQueue: SilenceBoundQueue,
   },
 ) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
+}
+
+export class PureSilenceState extends SilenceBoundPlaybackBase.extend<PureSilenceState>(
+  'PureSilenceState',
+)({
+  transitionQueue: PureSilenceQueue,
+}) {
   declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
@@ -39,12 +50,31 @@ export class SilenceBoundPlayback extends Schema.TaggedClass<SilenceBoundPlaybac
   })
 }
 
-export interface PureSilenceState extends SilenceBoundPlayback {
-  readonly transitionQueue: typeof PureSilenceQueue.Type
+export class LoopFadingToSilenceState extends SilenceBoundPlaybackBase.extend<LoopFadingToSilenceState>(
+  'LoopFadingToSilenceState',
+)({
+  transitionQueue: LoopFadingToSilenceQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface LoopFadingToSilenceState extends SilenceBoundPlayback {
-  readonly transitionQueue: typeof LoopFadingToSilenceQueue.Type
+
+export class TwoLoopsFadingToSilenceState extends SilenceBoundPlaybackBase.extend<TwoLoopsFadingToSilenceState>(
+  'TwoLoopsFadingToSilenceState',
+)({
+  transitionQueue: TwoLoopsFadingToSilenceQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface TwoLoopsFadingToSilenceState extends SilenceBoundPlayback {
-  readonly transitionQueue: typeof TwoLoopsFadingToSilenceQueue.Type
-}
+
+export const SilenceBoundPlayback = Schema.Union([
+  PureSilenceState,
+  LoopFadingToSilenceState,
+  TwoLoopsFadingToSilenceState,
+])
+export type SilenceBoundPlayback = typeof SilenceBoundPlayback.Type

@@ -6,11 +6,15 @@ import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import {
-  LoopBoundPlayback,
-  type LoopRolloverHandoverState,
+  FullLoopState,
+  LoopRolloverHandoverState,
+  PlayingLoopState,
 } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
-import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import {
+  LoopFadingToSilenceState,
+  TwoLoopsFadingToSilenceState,
+} from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
@@ -41,14 +45,14 @@ export const advancePatternPatternTransition = Effect.fn(
   ) {
     if (isInGreenZone) {
       yield* incoming.drop()
-      return SilenceBoundPlayback.make({
+      return LoopFadingToSilenceState.make({
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [current],
       })
     }
 
-    return SilenceBoundPlayback.make({
+    return TwoLoopsFadingToSilenceState.make({
       accord: incoming.asset.accord,
       strength: incoming.asset.strength,
       transitionQueue: [current, yield* incoming.promoteToFadingOut()],
@@ -63,14 +67,14 @@ export const advancePatternPatternTransition = Effect.fn(
   if (isInGreenZone && Equal.equals(desiredAsset, current.asset)) {
     const revived = yield* current.cancelFadeoutAndRestore()
     yield* incoming.drop()
-    return LoopBoundPlayback.make({
+    return PlayingLoopState.make({
       playbackStartedAtSecond: revived.playbackStartedAtSecond,
       transitionQueue: [revived],
     })
   }
 
   if (!isInGreenZone) {
-    return LoopBoundPlayback.make({
+    return FullLoopState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [
         current,
@@ -81,7 +85,7 @@ export const advancePatternPatternTransition = Effect.fn(
   }
 
   yield* incoming.drop()
-  return LoopBoundPlayback.make({
+  return LoopRolloverHandoverState.make({
     playbackStartedAtSecond: current.playbackStartedAtSecond,
     transitionQueue: [
       yield* current.reanchorFadeoutOnto(),

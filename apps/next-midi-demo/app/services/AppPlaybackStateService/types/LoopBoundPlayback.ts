@@ -54,8 +54,8 @@ export const LoopBoundQueue = Schema.Union([
 ])
 export type LoopBoundQueue = typeof LoopBoundQueue.Type
 
-export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
-  'LoopBoundPlayback',
+export class LoopBoundPlaybackBase extends Schema.TaggedClass<LoopBoundPlaybackBase>()(
+  'LoopBoundPlaybackBase',
   {
     playbackStartedAtSecond: Schema.Number,
     transitionQueue: LoopBoundQueue,
@@ -67,21 +67,78 @@ export class LoopBoundPlayback extends Schema.TaggedClass<LoopBoundPlayback>()(
   }
 }
 
-export interface PlayingLoopState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof PlayingLoopQueue.Type
+export class PlayingLoopState extends LoopBoundPlaybackBase.extend<PlayingLoopState>(
+  'PlayingLoopState',
+)({
+  transitionQueue: PlayingLoopQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface LoopRolloverHandoverState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof LoopRolloverHandoverQueue.Type
+
+export class LoopRolloverHandoverState extends LoopBoundPlaybackBase.extend<LoopRolloverHandoverState>(
+  'LoopRolloverHandoverState',
+)({
+  transitionQueue: LoopRolloverHandoverQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface LoopSilenceHandoverState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof LoopSilenceHandoverQueue.Type
+
+export class LoopSilenceHandoverState extends LoopBoundPlaybackBase.extend<LoopSilenceHandoverState>(
+  'LoopSilenceHandoverState',
+)({
+  transitionQueue: LoopSilenceHandoverQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface FullLoopState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof FullLoopQueue.Type
+
+export class FullLoopState extends LoopBoundPlaybackBase.extend<FullLoopState>(
+  'FullLoopState',
+)({
+  transitionQueue: FullLoopQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface PlayingSlowStrumState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof PlayingSlowStrumQueue.Type
+
+export class PlayingSlowStrumState extends LoopBoundPlaybackBase.extend<PlayingSlowStrumState>(
+  'PlayingSlowStrumState',
+)({
+  transitionQueue: PlayingSlowStrumQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
-export interface SlowStrumHandoverState extends LoopBoundPlayback {
-  readonly transitionQueue: typeof SlowStrumHandoverQueue.Type
+
+export class SlowStrumHandoverState extends LoopBoundPlaybackBase.extend<SlowStrumHandoverState>(
+  'SlowStrumHandoverState',
+)({
+  transitionQueue: SlowStrumHandoverQueue,
+}) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
 }
+
+export const LoopBoundPlayback = Schema.Union([
+  PlayingLoopState,
+  LoopRolloverHandoverState,
+  LoopSilenceHandoverState,
+  FullLoopState,
+  PlayingSlowStrumState,
+  SlowStrumHandoverState,
+])
+export type LoopBoundPlayback = typeof LoopBoundPlayback.Type

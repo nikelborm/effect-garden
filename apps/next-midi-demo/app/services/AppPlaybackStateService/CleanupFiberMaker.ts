@@ -10,15 +10,15 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import {
-  FullLoopQueue,
-  LoopBoundPlayback,
-  LoopRolloverHandoverQueue,
-  LoopSilenceHandoverQueue,
+  FullLoopState,
+  LoopRolloverHandoverState,
+  LoopSilenceHandoverState,
+  PlayingLoopState,
 } from './types/LoopBoundPlayback.ts'
 import {
-  LoopFadingToSilenceQueue,
-  SilenceBoundPlayback,
-  TwoLoopsFadingToSilenceQueue,
+  LoopFadingToSilenceState,
+  PureSilenceState,
+  TwoLoopsFadingToSilenceState,
 } from './types/SilenceBoundPlayback.ts'
 import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
@@ -85,51 +85,50 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
 ): Effect.fn.Return<AppPlaybackState, never, DisposePlayback> {
   yield* Effect.logTrace('Playback cleanup')
 
-  if (state._tag === 'SilenceBoundPlayback') {
+  if (Schema.is(TwoLoopsFadingToSilenceState)(state)) {
     const q = state.transitionQueue
-
-    if (Schema.is(TwoLoopsFadingToSilenceQueue)(q)) {
-      yield* q[0].dispose()
-      return SilenceBoundPlayback.make({
-        accord: state.accord,
-        strength: state.strength,
-
-        transitionQueue: [q[1]],
-      })
-    }
-
-    if (Schema.is(LoopFadingToSilenceQueue)(q)) {
-      yield* q[0].dispose()
-      return SilenceBoundPlayback.make({
-        accord: state.accord,
-        strength: state.strength,
-        transitionQueue: [],
-      })
-    }
-
-    return state
+    yield* q[0].dispose()
+    return LoopFadingToSilenceState.make({
+      accord: state.accord,
+      strength: state.strength,
+      transitionQueue: [q[1]],
+    })
   }
 
-  const q = state.transitionQueue
+  if (Schema.is(LoopFadingToSilenceState)(state)) {
+    const q = state.transitionQueue
+    yield* q[0].dispose()
+    return PureSilenceState.make({
+      accord: state.accord,
+      strength: state.strength,
+      transitionQueue: [],
+    })
+  }
 
-  if (Schema.is(FullLoopQueue)(q)) {
+  if (Schema.is(FullLoopState)(state)) {
+    const q = state.transitionQueue
     const [, middle, incoming] = q
     yield* q[0].dispose()
-    return LoopBoundPlayback.make({
+    if (
+      middle._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
+    )
+      return LoopRolloverHandoverState.make({
+        playbackStartedAtSecond: state.playbackStartedAtSecond,
+        transitionQueue: [middle, incoming],
+      })
+    return LoopSilenceHandoverState.make({
       playbackStartedAtSecond: state.playbackStartedAtSecond,
-      transitionQueue:
-        middle._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
-          ? [middle, incoming]
-          : [middle, incoming],
+      transitionQueue: [middle, incoming],
     })
   }
 
   if (
-    Schema.is(LoopRolloverHandoverQueue)(q) ||
-    Schema.is(LoopSilenceHandoverQueue)(q)
+    Schema.is(LoopRolloverHandoverState)(state) ||
+    Schema.is(LoopSilenceHandoverState)(state)
   ) {
+    const q = state.transitionQueue
     yield* q[0].dispose()
-    return LoopBoundPlayback.make({
+    return PlayingLoopState.make({
       playbackStartedAtSecond: state.playbackStartedAtSecond,
       transitionQueue: [q[1].becomeLive()],
     })

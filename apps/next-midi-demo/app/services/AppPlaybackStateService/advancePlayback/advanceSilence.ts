@@ -8,13 +8,13 @@ import {
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
+import {
+  PlayingLoopState,
+  PlayingSlowStrumState,
+} from '../types/LoopBoundPlayback.ts'
 import { getAudioNow, PlayingLoopPlayback } from '../types/loopElements.ts'
 import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import {
-  type PureSilenceState,
-  SilenceBoundPlayback,
-} from '../types/SilenceBoundPlayback.ts'
+import { PureSilenceState } from '../types/SilenceBoundPlayback.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
@@ -25,7 +25,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   const { accord, strength } = oldState
 
   if (StrengthData.models(pressedParamButtonId))
-    return SilenceBoundPlayback.make({
+    return PureSilenceState.make({
       accord,
       strength: pressedParamButtonId.strength,
       transitionQueue: [],
@@ -50,10 +50,18 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
     startAtSecond: playbackStartedAtSecond,
   })
 
-  return LoopBoundPlayback.make({
+  if (TaggedPatternPointer.models(asset))
+    return PlayingLoopState.make({
+      playbackStartedAtSecond,
+      transitionQueue: [
+        PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond }),
+      ],
+    })
+
+  return PlayingSlowStrumState.make({
     playbackStartedAtSecond,
-    transitionQueue: TaggedPatternPointer.models(asset)
-      ? [PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond })]
-      : [PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond })],
+    transitionQueue: [
+      PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond }),
+    ],
   })
 })

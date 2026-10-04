@@ -14,14 +14,14 @@ import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 // import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import { SilenceBoundPlayback } from './types/SilenceBoundPlayback.ts'
+import { PureSilenceState } from './types/SilenceBoundPlayback.ts'
 
 export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     make: Effect.gen(function* () {
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
-        SilenceBoundPlayback.default,
+        PureSilenceState.default,
       )
 
       // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
@@ -52,7 +52,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         // SilenceBoundPlayback queue); a fading-out loop still counts as playing.
         Stream.map(
           current =>
-            current._tag !== 'SilenceBoundPlayback' ||
+            current._tag !== 'SilenceBoundPlaybackBase' ||
             current.transitionQueue.length > 0,
         ),
         Stream.changes,

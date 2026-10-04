@@ -4,10 +4,10 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import {
-  LoopBoundPlayback,
+  LoopRolloverHandoverState,
   type PlayingLoopState,
 } from '../types/LoopBoundPlayback.ts'
-import { SilenceBoundPlayback } from '../types/SilenceBoundPlayback.ts'
+import { LoopFadingToSilenceState } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
@@ -30,14 +30,14 @@ export const advancePlayingPattern = Effect.fn('advancePlayingPattern')(
       PatternData.models(pressedParamButtonId) &&
       pressedParamButtonId.pattern === playing.asset.pattern
     )
-      return SilenceBoundPlayback.make({
+      return LoopFadingToSilenceState.make({
         accord: playing.asset.accord,
         strength: playing.asset.strength,
         transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
       })
 
     const asset = desiredAssetFromSignal(pressedParamButtonId, playing.asset)
-    return LoopBoundPlayback.make({
+    return LoopRolloverHandoverState.make({
       playbackStartedAtSecond: playing.playbackStartedAtSecond,
       transitionQueue: [
         yield* playing.beginShortFadeoutBeforeAnotherLoop(),

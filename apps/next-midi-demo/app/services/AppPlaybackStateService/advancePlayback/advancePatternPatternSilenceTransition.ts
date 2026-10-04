@@ -3,11 +3,8 @@ import * as Effect from 'effect/Effect'
 import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
-import { LoopBoundPlayback } from '../types/LoopBoundPlayback.ts'
-import {
-  SilenceBoundPlayback,
-  type TwoLoopsFadingToSilenceState,
-} from '../types/SilenceBoundPlayback.ts'
+import { FullLoopState } from '../types/LoopBoundPlayback.ts'
+import { TwoLoopsFadingToSilenceState } from '../types/SilenceBoundPlayback.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternPatternSilenceTransition = Effect.fn(
@@ -20,7 +17,7 @@ export const advancePatternPatternSilenceTransition = Effect.fn(
   const [oldest, fading] = oldState.transitionQueue
 
   if (StrengthData.models(pressedParamButtonId))
-    return SilenceBoundPlayback.make({
+    return TwoLoopsFadingToSilenceState.make({
       // playbackStartedAtSecond: oldest.playbackStartedAtSecond,
       accord,
       strength: pressedParamButtonId.strength,
@@ -39,7 +36,7 @@ export const advancePatternPatternSilenceTransition = Effect.fn(
     accord,
     strength,
   })
-  return LoopBoundPlayback.make({
+  return FullLoopState.make({
     playbackStartedAtSecond: oldest.playbackStartedAtSecond,
     transitionQueue: [oldest, fading, yield* oldest.scheduleNextLoop(asset)],
   })
