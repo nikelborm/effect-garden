@@ -12,16 +12,16 @@ import {
 } from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
-// import { makeNewPlayingAssetState } from './makeNewPlayingAssetState.ts'
+// import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import { PureSilenceState } from './types/SilenceBoundPlayback.ts'
+import { SilenceState } from './types/SilenceBoundPlayback.ts'
 
 export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
     make: Effect.gen(function* () {
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
-        PureSilenceState.default,
+        SilenceState.default,
       )
 
       // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
@@ -29,7 +29,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //   Effect.fn(function* (state) {
       //     yield* Effect.log('Switch play pause from currently selected')
       //     const isStopped = state._tag === 'Silence'
-      //     if (isStopped) return yield* makeNewPlayingAssetState
+      //     if (isStopped) return yield* makeNewAssetState
 
       //     yield* cleanupAllPlaybacks(state)
 
@@ -52,7 +52,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         // SilenceBoundPlayback queue); a fading-out loop still counts as playing.
         Stream.map(
           current =>
-            current._tag !== 'SilenceBoundPlaybackBase' ||
+            current._tag !== 'SilenceBoundStateBase' ||
             current.transitionQueue.length > 0,
         ),
         Stream.changes,
@@ -98,10 +98,10 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       // Stream.mergeAll([,], { concurrency: 'unbounded' })
 
       // yield* stateRef.changes.pipe(
-      //   Stream.filter(state => state._tag === 'PlayingSlowStrum'),
+      //   Stream.filter(state => state._tag === 'SlowStrum'),
       //   Stream.tap(
       //     Effect.fn(function* (state) {
-      //       if (state._tag !== 'PlayingSlowStrum') return
+      //       if (state._tag !== 'SlowStrum') return
       //       const [{ playback, durationSeconds }] = state.transitionQueue
       //       const secondsSinceAudioContextInit =
       //         yield* DeferredAudioContextService.use(context => context.currentTime)
@@ -113,7 +113,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //         stateRef,
       //         Effect.fn(function* (currentState) {
       //           if (
-      //             currentState._tag !== 'PlayingSlowStrum' ||
+      //             currentState._tag !== 'SlowStrum' ||
       //             currentState.transitionQueue[0].playback !== playback
       //           )
       //             return currentState

@@ -1,10 +1,10 @@
 import * as Effect from 'effect/Effect'
 
 import {
-  LoopFadingToSilenceState,
-  PureSilenceState,
+  PatternPatternSilenceTransitionState,
+  PatternSilenceTransitionState,
   type SilenceBoundPlayback,
-  TwoLoopsFadingToSilenceState,
+  SilenceState,
 } from '../types/SilenceBoundPlayback.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
@@ -15,16 +15,16 @@ export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
   oldState: SilenceBoundPlayback,
   pressedParamButtonId: PressedParamButtonId,
 ) {
-  if (PureSilenceState.models(oldState))
+  if (SilenceState.models(oldState))
     return yield* advanceSilence(oldState, pressedParamButtonId)
 
-  if (LoopFadingToSilenceState.models(oldState))
+  if (PatternSilenceTransitionState.models(oldState))
     return yield* advancePatternSilenceTransition(
       oldState,
       pressedParamButtonId,
     )
 
-  if (TwoLoopsFadingToSilenceState.models(oldState))
+  if (PatternPatternSilenceTransitionState.models(oldState))
     return yield* advancePatternPatternSilenceTransition(
       oldState,
       pressedParamButtonId,

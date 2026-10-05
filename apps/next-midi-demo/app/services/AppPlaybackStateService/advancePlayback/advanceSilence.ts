@@ -8,24 +8,21 @@ import {
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import {
-  PlayingLoopState,
-  PlayingSlowStrumState,
-} from '../types/LoopBoundPlayback.ts'
-import { getAudioNow, PlayingLoopPlayback } from '../types/loopElements.ts'
-import { PlayingSlowStrum } from '../types/PlayingSlowStrum.ts'
-import { PureSilenceState } from '../types/SilenceBoundPlayback.ts'
+import { PatternState, SlowStrumState } from '../types/LoopBoundPlayback.ts'
+import { getAudioNow, PatternPlayback } from '../types/loopElements.ts'
+import { SilenceState } from '../types/SilenceBoundPlayback.ts'
+import { SlowStrumEnqued } from '../types/SlowStrum.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
-  oldState: PureSilenceState,
+  oldState: SilenceState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   const { accord, strength } = oldState
 
   if (StrengthData.models(pressedParamButtonId))
-    return PureSilenceState.make({
+    return SilenceState.make({
       accord,
       strength: pressedParamButtonId.strength,
       transitionQueue: [],
@@ -51,17 +48,17 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   })
 
   if (TaggedPatternPointer.models(asset))
-    return PlayingLoopState.make({
+    return PatternState.make({
       playbackStartedAtSecond,
       transitionQueue: [
-        PlayingLoopPlayback.make({ asset, playback, playbackStartedAtSecond }),
+        PatternPlayback.make({ asset, playback, playbackStartedAtSecond }),
       ],
     })
 
-  return PlayingSlowStrumState.make({
+  return SlowStrumState.make({
     playbackStartedAtSecond,
     transitionQueue: [
-      PlayingSlowStrum.make({ asset, playback, playbackStartedAtSecond }),
+      SlowStrumEnqued.make({ asset, playback, playbackStartedAtSecond }),
     ],
   })
 })

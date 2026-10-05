@@ -4,16 +4,16 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { FullLoopState } from '../types/LoopBoundPlayback.ts'
+import { PatternPatternPatternTransitionState } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
-import { TwoLoopsFadingToSilenceState } from '../types/SilenceBoundPlayback.ts'
+import { PatternPatternSilenceTransitionState } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternPatternPatternTransition = Effect.fn(
   'advancePatternPatternPatternTransition',
 )(function* (
-  oldState: FullLoopState,
+  oldState: PatternPatternPatternTransitionState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   const [oldest, middle, incoming] = oldState.transitionQueue
@@ -37,7 +37,7 @@ export const advancePatternPatternPatternTransition = Effect.fn(
   ) {
     if (isInGreenZone) {
       yield* incoming.drop()
-      return TwoLoopsFadingToSilenceState.make({
+      return PatternPatternSilenceTransitionState.make({
         // playbackStartedAtSecond: oldest.playbackStartedAtSecond,
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
@@ -66,12 +66,12 @@ export const advancePatternPatternPatternTransition = Effect.fn(
     incoming.asset,
   )
   yield* incoming.drop()
-  return FullLoopState.make({
+  return PatternPatternPatternTransitionState.make({
     playbackStartedAtSecond: oldest.playbackStartedAtSecond,
     transitionQueue: [
       oldest,
       middle,
-      yield* oldest.scheduleNextLoop(desiredAsset),
+      yield* oldest.scheduleNextPattern(desiredAsset),
     ],
   })
 })

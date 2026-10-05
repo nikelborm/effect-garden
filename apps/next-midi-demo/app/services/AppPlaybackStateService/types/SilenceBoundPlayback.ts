@@ -2,26 +2,28 @@ import * as Schema from 'effect/Schema'
 
 import { AccordSchema, defaultAccord } from '../../../domain/Accord.ts'
 import { defaultStrength, StrengthSchema } from '../../../domain/Strength.ts'
-import { FadingOutLoopPlayback } from './loopElements.ts'
+import { FadingOutPatternPlayback } from './loopElements.ts'
 
 export const PureSilenceQueue = Schema.Tuple([])
 
-export const LoopFadingToSilenceQueue = Schema.Tuple([FadingOutLoopPlayback])
+export const PatternSilenceTransitionQueue = Schema.Tuple([
+  FadingOutPatternPlayback,
+])
 
-export const TwoLoopsFadingToSilenceQueue = Schema.Tuple([
-  FadingOutLoopPlayback,
-  FadingOutLoopPlayback,
+export const TwoPatternsFadingToSilenceQueue = Schema.Tuple([
+  FadingOutPatternPlayback,
+  FadingOutPatternPlayback,
 ])
 
 export const SilenceBoundQueue = Schema.Union([
   PureSilenceQueue,
-  LoopFadingToSilenceQueue,
-  TwoLoopsFadingToSilenceQueue,
+  PatternSilenceTransitionQueue,
+  TwoPatternsFadingToSilenceQueue,
 ])
 export type SilenceBoundQueue = typeof SilenceBoundQueue.Type
 
-export class SilenceBoundPlaybackBase extends Schema.TaggedClass<SilenceBoundPlaybackBase>()(
-  'SilenceBoundPlaybackBase',
+export class SilenceBoundStateBase extends Schema.TaggedClass<SilenceBoundStateBase>()(
+  'SilenceBoundStateBase',
   {
     accord: AccordSchema,
     strength: StrengthSchema,
@@ -34,13 +36,13 @@ export class SilenceBoundPlaybackBase extends Schema.TaggedClass<SilenceBoundPla
   }
 }
 
-export class PureSilenceState extends SilenceBoundPlaybackBase.extend<PureSilenceState>(
-  'PureSilenceState',
+export class SilenceState extends SilenceBoundStateBase.extend<SilenceState>(
+  'SilenceState',
 )({
   transitionQueue: PureSilenceQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is PureSilenceState =
+  static models: (candidate: unknown) => candidate is SilenceState =
     Schema.is(this)
   static {
     this.make = this.make.bind(this)
@@ -52,36 +54,37 @@ export class PureSilenceState extends SilenceBoundPlaybackBase.extend<PureSilenc
   })
 }
 
-export class LoopFadingToSilenceState extends SilenceBoundPlaybackBase.extend<LoopFadingToSilenceState>(
-  'LoopFadingToSilenceState',
+export class PatternSilenceTransitionState extends SilenceBoundStateBase.extend<PatternSilenceTransitionState>(
+  'PatternSilenceTransitionState',
 )({
-  transitionQueue: LoopFadingToSilenceQueue,
+  transitionQueue: PatternSilenceTransitionQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is LoopFadingToSilenceState =
-    Schema.is(this)
+  static models: (
+    candidate: unknown,
+  ) => candidate is PatternSilenceTransitionState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
 }
 
-export class TwoLoopsFadingToSilenceState extends SilenceBoundPlaybackBase.extend<TwoLoopsFadingToSilenceState>(
-  'TwoLoopsFadingToSilenceState',
+export class PatternPatternSilenceTransitionState extends SilenceBoundStateBase.extend<PatternPatternSilenceTransitionState>(
+  'PatternPatternSilenceTransitionState',
 )({
-  transitionQueue: TwoLoopsFadingToSilenceQueue,
+  transitionQueue: TwoPatternsFadingToSilenceQueue,
 }) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,
-  ) => candidate is TwoLoopsFadingToSilenceState = Schema.is(this)
+  ) => candidate is PatternPatternSilenceTransitionState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
 }
 
 export const SilenceBoundPlayback = Schema.Union([
-  PureSilenceState,
-  LoopFadingToSilenceState,
-  TwoLoopsFadingToSilenceState,
+  SilenceState,
+  PatternSilenceTransitionState,
+  PatternPatternSilenceTransitionState,
 ])
 export type SilenceBoundPlayback = typeof SilenceBoundPlayback.Type

@@ -4,6 +4,7 @@ import * as EAudioContext from 'effect-web-audio/EAudioContext'
 import * as Context from 'effect/Context'
 import * as Deferred from 'effect/Deferred'
 import * as Effect from 'effect/Effect'
+import { flow } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
 
@@ -26,10 +27,9 @@ export interface CreatePlayback {
 
 export interface DeferredAudioContextServiceShape {
   readonly currentTime: EAudioContext.CurrentTimeEffect<AudioContextInitError>
-
   readonly decodeAudioData: EAudioContext.DecodeAudioDataWith<AudioContextInitError>
-
   readonly createPlayback: CreatePlayback
+  readonly createLoopPlayback: CreatePlayback
 }
 
 export class DeferredAudioContextService extends Context.Service<
@@ -60,6 +60,20 @@ export const layer = (
 
     const deferredAudioContext = Deferred.await(deferred)
 
+    const createPlayback = (
+      audioBuffer: EAudioBuffer.EAudioBuffer,
+    ): Effect.Effect<AudioPlayback, AudioContextInitError> =>
+      Effect.map(deferredAudioContext, instance => {
+        const nativeAudioContext =
+          EAudioContext.unsafeNativeAudioContext(instance)
+        const bufferSource = nativeAudioContext.createBufferSource()
+        const gainNode = nativeAudioContext.createGain()
+        bufferSource.buffer = EAudioBuffer.unsafeNativeAudioBuffer(audioBuffer)
+        bufferSource.connect(gainNode)
+        gainNode.connect(nativeAudioContext.destination)
+        return AudioPlayback.make({ bufferSource, gainNode })
+      })
+
     return {
       currentTime: Effect.flatMap(
         deferredAudioContext,
@@ -72,20 +86,15 @@ export const layer = (
           EAudioContext.decodeAudioData(encodedAudioBuffer),
         ),
 
-      createPlayback: (
-        audioBuffer: EAudioBuffer.EAudioBuffer,
-      ): Effect.Effect<AudioPlayback, AudioContextInitError> =>
-        Effect.map(deferredAudioContext, instance => {
-          const nativeAudioContext =
-            EAudioContext.unsafeNativeAudioContext(instance)
-          const bufferSource = nativeAudioContext.createBufferSource()
-          const gainNode = nativeAudioContext.createGain()
-          bufferSource.buffer =
-            EAudioBuffer.unsafeNativeAudioBuffer(audioBuffer)
-          bufferSource.connect(gainNode)
-          gainNode.connect(nativeAudioContext.destination)
-          return AudioPlayback.make({ bufferSource, gainNode })
+      createPlayback,
+
+      createLoopPlayback: flow(
+        createPlayback,
+        Effect.map(playback => {
+          playback.bufferSource.loop = true
+          return playback
         }),
+      ),
     }
   }).pipe(Layer.effect(DeferredAudioContextService))
 

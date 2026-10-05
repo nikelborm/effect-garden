@@ -7,9 +7,9 @@ export {
 export { ScheduleFadeOut, ScheduleFadeOutLayer } from './ScheduleFadeOut.ts'
 export {
   type ScheduledNextPlaybackTiming,
-  ScheduleIncomingLoop,
-  ScheduleIncomingLoopLayer,
-} from './ScheduleIncomingLoop.ts'
+  ScheduleIncomingPattern,
+  ScheduleIncomingPatternLayer,
+} from './ScheduleIncomingPattern.ts'
 export {
   type FreshPlaybackTiming,
   StartFreshPlayback,

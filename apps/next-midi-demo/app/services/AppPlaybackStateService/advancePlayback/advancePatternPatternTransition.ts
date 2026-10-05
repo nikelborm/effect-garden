@@ -6,14 +6,14 @@ import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import {
-  FullLoopState,
+  PatternPatternPatternTransitionState,
   PatternPatternTransitionState,
-  PlayingLoopState,
+  PatternState,
 } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
 import {
-  LoopFadingToSilenceState,
-  TwoLoopsFadingToSilenceState,
+  PatternPatternSilenceTransitionState,
+  PatternSilenceTransitionState,
 } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
@@ -45,14 +45,14 @@ export const advancePatternPatternTransition = Effect.fn(
   ) {
     if (isInGreenZone) {
       yield* incoming.drop()
-      return LoopFadingToSilenceState.make({
+      return PatternSilenceTransitionState.make({
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [current],
       })
     }
 
-    return TwoLoopsFadingToSilenceState.make({
+    return PatternPatternSilenceTransitionState.make({
       accord: incoming.asset.accord,
       strength: incoming.asset.strength,
       transitionQueue: [current, yield* incoming.promoteToFadingOut()],
@@ -67,19 +67,19 @@ export const advancePatternPatternTransition = Effect.fn(
   if (isInGreenZone && Equal.equals(desiredAsset, current.asset)) {
     const revived = yield* current.cancelFadeoutAndRestore()
     yield* incoming.drop()
-    return PlayingLoopState.make({
+    return PatternState.make({
       playbackStartedAtSecond: revived.playbackStartedAtSecond,
       transitionQueue: [revived],
     })
   }
 
   if (!isInGreenZone) {
-    return FullLoopState.make({
+    return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [
         current,
         yield* incoming.promoteToFadingOut(),
-        yield* current.scheduleNextLoop(desiredAsset),
+        yield* current.scheduleNextPattern(desiredAsset),
       ],
     })
   }
@@ -89,7 +89,7 @@ export const advancePatternPatternTransition = Effect.fn(
     playbackStartedAtSecond: current.playbackStartedAtSecond,
     transitionQueue: [
       yield* current.reanchorFadeoutOnto(),
-      yield* current.scheduleNextLoop(desiredAsset),
+      yield* current.scheduleNextPattern(desiredAsset),
     ],
   })
 })

@@ -12,12 +12,12 @@ import {
   GetAudioNow,
   RestoreFullVolume,
   ScheduleFadeOut,
-  ScheduleIncomingLoop,
+  ScheduleIncomingPattern,
 } from '../webAudioSideEffects/index.ts'
 import { chosenSlot, zoneAt } from '../zones.ts'
 import { AudioPlayback } from './common.ts'
 
-interface FadingOutLoopFields {
+interface FadingOutPatternFields {
   readonly asset: TaggedPatternPointer
   readonly playback: AudioPlayback
   readonly playbackStartedAtSecond: number
@@ -40,7 +40,7 @@ const schedulePatternPatternFadeout = Effect.fn(
     CleanupFiberMaker,
     apply(slot.fadeoutEndsAtSecond - now),
   )
-  return LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop.make({
+  return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
     asset,
     playback,
     playbackStartedAtSecond,
@@ -64,7 +64,7 @@ const scheduleSilenceFadeout = Effect.fn('scheduleSilenceFadeout')(function* (
     CleanupFiberMaker,
     apply(slot.fadeoutEndsAtSecond - now),
   )
-  return LoopPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
+  return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
     asset,
     playback,
     playbackStartedAtSecond,
@@ -74,7 +74,7 @@ const scheduleSilenceFadeout = Effect.fn('scheduleSilenceFadeout')(function* (
   })
 })
 
-const scheduleIncomingLoop = Effect.fn('scheduleIncomingLoop')(function* (
+const scheduleIncomingPattern = Effect.fn('scheduleIncomingPattern')(function* (
   playbackStartedAtSecond: number,
   asset: TaggedPatternPointer,
 ) {
@@ -82,12 +82,12 @@ const scheduleIncomingLoop = Effect.fn('scheduleIncomingLoop')(function* (
   const now = yield* getAudioNow
   const zone = zoneAt(playbackStartedAtSecond, now)
   const slot = chosenSlot(zone)
-  const playback = yield* ScheduleIncomingLoop.run(audioBuffer, {
+  const playback = yield* ScheduleIncomingPattern.run(audioBuffer, {
     startAtSecond: now,
     bufferPhaseOffsetSeconds: zone.bufferPhaseOffsetSeconds,
     slot,
   })
-  return IncomingLoopFadingIn.make({
+  return IncomingPatternFadingIn.make({
     asset,
     playback,
     fadeInStartsAtSecond: slot.fadeoutStartsAtSecond,
@@ -96,13 +96,11 @@ const scheduleIncomingLoop = Effect.fn('scheduleIncomingLoop')(function* (
   })
 })
 
-const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
-  el: FadingOutLoopFields,
-) {
+const reviveTo = Effect.fn('reviveTo')(function* (el: FadingOutPatternFields) {
   const now = yield* getAudioNow
   yield* RestoreFullVolume.run(el.playback, now)
   yield* el.cleanupFiberToolkit.cancelCleanup
-  return PlayingLoopPlayback.make({
+  return PatternPlayback.make({
     asset: el.asset,
     playback: el.playback,
     playbackStartedAtSecond: el.playbackStartedAtSecond,
@@ -110,7 +108,7 @@ const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
 })
 
 const reanchorToPatternPattern = Effect.fn('reanchorToPatternPattern')(
-  function* (el: FadingOutLoopFields) {
+  function* (el: FadingOutPatternFields) {
     const now = yield* getAudioNow
     yield* el.cleanupFiberToolkit.cancelCleanup
     yield* RestoreFullVolume.run(el.playback, now)
@@ -122,8 +120,8 @@ const reanchorToPatternPattern = Effect.fn('reanchorToPatternPattern')(
   },
 )
 
-export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>()(
-  'PlayingLoopPlayback',
+export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
+  'PatternPlayback',
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -135,7 +133,7 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
     this.make = this.make.bind(this)
   }
 
-  beginShortFadeoutBeforeAnotherLoop() {
+  beginShortFadeoutBeforeAnotherPattern() {
     return schedulePatternPatternFadeout(
       this.playback,
       this.asset,
@@ -151,13 +149,13 @@ export class PlayingLoopPlayback extends Schema.TaggedClass<PlayingLoopPlayback>
     )
   }
 
-  scheduleNextLoop(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingLoop(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
+    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
   }
 }
 
-export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlayback>()(
-  'DisposedLoopPlayback',
+export class DisposedPatternPlayback extends Schema.TaggedClass<DisposedPatternPlayback>()(
+  'DisposedPatternPlayback',
   {},
 ) {
   declare protected '~brand~': never
@@ -167,11 +165,11 @@ export class DisposedLoopPlayback extends Schema.TaggedClass<DisposedLoopPlaybac
 }
 
 const disposeOf = Effect.fn('disposeOf')(
-  flow(DisposePlayback.run, Effect.as(DisposedLoopPlayback.make({}))),
+  flow(DisposePlayback.run, Effect.as(DisposedPatternPlayback.make({}))),
 )
 
-export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingIn>()(
-  'IncomingLoopFadingIn',
+export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternFadingIn>()(
+  'IncomingPatternFadingIn',
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -206,7 +204,7 @@ export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingI
   }
 
   becomeLive() {
-    return PlayingLoopPlayback.make({
+    return PatternPlayback.make({
       asset: this.asset,
       playback: this.playback,
       playbackStartedAtSecond: this.playbackStartedAtSecond,
@@ -214,8 +212,8 @@ export class IncomingLoopFadingIn extends Schema.TaggedClass<IncomingLoopFadingI
   }
 }
 
-export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Schema.TaggedClass<LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop>()(
-  'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop',
+export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extends Schema.TaggedClass<PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern>()(
+  'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern',
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -231,15 +229,15 @@ export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Sche
   }
 
   cancelFadeoutAndRestore() {
-    return reviveToPlaying(this)
+    return reviveTo(this)
   }
 
   reanchorFadeoutOnto() {
     return reanchorToPatternPattern(this)
   }
 
-  scheduleNextLoop(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingLoop(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
+    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
   }
 
   dispose() {
@@ -247,8 +245,8 @@ export class LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop extends Sche
   }
 }
 
-export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.TaggedClass<LoopPlaybackAtItsLastPlayWithScheduledLongFadeout>()(
-  'LoopPlaybackAtItsLastPlayWithScheduledLongFadeout',
+export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.TaggedClass<PatternPlaybackAtItsLastPlayWithScheduledLongFadeout>()(
+  'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout',
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -264,15 +262,15 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
   }
 
   cancelFadeoutAndRestore() {
-    return reviveToPlaying(this)
+    return reviveTo(this)
   }
 
   reanchorFadeoutOnto() {
     return reanchorToPatternPattern(this)
   }
 
-  scheduleNextLoop(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingLoop(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
+    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
   }
 
   dispose() {
@@ -280,8 +278,8 @@ export class LoopPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.Ta
   }
 }
 
-export const FadingOutLoopPlayback = Schema.Union([
-  LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop,
-  LoopPlaybackAtItsLastPlayWithScheduledLongFadeout,
+export const FadingOutPatternPlayback = Schema.Union([
+  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
-export type FadingOutLoopPlayback = typeof FadingOutLoopPlayback.Type
+export type FadingOutPatternPlayback = typeof FadingOutPatternPlayback.Type

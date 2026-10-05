@@ -40,7 +40,7 @@ import {
   GetAudioNowLayer,
   RestoreFullVolumeLayer,
   ScheduleFadeOutLayer,
-  ScheduleIncomingLoopLayer,
+  ScheduleIncomingPatternLayer,
   StartFreshPlaybackLayer,
 } from '../services/AppPlaybackStateService/webAudioSideEffects/index.ts'
 import { AssetDownloadSchedulerLayer } from '../services/AssetDownloadScheduler.ts'
@@ -191,7 +191,7 @@ const WebAudioSideEffectsNoDeps = Layer.mergeAll(
   GetAudioNowLayer,
   RestoreFullVolumeLayer,
   ScheduleFadeOutLayer,
-  ScheduleIncomingLoopLayer,
+  ScheduleIncomingPatternLayer,
   StartFreshPlaybackLayer,
 ).pipe(
   Layer.provide(DeferredAudioContextNoDeps),

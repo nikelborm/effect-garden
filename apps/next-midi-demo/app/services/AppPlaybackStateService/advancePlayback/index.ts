@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 
 import type { AppPlaybackState } from '../types/index.ts'
-import { advanceLoopBound } from './advanceLoopBound.ts'
+import { advancePatternBound } from './advancePatternBound.ts'
 import { advanceSilenceBound } from './advanceSilenceBound.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
@@ -11,10 +11,10 @@ export const advancePlayback = Effect.fn('advancePlayback')(function* (
 ) {
   yield* Effect.log('advancePlayback', { oldState, pressedParamButtonId })
   switch (oldState._tag) {
-    case 'SilenceBoundPlaybackBase':
+    case 'SilenceBoundStateBase':
       return yield* advanceSilenceBound(oldState, pressedParamButtonId)
-    case 'LoopBoundPlaybackBase':
-      return yield* advanceLoopBound(oldState, pressedParamButtonId)
+    case 'PatternBoundStateBase':
+      return yield* advancePatternBound(oldState, pressedParamButtonId)
   }
 
   // @ts-expect-error

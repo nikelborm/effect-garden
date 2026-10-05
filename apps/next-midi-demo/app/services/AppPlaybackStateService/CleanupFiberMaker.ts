@@ -9,15 +9,15 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import {
-  FullLoopState,
-  LoopSilenceTransitionState,
+  PatternPatternPatternTransitionState,
   PatternPatternTransitionState,
-  PlayingLoopState,
+  PatternSilencePatternTransitionState,
+  PatternState,
 } from './types/LoopBoundPlayback.ts'
 import {
-  LoopFadingToSilenceState,
-  PureSilenceState,
-  TwoLoopsFadingToSilenceState,
+  PatternPatternSilenceTransitionState,
+  PatternSilenceTransitionState,
+  SilenceState,
 } from './types/SilenceBoundPlayback.ts'
 import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
@@ -84,38 +84,39 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
 ): Effect.fn.Return<AppPlaybackState, never, DisposePlayback> {
   yield* Effect.logTrace('Playback cleanup')
 
-  if (TwoLoopsFadingToSilenceState.models(state)) {
+  if (PatternPatternSilenceTransitionState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return LoopFadingToSilenceState.make({
+    return PatternSilenceTransitionState.make({
       accord: state.accord,
       strength: state.strength,
       transitionQueue: [q[1]],
     })
   }
 
-  if (LoopFadingToSilenceState.models(state)) {
+  if (PatternSilenceTransitionState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return PureSilenceState.make({
+    return SilenceState.make({
       accord: state.accord,
       strength: state.strength,
       transitionQueue: [],
     })
   }
 
-  if (FullLoopState.models(state)) {
+  if (PatternPatternPatternTransitionState.models(state)) {
     const q = state.transitionQueue
     const [, middle, incoming] = q
     yield* q[0].dispose()
     if (
-      middle._tag === 'LoopPlaybackScheduledWithShortFadeoutBeforeAnotherLoop'
+      middle._tag ===
+      'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
     )
       return PatternPatternTransitionState.make({
         playbackStartedAtSecond: state.playbackStartedAtSecond,
         transitionQueue: [middle, incoming],
       })
-    return LoopSilenceTransitionState.make({
+    return PatternSilencePatternTransitionState.make({
       playbackStartedAtSecond: state.playbackStartedAtSecond,
       transitionQueue: [middle, incoming],
     })
@@ -123,11 +124,11 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
 
   if (
     PatternPatternTransitionState.models(state) ||
-    LoopSilenceTransitionState.models(state)
+    PatternSilencePatternTransitionState.models(state)
   ) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return PlayingLoopState.make({
+    return PatternState.make({
       playbackStartedAtSecond: state.playbackStartedAtSecond,
       transitionQueue: [q[1].becomeLive()],
     })

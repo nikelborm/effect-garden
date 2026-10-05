@@ -6,14 +6,14 @@ import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import {
-  FullLoopState,
-  LoopSilenceTransitionState,
-  PlayingLoopState,
+  PatternPatternPatternTransitionState,
+  PatternSilencePatternTransitionState,
+  PatternState,
 } from '../types/LoopBoundPlayback.ts'
 import { getAudioNow } from '../types/loopElements.ts'
 import {
-  LoopFadingToSilenceState,
-  TwoLoopsFadingToSilenceState,
+  PatternPatternSilenceTransitionState,
+  PatternSilenceTransitionState,
 } from '../types/SilenceBoundPlayback.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
@@ -21,7 +21,7 @@ import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 export const advancePatternSilencePatternTransition = Effect.fn(
   'advancePatternSilencePatternTransition',
 )(function* (
-  oldState: LoopSilenceTransitionState,
+  oldState: PatternSilencePatternTransitionState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   const [dying, incoming] = oldState.transitionQueue
@@ -45,14 +45,14 @@ export const advancePatternSilencePatternTransition = Effect.fn(
   ) {
     if (isInGreenZone) {
       yield* incoming.drop()
-      return LoopFadingToSilenceState.make({
+      return PatternSilenceTransitionState.make({
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
         transitionQueue: [dying],
       })
     }
 
-    return TwoLoopsFadingToSilenceState.make({
+    return PatternPatternSilenceTransitionState.make({
       accord: incoming.asset.accord,
       strength: incoming.asset.strength,
       transitionQueue: [dying, yield* incoming.promoteToFadeToSilence()],
@@ -67,26 +67,26 @@ export const advancePatternSilencePatternTransition = Effect.fn(
   if (isInGreenZone && Equal.equals(desiredAsset, dying.asset)) {
     const revived = yield* dying.cancelFadeoutAndRestore()
     yield* incoming.drop()
-    return PlayingLoopState.make({
+    return PatternState.make({
       playbackStartedAtSecond: revived.playbackStartedAtSecond,
       transitionQueue: [revived],
     })
   }
 
   if (!isInGreenZone) {
-    return FullLoopState.make({
+    return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: dying.playbackStartedAtSecond,
       transitionQueue: [
         dying,
         yield* incoming.promoteToFadingOut(),
-        yield* dying.scheduleNextLoop(desiredAsset),
+        yield* dying.scheduleNextPattern(desiredAsset),
       ],
     })
   }
 
   yield* incoming.drop()
-  return LoopSilenceTransitionState.make({
+  return PatternSilencePatternTransitionState.make({
     playbackStartedAtSecond: dying.playbackStartedAtSecond,
-    transitionQueue: [dying, yield* dying.scheduleNextLoop(desiredAsset)],
+    transitionQueue: [dying, yield* dying.scheduleNextPattern(desiredAsset)],
   })
 })
