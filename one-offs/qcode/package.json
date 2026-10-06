@@ -31,6 +31,7 @@
   },
   "scripts": {
     "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
+    "b": "bun run build",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe"
   },
   "author": {

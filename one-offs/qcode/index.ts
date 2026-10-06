@@ -13,6 +13,7 @@ import * as BunTerminal from '@effect/platform-bun/BunTerminal'
 import * as Context from 'effect/Context'
 import * as CliArgument from 'effect/cli/Argument'
 import * as CliCommand from 'effect/cli/Command'
+import * as CliFlag from 'effect/cli/Flag'
 import * as Deferred from 'effect/Deferred'
 import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
@@ -20,7 +21,7 @@ import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 
-import { localMode } from './local.ts'
+import { localMode, openers } from './local.ts'
 import { runController } from './remote-controller.ts'
 import { runProvider } from './remote-provider.ts'
 
@@ -83,11 +84,20 @@ const provideCommand = CliCommand.make('provide', {}, () =>
   ),
 )
 
-export const cli = CliCommand.make('qcode', {}, () =>
-  ExitCodeHandler.codeFromEffect(localMode),
+const openerFlag = CliFlag.Literals('opener', openers).pipe(
+  CliFlag.withDescription(
+    'Where to open the selected project: in VS Code, or in an interactive shell in the same terminal window',
+  ),
+  CliFlag.withDefault('vscode' as const),
+)
+
+export const cli = CliCommand.make(
+  'qcode',
+  { opener: openerFlag },
+  ({ opener }) => ExitCodeHandler.codeFromEffect(localMode({ opener })),
 ).pipe(
   CliCommand.withDescription(
-    'Fuzzy project opener for VS Code. With no subcommand, searches ~/projects on this machine.',
+    'Fuzzy project opener for VS Code or shell. With no subcommand, searches ~/projects on this machine.',
   ),
   CliCommand.withSubcommands([remoteCommand, provideCommand]),
 )

@@ -1,6 +1,8 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: because it's not React.js */
 
-// Local mode — the default: scan ~/projects, pick with fzf, open in VS Code.
+// Local mode — the default: scan ~/projects, pick with fzf, open in VS Code
+// or, with `--opener shell`, drop into an interactive shell rooted at the
+// project directory in the same terminal window.
 
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
@@ -208,7 +210,12 @@ else
   bat --style=plain --language=json --color=always "$path"
 fi`
 
-export const localMode = Effect.gen(function* () {
+export const openers = ['vscode', 'shell'] as const
+export type Opener = (typeof openers)[number]
+
+export const localMode = Effect.fn('qcode.local')(function* (options: {
+  readonly opener: Opener
+}) {
   if (yield* areSomeDependenciesMissing) return ChildProcessSpawner.ExitCode(1)
 
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
@@ -270,31 +277,63 @@ export const localMode = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
   const linkedPath = path.join(PROJECTS_DIR, relativePath)
-  const vscodePath = yield* fs
+  const projectPath = yield* fs
     .realPath(linkedPath)
     .pipe(Effect.orElseSucceed(() => linkedPath))
 
-  const vscodeLauncherExitCode = yield* pipe(
-    ChildProcess.make('code', [vscodePath], {
-      stdout: 'inherit',
-      stderr: 'inherit',
-    }),
-    spawner.exitCode,
-    Effect.tapError(
-      logErrorOnNotFound(
-        'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
-      ),
-    ),
-  )
+  if (options.opener === 'shell') {
+    const shellCwd = projectPath.endsWith('.code-workspace')
+      ? path.dirname(projectPath)
+      : projectPath
 
-  if ((vscodeLauncherExitCode as number) !== 0) {
-    yield* Effect.logError(
-      'vs code launcher exited with non-zero code: ',
-      vscodeLauncherExitCode,
+    // biome-ignore lint/complexity/useLiteralKeys: biome dum
+    const shell = process.env['SHELL'] ?? 'bash'
+
+    yield* pipe(
+      ChildProcess.make(shell, [], {
+        cwd: shellCwd,
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+        detached: false,
+      }),
+      spawner.exitCode,
+      Effect.tapError(
+        logErrorOnNotFound(
+          `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
+        ),
+      ),
     )
 
-    return ChildProcessSpawner.ExitCode(1)
+    return ChildProcessSpawner.ExitCode(0)
   }
 
-  return ChildProcessSpawner.ExitCode(0)
-}).pipe(Effect.scoped, Effect.withSpan('qcode.local'))
+  if (options.opener === 'vscode') {
+    const vscodeLauncherExitCode = yield* pipe(
+      ChildProcess.make('code', [projectPath], {
+        stdout: 'inherit',
+        stderr: 'inherit',
+      }),
+      spawner.exitCode,
+      Effect.tapError(
+        logErrorOnNotFound(
+          'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
+        ),
+      ),
+    )
+
+    if ((vscodeLauncherExitCode as number) !== 0) {
+      yield* Effect.logError(
+        'vs code launcher exited with non-zero code: ',
+        vscodeLauncherExitCode,
+      )
+
+      return ChildProcessSpawner.ExitCode(1)
+    }
+
+    return ChildProcessSpawner.ExitCode(0)
+  }
+
+  options.opener satisfies never
+  return ChildProcessSpawner.ExitCode(1)
+}, Effect.scoped)
