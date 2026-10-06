@@ -3,8 +3,8 @@ import * as Effect from 'effect/Effect'
 import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
-import { PatternPatternPatternTransitionState } from '../types/PatternBound/index.ts'
-import { PatternPatternSilenceTransitionState } from '../types/SilenceBound/index.ts'
+import { PatternPatternPatternTransitionState } from '../types/PatternBound/PatternPatternPatternTransition/State.ts'
+import { PatternPatternSilenceTransitionState } from '../types/SilenceBound/PatternPatternSilenceTransition/State.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternPatternSilenceTransition = Effect.fn(

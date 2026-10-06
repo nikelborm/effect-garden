@@ -5,12 +5,10 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { getAudioNow } from '../types/loopElements.ts'
-import {
-  PatternPatternTransitionState,
-  PatternSilencePatternTransitionState,
-  PatternState,
-} from '../types/PatternBound/index.ts'
-import { PatternSilenceTransitionState } from '../types/SilenceBound/index.ts'
+import { PatternState } from '../types/PatternBound/Pattern/State.ts'
+import { PatternPatternTransitionState } from '../types/PatternBound/PatternPatternTransition/State.ts'
+import { PatternSilencePatternTransitionState } from '../types/PatternBound/PatternSilencePatternTransition/State.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBound/PatternSilenceTransition/State.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternSilenceTransition = Effect.fn(

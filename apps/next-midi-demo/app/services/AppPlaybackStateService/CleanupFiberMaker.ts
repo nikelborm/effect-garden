@@ -8,17 +8,13 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import {
-  PatternPatternPatternTransitionState,
-  PatternPatternTransitionState,
-  PatternSilencePatternTransitionState,
-  PatternState,
-} from './types/PatternBound/index.ts'
-import {
-  PatternPatternSilenceTransitionState,
-  PatternSilenceTransitionState,
-  SilenceState,
-} from './types/SilenceBound/index.ts'
+import { PatternState } from './types/PatternBound/Pattern/State.ts'
+import { PatternPatternPatternTransitionState } from './types/PatternBound/PatternPatternPatternTransition/State.ts'
+import { PatternPatternTransitionState } from './types/PatternBound/PatternPatternTransition/State.ts'
+import { PatternSilencePatternTransitionState } from './types/PatternBound/PatternSilencePatternTransition/State.ts'
+import { PatternPatternSilenceTransitionState } from './types/SilenceBound/PatternPatternSilenceTransition/State.ts'
+import { PatternSilenceTransitionState } from './types/SilenceBound/PatternSilenceTransition/State.ts'
+import { SilenceState } from './types/SilenceBound/Silence/State.ts'
 import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
 export class CleanupFiberMaker extends Context.Service<

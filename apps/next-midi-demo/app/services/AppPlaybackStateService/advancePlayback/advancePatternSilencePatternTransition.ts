@@ -6,15 +6,11 @@ import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { getAudioNow } from '../types/loopElements.ts'
-import {
-  PatternPatternPatternTransitionState,
-  PatternSilencePatternTransitionState,
-  PatternState,
-} from '../types/PatternBound/index.ts'
-import {
-  PatternPatternSilenceTransitionState,
-  PatternSilenceTransitionState,
-} from '../types/SilenceBound/index.ts'
+import { PatternState } from '../types/PatternBound/Pattern/State.ts'
+import { PatternPatternPatternTransitionState } from '../types/PatternBound/PatternPatternPatternTransition/State.ts'
+import { PatternSilencePatternTransitionState } from '../types/PatternBound/PatternSilencePatternTransition/State.ts'
+import { PatternPatternSilenceTransitionState } from '../types/SilenceBound/PatternPatternSilenceTransition/State.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBound/PatternSilenceTransition/State.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

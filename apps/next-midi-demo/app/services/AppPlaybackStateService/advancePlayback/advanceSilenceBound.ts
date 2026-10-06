@@ -1,10 +1,8 @@
 import * as Effect from 'effect/Effect'
 
-import {
-  PatternPatternSilenceTransitionState,
-  PatternSilenceTransitionState,
-  SilenceState,
-} from '../types/SilenceBound/index.ts'
+import { PatternPatternSilenceTransitionState } from '../types/SilenceBound/PatternPatternSilenceTransition/State.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBound/PatternSilenceTransition/State.ts'
+import { SilenceState } from '../types/SilenceBound/Silence/State.ts'
 import type { SilenceBoundState } from '../types/SilenceBound/State.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'

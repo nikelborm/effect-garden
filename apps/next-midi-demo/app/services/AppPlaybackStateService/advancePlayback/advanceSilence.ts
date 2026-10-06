@@ -13,9 +13,9 @@ import {
   PatternPlayback,
   SlowStrumPlayback,
 } from '../types/loopElements.ts'
-import { PatternState } from '../types/PatternBound/index.ts'
-import { SilenceState } from '../types/SilenceBound/index.ts'
-import { SlowStrumState } from '../types/SlowStrumBound/index.ts'
+import { PatternState } from '../types/PatternBound/Pattern/State.ts'
+import { SilenceState } from '../types/SilenceBound/Silence/State.ts'
+import { SlowStrumState } from '../types/SlowStrumBound/SlowStrum/State.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

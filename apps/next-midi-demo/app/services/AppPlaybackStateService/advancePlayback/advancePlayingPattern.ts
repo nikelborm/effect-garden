@@ -3,11 +3,9 @@ import * as Effect from 'effect/Effect'
 import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
-import {
-  PatternPatternTransitionState,
-  type PatternState,
-} from '../types/PatternBound/index.ts'
-import { PatternSilenceTransitionState } from '../types/SilenceBound/index.ts'
+import type { PatternState } from '../types/PatternBound/Pattern/State.ts'
+import { PatternPatternTransitionState } from '../types/PatternBound/PatternPatternTransition/State.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBound/PatternSilenceTransition/State.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

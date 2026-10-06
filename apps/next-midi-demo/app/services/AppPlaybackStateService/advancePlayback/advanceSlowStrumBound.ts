@@ -1,9 +1,7 @@
 import * as Effect from 'effect/Effect'
 
-import {
-  SlowStrumPatternTransitionState,
-  SlowStrumState,
-} from '../types/SlowStrumBound/index.ts'
+import { SlowStrumState } from '../types/SlowStrumBound/SlowStrum/State.ts'
+import { SlowStrumPatternTransitionState } from '../types/SlowStrumBound/SlowStrumPatternTransition/State.ts'
 import type { SlowStrumBoundState } from '../types/SlowStrumBound/State.ts'
 import { advanceSlowStrum } from './advanceSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
