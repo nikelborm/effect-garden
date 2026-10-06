@@ -1,3 +1,4 @@
+/** @effect-diagnostics processEnv:off */
 import { SerwistProvider } from '@serwist/next/react'
 import type { Metadata, Viewport } from 'next'
 import { Roboto, Roboto_Mono } from 'next/font/google'
