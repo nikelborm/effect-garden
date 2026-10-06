@@ -78,7 +78,7 @@ export const patternSomeSet: Set<PatternOption> = new Set(
 export class AllPatterns extends Context.Service<
   AllPatterns,
   AllPatternTuple
->()('next-midi-demo/AllPatterns') {}
+>()('next-midi-demo/app/domain/Pattern/AllPatterns') {}
 
 export const AllPatternsLayer: Layer.Layer<AllPatterns> = Layer.succeed(
   AllPatterns,

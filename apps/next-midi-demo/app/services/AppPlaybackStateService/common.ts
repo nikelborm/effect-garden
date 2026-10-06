@@ -28,7 +28,7 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
 
   getDuration() {
     const buffer = this.bufferSource.buffer
-    if (!buffer)
+    if (buffer === null)
       throw new Error('Assertion failed. expected buffer to be present')
     return buffer.duration
   }
@@ -50,8 +50,8 @@ export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTra
 export class ScheduledPatternTransitionQueueElement extends PatternTransitionQueueElement.extend<ScheduledPatternTransitionQueueElement>(
   'ScheduledPatternTransitionQueueElement',
 )({
-  fadeInStartsAtSecond: Schema.Number,
-  fadeInEndsAtSecond: Schema.Number,
+  fadeInStartsAtSecond: Schema.Finite,
+  fadeInEndsAtSecond: Schema.Finite,
 }) {
   static {
     this.make = this.make.bind(this)
@@ -63,7 +63,7 @@ export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStru
   {
     asset: TaggedSlowStrumPointer,
     playback: AudioPlayback,
-    durationSeconds: Schema.Number,
+    durationSeconds: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never

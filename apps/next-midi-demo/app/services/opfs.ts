@@ -1,3 +1,4 @@
+/** @effect-diagnostics asyncFunction:off */
 /// <reference lib="dom" />
 
 /**
@@ -49,7 +50,7 @@ export const prettyBytes = (bytes: number): string => {
   )
   const value = absoluteBytes / 1000 ** exponent
   const unit = UNITS[exponent]
-  if (!unit) throw new Error('absurd')
+  if (unit === undefined) throw new Error('absurd')
 
   const formatted = value.toLocaleString('en-US', {
     maximumFractionDigits: 2,
@@ -81,7 +82,7 @@ export class OPFSNotSupportedError extends Schema.TaggedError<OPFSNotSupportedEr
     message: Schema.String,
   },
 ) {
-  static readonly notAvailable = new OPFSNotSupportedError({
+  static readonly notAvailable = OPFSNotSupportedError.make({
     message:
       'OPFS is not available: navigator.storage.getDirectory is not supported',
   })
@@ -305,7 +306,6 @@ export type TreeLine = {
   readonly name: string
   readonly size?: string
 }
-
 
 /**
  * Deletes all entries in a directory recursively.

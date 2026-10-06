@@ -1,3 +1,4 @@
+/** @effect-diagnostics globalConsole:off */
 import type * as EMIDIPort from 'effect-web-midi/EMIDIPort'
 import { styled } from 'next-yak'
 
@@ -62,61 +63,60 @@ export const MIDIDeviceSelect = <
         </SelectTrigger>
       </SelectRoot>
     ),
-    onSuccess: ({ value: filteredPorts }) => {
-      return (
-        <SelectRoot<EMIDIPort.Id<CleanupPortType<TPortType>> | null>
-          onValueChange={setSelectedId}
-          name="select_port"
-          items={EFunction.pipe(
-            filteredPorts,
-            EArray.map(port => ({
-              label: (
-                <PortLabel port={port} showType={!typeToShowExclusively} />
-              ),
-              value: port.id,
-            })),
-            EArray.append({
-              label: <MonoPre>Select port ID</MonoPre>,
-              value: null,
-            }),
-          )}
-        >
-          <SelectTrigger>
-            <SelectValue />
-            <SelectIcon>
-              <ChevronUpDownSVG />
-            </SelectIcon>
-          </SelectTrigger>
-          <SelectPortal>
-            <SelectPositioner sideOffset={8}>
-              <SelectPopup>
-                <SelectScrollUpArrow />
-                <SelectList>
-                  {EFunction.pipe(
-                    EArray.map(filteredPorts, port => (
-                      <SelectItem key={port.id} value={port.id}>
-                        <SelectItemIndicator>
-                          <SelectItemIndicatorIcon />
-                        </SelectItemIndicator>
-                        <SelectItemText>
-                          <PortLabel
-                            port={port}
-                            // only show the type annotation when the type of
-                            // elements is not obvious
-                            showType={!typeToShowExclusively}
-                          />
-                        </SelectItemText>
-                      </SelectItem>
-                    )),
-                  )}
-                </SelectList>
-                <SelectScrollDownArrow />
-              </SelectPopup>
-            </SelectPositioner>
-          </SelectPortal>
-        </SelectRoot>
-      )
-    },
+    onSuccess: ({ value: filteredPorts }) => (
+      <SelectRoot<EMIDIPort.Id<CleanupPortType<TPortType>> | null>
+        onValueChange={setSelectedId}
+        name="select_port"
+        items={EFunction.pipe(
+          filteredPorts,
+          EArray.map(port => ({
+            label: (
+              <PortLabel
+                port={port}
+                showType={typeToShowExclusively === undefined}
+              />
+            ),
+            value: port.id,
+          })),
+          EArray.append({
+            label: <MonoPre>Select port ID</MonoPre>,
+            value: null,
+          }),
+        )}
+      >
+        <SelectTrigger>
+          <SelectValue />
+          <SelectIcon>
+            <ChevronUpDownSVG />
+          </SelectIcon>
+        </SelectTrigger>
+        <SelectPortal>
+          <SelectPositioner sideOffset={8}>
+            <SelectPopup>
+              <SelectScrollUpArrow />
+              <SelectList>
+                {EArray.map(filteredPorts, port => (
+                  <SelectItem key={port.id} value={port.id}>
+                    <SelectItemIndicator>
+                      <SelectItemIndicatorIcon />
+                    </SelectItemIndicator>
+                    <SelectItemText>
+                      <PortLabel
+                        port={port}
+                        // only show the type annotation when the type of
+                        // elements is not obvious
+                        showType={typeToShowExclusively === undefined}
+                      />
+                    </SelectItemText>
+                  </SelectItem>
+                ))}
+              </SelectList>
+              <SelectScrollDownArrow />
+            </SelectPopup>
+          </SelectPositioner>
+        </SelectPortal>
+      </SelectRoot>
+    ),
   })
 }
 
@@ -128,7 +128,7 @@ const PortLabel = ({
   showType?: boolean | undefined
 }) => (
   <MonoPre title={`id=${port.id}`}>
-    {showType ? EString.capitalize(port.type.padEnd(7)) : ''}
+    {showType === true ? EString.capitalize(port.type.padEnd(7)) : ''}
     {port.name}
   </MonoPre>
 )

@@ -47,7 +47,8 @@ export const getPortsOfSpecificTypeAtom = Atom.family(
             Record.values,
             EArray.filter(
               candidatePort =>
-                !expectedPortType || candidatePort.type === expectedPortType,
+                expectedPortType === undefined ||
+                candidatePort.type === expectedPortType,
             ),
           ),
         ) as MapPortTypeFilterArgToEffect<T>,

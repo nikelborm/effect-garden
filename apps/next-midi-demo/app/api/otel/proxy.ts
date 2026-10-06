@@ -1,5 +1,8 @@
+/** @effect-diagnostics globalFetch:off */
+/** @effect-diagnostics asyncFunction:off */
 import { type NextRequest, NextResponse } from 'next/server'
 
+// TODO: change credentials in prod!!!
 const AXIOM_API_KEY = 'xaat-33319bc6-9594-410a-a9d8-50be82ce7951'
 
 export async function proxy(req: NextRequest, upstream: string) {

@@ -14,9 +14,9 @@ import {
   PatternInputBus,
   StrengthInputBus,
 } from '../InputStreamBus.ts'
-import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './index.ts'
+import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 import { SilenceState } from './SilenceBound/Silence/State.ts'
 import type { AllWebAudioSideEffects } from './webAudioSideEffects/All.ts'
 
@@ -29,7 +29,9 @@ export interface AppPlaybackStateServiceShape {
 export class AppPlaybackStateService extends Context.Service<
   AppPlaybackStateService,
   AppPlaybackStateServiceShape
->()('next-midi-demo/AppPlaybackStateService') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/AppPlaybackStateService',
+) {
   static playStopButtonPressableFlagChangesStream = Stream.unwrap(
     this.useSync(s => s.playStopButtonPressableFlagChangesStream),
   )

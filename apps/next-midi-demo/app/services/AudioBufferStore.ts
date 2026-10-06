@@ -16,7 +16,7 @@ export class AudioBufferStore extends Context.Service<
   {
     readonly getByAsset: (pointer: AssetPointer) => Effect.Effect<EAudioBuffer>
   }
->()('next-midi-demo/AudioBufferStore') {
+>()('next-midi-demo/app/services/AudioBufferStore') {
   static getByAsset = (
     pointer: AssetPointer,
   ): Effect.Effect<EAudioBuffer, never, AudioBufferStore> =>

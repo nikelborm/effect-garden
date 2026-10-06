@@ -6,12 +6,12 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
 import { DeferredAudioContextService } from '../../DeferredAudioContextService.ts'
+import type { AudioPlayback } from '../common.ts'
 import {
   asEarlyAsPossibleInSeconds,
   maxLoudness,
   minLoudness,
 } from '../constants.ts'
-import type { AudioPlayback } from '../common.ts'
 import type { Slot } from '../zones.ts'
 
 export interface ScheduledNextPlaybackTiming {
@@ -28,7 +28,9 @@ export class ScheduleIncomingPattern extends Context.Service<
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: ScheduledNextPlaybackTiming,
   ) => Effect.Effect<AudioPlayback, AudioContextInitError>
->()('next-midi-demo/ScheduleIncomingPattern') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/ScheduleIncomingPattern',
+) {
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: ScheduledNextPlaybackTiming,

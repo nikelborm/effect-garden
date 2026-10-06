@@ -35,7 +35,7 @@ export interface DeferredAudioContextServiceShape {
 export class DeferredAudioContextService extends Context.Service<
   DeferredAudioContextService,
   DeferredAudioContextServiceShape
->()('next-midi-demo/DeferredAudioContextService') {}
+>()('next-midi-demo/app/services/DeferredAudioContextService') {}
 
 export const layer = (
   config?: Readonly<EAudioContext.MakeAudioContextOptions>,

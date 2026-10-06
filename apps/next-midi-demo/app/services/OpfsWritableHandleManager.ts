@@ -28,10 +28,20 @@ import {
 import type { OPFSError } from './opfsErrors.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
+export interface OpfsWritableHandleManagerShape {
+  readonly acquireFileSink: (
+    asset: AssetPointer,
+  ) => Sink.Sink<void, Uint8Array<ArrayBuffer>, never, OPFSError>
+}
+
 export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandleManager>()(
-  'next-midi-demo/OpfsWritableHandleManager',
+  'next-midi-demo/app/services/OpfsWritableHandleManager',
   {
-    make: Effect.gen(function* () {
+    make: Effect.gen(function* (): Effect.gen.Return<
+      OpfsWritableHandleManagerShape,
+      never,
+      RootDirectoryHandle | LoadedAssetSizeEstimationMap
+    > {
       const rootDirectoryHandle = yield* RootDirectoryHandle
       const estimationMap = yield* LoadedAssetSizeEstimationMap
       const assetToSemaphoreMapRef = yield* Ref.make(
@@ -133,22 +143,23 @@ export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandl
           // Memoized via Effect.cached so it can be driven from BOTH the sink's
           // normal completion path AND the scope finalizer (interruption
           // safety-net) while its side effects run exactly once.
-          const finalize = yield* Effect.cached(
-            Effect.gen(function* () {
+          const finalize: Effect.Effect<Option.Option<Cause.Cause<OPFSError>>> =
+            yield* Effect.gen(function* () {
               yield* Queue.end(queue) // graceful: writer drains the rest, then exits
               const writerExit = yield* Deferred.await(writerDeferred)
               const closeExit = yield* Effect.exit(
                 closeWritable(writablePointingAtTheEnd),
               )
 
-              const causeOption = Option.zipWith(
-                Exit.getCause(writerExit),
-                Exit.getCause(closeExit),
-                Cause.combine,
-              ).pipe(
-                Option.orElse(() => Exit.getCause(closeExit)),
-                Option.orElse(() => Exit.getCause(writerExit)),
-              )
+              const causeOption: Option.Option<Cause.Cause<OPFSError>> =
+                Option.zipWith(
+                  Exit.getCause(writerExit),
+                  Exit.getCause(closeExit),
+                  (a, b) => Cause.combine(a, b),
+                ).pipe(
+                  Option.orElse(() => Exit.getCause(closeExit)),
+                  Option.orElse(() => Exit.getCause(writerExit)),
+                )
 
               // Only trust the on-disk file when nothing failed. After a write
               // error the file may be torn, so it must not be marked verified.
@@ -164,16 +175,17 @@ export class OpfsWritableHandleManager extends Context.Service<OpfsWritableHandl
               Effect.withSpan('OpfsWritableHandle.close', {
                 attributes: { fileName, asset },
               }),
-            ),
-          )
+              Effect.cached,
+            )
 
-          const finalizeAndSurface = Effect.flatMap(
-            finalize,
-            Option.match({
-              onNone: () => Effect.void,
-              onSome: Effect.failCause,
-            }),
-          )
+          const finalizeAndSurface: Effect.Effect<void, OPFSError> =
+            Effect.flatMap(
+              finalize,
+              Option.match({
+                onNone: () => Effect.void,
+                onSome: Effect.failCause,
+              }),
+            )
 
           yield* Effect.addFinalizer(() =>
             finalize.pipe(

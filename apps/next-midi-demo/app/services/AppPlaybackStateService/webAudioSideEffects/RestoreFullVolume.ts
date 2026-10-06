@@ -2,13 +2,15 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import { maxLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../common.ts'
+import { maxLoudness } from '../constants.ts'
 
 export class RestoreFullVolume extends Context.Service<
   RestoreFullVolume,
   (playback: AudioPlayback, atSecond: number) => Effect.Effect<void>
->()('next-midi-demo/RestoreFullVolume') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/RestoreFullVolume',
+) {
   static run = (playback: AudioPlayback, atSecond: number) =>
     this.use(restore => restore(playback, atSecond))
 }

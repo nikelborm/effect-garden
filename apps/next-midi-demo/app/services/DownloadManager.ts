@@ -19,7 +19,7 @@ import { LoadedAssetSizeEstimationMap } from './LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManager } from './OpfsWritableHandleManager.ts'
 
 export class DownloadManager extends Context.Service<DownloadManager>()(
-  'next-midi-demo/DownloadManager',
+  'next-midi-demo/app/services/DownloadManager',
   {
     make: Effect.gen(function* () {
       const fiberMap = yield* FiberMap.make<AssetPointer, void, never>()
@@ -43,11 +43,14 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
           yield* FiberMap.get(fiberMap, asset),
         )
 
-        if (downloadAssetFiber)
+        if (downloadAssetFiber !== null)
           return {
             _tag: 'AssetIsInProgress' as const,
             message: `Asset download is in progress`,
-            awaitCompletion: Effect.asVoid(Fiber.await(downloadAssetFiber)),
+            awaitCompletion: downloadAssetFiber.pipe(
+              Fiber.await,
+              Effect.asVoid,
+            ),
           }
 
         if (yield* estimationMap.areAllBytesFetchedAwaitVerified(asset))
@@ -73,7 +76,7 @@ export class DownloadManager extends Context.Service<DownloadManager>()(
         return {
           _tag: 'StartedDownloadingAsset' as const,
           message: `Asset downloading started`,
-          awaitCompletion: Effect.asVoid(Fiber.await(downloadAssetFiber)),
+          awaitCompletion: downloadAssetFiber.pipe(Fiber.await, Effect.asVoid),
         }
       }, assetAdditionSemaphore.withPermits(1))
 
@@ -147,11 +150,13 @@ function isNonShared(
 
 export const getStreamOfRemoteAsset = (
   asset: AssetPointer,
-  resumeFromByte?: number,
+  resumeFromByte: number = 0,
 ) =>
   HttpClient.get(
     getRemoteAssetPath(asset),
-    resumeFromByte ? { headers: { Range: `bytes=${resumeFromByte}-` } } : {},
+    resumeFromByte > 0
+      ? { headers: { Range: `bytes=${resumeFromByte}-` } }
+      : {},
   ).pipe(
     Effect.flatMap(HttpClientResponse.filterStatusOk),
     Effect.withSpan('DownloadManager.getStreamOfRemoteAsset', {

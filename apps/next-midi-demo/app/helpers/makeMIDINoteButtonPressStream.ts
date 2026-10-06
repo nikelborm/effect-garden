@@ -29,8 +29,9 @@ export const makeMIDINoteButtonPressStream = (
     return Stream.switchMap(
       selectedMIDIInputService.changes,
       inputId =>
-        inputId
-          ? accessOption.value.pipe(
+        inputId === null
+          ? Stream.empty
+          : accessOption.value.pipe(
               EMIDIAccess.getInputByIdInPipe(inputId),
               Effect.catchTag('PortNotFound', () =>
                 Effect.die(
@@ -40,8 +41,7 @@ export const makeMIDINoteButtonPressStream = (
                 ),
               ),
               EMIDIInput.makeMessagesStream(),
-            )
-          : Stream.empty,
+            ),
       { concurrency: 1 },
     )
   }).pipe(

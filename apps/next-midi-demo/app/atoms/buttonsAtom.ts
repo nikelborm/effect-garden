@@ -283,6 +283,7 @@ export const testAtom = builtRuntime.atom(() =>
           // can
           somebodyKillMe?.forceFlush()
 
+          // @effect-diagnostics-next-line globalConsole:off
           console.log(Effect.runSyncExit(Scope.close(scope, Exit.void)))
         },
         { once: true },

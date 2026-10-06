@@ -194,7 +194,7 @@ const help =
       Stream.Services<TFilteredShape[TMethodName]['ReturnType']>,
       never,
       Context.Service.Identifier<Klass>
-    // @effect-diagnostics-next-line anyUnknownInErrorContext:off
+      // @effect-diagnostics-next-line anyUnknownInErrorContext:off
     >(klass.useSync((s: TShape) => s[methodName](value)))
 
 export class AccordParamButtonService extends Context.Service<AccordParamButtonService>()(

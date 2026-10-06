@@ -6,8 +6,8 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
 import { DeferredAudioContextService } from '../../DeferredAudioContextService.ts'
-import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import type { AudioPlayback } from '../common.ts'
+import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 
 export interface FreshPlaybackTiming {
   readonly isLooping: boolean
@@ -20,7 +20,9 @@ export class StartFreshPlayback extends Context.Service<
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,
   ) => Effect.Effect<AudioPlayback, AudioContextInitError>
->()('next-midi-demo/StartFreshPlayback') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/StartFreshPlayback',
+) {
   static run = (
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,

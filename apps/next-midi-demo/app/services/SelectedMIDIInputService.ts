@@ -11,7 +11,7 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 import { DeferredMIDIAccessService } from './DeferredMIDIAccessService.ts'
 
 export class SelectedMIDIInputService extends Context.Service<SelectedMIDIInputService>()(
-  'next-midi-demo/SelectedMIDIInputService',
+  'next-midi-demo/app/services/SelectedMIDIInputService',
   {
     make: Effect.gen(function* () {
       const selectedInputIdRef =

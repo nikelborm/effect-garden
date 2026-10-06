@@ -18,7 +18,7 @@ import { listEntries } from './opfs.ts'
 import { RootDirectoryHandle } from './RootDirectoryHandle.ts'
 
 export class LoadedAssetSizeEstimationMap extends Context.Service<LoadedAssetSizeEstimationMap>()(
-  'next-midi-demo/LoadedAssetSizeEstimationMap',
+  'next-midi-demo/app/services/LoadedAssetSizeEstimationMap',
   {
     make: Effect.gen(function* () {
       const rootDirectoryHandle = yield* RootDirectoryHandle

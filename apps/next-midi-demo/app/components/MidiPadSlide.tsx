@@ -1,3 +1,4 @@
+/** @effect-diagnostics globalConsole:off */
 /** biome-ignore-all lint/suspicious/noLeakedRender: it complains about normal ifs returning jsx elements */
 'use client'
 
@@ -358,7 +359,7 @@ const _NeumorphicButton = styled(BaseButton)<{
     z-index: -1;
 
     /* hidden by default */
-    opacity: ${({ $isExternallyActive }) => ($isExternallyActive ? 1 : 0)};
+    opacity: ${({ $isExternallyActive }) => ($isExternallyActive === true ? 1 : 0)};
 
     /* pressed */
     background: linear-gradient(145deg, #596d61, #6a8174);

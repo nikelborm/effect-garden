@@ -159,7 +159,7 @@ const makeInputBus = Effect.fnUntraced(function* <
           } of registrationsRequests) {
             let bus = Option.getOrNull(HashMap.get(newMap, paramButtonId))
 
-            if (!bus) {
+            if (bus === null) {
               bus = yield* makeParamSpecificBus<
                 TParamButtonId,
                 TPhysicalButtonId
@@ -212,7 +212,7 @@ export type SupportedPhysicalButtonIds =
   | StrengthData
 
 export class AccordInputBus extends Context.Service<AccordInputBus>()(
-  'next-midi-demo/AccordInputBus',
+  'next-midi-demo/app/services/InputStreamBus/AccordInputBus',
   {
     make: makeInputBus<SupportedPhysicalButtonIds, AccordData>().pipe(
       Effect.withSpan('AccordInputBus.init'),
@@ -230,7 +230,7 @@ export const AccordInputBusLayer: Layer.Layer<AccordInputBus> = Layer.effect(
 )
 
 export class PatternInputBus extends Context.Service<PatternInputBus>()(
-  'next-midi-demo/PatternInputBus',
+  'next-midi-demo/app/services/InputStreamBus/PatternInputBus',
   {
     make: makeInputBus<SupportedPhysicalButtonIds, PatternData>().pipe(
       Effect.withSpan('PatternInputBus.init'),
@@ -248,7 +248,7 @@ export const PatternInputBusLayer: Layer.Layer<PatternInputBus> = Layer.effect(
 )
 
 export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
-  'next-midi-demo/StrengthInputBus',
+  'next-midi-demo/app/services/InputStreamBus/StrengthInputBus',
   {
     make: makeInputBus<SupportedPhysicalButtonIds, StrengthData>().pipe(
       Effect.withSpan('StrengthInputBus.init'),

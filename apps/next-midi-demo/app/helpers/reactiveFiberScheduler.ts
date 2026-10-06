@@ -29,7 +29,7 @@ export const reactivelySchedule = Effect.fnUntraced(function* <
     SynchronizedRef.updateEffect(
       planExecutionRef,
       Effect.fnUntraced(function* (executionFiber) {
-        if (executionFiber) yield* Fiber.interrupt(executionFiber)
+        if (executionFiber !== null) yield* Fiber.interrupt(executionFiber)
 
         return yield* Effect.sync(() => runForkLogErr(execute(a)))
       }),

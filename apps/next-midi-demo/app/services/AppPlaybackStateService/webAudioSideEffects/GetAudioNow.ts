@@ -8,7 +8,9 @@ import * as DeferredAudioContextService from '../../DeferredAudioContextService.
 export class GetAudioNow extends Context.Service<
   GetAudioNow,
   () => Effect.Effect<number, AudioContextInitError>
->()('next-midi-demo/GetAudioNow') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/GetAudioNow',
+) {
   static run = () => this.use(getNow => getNow())
 }
 

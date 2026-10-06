@@ -5,9 +5,10 @@ import * as Layer from 'effect/Layer'
 import { OPFSError } from './opfsErrors.ts'
 
 export class RootDirectoryHandle extends Context.Service<RootDirectoryHandle>()(
-  'next-midi-demo/RootDirectoryHandle',
+  'next-midi-demo/app/services/RootDirectoryHandle',
   {
     make: Effect.tryPromise({
+      // @effect-diagnostics-next-line asyncFunction:off
       try: async () => {
         console.time('RootDirectoryHandle')
         const res = await navigator.storage.getDirectory()

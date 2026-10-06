@@ -5,7 +5,7 @@ import { SlowStrumBoundQueue } from './Queue.ts'
 export class SlowStrumBoundStateBase extends Schema.TaggedClass<SlowStrumBoundStateBase>()(
   'SlowStrumBoundStateBase',
   {
-    playbackStartedAtSecond: Schema.Number,
+    playbackStartedAtSecond: Schema.Finite,
     transitionQueue: SlowStrumBoundQueue,
   },
 ) {

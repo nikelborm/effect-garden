@@ -9,4 +9,4 @@ export class CleanupFiberMaker extends Context.Service<
   (
     delayForSeconds: number,
   ) => Effect.Effect<CleanupFiberToolkit, never, DisposePlayback>
->()('next-midi-demo/CleanupFiberMaker') {}
+>()('next-midi-demo/app/services/AppPlaybackStateService/CleanupFiberMaker') {}

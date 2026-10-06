@@ -16,7 +16,7 @@ export function midiToNoteName(
     midiNoteIndex < 0 ||
     midiNoteIndex > 127
   )
-    return Result.fail(new InvalidMIDINote())
+    return Result.fail(InvalidMIDINote.make())
 
   const noteNames = [
     'C',

@@ -71,7 +71,7 @@ export const UnbrandedAccord = <TAccord extends Accord>(accord: TAccord) =>
   accord as UnbrandedAccord<TAccord>
 
 export class AllAccords extends Context.Service<AllAccords, AllAccordTuple>()(
-  'next-midi-demo/AllAccords',
+  'next-midi-demo/app/domain/Accord/AllAccords',
 ) {}
 
 export const AllAccordsLayer: Layer.Layer<AllAccords> = Layer.succeed(

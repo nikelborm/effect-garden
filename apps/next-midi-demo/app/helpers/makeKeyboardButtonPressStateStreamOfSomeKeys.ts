@@ -15,7 +15,7 @@ export const makeKeyboardButtonPressStateStreamOfSomeKeys = (
 > => {
   const refWithFallback = ref ?? globalThis.window
 
-  if (!refWithFallback) return Stream.empty
+  if (refWithFallback === undefined) return Stream.empty
 
   return Stream.merge(
     Stream.fromEventListener<KeyboardEvent>(refWithFallback, 'keydown'),

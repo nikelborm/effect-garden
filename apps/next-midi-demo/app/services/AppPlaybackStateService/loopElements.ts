@@ -9,6 +9,7 @@ import {
 import { AudioBufferStore } from '.././AudioBufferStore.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
+import { AudioPlayback } from './common.ts'
 import { fadeToSilenceTimeInSeconds } from './constants.ts'
 import { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
@@ -16,7 +17,6 @@ import { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
 import { ScheduleFadeOut } from './webAudioSideEffects/ScheduleFadeOut.ts'
 import { ScheduleIncomingPattern } from './webAudioSideEffects/ScheduleIncomingPattern.ts'
 import { chosenSlot, zoneAt } from './zones.ts'
-import { AudioPlayback } from './common.ts'
 
 interface FadingOutPatternFields {
   readonly asset: TaggedPatternPointer
@@ -128,7 +128,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
-    playbackStartedAtSecond: Schema.Number,
+    playbackStartedAtSecond: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never
@@ -160,7 +160,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
 export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
   'SlowStrumPlayback',
   {
-    playbackStartedAtSecond: Schema.Number,
+    playbackStartedAtSecond: Schema.Finite,
     asset: TaggedSlowStrumPointer,
     playback: AudioPlayback,
   },
@@ -194,9 +194,9 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
-    fadeInStartsAtSecond: Schema.Number,
-    fadeInEndsAtSecond: Schema.Number,
-    playbackStartedAtSecond: Schema.Number,
+    fadeInStartsAtSecond: Schema.Finite,
+    fadeInEndsAtSecond: Schema.Finite,
+    playbackStartedAtSecond: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never
@@ -239,9 +239,9 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    fadeoutStartsAtSecond: Schema.Number,
-    fadeoutEndsAtSecond: Schema.Number,
-    playbackStartedAtSecond: Schema.Number,
+    fadeoutStartsAtSecond: Schema.Finite,
+    fadeoutEndsAtSecond: Schema.Finite,
+    playbackStartedAtSecond: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never
@@ -272,9 +272,9 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    fadeoutStartsAtSecond: Schema.Number,
-    fadeoutEndsAtSecond: Schema.Number,
-    playbackStartedAtSecond: Schema.Number,
+    fadeoutStartsAtSecond: Schema.Finite,
+    fadeoutEndsAtSecond: Schema.Finite,
+    playbackStartedAtSecond: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never

@@ -7,7 +7,9 @@ import type { AudioPlayback } from '../common.ts'
 export class DisposePlayback extends Context.Service<
   DisposePlayback,
   (playback: AudioPlayback) => Effect.Effect<void>
->()('next-midi-demo/DisposePlayback') {
+>()(
+  'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/DisposePlayback',
+) {
   static run = (playback: AudioPlayback) =>
     this.use(dispose => dispose(playback))
 }

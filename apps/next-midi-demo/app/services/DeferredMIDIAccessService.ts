@@ -17,7 +17,7 @@ export interface DeferredMIDIAccessServiceShape {
 export class DeferredMIDIAccessService extends Context.Service<
   DeferredMIDIAccessService,
   DeferredMIDIAccessServiceShape
->()('next-midi-demo/DeferredMIDIAccessService') {
+>()('next-midi-demo/app/services/DeferredMIDIAccessService') {
   static readonly accessOptionInContext = Effect.flatMap(
     Effect.serviceOption(DeferredMIDIAccessService),
     Option.match({

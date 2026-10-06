@@ -22,7 +22,7 @@ export const makeParamButtonTouchStateStream = <
     makeParamButtonTouchStateStreamWithDatasets(new Set([key] as const)),
     ([element, state]) => {
       const val = element[key]
-      if (!val)
+      if (val === undefined || val === '')
         throw new Error(
           "makeParamButtonTouchStateStream can't find proper dataset field in DOM element",
         )
@@ -38,7 +38,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
 ) => {
   const refWithFallback = ref ?? globalThis.window
 
-  if (!refWithFallback) return Stream.empty
+  if (refWithFallback === undefined) return Stream.empty
 
   type Dataset =
     IsNonDistributableUnion<DatasetKeys> extends true
@@ -129,10 +129,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     ),
     Stream.map(
       ([element, state]) =>
-        [
-          Schema.decodeUnknownSync(DatasetSchema)(element.dataset) as Dataset,
-          state,
-        ] as const,
+        [DatasetSchema.make(element.dataset) as Dataset, state] as const,
     ),
   )
 }
@@ -161,8 +158,12 @@ const emergeUpToDesiredTarget =
 
     // event.currentTarget is something like root or html/body, anyone holding the
     // event listener. there's no point in going past the event listener
-    while (target && continueSearchWhile(target)) {
-      if (target.dataset)
+    while (
+      target !== null &&
+      target !== undefined &&
+      continueSearchWhile(target)
+    ) {
+      if (target.dataset !== undefined && target.dataset !== null)
         for (const keyCandidate of keysOfDatasetToLookFor)
           if (keyCandidate in target.dataset) return target
 

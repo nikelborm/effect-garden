@@ -25,7 +25,7 @@ export const getMessagesLogAtom: (
     | Cause.NoSuchElementError
   >
 > = Atom.family(inputId =>
-  !inputId
+  inputId === null
     ? Atom.make(
         AsyncResult.success('Input id is not selected. No log entries to show'),
       ).pipe(Atom.withLabel('messagesStringLog'))

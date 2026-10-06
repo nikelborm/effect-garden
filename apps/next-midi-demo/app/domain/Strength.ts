@@ -74,7 +74,7 @@ export const UnbrandedStrength = <TStrength extends Strength>(
 export class AllStrengths extends Context.Service<
   AllStrengths,
   AllStrengthTuple
->()('next-midi-demo/AllStrengths') {}
+>()('next-midi-demo/app/domain/Strength/AllStrengths') {}
 
 export const AllStrengthsLayer: Layer.Layer<AllStrengths> = Layer.succeed(
   AllStrengths,
