@@ -98,7 +98,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         // SilenceBoundState queue); a fading-out loop still counts as playing.
         Stream.map(
           current =>
-            current._tag !== 'SilenceBoundStateBase' ||
+            current._tag !== 'SilenceBoundBaseState' ||
             current.transitionQueue.length > 0,
         ),
         Stream.changes,

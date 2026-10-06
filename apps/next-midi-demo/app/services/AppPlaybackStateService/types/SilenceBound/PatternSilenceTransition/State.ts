@@ -1,9 +1,9 @@
 import * as Schema from 'effect/Schema'
 
-import { SilenceBoundStateBase } from '../SilenceBoundStateBase.ts'
+import { SilenceBoundBaseState } from '../Base/State.ts'
 import { PatternSilenceTransitionQueue } from './Queue.ts'
 
-export class PatternSilenceTransitionState extends SilenceBoundStateBase.extend<PatternSilenceTransitionState>(
+export class PatternSilenceTransitionState extends SilenceBoundBaseState.extend<PatternSilenceTransitionState>(
   'PatternSilenceTransitionState',
 )({
   transitionQueue: PatternSilenceTransitionQueue,

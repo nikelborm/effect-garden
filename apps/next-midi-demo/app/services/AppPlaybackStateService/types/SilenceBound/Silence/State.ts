@@ -2,10 +2,10 @@ import * as Schema from 'effect/Schema'
 
 import { defaultAccord } from '../../../../../domain/Accord.ts'
 import { defaultStrength } from '../../../../../domain/Strength.ts'
-import { SilenceBoundStateBase } from '../SilenceBoundStateBase.ts'
+import { SilenceBoundBaseState } from '../Base/State.ts'
 import { SilenceQueue } from './Queue.ts'
 
-export class SilenceState extends SilenceBoundStateBase.extend<SilenceState>(
+export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(
   'SilenceState',
 )({
   transitionQueue: SilenceQueue,
