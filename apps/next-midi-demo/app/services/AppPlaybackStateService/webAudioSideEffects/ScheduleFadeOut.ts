@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
 import { maxLoudness, minLoudness } from '../constants.ts'
-import type { AudioPlayback } from '../types/common.ts'
+import type { AudioPlayback } from '../common.ts'
 import type { Slot } from '../zones.ts'
 
 export class ScheduleFadeOut extends Context.Service<

@@ -5,17 +5,17 @@ import * as Schema from 'effect/Schema'
 import {
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../../../domain/AssetPointer.ts'
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
-import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
-import { fadeToSilenceTimeInSeconds } from '../constants.ts'
-import { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
-import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { RestoreFullVolume } from '../webAudioSideEffects/RestoreFullVolume.ts'
-import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
-import { ScheduleIncomingPattern } from '../webAudioSideEffects/ScheduleIncomingPattern.ts'
-import { chosenSlot, zoneAt } from '../zones.ts'
+} from '../.././domain/AssetPointer.ts'
+import { AudioBufferStore } from '.././AudioBufferStore.ts'
+import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
+import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
+import { fadeToSilenceTimeInSeconds } from './constants.ts'
+import { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
+import { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
+import { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
+import { ScheduleFadeOut } from './webAudioSideEffects/ScheduleFadeOut.ts'
+import { ScheduleIncomingPattern } from './webAudioSideEffects/ScheduleIncomingPattern.ts'
+import { chosenSlot, zoneAt } from './zones.ts'
 import { AudioPlayback } from './common.ts'
 
 interface FadingOutPatternFields {

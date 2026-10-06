@@ -4,7 +4,7 @@ import {
   type SimpleAssetPointer,
   simplifyAssetPointer,
 } from '../../domain/AssetPointer.ts'
-import type { AppPlaybackState } from './types/index.ts'
+import type { AppPlaybackState } from './index.ts'
 
 export const inferSelection = (state: AppPlaybackState): SimpleAssetPointer => {
   if (state._tag === 'SilenceBoundBaseState')

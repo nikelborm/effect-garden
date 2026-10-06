@@ -8,7 +8,7 @@ import { flow } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
 
-import { AudioPlayback } from './AppPlaybackStateService/types/common.ts'
+import { AudioPlayback } from './AppPlaybackStateService/common.ts'
 
 // TODO: need to handle the path of crash (DONT FUCKING DELETE THIS COMMENT)
 // export type AudioContextInitError = EAudioContext.MakeError

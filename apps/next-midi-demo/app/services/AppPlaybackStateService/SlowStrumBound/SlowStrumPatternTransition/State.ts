@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import type { PressedParamButtonId } from '../../../../../domain/PressedParamButtonId.ts'
+import type { PressedParamButtonId } from '../../../.././domain/PressedParamButtonId.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { SlowStrumBoundStateBase } from '../Base/State.ts'
 import { SlowStrumPatternTransitionQueue } from './Queue.ts'

@@ -2,7 +2,7 @@ import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import type { AudioPlayback } from '../types/common.ts'
+import type { AudioPlayback } from '../common.ts'
 
 export class DisposePlayback extends Context.Service<
   DisposePlayback,

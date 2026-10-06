@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 
 import { DeferredAudioContextService } from '../DeferredAudioContextService.ts'
-import type { AppPlaybackState } from './types/index.ts'
+import type { AppPlaybackState } from './index.ts'
 
 export const cleanupAllPlaybacks = Effect.fn('cleanupAllPlaybacks')(function* (
   state: AppPlaybackState,

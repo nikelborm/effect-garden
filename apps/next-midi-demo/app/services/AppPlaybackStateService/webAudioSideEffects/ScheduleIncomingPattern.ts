@@ -11,7 +11,7 @@ import {
   maxLoudness,
   minLoudness,
 } from '../constants.ts'
-import type { AudioPlayback } from '../types/common.ts'
+import type { AudioPlayback } from '../common.ts'
 import type { Slot } from '../zones.ts'
 
 export interface ScheduledNextPlaybackTiming {

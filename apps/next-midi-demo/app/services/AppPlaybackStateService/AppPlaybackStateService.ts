@@ -16,8 +16,8 @@ import {
 } from '../InputStreamBus.ts'
 import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
-import type { AppPlaybackState } from './types/index.ts'
-import { SilenceState } from './types/SilenceBound/Silence/State.ts'
+import type { AppPlaybackState } from './index.ts'
+import { SilenceState } from './SilenceBound/Silence/State.ts'
 import type { AllWebAudioSideEffects } from './webAudioSideEffects/All.ts'
 
 export interface AppPlaybackStateServiceShape {
