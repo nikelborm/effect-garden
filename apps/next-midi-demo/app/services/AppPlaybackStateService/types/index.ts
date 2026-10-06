@@ -1,5 +1,7 @@
+import type * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
+import type { AdvancePlaybackRequirements } from './AdvancePlaybackRequirements.ts'
 import { PatternBoundState } from './PatternBound/State.ts'
 import { SilenceBoundState } from './SilenceBound/State.ts'
 import { SlowStrumBoundState } from './SlowStrumBound/State.ts'
@@ -13,3 +15,10 @@ export const AppPlaybackState = Schema.Union([
   SlowStrumBoundState,
 ])
 export type AppPlaybackState = typeof AppPlaybackState.Type
+
+export interface AdvanceFnReturn
+  extends Effect.fn.Return<
+    AppPlaybackState,
+    never,
+    AdvancePlaybackRequirements
+  > {}

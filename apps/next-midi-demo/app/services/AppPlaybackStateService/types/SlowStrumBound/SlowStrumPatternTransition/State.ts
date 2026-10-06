@@ -2,8 +2,7 @@ import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import type { PressedParamButtonId } from '../../../../../domain/PressedParamButtonId.ts'
-import type { AdvancePlaybackRequirements } from '../../AdvancePlaybackRequirements.ts'
-import type { AppPlaybackState } from '../../index.ts'
+import type { AdvanceFnReturn } from '../../index.ts'
 import { SlowStrumBoundStateBase } from '../Base/State.ts'
 import { SlowStrumPatternTransitionQueue } from './Queue.ts'
 
@@ -26,9 +25,7 @@ export class SlowStrumPatternTransitionState extends SlowStrumBoundStateBase.ext
   // midi_scheduling_findings memory.
   advance = Effect.fn('SlowStrumPatternTransitionState.advance')(
     { self: this },
-    function* (
-      pressedParamButtonId: PressedParamButtonId,
-    ): Effect.fn.Return<AppPlaybackState, never, AdvancePlaybackRequirements> {
+    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
       const [strum, scheduled] = this.transitionQueue
       yield* Effect.logError({ strum, scheduled, pressedParamButtonId })
       return yield* Effect.die(

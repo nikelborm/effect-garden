@@ -15,8 +15,7 @@ import {
 } from '../../../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../../../AudioBufferStore.ts'
 import { StartFreshPlayback } from '../../../webAudioSideEffects/StartFreshPlayback.ts'
-import type { AdvancePlaybackRequirements } from '../../AdvancePlaybackRequirements.ts'
-import type { AppPlaybackState } from '../../index.ts'
+import type { AdvanceFnReturn } from '../../index.ts'
 import {
   getAudioNow,
   PatternPlayback,
@@ -46,9 +45,7 @@ export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(
 
   advance = Effect.fn('SilenceState.advance')(
     { self: this },
-    function* (
-      pressedParamButtonId: PressedParamButtonId,
-    ): Effect.fn.Return<AppPlaybackState, never, AdvancePlaybackRequirements> {
+    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
       const { accord, strength } = this
 
       if (StrengthData.models(pressedParamButtonId))

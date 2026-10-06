@@ -5,8 +5,7 @@ import { AccordData } from '../../../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../../../domain/Strength.ts'
-import type { AdvancePlaybackRequirements } from '../../AdvancePlaybackRequirements.ts'
-import type { AppPlaybackState } from '../../index.ts'
+import type { AdvanceFnReturn } from '../../index.ts'
 import { PatternPatternPatternTransitionState } from '../../PatternBound/PatternPatternPatternTransition/State.ts'
 import { SilenceBoundBaseState } from '../Base/State.ts'
 import { TwoPatternsFadingToSilenceQueue } from './Queue.ts'
@@ -26,9 +25,7 @@ export class PatternPatternSilenceTransitionState extends SilenceBoundBaseState.
 
   advance = Effect.fn('PatternPatternSilenceTransitionState.advance')(
     { self: this },
-    function* (
-      pressedParamButtonId: PressedParamButtonId,
-    ): Effect.fn.Return<AppPlaybackState, never, AdvancePlaybackRequirements> {
+    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
       const { accord, strength } = this
       const [oldest, fading] = this.transitionQueue
 

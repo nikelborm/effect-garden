@@ -6,8 +6,7 @@ import { desiredAssetFromSignal } from '../../../../../domain/desiredAssetFromSi
 import { PatternData } from '../../../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../../../domain/Strength.ts'
-import type { AdvancePlaybackRequirements } from '../../AdvancePlaybackRequirements.ts'
-import type { AppPlaybackState } from '../../index.ts'
+import type { AdvanceFnReturn } from '../../index.ts'
 import { PatternSilenceTransitionState } from '../../SilenceBound/PatternSilenceTransition/State.ts'
 import { PatternBoundStateBase } from '../Base/State.ts'
 import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
@@ -27,9 +26,7 @@ export class PatternState extends PatternBoundStateBase.extend<PatternState>(
 
   advance = Effect.fn('PatternState.advance')(
     { self: this },
-    function* (
-      pressedParamButtonId: PressedParamButtonId,
-    ): Effect.fn.Return<AppPlaybackState, never, AdvancePlaybackRequirements> {
+    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
       const [playing] = this.transitionQueue
 
       if (
