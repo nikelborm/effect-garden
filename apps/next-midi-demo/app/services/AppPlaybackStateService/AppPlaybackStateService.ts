@@ -14,7 +14,7 @@ import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import { SilenceState } from './types/SilenceBoundPlayback.ts'
+import { SilenceState } from './types/SilenceBoundState.ts'
 
 export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',

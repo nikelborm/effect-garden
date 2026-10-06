@@ -4,13 +4,13 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { getAudioNow } from '../types/loopElements.ts'
 import {
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from '../types/LoopBoundPlayback.ts'
-import { getAudioNow } from '../types/loopElements.ts'
-import { PatternSilenceTransitionState } from '../types/SilenceBoundPlayback.ts'
+} from '../types/PatternBoundState.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBoundState.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternSilenceTransition = Effect.fn(

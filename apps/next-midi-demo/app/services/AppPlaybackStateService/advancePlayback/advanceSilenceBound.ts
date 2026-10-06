@@ -5,7 +5,7 @@ import {
   PatternSilenceTransitionState,
   type SilenceBoundPlayback,
   SilenceState,
-} from '../types/SilenceBoundPlayback.ts'
+} from '../types/SilenceBoundState.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
 import { advanceSilence } from './advanceSilence.ts'

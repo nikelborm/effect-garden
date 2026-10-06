@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { SlowStrumTransitionState } from '../types/LoopBoundPlayback.ts'
+import type { SlowStrumTransitionState } from '../types/PatternBoundState.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 // A slow strum handing over to a loop (queue = [strum, scheduledPattern]). Like

@@ -1,7 +1,7 @@
 import * as Schema from 'effect/Schema'
 
-import { PatternBoundPlayback } from './LoopBoundPlayback.ts'
-import { SilenceBoundPlayback } from './SilenceBoundPlayback.ts'
+import { PatternBoundPlayback } from './PatternBoundState.ts'
+import { SilenceBoundPlayback } from './SilenceBoundState.ts'
 
 // The whole playback state machine collapses to two neighbouring classes: one
 // whose destination is a sounding loop, one whose destination is silence. State

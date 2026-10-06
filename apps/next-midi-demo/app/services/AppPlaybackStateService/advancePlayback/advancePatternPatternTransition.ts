@@ -5,16 +5,16 @@ import { AccordData } from '../../../domain/Accord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { getAudioNow } from '../types/loopElements.ts'
 import {
   PatternPatternPatternTransitionState,
   PatternPatternTransitionState,
   PatternState,
-} from '../types/LoopBoundPlayback.ts'
-import { getAudioNow } from '../types/loopElements.ts'
+} from '../types/PatternBoundState.ts'
 import {
   PatternPatternSilenceTransitionState,
   PatternSilenceTransitionState,
-} from '../types/SilenceBoundPlayback.ts'
+} from '../types/SilenceBoundState.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

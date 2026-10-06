@@ -1,6 +1,6 @@
 import * as Effect from 'effect/Effect'
 
-import type { SlowStrumState } from '../types/LoopBoundPlayback.ts'
+import type { SlowStrumState } from '../types/PatternBoundState.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 // A slow strum is sounding (queue = [strum]). Slow strums are the deferred

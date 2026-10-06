@@ -8,11 +8,11 @@ import {
   PatternState,
   SlowStrumState,
   SlowStrumTransitionState,
-} from '../types/LoopBoundPlayback.ts'
+} from '../types/PatternBoundState.ts'
+import { advancePattern } from './advancePattern.ts'
 import { advancePatternPatternPatternTransition } from './advancePatternPatternPatternTransition.ts'
 import { advancePatternPatternTransition } from './advancePatternPatternTransition.ts'
 import { advancePatternSilencePatternTransition } from './advancePatternSilencePatternTransition.ts'
-import { advancePattern } from './advancePlayingPattern.ts'
 import { advanceSlowStrum } from './advanceSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
