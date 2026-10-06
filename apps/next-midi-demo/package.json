@@ -76,7 +76,8 @@
     "lint": "oxlint --fix --quiet && biome check --write --unsafe",
     "max": "cd ../../; bun max",
     "start": "next start",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "prepare": "effect-tsgo patch --typescript --no-oxlint"
   },
   "author": {
     "name": "nikelborm",

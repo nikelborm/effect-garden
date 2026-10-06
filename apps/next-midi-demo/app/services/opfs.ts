@@ -145,7 +145,7 @@ export const getDirHandle = (opts?: {
             create: opts?.create ?? false,
           }),
         catch: error =>
-          new OPFSError({
+          OPFSError.make({
             operation: 'getDirectoryHandle',
             path: absDirPath,
             cause: error,
@@ -160,7 +160,7 @@ export const getFile = (fileHandle: FileSystemFileHandle) =>
   Effect.tryPromise({
     try: () => fileHandle.getFile(),
     catch: cause =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'fileHandle.getFile',
         cause,
       }),
@@ -170,7 +170,7 @@ export const createWritable = (fileHandle: FileSystemFileHandle) =>
   Effect.tryPromise({
     try: () => fileHandle.createWritable({ keepExistingData: true }),
     catch: cause =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'fileHandle.createWritable',
         cause,
       }),
@@ -180,7 +180,7 @@ export const seek = (writable: FileSystemWritableFileStream, point: number) =>
   Effect.tryPromise({
     try: () => writable.seek(point),
     catch: cause =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'writable.seek',
         cause,
       }),
@@ -193,7 +193,7 @@ export const write = (
   Effect.tryPromise({
     try: () => writable.write(data),
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'writable.write',
         cause: error,
       }),
@@ -207,7 +207,7 @@ export const closeWritable = (writable: FileSystemWritableFileStream) =>
   Effect.tryPromise({
     try: () => writable.close(),
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'writable.close',
         cause: error,
       }),
@@ -230,7 +230,7 @@ export const getFileHandle = (opts: {
         create: opts.create ?? false,
       }),
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'getFileHandle',
         path: opts.fileName,
         cause: error,
@@ -290,7 +290,7 @@ export const listEntries = (
       return entries
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'listEntries',
         cause: error,
       }),
@@ -306,108 +306,6 @@ export type TreeLine = {
   readonly size?: string
 }
 
-/**
- * Generates a tree representation of the directory structure.
- * Returns an array of lines that can be printed or processed.
- */
-export const getTree = (opts?: {
-  /** The directory handle to traverse (defaults to root) */
-  dirHandle?: FileSystemDirectoryHandle
-  /** Maximum depth to traverse */
-  depth?: number
-  /** Prefix for indentation (internal use) */
-  prefix?: string
-}): Effect.Effect<readonly TreeLine[], OPFSNotSupportedError | OPFSError> =>
-  Effect.gen(function* () {
-    const depth = opts?.depth ?? Number.POSITIVE_INFINITY
-    const prefix = opts?.prefix ?? ''
-
-    if (depth < 0) {
-      return []
-    }
-
-    const handle =
-      opts?.dirHandle === undefined ? yield* getRootHandle : opts.dirHandle
-
-    const lines: TreeLine[] = []
-
-    // Collect entries first
-    const entries: Array<{
-      name: string
-      kind: 'file' | 'directory'
-      size?: number
-    }> = []
-    yield* Effect.tryPromise({
-      try: async () => {
-        for await (const entry of handle.values()) {
-          if (entry.kind === 'file') {
-            const fileHandle = entry as FileSystemFileHandle
-            const file = await fileHandle.getFile()
-            entries.push({ name: entry.name, kind: 'file', size: file.size })
-          } else {
-            entries.push({ name: entry.name, kind: 'directory' })
-          }
-        }
-      },
-      catch: error =>
-        new OPFSError({
-          operation: 'getTree',
-          cause: error,
-        }),
-    })
-
-    // Process entries and recurse for directories
-    for (const entry of entries) {
-      const isDirectory = entry.kind === 'directory'
-
-      lines.push({
-        prefix,
-        icon: isDirectory ? '📁' : '📄',
-        name: entry.name,
-        ...(entry.size !== undefined ? { size: prettyBytes(entry.size) } : {}),
-      })
-
-      if (isDirectory && depth > 0) {
-        const nestedHandle = yield* Effect.tryPromise({
-          try: () => handle.getDirectoryHandle(entry.name),
-          catch: error =>
-            new OPFSError({
-              operation: 'getTree',
-              path: entry.name,
-              cause: error,
-            }),
-        })
-        const nestedLines = yield* getTree({
-          dirHandle: nestedHandle,
-          depth: depth - 1,
-          prefix: `${prefix}  `,
-        })
-        lines.push(...nestedLines)
-      }
-    }
-
-    return lines
-  })
-
-/**
- * Prints a tree representation of the directory structure to the console.
- */
-export const printTree = (opts?: {
-  /** The directory handle to traverse (defaults to root) */
-  dirHandle?: FileSystemDirectoryHandle
-  /** Maximum depth to traverse */
-  depth?: number
-}): Effect.Effect<void, OPFSNotSupportedError | OPFSError> =>
-  Effect.gen(function* () {
-    const lines = yield* getTree({
-      ...(opts?.dirHandle !== undefined && { dirHandle: opts.dirHandle }),
-      ...(opts?.depth !== undefined && { depth: opts.depth }),
-    })
-    for (const line of lines) {
-      const sizeStr = line.size ? ` (${line.size})` : ''
-      console.log(`${line.prefix}${line.icon} ${line.name}${sizeStr}`)
-    }
-  })
 
 /**
  * Deletes all entries in a directory recursively.
@@ -424,7 +322,7 @@ export const deleteAll = (
       }
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'deleteAll',
         cause: error,
       }),
@@ -440,7 +338,7 @@ export const getFileSize = (fileName: string) =>
           const file = await handle.getFile()
           return file.size
         },
-        catch: cause => new OPFSError({ operation: 'getFileSize', cause }),
+        catch: cause => OPFSError.make({ operation: 'getFileSize', cause }),
       }),
     ),
   )
@@ -462,7 +360,7 @@ export const deleteEntry = (opts: {
         recursive: opts.recursive ?? false,
       }),
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'deleteEntry',
         path: opts.name,
         cause: error,
@@ -484,7 +382,7 @@ export const readFileText = (
       return file.text()
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'readFileText',
         cause: error,
       }),
@@ -504,7 +402,7 @@ export const readFileBuffer = (
       return file.arrayBuffer()
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'readFileBuffer',
         cause: error,
       }),
@@ -526,7 +424,7 @@ export const writeFileText = (opts: {
       await writable.close()
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'writeFileText',
         cause: error,
       }),
@@ -548,7 +446,7 @@ export const writeFileBuffer = (opts: {
       await writable.close()
     },
     catch: error =>
-      new OPFSError({
+      OPFSError.make({
         operation: 'writeFileBuffer',
         cause: error,
       }),

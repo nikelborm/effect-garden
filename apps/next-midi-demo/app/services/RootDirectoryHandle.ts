@@ -14,7 +14,7 @@ export class RootDirectoryHandle extends Context.Service<RootDirectoryHandle>()(
         console.timeEnd('RootDirectoryHandle')
         return res
       },
-      catch: cause => new OPFSError({ operation: 'getRoot', cause }),
+      catch: cause => OPFSError.make({ operation: 'getRoot', cause }),
     }).pipe(
       Effect.withSpan('RootDirectoryHandle.init'),
       Effect.orDie,

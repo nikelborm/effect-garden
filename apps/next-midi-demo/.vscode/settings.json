@@ -1,5 +1,5 @@
 {
-  "js/ts.tsdk.path": "./node_modules/typescript",
+  "js/ts.tsdk.path": "./node_modules/typescript/bin",
   "js/ts.experimental.useTsgo": true,
   "git.openRepositoryInParentFolders": "always",
   "js/ts.tsdk.promptToUseWorkspaceVersion": true,
@@ -12,5 +12,6 @@
   "js/ts.preferences.preferTypeOnlyAutoImports": true,
   "prettier.jsxSingleQuote": true,
   "prettier.singleQuote": true,
-  "editor.tokenColorCustomizations": {}
+  "editor.tokenColorCustomizations": {},
+  "js/ts.tsdk.additionalLocations": ["./node_modules/typescript/bin"]
 }

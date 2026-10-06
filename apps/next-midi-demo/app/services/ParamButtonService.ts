@@ -194,10 +194,11 @@ const help =
       Stream.Services<TFilteredShape[TMethodName]['ReturnType']>,
       never,
       Context.Service.Identifier<Klass>
+    // @effect-diagnostics-next-line anyUnknownInErrorContext:off
     >(klass.useSync((s: TShape) => s[methodName](value)))
 
 export class AccordParamButtonService extends Context.Service<AccordParamButtonService>()(
-  'next-midi-demo/AccordParamButtonService',
+  'next-midi-demo/app/services/ParamButtonService/AccordParamButtonService',
   {
     make: makeParamButtonService({
       busTag: AccordInputBus,
@@ -217,7 +218,7 @@ export const AccordParamButtonServiceLayer = Layer.effect(
 )
 
 export class PatternParamButtonService extends Context.Service<PatternParamButtonService>()(
-  'next-midi-demo/PatternParamButtonService',
+  'next-midi-demo/app/services/ParamButtonService/PatternParamButtonService',
   {
     make: makeParamButtonService({
       busTag: PatternInputBus,
@@ -238,7 +239,7 @@ export const PatternParamButtonServiceLayer = Layer.effect(
 )
 
 export class StrengthParamButtonService extends Context.Service<StrengthParamButtonService>()(
-  'next-midi-demo/StrengthParamButtonService',
+  'next-midi-demo/app/services/ParamButtonService/StrengthParamButtonService',
   {
     make: makeParamButtonService({
       busTag: StrengthInputBus,

@@ -5,7 +5,7 @@ import { PatternBoundBaseQueue } from './Queue.ts'
 export class PatternBoundStateBase extends Schema.TaggedClass<PatternBoundStateBase>()(
   'PatternBoundStateBase',
   {
-    playbackStartedAtSecond: Schema.Number,
+    playbackStartedAtSecond: Schema.Finite,
     transitionQueue: PatternBoundBaseQueue,
   },
 ) {
