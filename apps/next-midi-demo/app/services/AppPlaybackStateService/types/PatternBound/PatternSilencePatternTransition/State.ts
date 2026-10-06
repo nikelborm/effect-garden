@@ -1,6 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-import { PatternBoundStateBase } from '../PatternBoundStateBase.ts'
+import { PatternBoundStateBase } from '../Base/State.ts'
 import { PatternSilencePatternTransitionQueue } from './Queue.ts'
 
 export class PatternSilencePatternTransitionState extends PatternBoundStateBase.extend<PatternSilencePatternTransitionState>(

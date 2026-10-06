@@ -1,6 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-import { PatternBoundStateBase } from '../PatternBoundStateBase.ts'
+import { PatternBoundStateBase } from '../Base/State.ts'
 import { PatternPatternTransitionQueue } from './Queue.ts'
 
 export class PatternPatternTransitionState extends PatternBoundStateBase.extend<PatternPatternTransitionState>(

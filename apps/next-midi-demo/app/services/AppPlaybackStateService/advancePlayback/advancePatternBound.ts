@@ -1,12 +1,12 @@
 import * as Effect from 'effect/Effect'
 
 import {
-  type PatternBoundState,
   PatternPatternPatternTransitionState,
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from '../types/PatternBoundState/index.ts'
+} from '../types/PatternBound/index.ts'
+import type { PatternBoundState } from '../types/PatternBound/State.ts'
 import { advancePattern } from './advancePattern.ts'
 import { advancePatternPatternPatternTransition } from './advancePatternPatternPatternTransition.ts'
 import { advancePatternPatternTransition } from './advancePatternPatternTransition.ts'

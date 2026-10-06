@@ -13,12 +13,12 @@ import {
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from './types/PatternBoundState/index.ts'
+} from './types/PatternBound/index.ts'
 import {
   PatternPatternSilenceTransitionState,
   PatternSilenceTransitionState,
   SilenceState,
-} from './types/SilenceBoundState/index.ts'
+} from './types/SilenceBound/index.ts'
 import type { DisposePlayback } from './webAudioSideEffects/index.ts'
 
 export class CleanupFiberMaker extends Context.Service<

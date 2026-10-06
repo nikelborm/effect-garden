@@ -5,7 +5,7 @@ import {
   PatternSilenceTransitionState,
   type SilenceBoundState,
   SilenceState,
-} from '../types/SilenceBoundState/index.ts'
+} from '../types/SilenceBound/index.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
 import { advancePatternSilenceTransition } from './advancePatternSilenceTransition.ts'
 import { advanceSilence } from './advanceSilence.ts'

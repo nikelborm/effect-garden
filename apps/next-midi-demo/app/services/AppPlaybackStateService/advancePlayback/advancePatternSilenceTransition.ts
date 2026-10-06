@@ -9,8 +9,8 @@ import {
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from '../types/PatternBoundState/index.ts'
-import { PatternSilenceTransitionState } from '../types/SilenceBoundState/index.ts'
+} from '../types/PatternBound/index.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBound/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternSilenceTransition = Effect.fn(
