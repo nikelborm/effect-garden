@@ -97,7 +97,9 @@ const scheduleIncomingPattern = Effect.fn('scheduleIncomingPattern')(function* (
   })
 })
 
-const reviveTo = Effect.fn('reviveTo')(function* (el: FadingOutPatternFields) {
+const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
+  el: FadingOutPatternFields,
+) {
   const now = yield* getAudioNow
   yield* RestoreFullVolume.run(el.playback, now)
   yield* el.cleanupFiberToolkit.cancelCleanup
@@ -248,7 +250,7 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
   }
 
   cancelFadeoutAndRestore() {
-    return reviveTo(this)
+    return reviveToPlaying(this)
   }
 
   reanchorFadeoutOnto() {
@@ -281,7 +283,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
   }
 
   cancelFadeoutAndRestore() {
-    return reviveTo(this)
+    return reviveToPlaying(this)
   }
 
   reanchorFadeoutOnto() {
