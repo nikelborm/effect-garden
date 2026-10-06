@@ -49,7 +49,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         stateRef,
       ).pipe(
         // Sound is audible unless we are in pure silence (an empty
-        // SilenceBoundPlayback queue); a fading-out loop still counts as playing.
+        // SilenceBoundState queue); a fading-out loop still counts as playing.
         Stream.map(
           current =>
             current._tag !== 'SilenceBoundStateBase' ||

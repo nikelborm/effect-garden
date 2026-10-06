@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import {
   PatternPatternSilenceTransitionState,
   PatternSilenceTransitionState,
-  type SilenceBoundPlayback,
+  type SilenceBoundState,
   SilenceState,
 } from '../types/SilenceBoundState.ts'
 import { advancePatternPatternSilenceTransition } from './advancePatternPatternSilenceTransition.ts'
@@ -12,7 +12,7 @@ import { advanceSilence } from './advanceSilence.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advanceSilenceBound = Effect.fn('advanceSilenceBound')(function* (
-  oldState: SilenceBoundPlayback,
+  oldState: SilenceBoundState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   if (SilenceState.models(oldState))

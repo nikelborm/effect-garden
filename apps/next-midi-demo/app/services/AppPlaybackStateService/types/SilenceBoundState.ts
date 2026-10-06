@@ -82,9 +82,9 @@ export class PatternPatternSilenceTransitionState extends SilenceBoundStateBase.
   }
 }
 
-export const SilenceBoundPlayback = Schema.Union([
+export const SilenceBoundState = Schema.Union([
   SilenceState,
   PatternSilenceTransitionState,
   PatternPatternSilenceTransitionState,
 ])
-export type SilenceBoundPlayback = typeof SilenceBoundPlayback.Type
+export type SilenceBoundState = typeof SilenceBoundState.Type
