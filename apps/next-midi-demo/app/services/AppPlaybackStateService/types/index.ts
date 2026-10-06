@@ -2,7 +2,7 @@ import * as Schema from 'effect/Schema'
 
 import { PatternBoundState } from './PatternBound/State.ts'
 import { SilenceBoundState } from './SilenceBound/State.ts'
-import { SlowStrumBoundState } from './SlowStrumBound/index.ts'
+import { SlowStrumBoundState } from './SlowStrumBound/State.ts'
 
 // The whole playback state machine collapses to two neighbouring classes: one
 // whose destination is a sounding loop, one whose destination is silence. State

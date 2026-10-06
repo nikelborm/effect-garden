@@ -1,10 +1,10 @@
 import * as Effect from 'effect/Effect'
 
 import {
-  type SlowStrumBoundState,
   SlowStrumPatternTransitionState,
   SlowStrumState,
 } from '../types/SlowStrumBound/index.ts'
+import type { SlowStrumBoundState } from '../types/SlowStrumBound/State.ts'
 import { advanceSlowStrum } from './advanceSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
