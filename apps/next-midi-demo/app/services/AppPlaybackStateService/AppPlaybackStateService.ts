@@ -13,7 +13,6 @@ import {
   PatternInputBus,
   StrengthInputBus,
 } from '../InputStreamBus.ts'
-import { advancePlayback } from './advancePlayback/index.ts'
 import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
@@ -111,8 +110,16 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         Stream.merge(PatternInputBus.pressedDownParamButtonIdDataStream),
         Stream.merge(StrengthInputBus.pressedDownParamButtonIdDataStream),
         Stream.runForEach(({ id: pressedDownParamButtonId }) =>
-          SubscriptionRef.updateEffect(stateRef, state =>
-            advancePlayback(state, pressedDownParamButtonId).pipe(
+          SubscriptionRef.updateEffect(
+            stateRef,
+            Effect.fn('advancePlayback')(
+              function* (oldState: AppPlaybackState) {
+                yield* Effect.log('advancePlayback', {
+                  oldState,
+                  pressedDownParamButtonId,
+                })
+                return yield* oldState.advance(pressedDownParamButtonId)
+              },
               Effect.provide(cleanupFiberMakerLayer),
               Effect.tapCause(Effect.logError),
             ),
@@ -121,7 +128,6 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
 
         Effect.tapCause(Effect.logError),
         Effect.forkScoped,
-        e => e,
       )
       // Stream.mergeAll([,], { concurrency: 'unbounded' })
 

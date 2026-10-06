@@ -70,6 +70,7 @@
   "scripts": {
     "build": "next build && serwist build",
     "b": "bun typecheck",
+    "l": "bun lint",
     "dev": "next dev --experimental-https",
     "format": "biome format --write",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe",

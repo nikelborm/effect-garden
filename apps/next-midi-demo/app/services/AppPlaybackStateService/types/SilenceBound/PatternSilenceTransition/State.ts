@@ -1,5 +1,17 @@
+import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
+import { AccordData } from '../../../../../domain/Accord.ts'
+import { TaggedPatternPointer } from '../../../../../domain/AssetPointer.ts'
+import type { PressedParamButtonId } from '../../../../../domain/PressedParamButtonId.ts'
+import { StrengthData } from '../../../../../domain/Strength.ts'
+import { schedulingSafeBufferInSeconds } from '../../../constants.ts'
+import type { AdvancePlaybackRequirements } from '../../AdvancePlaybackRequirements.ts'
+import type { AppPlaybackState } from '../../index.ts'
+import { getAudioNow } from '../../loopElements.ts'
+import { PatternState } from '../../PatternBound/Pattern/State.ts'
+import { PatternPatternTransitionState } from '../../PatternBound/PatternPatternTransition/State.ts'
+import { PatternSilencePatternTransitionState } from '../../PatternBound/PatternSilencePatternTransition/State.ts'
 import { SilenceBoundBaseState } from '../Base/State.ts'
 import { PatternSilenceTransitionQueue } from './Queue.ts'
 
@@ -15,4 +27,69 @@ export class PatternSilenceTransitionState extends SilenceBoundBaseState.extend<
   static {
     this.make = this.make.bind(this)
   }
+
+  advance = Effect.fn('PatternSilenceTransitionState.advance')(
+    { self: this },
+    function* (
+      pressedParamButtonId: PressedParamButtonId,
+    ): Effect.fn.Return<AppPlaybackState, never, AdvancePlaybackRequirements> {
+      const { accord, strength } = this
+      const [current] = this.transitionQueue
+
+      if (StrengthData.models(pressedParamButtonId))
+        return PatternSilenceTransitionState.make({
+          accord,
+          strength: pressedParamButtonId.strength,
+          transitionQueue: [current],
+        })
+
+      if (AccordData.models(pressedParamButtonId))
+        return yield* Effect.die(
+          new Error(
+            'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+          ),
+        )
+
+      const now = yield* getAudioNow
+
+      const isInGreenZone =
+        now <= current.fadeoutStartsAtSecond - schedulingSafeBufferInSeconds
+
+      if (pressedParamButtonId.pattern === current.asset.pattern) {
+        if (!isInGreenZone)
+          return yield* Effect.die(
+            new Error(
+              're-press of the same pattern during active fade-out: not yet handled',
+            ),
+          )
+
+        const revived = yield* current.cancelFadeoutAndRestore()
+        return PatternState.make({
+          playbackStartedAtSecond: revived.playbackStartedAtSecond,
+          transitionQueue: [revived],
+        })
+      }
+
+      const asset = TaggedPatternPointer.make({
+        pattern: pressedParamButtonId.pattern,
+        accord,
+        strength,
+      })
+      const incoming = yield* current.scheduleNextPattern(asset)
+
+      if (
+        current._tag ===
+        'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
+      )
+        return PatternPatternTransitionState.make({
+          playbackStartedAtSecond: current.playbackStartedAtSecond,
+          transitionQueue: [current, incoming],
+        })
+
+      return PatternSilencePatternTransitionState.make({
+        playbackStartedAtSecond: current.playbackStartedAtSecond,
+        transitionQueue: [current, incoming],
+      })
+    },
+  )
 }

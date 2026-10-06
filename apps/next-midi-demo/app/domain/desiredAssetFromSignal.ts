@@ -1,6 +1,6 @@
-import { AccordData } from '../../../domain/Accord.ts'
-import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
-import { PatternData } from '../../../domain/Pattern.ts'
+import { AccordData } from './Accord.ts'
+import { TaggedPatternPointer } from './AssetPointer.ts'
+import { PatternData } from './Pattern.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const desiredAssetFromSignal = (
