@@ -8,13 +8,14 @@ import {
 import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { getAudioNow, PatternPlayback } from '../types/loopElements.ts'
+import {
+  getAudioNow,
+  PatternPlayback,
+  SlowStrumPlayback,
+} from '../types/loopElements.ts'
 import { PatternState } from '../types/PatternBound/index.ts'
 import { SilenceState } from '../types/SilenceBound/index.ts'
-import {
-  SlowStrumEnqued,
-  SlowStrumState,
-} from '../types/SlowStrumBound/index.ts'
+import { SlowStrumState } from '../types/SlowStrumBound/index.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
@@ -61,7 +62,7 @@ export const advanceSilence = Effect.fn('advanceSilence')(function* (
   return SlowStrumState.make({
     playbackStartedAtSecond,
     transitionQueue: [
-      SlowStrumEnqued.make({ asset, playback, playbackStartedAtSecond }),
+      SlowStrumPlayback.make({ asset, playback, playbackStartedAtSecond }),
     ],
   })
 })

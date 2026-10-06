@@ -9,9 +9,8 @@ export const SlowStrumBoundState = Schema.Union([
 ])
 export type SlowStrumBoundState = typeof SlowStrumBoundState.Type
 
+export * from './Base/State.ts'
 export * from './SlowStrum/Queue.ts'
 export * from './SlowStrum/State.ts'
-export * from './SlowStrumBoundStateBase.ts'
-export * from './SlowStrumEnqued.ts'
 export * from './SlowStrumPatternTransition/Queue.ts'
 export * from './SlowStrumPatternTransition/State.ts'

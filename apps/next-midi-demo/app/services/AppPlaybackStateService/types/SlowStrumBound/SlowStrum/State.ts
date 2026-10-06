@@ -1,6 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-import { SlowStrumBoundStateBase } from '../SlowStrumBoundStateBase.ts'
+import { SlowStrumBoundStateBase } from '../Base/State.ts'
 import { SlowStrumQueue } from './Queue.ts'
 
 export class SlowStrumState extends SlowStrumBoundStateBase.extend<SlowStrumState>(

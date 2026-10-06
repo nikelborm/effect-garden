@@ -2,7 +2,10 @@ import * as Effect from 'effect/Effect'
 import { apply, flow } from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
-import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import {
+  TaggedPatternPointer,
+  TaggedSlowStrumPointer,
+} from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
@@ -151,6 +154,24 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
 
   scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
     return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
+  }
+}
+
+export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
+  'SlowStrumPlayback',
+  {
+    playbackStartedAtSecond: Schema.Number,
+    asset: TaggedSlowStrumPointer,
+    playback: AudioPlayback,
+  },
+) {
+  declare protected '~brand~': never
+  static {
+    this.make = this.make.bind(this)
+  }
+
+  getDuration() {
+    return this.playback.getDuration()
   }
 }
 
