@@ -11,7 +11,7 @@ import {
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
   PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
 } from './loopElements.ts'
-import { SlowStrumEnqued } from './SlowStrum.ts'
+import { SlowStrumEnqued } from './SlowStrumBoundState.ts'
 
 export const PatternQueue = Schema.Tuple([PatternPlayback])
 export const isPatternQueue = Schema.is(PatternQueue)
@@ -41,22 +41,11 @@ export const isPatternPatternPatternTransitionQueue = Schema.is(
   PatternPatternPatternTransitionQueue,
 )
 
-export const SlowStrumQueue = Schema.Tuple([SlowStrumEnqued])
-export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
-
-export const SlowStrumTransitionQueue = Schema.Tuple([
-  SlowStrumTransitionQueueElement,
-  ScheduledPatternTransitionQueueElement,
-])
-export const isSlowStrumTransitionQueue = Schema.is(SlowStrumTransitionQueue)
-
 export const PatternBoundQueue = Schema.Union([
   PatternQueue,
   PatternPatternTransitionQueue,
   PatternSilencePatternTransitionQueue,
   PatternPatternPatternTransitionQueue,
-  SlowStrumQueue,
-  SlowStrumTransitionQueue,
 ])
 export type PatternBoundQueue = typeof PatternBoundQueue.Type
 
@@ -128,38 +117,10 @@ export class PatternPatternPatternTransitionState extends PatternBoundStateBase.
   }
 }
 
-export class SlowStrumState extends PatternBoundStateBase.extend<SlowStrumState>(
-  'SlowStrumState',
-)({
-  transitionQueue: SlowStrumQueue,
-}) {
-  declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SlowStrumState =
-    Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
-}
-
-export class SlowStrumTransitionState extends PatternBoundStateBase.extend<SlowStrumTransitionState>(
-  'SlowStrumTransitionState',
-)({
-  transitionQueue: SlowStrumTransitionQueue,
-}) {
-  declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SlowStrumTransitionState =
-    Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
-}
-
 export const PatternBoundPlayback = Schema.Union([
   PatternState,
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternPatternPatternTransitionState,
-  SlowStrumState,
-  SlowStrumTransitionState,
 ])
 export type PatternBoundPlayback = typeof PatternBoundPlayback.Type

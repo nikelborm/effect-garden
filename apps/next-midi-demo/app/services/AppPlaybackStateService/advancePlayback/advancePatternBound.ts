@@ -6,15 +6,11 @@ import {
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-  SlowStrumState,
-  SlowStrumTransitionState,
 } from '../types/PatternBoundState.ts'
 import { advancePattern } from './advancePattern.ts'
 import { advancePatternPatternPatternTransition } from './advancePatternPatternPatternTransition.ts'
 import { advancePatternPatternTransition } from './advancePatternPatternTransition.ts'
 import { advancePatternSilencePatternTransition } from './advancePatternSilencePatternTransition.ts'
-import { advanceSlowStrum } from './advanceSlowStrum.ts'
-import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternBound = Effect.fn('advancePatternBound')(function* (
@@ -38,15 +34,6 @@ export const advancePatternBound = Effect.fn('advancePatternBound')(function* (
 
   if (PatternPatternPatternTransitionState.models(oldState))
     return yield* advancePatternPatternPatternTransition(
-      oldState,
-      pressedParamButtonId,
-    )
-
-  if (SlowStrumState.models(oldState))
-    return yield* advanceSlowStrum(oldState, pressedParamButtonId)
-
-  if (SlowStrumTransitionState.models(oldState))
-    return yield* advanceSlowStrumPatternTransition(
       oldState,
       pressedParamButtonId,
     )
