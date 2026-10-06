@@ -263,6 +263,8 @@ export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
 export const StrengthInputBusLayer: Layer.Layer<StrengthInputBus> =
   Layer.effect(StrengthInputBus, StrengthInputBus.make)
 
+export type AllInputBuses = AccordInputBus | PatternInputBus | StrengthInputBus
+
 export interface RegisterMethod<
   TPhysicalButtonId extends TaggedReadonlyObject,
   TParamButtonId extends TaggedReadonlyObject,
