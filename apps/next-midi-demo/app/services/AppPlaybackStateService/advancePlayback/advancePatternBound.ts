@@ -1,7 +1,7 @@
 import * as Effect from 'effect/Effect'
 
 import {
-  type PatternBoundPlayback,
+  type PatternBoundState,
   PatternPatternPatternTransitionState,
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
@@ -14,7 +14,7 @@ import { advancePatternSilencePatternTransition } from './advancePatternSilenceP
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advancePatternBound = Effect.fn('advancePatternBound')(function* (
-  oldState: PatternBoundPlayback,
+  oldState: PatternBoundState,
   pressedParamButtonId: PressedParamButtonId,
 ) {
   if (PatternState.models(oldState))
@@ -40,7 +40,7 @@ export const advancePatternBound = Effect.fn('advancePatternBound')(function* (
 
   oldState satisfies never
 
-  // Every PatternBoundPlayback member is handled above.
+  // Every PatternBoundState member is handled above.
   return yield* Effect.die(
     new Error('advancePatternBound: unreachable state shape'),
   )

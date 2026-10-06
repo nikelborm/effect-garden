@@ -28,15 +28,17 @@ export class SlowStrumEnqued extends Schema.TaggedClass<SlowStrumEnqued>()(
 export const SlowStrumQueue = Schema.Tuple([SlowStrumEnqued])
 export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
 
-export const SlowStrumTransitionQueue = Schema.Tuple([
+export const SlowStrumPatternTransitionQueue = Schema.Tuple([
   SlowStrumTransitionQueueElement,
   ScheduledPatternTransitionQueueElement,
 ])
-export const isSlowStrumTransitionQueue = Schema.is(SlowStrumTransitionQueue)
+export const isSlowStrumPatternTransitionQueue = Schema.is(
+  SlowStrumPatternTransitionQueue,
+)
 
 export const SlowStrumBoundQueue = Schema.Union([
   SlowStrumQueue,
-  SlowStrumTransitionQueue,
+  SlowStrumPatternTransitionQueue,
 ])
 export type SlowStrumBoundQueue = typeof SlowStrumBoundQueue.Type
 
@@ -66,14 +68,15 @@ export class SlowStrumState extends SlowStrumBoundStateBase.extend<SlowStrumStat
   }
 }
 
-export class SlowStrumTransitionState extends SlowStrumBoundStateBase.extend<SlowStrumTransitionState>(
-  'SlowStrumTransitionState',
+export class SlowStrumPatternTransitionState extends SlowStrumBoundStateBase.extend<SlowStrumPatternTransitionState>(
+  'SlowStrumPatternTransitionState',
 )({
-  transitionQueue: SlowStrumTransitionQueue,
+  transitionQueue: SlowStrumPatternTransitionQueue,
 }) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SlowStrumTransitionState =
-    Schema.is(this)
+  static models: (
+    candidate: unknown,
+  ) => candidate is SlowStrumPatternTransitionState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
@@ -81,6 +84,6 @@ export class SlowStrumTransitionState extends SlowStrumBoundStateBase.extend<Slo
 
 export const SlowStrumBoundState = Schema.Union([
   SlowStrumState,
-  SlowStrumTransitionState,
+  SlowStrumPatternTransitionState,
 ])
 export type SlowStrumBoundState = typeof SlowStrumBoundState.Type

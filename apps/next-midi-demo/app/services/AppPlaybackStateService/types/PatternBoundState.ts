@@ -1,17 +1,12 @@
 import * as Schema from 'effect/Schema'
 
 import {
-  ScheduledPatternTransitionQueueElement,
-  SlowStrumTransitionQueueElement,
-} from './common.ts'
-import {
   FadingOutPatternPlayback,
   IncomingPatternFadingIn,
   PatternPlayback,
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
   PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
 } from './loopElements.ts'
-import { SlowStrumEnqued } from './SlowStrumBoundState.ts'
 
 export const PatternQueue = Schema.Tuple([PatternPlayback])
 export const isPatternQueue = Schema.is(PatternQueue)
@@ -117,10 +112,10 @@ export class PatternPatternPatternTransitionState extends PatternBoundStateBase.
   }
 }
 
-export const PatternBoundPlayback = Schema.Union([
+export const PatternBoundState = Schema.Union([
   PatternState,
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternPatternPatternTransitionState,
 ])
-export type PatternBoundPlayback = typeof PatternBoundPlayback.Type
+export type PatternBoundState = typeof PatternBoundState.Type

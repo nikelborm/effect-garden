@@ -2,6 +2,7 @@ import * as Effect from 'effect/Effect'
 
 import {
   type SlowStrumBoundState,
+  SlowStrumPatternTransitionState,
   SlowStrumState,
 } from '../types/SlowStrumBoundState.ts'
 import { advanceSlowStrum } from './advanceSlowStrum.ts'
@@ -24,7 +25,7 @@ export const advanceSlowStrumBound = Effect.fn('advanceSlowStrumBound')(
 
     oldState satisfies never
 
-    // Every PatternBoundPlayback member is handled above.
+    // Every PatternBoundState member is handled above.
     return yield* Effect.die(
       new Error('advancePatternBound: unreachable state shape'),
     )
