@@ -16,7 +16,7 @@ import {
 import { PatternState } from '../types/PatternBound/Pattern/State.ts'
 import { SilenceState } from '../types/SilenceBound/Silence/State.ts'
 import { SlowStrumState } from '../types/SlowStrumBound/SlowStrum/State.ts'
-import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
+import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
 export const advanceSilence = Effect.fn('advanceSilence')(function* (
