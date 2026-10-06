@@ -17,15 +17,7 @@ import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import type { PatternState } from './types/PatternBound/Pattern/State.ts'
-import type { PatternPatternPatternTransitionState } from './types/PatternBound/PatternPatternPatternTransition/State.ts'
-import type { PatternPatternTransitionState } from './types/PatternBound/PatternPatternTransition/State.ts'
-import type { PatternSilencePatternTransitionState } from './types/PatternBound/PatternSilencePatternTransition/State.ts'
-import type { PatternPatternSilenceTransitionState } from './types/SilenceBound/PatternPatternSilenceTransition/State.ts'
-import type { PatternSilenceTransitionState } from './types/SilenceBound/PatternSilenceTransition/State.ts'
 import { SilenceState } from './types/SilenceBound/Silence/State.ts'
-import type { SlowStrumState } from './types/SlowStrumBound/SlowStrum/State.ts'
-import type { SlowStrumPatternTransitionState } from './types/SlowStrumBound/SlowStrumPatternTransition/State.ts'
 import type { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 import type { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
 import type { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
@@ -40,17 +32,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       {
         playStopButtonPressableFlagChangesStream: Stream.Stream<boolean>
         latestIsPlayingFlagStream: Stream.Stream<boolean>
-        playbackPublicInfoChangesStream: Stream.Stream<
-          | PatternPatternPatternTransitionState
-          | PatternPatternSilenceTransitionState
-          | PatternPatternTransitionState
-          | PatternSilencePatternTransitionState
-          | PatternSilenceTransitionState
-          | PatternState
-          | SilenceState
-          | SlowStrumPatternTransitionState
-          | SlowStrumState
-        >
+        playbackPublicInfoChangesStream: Stream.Stream<AppPlaybackState>
       },
       never,
       | AccordInputBus
