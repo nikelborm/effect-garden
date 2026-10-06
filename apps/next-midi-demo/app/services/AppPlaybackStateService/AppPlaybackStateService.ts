@@ -14,7 +14,7 @@ import {
   StrengthInputBus,
 } from '../InputStreamBus.ts'
 import { advancePlayback } from './advancePlayback/index.ts'
-import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
+import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
 import { SilenceState } from './types/SilenceBound/Silence/State.ts'
@@ -71,7 +71,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
       //   ),
       // )
 
-      const CleanupFiberMakerLayer = CleanupFiberMaker.layer(stateRef)
+      const cleanupFiberMakerLayer = makeCleanupFiberMakerLayer(stateRef)
 
       const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
         stateRef,
@@ -113,7 +113,7 @@ export class AppPlaybackStateService extends Context.Service<AppPlaybackStateSer
         Stream.runForEach(({ id: pressedDownParamButtonId }) =>
           SubscriptionRef.updateEffect(stateRef, state =>
             advancePlayback(state, pressedDownParamButtonId).pipe(
-              Effect.provide(CleanupFiberMakerLayer),
+              Effect.provide(cleanupFiberMakerLayer),
               Effect.tapCause(Effect.logError),
             ),
           ),
