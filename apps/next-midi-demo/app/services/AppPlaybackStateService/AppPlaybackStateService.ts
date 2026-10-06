@@ -1,10 +1,13 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: these are not hooks> */
+
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
+import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
+import type { AudioBufferStore } from '../AudioBufferStore.ts'
 import {
   AccordInputBus,
   PatternInputBus,
@@ -14,12 +17,55 @@ import { advancePlayback } from './advancePlayback/index.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './types/index.ts'
-import { SilenceState } from './types/SilenceBoundState.ts'
+import type { PatternState } from './types/PatternBoundState/Pattern/State.ts'
+import type { PatternPatternPatternTransitionState } from './types/PatternBoundState/PatternPatternPatternTransition/State.ts'
+import type { PatternPatternTransitionState } from './types/PatternBoundState/PatternPatternTransition/State.ts'
+import type { PatternSilencePatternTransitionState } from './types/PatternBoundState/PatternSilencePatternTransition/State.ts'
+import { SilenceState } from './types/SilenceBoundState/index.ts'
+import type { PatternPatternSilenceTransitionState } from './types/SilenceBoundState/PatternPatternSilenceTransition/State.ts'
+import type { PatternSilenceTransitionState } from './types/SilenceBoundState/PatternSilenceTransition/State.ts'
+import type { SlowStrumState } from './types/SlowStrumBoundState/SlowStrum/State.ts'
+import type { SlowStrumPatternTransitionState } from './types/SlowStrumBoundState/SlowStrumPatternTransition/State.ts'
+import type { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
+import type { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
+import type { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
+import type { ScheduleFadeOut } from './webAudioSideEffects/ScheduleFadeOut.ts'
+import type { ScheduleIncomingPattern } from './webAudioSideEffects/ScheduleIncomingPattern.ts'
+import type { StartFreshPlayback } from './webAudioSideEffects/StartFreshPlayback.ts'
 
 export class AppPlaybackStateService extends Context.Service<AppPlaybackStateService>()(
   'next-midi-demo/AppPlaybackStateService',
   {
-    make: Effect.gen(function* () {
+    make: Effect.gen(function* (): Effect.gen.Return<
+      {
+        playStopButtonPressableFlagChangesStream: Stream.Stream<boolean>
+        latestIsPlayingFlagStream: Stream.Stream<boolean>
+        playbackPublicInfoChangesStream: Stream.Stream<
+          | PatternPatternPatternTransitionState
+          | PatternPatternSilenceTransitionState
+          | PatternPatternTransitionState
+          | PatternSilencePatternTransitionState
+          | PatternSilenceTransitionState
+          | PatternState
+          | SilenceState
+          | SlowStrumPatternTransitionState
+          | SlowStrumState
+        >
+      },
+      never,
+      | AccordInputBus
+      | PatternInputBus
+      | StrengthInputBus
+      | AudioBufferStore
+      | Scope.Scope
+      // side-effects
+      | DisposePlayback
+      | GetAudioNow
+      | RestoreFullVolume
+      | ScheduleFadeOut
+      | ScheduleIncomingPattern
+      | StartFreshPlayback
+    > {
       const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
         SilenceState.default,
       )

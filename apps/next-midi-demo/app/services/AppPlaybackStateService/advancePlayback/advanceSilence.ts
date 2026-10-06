@@ -9,12 +9,12 @@ import { PatternData } from '../../../domain/Pattern.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { getAudioNow, PatternPlayback } from '../types/loopElements.ts'
-import { PatternState } from '../types/PatternBoundState.ts'
-import { SilenceState } from '../types/SilenceBoundState.ts'
+import { PatternState } from '../types/PatternBoundState/index.ts'
+import { SilenceState } from '../types/SilenceBoundState/index.ts'
 import {
   SlowStrumEnqued,
   SlowStrumState,
-} from '../types/SlowStrumBoundState.ts'
+} from '../types/SlowStrumBoundState/index.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/index.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

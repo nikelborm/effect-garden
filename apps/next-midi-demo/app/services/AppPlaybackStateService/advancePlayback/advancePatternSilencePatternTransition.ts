@@ -10,11 +10,11 @@ import {
   PatternPatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from '../types/PatternBoundState.ts'
+} from '../types/PatternBoundState/index.ts'
 import {
   PatternPatternSilenceTransitionState,
   PatternSilenceTransitionState,
-} from '../types/SilenceBoundState.ts'
+} from '../types/SilenceBoundState/index.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 

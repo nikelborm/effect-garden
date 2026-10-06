@@ -6,7 +6,7 @@ import {
   PatternPatternTransitionState,
   PatternSilencePatternTransitionState,
   PatternState,
-} from '../types/PatternBoundState.ts'
+} from '../types/PatternBoundState/index.ts'
 import { advancePattern } from './advancePattern.ts'
 import { advancePatternPatternPatternTransition } from './advancePatternPatternPatternTransition.ts'
 import { advancePatternPatternTransition } from './advancePatternPatternTransition.ts'

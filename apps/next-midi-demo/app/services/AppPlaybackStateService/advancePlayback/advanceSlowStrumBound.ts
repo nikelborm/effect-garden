@@ -4,7 +4,7 @@ import {
   type SlowStrumBoundState,
   SlowStrumPatternTransitionState,
   SlowStrumState,
-} from '../types/SlowStrumBoundState.ts'
+} from '../types/SlowStrumBoundState/index.ts'
 import { advanceSlowStrum } from './advanceSlowStrum.ts'
 import { advanceSlowStrumPatternTransition } from './advanceSlowStrumPatternTransition.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'

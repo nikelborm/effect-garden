@@ -6,8 +6,8 @@ import { StrengthData } from '../../../domain/Strength.ts'
 import {
   PatternPatternTransitionState,
   type PatternState,
-} from '../types/PatternBoundState.ts'
-import { PatternSilenceTransitionState } from '../types/SilenceBoundState.ts'
+} from '../types/PatternBoundState/index.ts'
+import { PatternSilenceTransitionState } from '../types/SilenceBoundState/index.ts'
 import { desiredAssetFromSignal } from './desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 
