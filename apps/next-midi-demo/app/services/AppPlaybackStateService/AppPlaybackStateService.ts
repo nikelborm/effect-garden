@@ -117,6 +117,7 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
             })
             return yield* oldState.advance(pressedDownParamButtonId)
           },
+          // @effect-diagnostics-next-line strictEffectProvide:off
           Effect.provide(cleanupFiberMakerLayer),
           Effect.tapCause(Effect.logError),
         ),

@@ -54,6 +54,11 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     ),
   )
 
+  // @effect-diagnostics-next-line schemaSync:off
+  const decodeDataSetSync = Schema.decodeUnknownSync(DatasetSchema) as (
+    input: unknown,
+  ) => Dataset
+
   return Stream.mergeAll(
     ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].map(
       eventType =>
@@ -129,7 +134,7 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     ),
     Stream.map(
       ([element, state]) =>
-        [DatasetSchema.make(element.dataset) as Dataset, state] as const,
+        [decodeDataSetSync(element.dataset), state] as const,
     ),
   )
 }
