@@ -123,7 +123,7 @@
           "schemaNumber": "error",
           "schemaOpaqueInstanceMember": "error",
           "schemaStructWithTag": "error",
-          "schemaSync": "error",
+          "schemaSync": "off",
           "schemaSyncInEffect": "error",
           "schemaUnionOfLiterals": "error",
           "scopeInLayerEffect": "error",
