@@ -16,10 +16,10 @@ import {
   PatternPlayback,
   SlowStrumPlayback,
 } from '../../loopElements.ts'
-import { PatternState } from '../../Machine/Pattern/State.ts'
-import { SlowStrumState } from '../../Machine/SlowStrum/State.ts'
 import { StartFreshPlayback } from '../../webAudioSideEffects/StartFreshPlayback.ts'
+import { PatternState } from '../Pattern/State.ts'
 import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
+import { SlowStrumState } from '../SlowStrum/State.ts'
 import { SilenceQueue } from './Queue.ts'
 
 export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(

@@ -9,8 +9,8 @@ import { StrengthData } from '../../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
-import { PatternPatternSilenceTransitionState } from '../../Machine/PatternPatternSilenceTransition/State.ts'
 import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
+import { PatternPatternSilenceTransitionState } from '../PatternPatternSilenceTransition/State.ts'
 import { PatternPatternPatternTransitionQueue } from './Queue.ts'
 
 export class PatternPatternPatternTransitionState extends PatternBoundBaseState.extend<PatternPatternPatternTransitionState>(
