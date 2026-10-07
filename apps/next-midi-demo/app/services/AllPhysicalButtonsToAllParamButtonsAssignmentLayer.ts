@@ -10,7 +10,6 @@ import {
 import { DOMPhysicalButtonData } from '../domain/DOMButton.ts'
 import { KeyboardKeyPhysicalButtonData } from '../domain/KeyboardKey.ts'
 import { NotePhysicalButtonData } from '../domain/MIDIValues.ts'
-import type { ParamButtonIdData } from '../domain/ParamButton.ts'
 import {
   AllPatterns,
   PatternData,
@@ -107,10 +106,7 @@ const paramButtonIds = Effect.all({
           _.AllStrengths,
           StrengthParamButtonData.make,
         ),
-      }) as const satisfies Record<
-        string,
-        EArray.NonEmptyReadonlyArray<ParamButtonIdData<any>>
-      >,
+      }) as const,
   ),
   Effect.cached,
   Effect.flatten,
