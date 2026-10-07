@@ -1,15 +1,15 @@
 import * as Schema from 'effect/Schema'
 
-import { defaultAccord } from '../../../.././domain/Accord.ts'
+import { defaultAccord } from '../../../../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../../../.././domain/AssetPointer.ts'
-import { PatternData } from '../../../.././domain/Pattern.ts'
-import type { PressedParamButtonId } from '../../../.././domain/PressedParamButtonId.ts'
-import { defaultStrength, StrengthData } from '../../../.././domain/Strength.ts'
-import { AudioBufferStore } from '../../.././AudioBufferStore.ts'
+} from '../../../../domain/AssetPointer.ts'
+import { PatternData } from '../../../../domain/Pattern.ts'
+import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
+import { defaultStrength, StrengthData } from '../../../../domain/Strength.ts'
+import { AudioBufferStore } from '../../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import {
   getAudioNow,
@@ -18,7 +18,7 @@ import {
 } from '../../loopElements.ts'
 import { PatternState } from '../../PatternBound/Pattern/State.ts'
 import { SlowStrumState } from '../../SlowStrumBound/SlowStrum/State.ts'
-import { StartFreshPlayback } from '../.././webAudioSideEffects/StartFreshPlayback.ts'
+import { StartFreshPlayback } from '../../webAudioSideEffects/StartFreshPlayback.ts'
 import { SilenceBoundBaseState } from '../Base/State.ts'
 import { SilenceQueue } from './Queue.ts'
 

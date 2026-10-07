@@ -3,7 +3,7 @@ import * as Schema from 'effect/Schema'
 import {
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../.././domain/AssetPointer.ts'
+} from '../../domain/AssetPointer.ts'
 
 export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   'AudioPlayback',

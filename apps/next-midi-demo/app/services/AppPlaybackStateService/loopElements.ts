@@ -5,8 +5,8 @@ import * as Schema from 'effect/Schema'
 import {
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
-} from '../.././domain/AssetPointer.ts'
-import { AudioBufferStore } from '.././AudioBufferStore.ts'
+} from '../../domain/AssetPointer.ts'
+import { AudioBufferStore } from '../AudioBufferStore.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import { AudioPlayback } from './common.ts'
