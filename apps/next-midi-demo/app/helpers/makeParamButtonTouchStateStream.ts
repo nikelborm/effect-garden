@@ -54,7 +54,6 @@ export const makeParamButtonTouchStateStreamWithDatasets = <
     ),
   )
 
-  // @effect-diagnostics-next-line schemaSync:off
   const decodeDataSetSync = Schema.decodeUnknownSync(DatasetSchema) as (
     input: unknown,
   ) => Dataset
