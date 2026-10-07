@@ -6,7 +6,7 @@ import { TaggedPatternPointer } from '../../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
-import { PatternPatternPatternTransitionState } from '../../PatternBound/PatternPatternPatternTransition/State.ts'
+import { PatternPatternPatternTransitionState } from '../../Machine/PatternPatternPatternTransition/State.ts'
 import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { TwoPatternsFadingToSilenceQueue } from './Queue.ts'
 

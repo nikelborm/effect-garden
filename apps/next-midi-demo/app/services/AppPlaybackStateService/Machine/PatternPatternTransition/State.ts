@@ -9,28 +9,28 @@ import { StrengthData } from '../../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
-import { PatternPatternSilenceTransitionState } from '../../SilenceBound/PatternPatternSilenceTransition/State.ts'
-import { PatternSilenceTransitionState } from '../../SilenceBound/PatternSilenceTransition/State.ts'
-import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
+import { PatternPatternSilenceTransitionState } from '../../Machine/PatternPatternSilenceTransition/State.ts'
+import { PatternSilenceTransitionState } from '../../Machine/PatternSilenceTransition/State.ts'
 import { PatternState } from '../Pattern/State.ts'
+import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
-import { PatternSilencePatternTransitionQueue } from './Queue.ts'
+import { PatternPatternTransitionQueue } from './Queue.ts'
 
-export class PatternSilencePatternTransitionState extends PatternBoundBaseState.extend<PatternSilencePatternTransitionState>(
-  'PatternSilencePatternTransitionState',
+export class PatternPatternTransitionState extends PatternBoundBaseState.extend<PatternPatternTransitionState>(
+  'PatternPatternTransitionState',
 )({
-  transitionQueue: PatternSilencePatternTransitionQueue,
+  transitionQueue: PatternPatternTransitionQueue,
 }) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,
-  ) => candidate is PatternSilencePatternTransitionState = Schema.is(this)
+  ) => candidate is PatternPatternTransitionState = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    const [dying, incoming] = this.transitionQueue
+    const [current, incoming] = this.transitionQueue
 
     if (
       (AccordData.models(pressedParamButtonId) &&
@@ -54,14 +54,14 @@ export class PatternSilencePatternTransitionState extends PatternBoundBaseState.
         return PatternSilenceTransitionState.make({
           accord: incoming.asset.accord,
           strength: incoming.asset.strength,
-          transitionQueue: [dying],
+          transitionQueue: [current],
         })
       }
 
       return PatternPatternSilenceTransitionState.make({
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
-        transitionQueue: [dying, yield* incoming.promoteToFadeToSilence()],
+        transitionQueue: [current, yield* incoming.promoteToFadingOut()],
       })
     }
 
@@ -70,8 +70,8 @@ export class PatternSilencePatternTransitionState extends PatternBoundBaseState.
       incoming.asset,
     )
 
-    if (isInGreenZone && Equal.equals(desiredAsset, dying.asset)) {
-      const revived = yield* dying.cancelFadeoutAndRestore()
+    if (isInGreenZone && Equal.equals(desiredAsset, current.asset)) {
+      const revived = yield* current.cancelFadeoutAndRestore()
       yield* incoming.drop()
       return PatternState.make({
         playbackStartedAtSecond: revived.playbackStartedAtSecond,
@@ -81,19 +81,22 @@ export class PatternSilencePatternTransitionState extends PatternBoundBaseState.
 
     if (!isInGreenZone) {
       return PatternPatternPatternTransitionState.make({
-        playbackStartedAtSecond: dying.playbackStartedAtSecond,
+        playbackStartedAtSecond: current.playbackStartedAtSecond,
         transitionQueue: [
-          dying,
+          current,
           yield* incoming.promoteToFadingOut(),
-          yield* dying.scheduleNextPattern(desiredAsset),
+          yield* current.scheduleNextPattern(desiredAsset),
         ],
       })
     }
 
     yield* incoming.drop()
-    return PatternSilencePatternTransitionState.make({
-      playbackStartedAtSecond: dying.playbackStartedAtSecond,
-      transitionQueue: [dying, yield* dying.scheduleNextPattern(desiredAsset)],
+    return PatternPatternTransitionState.make({
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      transitionQueue: [
+        yield* current.reanchorFadeoutOnto(),
+        yield* current.scheduleNextPattern(desiredAsset),
+      ],
     })
   }
 }
