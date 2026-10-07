@@ -1,10 +1,11 @@
 import * as Schema from 'effect/Schema'
 
-import { AccordData } from '../../../../domain/Accord.ts'
 import { desiredAssetFromSignal } from '../../../../domain/desiredAssetFromSignal.ts'
-import { PatternData } from '../../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData } from '../../../../domain/Strength.ts'
+import {
+  theSameAccordOrStrengthWasPressed,
+  theSamePatternWasPressed,
+} from '../../../../helpers/theSameWasPressed.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
@@ -26,18 +27,10 @@ export class PatternState extends PatternBoundBaseState.extend<PatternState>(
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [playing] = this.transitionQueue
 
-    if (
-      (AccordData.models(pressedParamButtonId) &&
-        pressedParamButtonId.accord === playing.asset.accord) ||
-      (StrengthData.models(pressedParamButtonId) &&
-        pressedParamButtonId.strength === playing.asset.strength)
-    )
+    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, playing.asset))
       return this
 
-    if (
-      PatternData.models(pressedParamButtonId) &&
-      pressedParamButtonId.pattern === playing.asset.pattern
-    )
+    if (theSamePatternWasPressed(pressedParamButtonId, playing.asset))
       return PatternSilenceTransitionState.make({
         accord: playing.asset.accord,
         strength: playing.asset.strength,

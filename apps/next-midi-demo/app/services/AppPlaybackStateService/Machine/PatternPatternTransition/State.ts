@@ -1,11 +1,12 @@
 import * as Equal from 'effect/Equal'
 import * as Schema from 'effect/Schema'
 
-import { AccordData } from '../../../../domain/Accord.ts'
 import { desiredAssetFromSignal } from '../../../../domain/desiredAssetFromSignal.ts'
-import { PatternData } from '../../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData } from '../../../../domain/Strength.ts'
+import {
+  theSameAccordOrStrengthWasPressed,
+  theSamePatternWasPressed,
+} from '../../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
@@ -32,12 +33,7 @@ export class PatternPatternTransitionState extends PatternBoundBaseState.extend<
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current, incoming] = this.transitionQueue
 
-    if (
-      (AccordData.models(pressedParamButtonId) &&
-        pressedParamButtonId.accord === incoming.asset.accord) ||
-      (StrengthData.models(pressedParamButtonId) &&
-        pressedParamButtonId.strength === incoming.asset.strength)
-    )
+    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
 
     const now = yield* getAudioNow
@@ -45,10 +41,7 @@ export class PatternPatternTransitionState extends PatternBoundBaseState.extend<
     const isInGreenZone =
       now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
-    if (
-      PatternData.models(pressedParamButtonId) &&
-      pressedParamButtonId.pattern === incoming.asset.pattern
-    ) {
+    if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (isInGreenZone) {
         yield* incoming.drop()
         return PatternSilenceTransitionState.make({
