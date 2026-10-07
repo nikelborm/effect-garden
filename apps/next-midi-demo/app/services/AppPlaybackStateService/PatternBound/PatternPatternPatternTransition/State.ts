@@ -10,10 +10,10 @@ import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
 import { PatternPatternSilenceTransitionState } from '../../SilenceBound/PatternPatternSilenceTransition/State.ts'
-import { PatternBoundStateBase } from '../Base/State.ts'
+import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternPatternTransitionQueue } from './Queue.ts'
 
-export class PatternPatternPatternTransitionState extends PatternBoundStateBase.extend<PatternPatternPatternTransitionState>(
+export class PatternPatternPatternTransitionState extends PatternBoundBaseState.extend<PatternPatternPatternTransitionState>(
   'PatternPatternPatternTransitionState',
 )({
   transitionQueue: PatternPatternPatternTransitionQueue,

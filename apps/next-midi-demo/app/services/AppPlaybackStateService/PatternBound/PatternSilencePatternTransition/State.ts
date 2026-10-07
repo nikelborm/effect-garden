@@ -11,12 +11,12 @@ import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
 import { PatternPatternSilenceTransitionState } from '../../SilenceBound/PatternPatternSilenceTransition/State.ts'
 import { PatternSilenceTransitionState } from '../../SilenceBound/PatternSilenceTransition/State.ts'
-import { PatternBoundStateBase } from '../Base/State.ts'
+import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternState } from '../Pattern/State.ts'
 import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
 import { PatternSilencePatternTransitionQueue } from './Queue.ts'
 
-export class PatternSilencePatternTransitionState extends PatternBoundStateBase.extend<PatternSilencePatternTransitionState>(
+export class PatternSilencePatternTransitionState extends PatternBoundBaseState.extend<PatternSilencePatternTransitionState>(
   'PatternSilencePatternTransitionState',
 )({
   transitionQueue: PatternSilencePatternTransitionQueue,

@@ -2,8 +2,8 @@ import * as Schema from 'effect/Schema'
 
 import { SlowStrumBoundQueue } from './Queue.ts'
 
-export class SlowStrumBoundStateBase extends Schema.TaggedClass<SlowStrumBoundStateBase>()(
-  'SlowStrumBoundStateBase',
+export class SlowStrumBoundBaseState extends Schema.TaggedClass<SlowStrumBoundBaseState>()(
+  'SlowStrumBoundBaseState',
   {
     playbackStartedAtSecond: Schema.Finite,
     transitionQueue: SlowStrumBoundQueue,

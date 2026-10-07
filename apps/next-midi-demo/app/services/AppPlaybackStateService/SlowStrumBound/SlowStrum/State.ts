@@ -3,10 +3,10 @@ import * as Schema from 'effect/Schema'
 
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
-import { SlowStrumBoundStateBase } from '../Base/State.ts'
+import { SlowStrumBoundBaseState } from '../SlowStrumBoundBase/State.ts'
 import { SlowStrumQueue } from './Queue.ts'
 
-export class SlowStrumState extends SlowStrumBoundStateBase.extend<SlowStrumState>(
+export class SlowStrumState extends SlowStrumBoundBaseState.extend<SlowStrumState>(
   'SlowStrumState',
 )({
   transitionQueue: SlowStrumQueue,

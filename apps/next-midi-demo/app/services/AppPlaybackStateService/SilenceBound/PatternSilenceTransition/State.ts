@@ -11,7 +11,7 @@ import { getAudioNow } from '../../loopElements.ts'
 import { PatternState } from '../../PatternBound/Pattern/State.ts'
 import { PatternPatternTransitionState } from '../../PatternBound/PatternPatternTransition/State.ts'
 import { PatternSilencePatternTransitionState } from '../../PatternBound/PatternSilencePatternTransition/State.ts'
-import { SilenceBoundBaseState } from '../Base/State.ts'
+import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { PatternSilenceTransitionQueue } from './Queue.ts'
 
 export class PatternSilenceTransitionState extends SilenceBoundBaseState.extend<PatternSilenceTransitionState>(

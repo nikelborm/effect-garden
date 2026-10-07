@@ -19,7 +19,7 @@ import {
 import { PatternState } from '../../PatternBound/Pattern/State.ts'
 import { SlowStrumState } from '../../SlowStrumBound/SlowStrum/State.ts'
 import { StartFreshPlayback } from '../../webAudioSideEffects/StartFreshPlayback.ts'
-import { SilenceBoundBaseState } from '../Base/State.ts'
+import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { SilenceQueue } from './Queue.ts'
 
 export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(

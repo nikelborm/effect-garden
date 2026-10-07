@@ -2,8 +2,8 @@ import * as Schema from 'effect/Schema'
 
 import { PatternBoundBaseQueue } from './Queue.ts'
 
-export class PatternBoundStateBase extends Schema.TaggedClass<PatternBoundStateBase>()(
-  'PatternBoundStateBase',
+export class PatternBoundBaseState extends Schema.TaggedClass<PatternBoundBaseState>()(
+  'PatternBoundBaseState',
   {
     playbackStartedAtSecond: Schema.Finite,
     transitionQueue: PatternBoundBaseQueue,

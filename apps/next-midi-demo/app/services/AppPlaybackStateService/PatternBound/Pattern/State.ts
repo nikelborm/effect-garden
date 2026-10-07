@@ -7,11 +7,11 @@ import type { PressedParamButtonId } from '../../../../domain/PressedParamButton
 import { StrengthData } from '../../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { PatternSilenceTransitionState } from '../../SilenceBound/PatternSilenceTransition/State.ts'
-import { PatternBoundStateBase } from '../Base/State.ts'
+import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
 import { PatternQueue } from './Queue.ts'
 
-export class PatternState extends PatternBoundStateBase.extend<PatternState>(
+export class PatternState extends PatternBoundBaseState.extend<PatternState>(
   'PatternState',
 )({
   transitionQueue: PatternQueue,
