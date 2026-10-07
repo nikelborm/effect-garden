@@ -17,7 +17,7 @@ export const AppPlaybackState = Schema.Union([
 export type AppPlaybackState = typeof AppPlaybackState.Type
 
 export interface AdvanceFnReturn
-  extends Effect.fn.Return<
+  extends Effect.gen.Return<
     AppPlaybackState,
     never,
     AdvancePlaybackRequirements

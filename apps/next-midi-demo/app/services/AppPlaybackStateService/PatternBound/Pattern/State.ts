@@ -1,4 +1,3 @@
-import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import { AccordData } from '../../../.././domain/Accord.ts'
@@ -24,37 +23,34 @@ export class PatternState extends PatternBoundStateBase.extend<PatternState>(
     this.make = this.make.bind(this)
   }
 
-  advance = Effect.fn('PatternState.advance')(
-    { self: this },
-    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-      const [playing] = this.transitionQueue
+  *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
+    const [playing] = this.transitionQueue
 
-      if (
-        (AccordData.models(pressedParamButtonId) &&
-          pressedParamButtonId.accord === playing.asset.accord) ||
-        (StrengthData.models(pressedParamButtonId) &&
-          pressedParamButtonId.strength === playing.asset.strength)
-      )
-        return this
+    if (
+      (AccordData.models(pressedParamButtonId) &&
+        pressedParamButtonId.accord === playing.asset.accord) ||
+      (StrengthData.models(pressedParamButtonId) &&
+        pressedParamButtonId.strength === playing.asset.strength)
+    )
+      return this
 
-      if (
-        PatternData.models(pressedParamButtonId) &&
-        pressedParamButtonId.pattern === playing.asset.pattern
-      )
-        return PatternSilenceTransitionState.make({
-          accord: playing.asset.accord,
-          strength: playing.asset.strength,
-          transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
-        })
-
-      const asset = desiredAssetFromSignal(pressedParamButtonId, playing.asset)
-      return PatternPatternTransitionState.make({
-        playbackStartedAtSecond: playing.playbackStartedAtSecond,
-        transitionQueue: [
-          yield* playing.beginShortFadeoutBeforeAnotherPattern(),
-          yield* playing.scheduleNextPattern(asset),
-        ],
+    if (
+      PatternData.models(pressedParamButtonId) &&
+      pressedParamButtonId.pattern === playing.asset.pattern
+    )
+      return PatternSilenceTransitionState.make({
+        accord: playing.asset.accord,
+        strength: playing.asset.strength,
+        transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
       })
-    },
-  )
+
+    const asset = desiredAssetFromSignal(pressedParamButtonId, playing.asset)
+    return PatternPatternTransitionState.make({
+      playbackStartedAtSecond: playing.playbackStartedAtSecond,
+      transitionQueue: [
+        yield* playing.beginShortFadeoutBeforeAnotherPattern(),
+        yield* playing.scheduleNextPattern(asset),
+      ],
+    })
+  }
 }

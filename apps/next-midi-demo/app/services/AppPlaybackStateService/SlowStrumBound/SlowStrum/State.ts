@@ -23,14 +23,9 @@ export class SlowStrumState extends SlowStrumBoundStateBase.extend<SlowStrumStat
   // For now any input during a slow strum dies. The prior reference implementation
   // (interrupt-and-restart / schedule-loop-after-strum) lives in git history and in
   // the midi_scheduling_findings memory.
-  advance = Effect.fn('SlowStrumState.advance')(
-    { self: this },
-    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-      const [strum] = this.transitionQueue
-      yield* Effect.logError({ strum, pressedParamButtonId })
-      return yield* Effect.die(
-        new Error('slow strums are deferred (SlowStrum)'),
-      )
-    },
-  )
+  *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
+    const [strum] = this.transitionQueue
+    yield* Effect.logError({ strum, pressedParamButtonId })
+    return yield* Effect.die(new Error('slow strums are deferred (SlowStrum)'))
+  }
 }

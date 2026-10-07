@@ -23,39 +23,36 @@ export class PatternPatternSilenceTransitionState extends SilenceBoundBaseState.
     this.make = this.make.bind(this)
   }
 
-  advance = Effect.fn('PatternPatternSilenceTransitionState.advance')(
-    { self: this },
-    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-      const { accord, strength } = this
-      const [oldest, fading] = this.transitionQueue
+  *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
+    const { accord, strength } = this
+    const [oldest, fading] = this.transitionQueue
 
-      if (StrengthData.models(pressedParamButtonId))
-        return PatternPatternSilenceTransitionState.make({
-          accord,
-          strength: pressedParamButtonId.strength,
-          transitionQueue: [oldest, fading],
-        })
-
-      if (AccordData.models(pressedParamButtonId))
-        return yield* Effect.die(
-          new Error(
-            'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
-          ),
-        )
-
-      const asset = TaggedPatternPointer.make({
-        pattern: pressedParamButtonId.pattern,
+    if (StrengthData.models(pressedParamButtonId))
+      return PatternPatternSilenceTransitionState.make({
         accord,
-        strength,
+        strength: pressedParamButtonId.strength,
+        transitionQueue: [oldest, fading],
       })
-      return PatternPatternPatternTransitionState.make({
-        playbackStartedAtSecond: oldest.playbackStartedAtSecond,
-        transitionQueue: [
-          oldest,
-          fading,
-          yield* oldest.scheduleNextPattern(asset),
-        ],
-      })
-    },
-  )
+
+    if (AccordData.models(pressedParamButtonId))
+      return yield* Effect.die(
+        new Error(
+          'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
+        ),
+      )
+
+    const asset = TaggedPatternPointer.make({
+      pattern: pressedParamButtonId.pattern,
+      accord,
+      strength,
+    })
+    return PatternPatternPatternTransitionState.make({
+      playbackStartedAtSecond: oldest.playbackStartedAtSecond,
+      transitionQueue: [
+        oldest,
+        fading,
+        yield* oldest.scheduleNextPattern(asset),
+      ],
+    })
+  }
 }

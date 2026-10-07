@@ -23,14 +23,11 @@ export class SlowStrumPatternTransitionState extends SlowStrumBoundStateBase.ext
   // SlowStrumState.advance this is part of the deferred slow-strum problem; any
   // input dies for now. Reference implementation: git history + the
   // midi_scheduling_findings memory.
-  advance = Effect.fn('SlowStrumPatternTransitionState.advance')(
-    { self: this },
-    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-      const [strum, scheduled] = this.transitionQueue
-      yield* Effect.logError({ strum, scheduled, pressedParamButtonId })
-      return yield* Effect.die(
-        new Error('slow strums are deferred (SlowStrumPattern)'),
-      )
-    },
-  )
+  *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
+    const [strum, scheduled] = this.transitionQueue
+    yield* Effect.logError({ strum, scheduled, pressedParamButtonId })
+    return yield* Effect.die(
+      new Error('slow strums are deferred (SlowStrumPattern)'),
+    )
+  }
 }

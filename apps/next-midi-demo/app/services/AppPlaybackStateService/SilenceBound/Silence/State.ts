@@ -1,4 +1,3 @@
-import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import { defaultAccord } from '../../../.././domain/Accord.ts'
@@ -38,53 +37,50 @@ export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(
     accord: defaultAccord,
     strength: defaultStrength,
     transitionQueue: [],
-  })
+  });
 
-  advance = Effect.fn('SilenceState.advance')(
-    { self: this },
-    function* (pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-      const { accord, strength } = this
+  *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
+    const { accord, strength } = this
 
-      if (StrengthData.models(pressedParamButtonId))
-        return SilenceState.make({
-          accord,
-          strength: pressedParamButtonId.strength,
-          transitionQueue: [],
-        })
-
-      const asset: AssetPointer = PatternData.models(pressedParamButtonId)
-        ? TaggedPatternPointer.make({
-            pattern: pressedParamButtonId.pattern,
-            accord,
-            strength,
-          })
-        : TaggedSlowStrumPointer.make({
-            accord: pressedParamButtonId.accord,
-            strength,
-          })
-
-      const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-      const playbackStartedAtSecond = yield* getAudioNow
-
-      const playback = yield* StartFreshPlayback.run(audioBuffer, {
-        isLooping: PatternData.models(pressedParamButtonId),
-        startAtSecond: playbackStartedAtSecond,
+    if (StrengthData.models(pressedParamButtonId))
+      return SilenceState.make({
+        accord,
+        strength: pressedParamButtonId.strength,
+        transitionQueue: [],
       })
 
-      if (TaggedPatternPointer.models(asset))
-        return PatternState.make({
-          playbackStartedAtSecond,
-          transitionQueue: [
-            PatternPlayback.make({ asset, playback, playbackStartedAtSecond }),
-          ],
+    const asset: AssetPointer = PatternData.models(pressedParamButtonId)
+      ? TaggedPatternPointer.make({
+          pattern: pressedParamButtonId.pattern,
+          accord,
+          strength,
+        })
+      : TaggedSlowStrumPointer.make({
+          accord: pressedParamButtonId.accord,
+          strength,
         })
 
-      return SlowStrumState.make({
+    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
+    const playbackStartedAtSecond = yield* getAudioNow
+
+    const playback = yield* StartFreshPlayback.run(audioBuffer, {
+      isLooping: PatternData.models(pressedParamButtonId),
+      startAtSecond: playbackStartedAtSecond,
+    })
+
+    if (TaggedPatternPointer.models(asset))
+      return PatternState.make({
         playbackStartedAtSecond,
         transitionQueue: [
-          SlowStrumPlayback.make({ asset, playback, playbackStartedAtSecond }),
+          PatternPlayback.make({ asset, playback, playbackStartedAtSecond }),
         ],
       })
-    },
-  )
+
+    return SlowStrumState.make({
+      playbackStartedAtSecond,
+      transitionQueue: [
+        SlowStrumPlayback.make({ asset, playback, playbackStartedAtSecond }),
+      ],
+    })
+  }
 }

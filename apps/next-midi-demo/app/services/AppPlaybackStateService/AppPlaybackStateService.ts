@@ -115,7 +115,9 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
               oldState,
               pressedDownParamButtonId,
             })
-            return yield* oldState.advance(pressedDownParamButtonId)
+            return yield* Effect.gen(() =>
+              oldState.advance(pressedDownParamButtonId),
+            ).pipe(Effect.withSpan(`${oldState.constructor.name}.advance`))
           },
           // @effect-diagnostics-next-line strictEffectProvide:off
           Effect.provide(cleanupFiberMakerLayer),
