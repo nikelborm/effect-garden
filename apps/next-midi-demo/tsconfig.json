@@ -20,7 +20,15 @@
         "refactors": true,
         "quickinfo": true,
         "completions": true,
-        "namespaceImportPackages": ["effect"],
+        "namespaceImportPackages": [
+          "effect",
+          "effect-web-audio",
+          "effect-web-midi",
+          "@effect/atom-react",
+          "@effect/opentelemetry",
+          "@effect/platform-browser",
+          "@effect/platform-bun"
+        ],
         "goto": true,
         "renames": true,
         "diagnosticSeverity": {
