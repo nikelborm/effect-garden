@@ -1,4 +1,4 @@
-import { EMIDIAccess } from 'effect-web-midi'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
 import * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 import * as Parsing from 'effect-web-midi/Parsing'
 

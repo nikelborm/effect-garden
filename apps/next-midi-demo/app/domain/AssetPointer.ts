@@ -1,4 +1,4 @@
-import { AbsentProperty } from '@evadev/effect-helpers'
+import { AbsentProperty } from '@evadev/effect-helpers/AbsentProperty'
 
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'

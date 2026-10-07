@@ -1,4 +1,5 @@
-import { EMIDIAccess, type EMIDIInput } from 'effect-web-midi'
+import * as EMIDIAccess from 'effect-web-midi/EMIDIAccess'
+import type * as EMIDIInput from 'effect-web-midi/EMIDIInput'
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
