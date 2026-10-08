@@ -14,6 +14,7 @@ import {
   getAudioNow,
   IncomingPatternFadingIn,
 } from '../loopElements.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 
 export const PatternPatternPatternTransitionQueue = Schema.Tuple([

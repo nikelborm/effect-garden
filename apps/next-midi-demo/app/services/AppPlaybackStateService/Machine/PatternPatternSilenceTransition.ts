@@ -7,6 +7,7 @@ import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.
 import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback } from '../loopElements.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 
 export const TwoPatternsFadingToSilenceQueue = Schema.Tuple([

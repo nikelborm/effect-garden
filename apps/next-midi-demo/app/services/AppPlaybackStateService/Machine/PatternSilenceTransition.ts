@@ -1,15 +1,26 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
+import {
+  type Accord,
+  AccordData,
+  AccordSchema,
+} from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
+import {
+  type Strength,
+  StrengthData,
+  StrengthSchema,
+} from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback, getAudioNow } from '../loopElements.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternState } from './Pattern.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilencePatternTransitionState } from './PatternSilencePatternTransition.ts'
 
 export const PatternSilenceTransitionQueue = Schema.Tuple([
@@ -89,4 +100,10 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       transitionQueue: [current, incoming],
     })
   }
+
+  static makeSimple = (
+    accord: Accord,
+    strength: Strength,
+    playback: FadingOutPatternPlayback,
+  ) => this.make({ accord, strength, transitionQueue: [playback] })
 }

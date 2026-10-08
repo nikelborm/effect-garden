@@ -12,7 +12,9 @@ import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { getAudioNow, PatternPlayback } from '../loopElements.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 
 export const PatternQueue = Schema.Tuple([PatternPlayback])
@@ -32,11 +34,11 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       return this
 
     if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
-      return PatternSilenceTransitionState.make({
-        accord: current.asset.accord,
-        strength: current.asset.strength,
-        transitionQueue: [yield* current.beginLongFadeoutToSilence()],
-      })
+      return PatternSilenceTransitionState.makeSimple(
+        current.asset.accord,
+        current.asset.strength,
+        yield* current.beginLongFadeoutToSilence(),
+      )
 
     const asset = desiredAssetFromSignal(pressedParamButtonId, current.asset)
     return PatternPatternTransitionState.make({
@@ -72,4 +74,6 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       })
     },
   )
+
+  // handleSecondTapForDeactivation
 }

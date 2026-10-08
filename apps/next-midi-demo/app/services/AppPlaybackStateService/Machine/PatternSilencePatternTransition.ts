@@ -14,9 +14,11 @@ import {
   IncomingPatternFadingIn,
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 } from '../loopElements.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternState } from './Pattern.ts'
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 
 export const PatternSilencePatternTransitionQueue = Schema.Tuple([
