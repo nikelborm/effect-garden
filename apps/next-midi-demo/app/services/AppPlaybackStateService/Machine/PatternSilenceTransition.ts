@@ -15,7 +15,11 @@ import {
 } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { FadingOutPatternPlayback, getAudioNow } from '../loopElements.ts'
+import {
+  type FadingOutPatternPlayback,
+  getAudioNow,
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+} from '../loopElements.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -24,7 +28,7 @@ import { PatternSilencePatternTransitionState } from './PatternSilencePatternTra
 import { PatternState } from './Pattern⏳.ts'
 
 export const PatternSilenceTransitionQueue = Schema.Tuple([
-  FadingOutPatternPlayback,
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
 export const isPatternSilenceTransitionQueue = Schema.is(
   PatternSilenceTransitionQueue,
@@ -33,6 +37,7 @@ export const isPatternSilenceTransitionQueue = Schema.is(
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
   {
+    firstPlaybackInitAtSecond: Schema.Finite,
     accord: AccordSchema,
     strength: StrengthSchema,
     transitionQueue: PatternSilenceTransitionQueue,
@@ -47,6 +52,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     if (StrengthData.models(pressedParamButtonId))
       return PatternSilenceTransitionState.make({
+        firstPlaybackInitAtSecond: this.firstPlaybackInitAtSecond,
         accord,
         strength: pressedParamButtonId.strength,
         transitionQueue: [current],

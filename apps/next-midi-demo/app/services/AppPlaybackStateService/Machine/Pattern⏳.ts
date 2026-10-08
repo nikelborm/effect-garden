@@ -28,24 +28,25 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current] = this.transitionQueue
+    const { asset } = current
 
-    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, current.asset))
+    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, asset))
       return this
 
-    if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
+    if (theSamePatternWasPressed(pressedParamButtonId, asset))
       return PatternSilenceTransitionState.makeSimple(
-        current.asset.accord,
-        current.asset.strength,
+        asset.accord,
+        asset.strength,
         yield* current.beginLongFadeoutToSilence(),
       )
-
-    const asset = current.asset.makePatchedFrom(pressedParamButtonId)
 
     return PatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [
         yield* current.beginShortFadeoutBeforeAnotherPattern(),
-        yield* current.scheduleNextPattern(asset),
+        yield* current.scheduleNextPattern(
+          asset.makePatchedFrom(pressedParamButtonId),
+        ),
       ],
     })
   }

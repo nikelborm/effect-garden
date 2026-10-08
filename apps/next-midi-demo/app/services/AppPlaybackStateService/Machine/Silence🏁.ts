@@ -1,3 +1,5 @@
+import * as Effect from 'effect/Effect'
+import { flow } from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
 import {
@@ -7,16 +9,18 @@ import {
   defaultAccord,
 } from '../../../domain/Accord.ts'
 import {
-  type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../../../domain/AssetPointer.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
-import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
+import {
+  matchParamButtonId,
+  type PressedParamButtonId,
+} from '../../../domain/PressedParamButtonId.ts'
 import {
   defaultStrength,
   type Strength,
-  StrengthData,
+  type StrengthData,
   StrengthSchema,
 } from '../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../index.ts'
@@ -40,15 +44,11 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    if (StrengthData.models(pressedParamButtonId))
-      return this.withNewStrengthFromData(pressedParamButtonId)
-
-    const asset = this.getAssetToPlay(pressedParamButtonId)
-
-    if (TaggedPatternPointer.models(asset))
-      return yield* PatternState.init(asset)
-
-    return yield* SlowStrumState.init(asset)
+    return yield* matchParamButtonId(pressedParamButtonId)({
+      onAccord: flow(this.getAssetToPlay, SlowStrumState.init),
+      onPattern: flow(this.getAssetToPlay, PatternState.init),
+      onStrength: flow(this.withNewStrengthFromData, Effect.succeed),
+    })
   }
 
   static makeSimple = (accord: Accord, strength: Strength) =>
@@ -62,10 +62,10 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   withNewAccordFromData = (container: AccordData) =>
     SilenceState.makeSimple(container.accord, this.strength)
 
-  getAssetToPlay = (
-    pressedParamButtonId: PatternData | AccordData,
-  ): AssetPointer =>
-    PatternData.models(pressedParamButtonId)
+  getAssetToPlay = <T extends PatternData | AccordData>(
+    pressedParamButtonId: T,
+  ) =>
+    (PatternData.models(pressedParamButtonId)
       ? TaggedPatternPointer.make({
           pattern: pressedParamButtonId.pattern,
           accord: this.accord,
@@ -74,5 +74,11 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
       : TaggedSlowStrumPointer.make({
           accord: pressedParamButtonId.accord,
           strength: this.strength,
-        })
+        })) as T extends any // distrubute
+      ? T extends PatternData
+        ? TaggedPatternPointer
+        : T extends AccordData
+          ? TaggedSlowStrumPointer
+          : never
+      : never
 }
