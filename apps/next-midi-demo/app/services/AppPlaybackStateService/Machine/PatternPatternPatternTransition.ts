@@ -1,7 +1,6 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
@@ -83,10 +82,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
       )
     }
 
-    const desiredAsset = desiredAssetFromSignal(
-      pressedParamButtonId,
-      incoming.asset,
-    )
+    const desiredAsset = incoming.asset.patch(pressedParamButtonId)
     yield* incoming.drop()
     return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: oldest.playbackStartedAtSecond,

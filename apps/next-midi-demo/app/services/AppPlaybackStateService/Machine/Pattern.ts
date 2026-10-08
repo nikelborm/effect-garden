@@ -2,7 +2,6 @@ import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
-import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
@@ -40,7 +39,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         yield* current.beginLongFadeoutToSilence(),
       )
 
-    const asset = desiredAssetFromSignal(pressedParamButtonId, current.asset)
+    const asset = current.asset.patch(pressedParamButtonId)
+
     return PatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [

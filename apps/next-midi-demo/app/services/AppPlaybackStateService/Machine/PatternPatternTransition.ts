@@ -1,7 +1,6 @@
 import * as Equal from 'effect/Equal'
 import * as Schema from 'effect/Schema'
 
-import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
@@ -67,10 +66,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
       })
     }
 
-    const desiredAsset = desiredAssetFromSignal(
-      pressedParamButtonId,
-      incoming.asset,
-    )
+    const desiredAsset = incoming.asset.patch(pressedParamButtonId)
 
     if (isInGreenZone && Equal.equals(desiredAsset, current.asset)) {
       const revived = yield* current.cancelFadeoutAndRestore()
