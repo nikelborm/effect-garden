@@ -1,13 +1,17 @@
+import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
+import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { PatternPlayback } from '../loopElements.ts'
+import { getAudioNow, PatternPlayback } from '../loopElements.ts'
+import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 
@@ -16,7 +20,7 @@ export const isPatternQueue = Schema.is(PatternQueue)
 
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
-  { playbackStartedAtSecond: Schema.Finite, transitionQueue: PatternQueue },
+  { firstPlaybackInitAtSecond: Schema.Finite, transitionQueue: PatternQueue },
 ) {
   declare protected '~brand~': never
   static models: (candidate: unknown) => candidate is PatternState =
@@ -47,4 +51,29 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       ],
     })
   }
+
+  static init = Effect.fn('PatternState.init')(
+    { self: this },
+    function* (asset: TaggedPatternPointer) {
+      const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
+
+      const firstPlaybackInitAtSecond = yield* getAudioNow
+
+      const playback = yield* StartFreshPlayback.runLooping(
+        audioBuffer,
+        firstPlaybackInitAtSecond,
+      )
+
+      return this.make({
+        firstPlaybackInitAtSecond,
+        transitionQueue: [
+          PatternPlayback.make({
+            asset,
+            playback,
+            playbackStartedAtSecond: firstPlaybackInitAtSecond,
+          }),
+        ],
+      })
+    },
+  )
 }

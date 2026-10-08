@@ -1,9 +1,12 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
+import type { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { SlowStrumPlayback } from '../loopElements.ts'
+import { getAudioNow, SlowStrumPlayback } from '../loopElements.ts'
+import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
 export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
@@ -11,7 +14,7 @@ export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
 export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   'SlowStrumState',
   {
-    playbackStartedAtSecond: Schema.Finite,
+    firstPlaybackInitAtSecond: Schema.Finite,
     transitionQueue: SlowStrumQueue,
   },
 ) {
@@ -32,4 +35,29 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
     yield* Effect.logError({ strum, pressedParamButtonId })
     return yield* Effect.die(new Error('slow strums are deferred (SlowStrum)'))
   }
+
+  static init = Effect.fn('SlowStrumState.init')(
+    { self: this },
+    function* (asset: TaggedSlowStrumPointer) {
+      const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
+
+      const firstPlaybackInitAtSecond = yield* getAudioNow
+
+      const playback = yield* StartFreshPlayback.runLooping(
+        audioBuffer,
+        firstPlaybackInitAtSecond,
+      )
+
+      return this.make({
+        firstPlaybackInitAtSecond,
+        transitionQueue: [
+          SlowStrumPlayback.make({
+            asset,
+            playback,
+            playbackStartedAtSecond: firstPlaybackInitAtSecond,
+          }),
+        ],
+      })
+    },
+  )
 }

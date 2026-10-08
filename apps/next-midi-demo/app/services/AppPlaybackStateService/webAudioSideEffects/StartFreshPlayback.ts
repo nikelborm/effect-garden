@@ -27,6 +27,22 @@ export class StartFreshPlayback extends Context.Service<
     audioBuffer: EAudioBuffer.EAudioBuffer,
     timing: FreshPlaybackTiming,
   ) => this.use(startFresh => startFresh(audioBuffer, timing))
+
+  static runOnce = (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+    startAtSecond: number,
+  ) =>
+    this.use(startFresh =>
+      startFresh(audioBuffer, { isLooping: false, startAtSecond }),
+    )
+
+  static runLooping = (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+    startAtSecond: number,
+  ) =>
+    this.use(startFresh =>
+      startFresh(audioBuffer, { isLooping: true, startAtSecond }),
+    )
 }
 
 export const StartFreshPlaybackLayer = DeferredAudioContextService.pipe(

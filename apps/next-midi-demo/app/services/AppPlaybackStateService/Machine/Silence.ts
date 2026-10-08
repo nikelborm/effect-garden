@@ -19,19 +19,14 @@ import {
   StrengthData,
   StrengthSchema,
 } from '../../../domain/Strength.ts'
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import {
-  getAudioNow,
-  PatternPlayback,
-  SlowStrumPlayback,
-} from '../loopElements.ts'
-import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 import { PatternState } from './Pattern.ts'
 import { SlowStrumState } from './SlowStrum.ts'
 
 export const SilenceQueue = Schema.Tuple([])
 export const isSilenceQueue = Schema.is(SilenceQueue)
+
+// !!!VERIFIED!!!
 
 export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   'SilenceState',
@@ -51,28 +46,10 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
 
     const asset = this.getAssetToPlay(pressedParamButtonId)
 
-    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-    const playbackStartedAtSecond = yield* getAudioNow
-
-    const playback = yield* StartFreshPlayback.run(audioBuffer, {
-      isLooping: PatternData.models(pressedParamButtonId),
-      startAtSecond: playbackStartedAtSecond,
-    })
-
     if (TaggedPatternPointer.models(asset))
-      return PatternState.make({
-        playbackStartedAtSecond,
-        transitionQueue: [
-          PatternPlayback.make({ asset, playback, playbackStartedAtSecond }),
-        ],
-      })
+      return yield* PatternState.init(asset)
 
-    return SlowStrumState.make({
-      playbackStartedAtSecond,
-      transitionQueue: [
-        SlowStrumPlayback.make({ asset, playback, playbackStartedAtSecond }),
-      ],
-    })
+    return yield* SlowStrumState.init(asset)
   }
 
   static makeSimple = (accord: Accord, strength: Strength) =>
