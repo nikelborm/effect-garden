@@ -1,24 +1,26 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData } from '../../../../domain/Accord.ts'
+import { AccordData, AccordSchema } from '../../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData } from '../../../../domain/Strength.ts'
+import { StrengthData, StrengthSchema } from '../../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
 import { PatternState } from '../Pattern/State.ts'
 import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
 import { PatternSilencePatternTransitionState } from '../PatternSilencePatternTransition/State.ts'
-import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { PatternSilenceTransitionQueue } from './Queue.ts'
 
-export class PatternSilenceTransitionState extends SilenceBoundBaseState.extend<PatternSilenceTransitionState>(
+export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
-)({
-  transitionQueue: PatternSilenceTransitionQueue,
-}) {
+  {
+    accord: AccordSchema,
+    strength: StrengthSchema,
+    transitionQueue: PatternSilenceTransitionQueue,
+  },
+) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,

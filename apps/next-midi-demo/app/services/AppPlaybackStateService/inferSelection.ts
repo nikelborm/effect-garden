@@ -7,7 +7,10 @@ import {
 import type { AppPlaybackState } from './index.ts'
 
 export const inferSelection = (state: AppPlaybackState): SimpleAssetPointer => {
-  if (state._tag === 'SilenceBoundBaseState')
+  if (
+    state._tag === 'SilenceState' ||
+    state._tag === 'PatternSilenceTransitionState'
+  )
     return {
       accord: state.accord,
       pattern: Option.none(),
@@ -22,7 +25,10 @@ export const inferSelection = (state: AppPlaybackState): SimpleAssetPointer => {
 export const inferPlaying = (
   state: AppPlaybackState,
 ): Option.Option<SimpleAssetPointer> => {
-  if (state._tag === 'SilenceBoundBaseState') {
+  if (
+    state._tag === 'SilenceState' ||
+    state._tag === 'PatternSilenceTransitionState'
+  ) {
     const q = state.transitionQueue
     return q.length === 0
       ? Option.none()

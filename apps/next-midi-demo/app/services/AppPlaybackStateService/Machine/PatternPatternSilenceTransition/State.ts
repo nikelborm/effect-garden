@@ -1,20 +1,22 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData } from '../../../../domain/Accord.ts'
+import { AccordData, AccordSchema } from '../../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData } from '../../../../domain/Strength.ts'
+import { StrengthData, StrengthSchema } from '../../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
-import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { TwoPatternsFadingToSilenceQueue } from './Queue.ts'
 
-export class PatternPatternSilenceTransitionState extends SilenceBoundBaseState.extend<PatternPatternSilenceTransitionState>(
+export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
   'PatternPatternSilenceTransitionState',
-)({
-  transitionQueue: TwoPatternsFadingToSilenceQueue,
-}) {
+  {
+    accord: AccordSchema,
+    strength: StrengthSchema,
+    transitionQueue: TwoPatternsFadingToSilenceQueue,
+  },
+) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,

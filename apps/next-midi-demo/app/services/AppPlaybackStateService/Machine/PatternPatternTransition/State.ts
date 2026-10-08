@@ -11,17 +11,18 @@ import { schedulingSafeBufferInSeconds } from '../../constants.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import { getAudioNow } from '../../loopElements.ts'
 import { PatternState } from '../Pattern/State.ts'
-import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
 import { PatternPatternSilenceTransitionState } from '../PatternPatternSilenceTransition/State.ts'
 import { PatternSilenceTransitionState } from '../PatternSilenceTransition/State.ts'
 import { PatternPatternTransitionQueue } from './Queue.ts'
 
-export class PatternPatternTransitionState extends PatternBoundBaseState.extend<PatternPatternTransitionState>(
+export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPatternTransitionState>()(
   'PatternPatternTransitionState',
-)({
-  transitionQueue: PatternPatternTransitionQueue,
-}) {
+  {
+    playbackStartedAtSecond: Schema.Finite,
+    transitionQueue: PatternPatternTransitionQueue,
+  },
+) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,

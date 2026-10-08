@@ -7,16 +7,14 @@ import {
   theSamePatternWasPressed,
 } from '../../../../helpers/theSameWasPressed.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
-import { PatternBoundBaseState } from '../PatternBoundBase/State.ts'
 import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
 import { PatternSilenceTransitionState } from '../PatternSilenceTransition/State.ts'
 import { PatternQueue } from './Queue.ts'
 
-export class PatternState extends PatternBoundBaseState.extend<PatternState>(
+export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
-)({
-  transitionQueue: PatternQueue,
-}) {
+  { playbackStartedAtSecond: Schema.Finite, transitionQueue: PatternQueue },
+) {
   declare protected '~brand~': never
   static models: (candidate: unknown) => candidate is PatternState =
     Schema.is(this)
@@ -25,24 +23,24 @@ export class PatternState extends PatternBoundBaseState.extend<PatternState>(
   }
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    const [playing] = this.transitionQueue
+    const [current] = this.transitionQueue
 
-    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, playing.asset))
+    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, current.asset))
       return this
 
-    if (theSamePatternWasPressed(pressedParamButtonId, playing.asset))
+    if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
       return PatternSilenceTransitionState.make({
-        accord: playing.asset.accord,
-        strength: playing.asset.strength,
-        transitionQueue: [yield* playing.beginLongFadeoutToSilence()],
+        accord: current.asset.accord,
+        strength: current.asset.strength,
+        transitionQueue: [yield* current.beginLongFadeoutToSilence()],
       })
 
-    const asset = desiredAssetFromSignal(pressedParamButtonId, playing.asset)
+    const asset = desiredAssetFromSignal(pressedParamButtonId, current.asset)
     return PatternPatternTransitionState.make({
-      playbackStartedAtSecond: playing.playbackStartedAtSecond,
+      playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [
-        yield* playing.beginShortFadeoutBeforeAnotherPattern(),
-        yield* playing.scheduleNextPattern(asset),
+        yield* current.beginShortFadeoutBeforeAnotherPattern(),
+        yield* current.scheduleNextPattern(asset),
       ],
     })
   }

@@ -1,6 +1,6 @@
 import * as Schema from 'effect/Schema'
 
-import { defaultAccord } from '../../../../domain/Accord.ts'
+import { AccordSchema, defaultAccord } from '../../../../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
@@ -8,7 +8,11 @@ import {
 } from '../../../../domain/AssetPointer.ts'
 import { PatternData } from '../../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { defaultStrength, StrengthData } from '../../../../domain/Strength.ts'
+import {
+  defaultStrength,
+  StrengthData,
+  StrengthSchema,
+} from '../../../../domain/Strength.ts'
 import { AudioBufferStore } from '../../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
 import {
@@ -18,15 +22,17 @@ import {
 } from '../../loopElements.ts'
 import { StartFreshPlayback } from '../../webAudioSideEffects/StartFreshPlayback.ts'
 import { PatternState } from '../Pattern/State.ts'
-import { SilenceBoundBaseState } from '../SilenceBoundBase/State.ts'
 import { SlowStrumState } from '../SlowStrum/State.ts'
 import { SilenceQueue } from './Queue.ts'
 
-export class SilenceState extends SilenceBoundBaseState.extend<SilenceState>(
+export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   'SilenceState',
-)({
-  transitionQueue: SilenceQueue,
-}) {
+  {
+    accord: AccordSchema,
+    strength: StrengthSchema,
+    transitionQueue: SilenceQueue,
+  },
+) {
   declare protected '~brand~': never
   static models: (candidate: unknown) => candidate is SilenceState =
     Schema.is(this)

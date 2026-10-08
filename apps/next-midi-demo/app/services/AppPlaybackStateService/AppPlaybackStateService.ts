@@ -22,7 +22,7 @@ import type { AllWebAudioSideEffects } from './webAudioSideEffects/All.ts'
 
 export interface AppPlaybackStateServiceShape {
   readonly playStopButtonPressableFlagChangesStream: Stream.Stream<boolean>
-  readonly latestIsPlayingFlagStream: Stream.Stream<boolean>
+  // readonly latestIsPlayingFlagStream: Stream.Stream<boolean>
   readonly playbackPublicInfoChangesStream: Stream.Stream<AppPlaybackState>
 }
 
@@ -69,19 +69,19 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
 
   const cleanupFiberMakerLayer = makeCleanupFiberMakerLayer(stateRef)
 
-  const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
-    stateRef,
-  ).pipe(
-    // Sound is audible unless we are in pure silence (an empty
-    // SilenceBoundState queue); a fading-out loop still counts as playing.
-    Stream.map(
-      current =>
-        current._tag !== 'SilenceBoundBaseState' ||
-        current.transitionQueue.length > 0,
-    ),
-    Stream.changes,
-    Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
-  )
+  // const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
+  //   stateRef,
+  // ).pipe(
+  //   // Sound is audible unless we are in pure silence (an empty
+  //   // SilenceBoundState queue); a fading-out loop still counts as playing.
+  //   Stream.map(
+  //     current =>
+  //       current._tag !== 'SilenceBoundBaseState' ||
+  //       current.transitionQueue.length > 0,
+  //   ),
+  //   Stream.changes,
+  //   Stream.broadcast({ capacity: 'unbounded', replay: 1 }),
+  // )
 
   // STUB: download-gating lived in CurrentlySelectedAssetState, now deleted.
   // Assume assets are downloaded, so the play/stop button is always
@@ -170,7 +170,7 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
   return {
     playStopButtonPressableFlagChangesStream,
     // switchPlayPauseFromCurrentlySelected,
-    latestIsPlayingFlagStream,
+    // latestIsPlayingFlagStream,
     // тупо потому что не хочу усложнять себе работу
     playbackPublicInfoChangesStream: SubscriptionRef.changes(stateRef),
   }

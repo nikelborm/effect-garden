@@ -3,14 +3,15 @@ import * as Schema from 'effect/Schema'
 
 import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
 import type { AdvanceFnReturn } from '../../index.ts'
-import { SlowStrumBoundBaseState } from '../SlowStrumBoundBase/State.ts'
 import { SlowStrumPatternTransitionQueue } from './Queue.ts'
 
-export class SlowStrumPatternTransitionState extends SlowStrumBoundBaseState.extend<SlowStrumPatternTransitionState>(
+export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStrumPatternTransitionState>()(
   'SlowStrumPatternTransitionState',
-)({
-  transitionQueue: SlowStrumPatternTransitionQueue,
-}) {
+  {
+    playbackStartedAtSecond: Schema.Finite,
+    transitionQueue: SlowStrumPatternTransitionQueue,
+  },
+) {
   declare protected '~brand~': never
   static models: (
     candidate: unknown,
