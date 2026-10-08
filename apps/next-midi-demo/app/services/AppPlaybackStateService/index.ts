@@ -8,7 +8,7 @@ import { PatternPatternSilenceTransitionState } from './Machine/PatternPatternSi
 import { PatternPatternTransitionState } from './Machine/PatternPatternTransition.ts'
 import { PatternSilencePatternTransitionState } from './Machine/PatternSilencePatternTransition.ts'
 import { PatternSilenceTransitionState } from './Machine/PatternSilenceTransition.ts'
-import { SilenceState } from './Machine/Silence.ts'
+import { SilenceState } from './Machine/Silence🏁.ts'
 import { SlowStrumState } from './Machine/SlowStrum.ts'
 import { SlowStrumPatternTransitionState } from './Machine/SlowStrumPatternTransition.ts'
 
