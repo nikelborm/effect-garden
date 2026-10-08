@@ -33,8 +33,9 @@ export class StrengthData<
   }
   static makeUnsafe = (candidate: string) =>
     new this(decodeStrengthSyncFromUnknown(candidate))
-  static models = (candidate: unknown): candidate is StrengthData =>
-    candidate instanceof this
+  static models = (
+    candidate: unknown,
+  ): candidate is InstanceType<typeof this> => candidate instanceof this
 }
 
 export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {

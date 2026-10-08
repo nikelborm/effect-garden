@@ -19,11 +19,7 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   },
 ) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SlowStrumState =
-    Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
+  static models = Schema.is(this);
 
   // A slow strum is sounding (queue = [strum]). Slow strums are the deferred
   // "monster": an interrupting strum regrids the whole tick grid, which is unsolved.

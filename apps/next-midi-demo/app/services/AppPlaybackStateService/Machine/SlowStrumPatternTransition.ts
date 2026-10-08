@@ -24,12 +24,7 @@ export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStru
   },
 ) {
   declare protected '~brand~': never
-  static models: (
-    candidate: unknown,
-  ) => candidate is SlowStrumPatternTransitionState = Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
+  static models = Schema.is(this);
 
   // A slow strum handing over to a loop (queue = [strum, scheduledPattern]). Like
   // SlowStrumState.advance this is part of the deferred slow-strum problem; any

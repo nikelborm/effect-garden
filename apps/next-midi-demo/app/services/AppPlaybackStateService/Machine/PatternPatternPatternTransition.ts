@@ -33,12 +33,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
   },
 ) {
   declare protected '~brand~': never
-  static models: (
-    candidate: unknown,
-  ) => candidate is PatternPatternPatternTransitionState = Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
+  static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [oldest, middle, incoming] = this.transitionQueue

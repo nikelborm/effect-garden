@@ -35,12 +35,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
   },
 ) {
   declare protected '~brand~': never
-  static models: (
-    candidate: unknown,
-  ) => candidate is PatternSilencePatternTransitionState = Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
+  static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [dying, incoming] = this.transitionQueue

@@ -16,9 +16,9 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   },
 ) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is TaggedPatternPointer =
-    Schema.is(this)
+  static models = Schema.is(this)
   static {
+    // to be able to pass a callback to array mappers for example
     this.make = this.make.bind(this)
   }
 }
@@ -34,8 +34,7 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
   },
 ) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is TaggedSlowStrumPointer =
-    Schema.is(this)
+  static models = Schema.is(this)
   static {
     this.make = this.make.bind(this)
   }

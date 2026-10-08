@@ -23,11 +23,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   { firstPlaybackInitAtSecond: Schema.Finite, transitionQueue: PatternQueue },
 ) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is PatternState =
-    Schema.is(this)
-  static {
-    this.make = this.make.bind(this)
-  }
+  static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current] = this.transitionQueue

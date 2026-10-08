@@ -37,8 +37,7 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   },
 ) {
   declare protected '~brand~': never
-  static models: (candidate: unknown) => candidate is SilenceState =
-    Schema.is(this);
+  static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     if (StrengthData.models(pressedParamButtonId))

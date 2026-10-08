@@ -34,8 +34,9 @@ export class PatternData<
   }
   static makeUnsafe = (candidate: string) =>
     new this(decodePatternSyncFromUnknown(candidate))
-  static models = (candidate: unknown): candidate is PatternData =>
-    candidate instanceof this
+  static models = (
+    candidate: unknown,
+  ): candidate is InstanceType<typeof this> => candidate instanceof this
 }
 
 export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
