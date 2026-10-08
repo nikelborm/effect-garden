@@ -20,7 +20,7 @@ import {
   StrengthSchema,
 } from '../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { PatternState } from './Pattern.ts'
+import { PatternState } from './Pattern⏳.ts'
 import { SlowStrumState } from './SlowStrum.ts'
 
 export const SilenceQueue = Schema.Tuple([])

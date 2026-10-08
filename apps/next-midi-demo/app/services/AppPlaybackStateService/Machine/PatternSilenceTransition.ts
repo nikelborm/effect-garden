@@ -17,11 +17,11 @@ import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback, getAudioNow } from '../loopElements.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternState } from './Pattern.ts'
-// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilencePatternTransitionState } from './PatternSilencePatternTransition.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
+import { PatternState } from './Pattern⏳.ts'
 
 export const PatternSilenceTransitionQueue = Schema.Tuple([
   FadingOutPatternPlayback,
