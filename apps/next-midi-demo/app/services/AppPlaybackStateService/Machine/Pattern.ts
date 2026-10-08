@@ -1,15 +1,18 @@
 import * as Schema from 'effect/Schema'
 
-import { desiredAssetFromSignal } from '../../../../domain/desiredAssetFromSignal.ts'
-import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
+import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
+import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
   theSamePatternWasPressed,
-} from '../../../../helpers/theSameWasPressed.ts'
-import type { AdvanceFnReturn } from '../../index.ts'
-import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
-import { PatternSilenceTransitionState } from '../PatternSilenceTransition/State.ts'
-import { PatternQueue } from './Queue.ts'
+} from '../../../helpers/theSameWasPressed.ts'
+import type { AdvanceFnReturn } from '../index.ts'
+import { PatternPlayback } from '../loopElements.ts'
+import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
+import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
+
+export const PatternQueue = Schema.Tuple([PatternPlayback])
+export const isPatternQueue = Schema.is(PatternQueue)
 
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',

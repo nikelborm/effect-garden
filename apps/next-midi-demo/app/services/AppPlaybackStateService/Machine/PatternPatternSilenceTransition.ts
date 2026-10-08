@@ -1,13 +1,21 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData, AccordSchema } from '../../../../domain/Accord.ts'
-import { TaggedPatternPointer } from '../../../../domain/AssetPointer.ts'
-import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData, StrengthSchema } from '../../../../domain/Strength.ts'
-import type { AdvanceFnReturn } from '../../index.ts'
-import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
-import { TwoPatternsFadingToSilenceQueue } from './Queue.ts'
+import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
+import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
+import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
+import type { AdvanceFnReturn } from '../index.ts'
+import { FadingOutPatternPlayback } from '../loopElements.ts'
+import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
+
+export const TwoPatternsFadingToSilenceQueue = Schema.Tuple([
+  FadingOutPatternPlayback,
+  FadingOutPatternPlayback,
+])
+export const isTwoPatternsFadingToSilenceQueue = Schema.is(
+  TwoPatternsFadingToSilenceQueue,
+)
 
 export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
   'PatternPatternSilenceTransitionState',

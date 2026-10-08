@@ -1,9 +1,20 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import type { AdvanceFnReturn } from '../../index.ts'
-import { SlowStrumPatternTransitionQueue } from './Queue.ts'
+import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
+import {
+  ScheduledPatternTransitionQueueElement,
+  SlowStrumTransitionQueueElement,
+} from '../common.ts'
+import type { AdvanceFnReturn } from '../index.ts'
+
+export const SlowStrumPatternTransitionQueue = Schema.Tuple([
+  SlowStrumTransitionQueueElement,
+  ScheduledPatternTransitionQueueElement,
+])
+export const isSlowStrumPatternTransitionQueue = Schema.is(
+  SlowStrumPatternTransitionQueue,
+)
 
 export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStrumPatternTransitionState>()(
   'SlowStrumPatternTransitionState',

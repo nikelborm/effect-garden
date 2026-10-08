@@ -29,20 +29,23 @@ export class StartFreshPlayback extends Context.Service<
   ) => this.use(startFresh => startFresh(audioBuffer, timing))
 }
 
-export const StartFreshPlaybackLayer = Layer.effect(
-  StartFreshPlayback,
+export const StartFreshPlaybackLayer = DeferredAudioContextService.pipe(
   Effect.map(
-    DeferredAudioContextService,
     context =>
       (audioBuffer: EAudioBuffer.EAudioBuffer, timing: FreshPlaybackTiming) =>
-        Effect.map(context.createPlayback(audioBuffer), playback => {
-          playback.bufferSource.loop = timing.isLooping
-          playback.gainNode.gain.setValueAtTime(
-            maxLoudness,
-            asEarlyAsPossibleInSeconds,
-          )
-          playback.bufferSource.start(timing.startAtSecond)
-          return playback
-        }),
+        Effect.map(
+          timing.isLooping
+            ? context.createLoopPlayback(audioBuffer)
+            : context.createPlayback(audioBuffer),
+          playback => {
+            playback.gainNode.gain.setValueAtTime(
+              maxLoudness,
+              asEarlyAsPossibleInSeconds,
+            )
+            playback.bufferSource.start(timing.startAtSecond)
+            return playback
+          },
+        ),
   ),
+  Layer.effect(StartFreshPlayback),
 )

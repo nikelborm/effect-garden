@@ -1,20 +1,31 @@
 import * as Equal from 'effect/Equal'
 import * as Schema from 'effect/Schema'
 
-import { desiredAssetFromSignal } from '../../../../domain/desiredAssetFromSignal.ts'
-import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
+import { desiredAssetFromSignal } from '../../../domain/desiredAssetFromSignal.ts'
+import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   theSameAccordOrStrengthWasPressed,
   theSamePatternWasPressed,
-} from '../../../../helpers/theSameWasPressed.ts'
-import { schedulingSafeBufferInSeconds } from '../../constants.ts'
-import type { AdvanceFnReturn } from '../../index.ts'
-import { getAudioNow } from '../../loopElements.ts'
-import { PatternState } from '../Pattern/State.ts'
-import { PatternPatternPatternTransitionState } from '../PatternPatternPatternTransition/State.ts'
-import { PatternPatternSilenceTransitionState } from '../PatternPatternSilenceTransition/State.ts'
-import { PatternSilenceTransitionState } from '../PatternSilenceTransition/State.ts'
-import { PatternSilencePatternTransitionQueue } from './Queue.ts'
+} from '../../../helpers/theSameWasPressed.ts'
+import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import type { AdvanceFnReturn } from '../index.ts'
+import {
+  getAudioNow,
+  IncomingPatternFadingIn,
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+} from '../loopElements.ts'
+import { PatternState } from './Pattern.ts'
+import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
+import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
+import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
+
+export const PatternSilencePatternTransitionQueue = Schema.Tuple([
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+  IncomingPatternFadingIn,
+])
+export const isPatternSilencePatternTransitionQueue = Schema.is(
+  PatternSilencePatternTransitionQueue,
+)
 
 export class PatternSilencePatternTransitionState extends Schema.TaggedClass<PatternSilencePatternTransitionState>()(
   'PatternSilencePatternTransitionState',

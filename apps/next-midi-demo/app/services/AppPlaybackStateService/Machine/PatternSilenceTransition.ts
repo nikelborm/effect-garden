@@ -1,17 +1,23 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData, AccordSchema } from '../../../../domain/Accord.ts'
-import { TaggedPatternPointer } from '../../../../domain/AssetPointer.ts'
-import type { PressedParamButtonId } from '../../../../domain/PressedParamButtonId.ts'
-import { StrengthData, StrengthSchema } from '../../../../domain/Strength.ts'
-import { schedulingSafeBufferInSeconds } from '../../constants.ts'
-import type { AdvanceFnReturn } from '../../index.ts'
-import { getAudioNow } from '../../loopElements.ts'
-import { PatternState } from '../Pattern/State.ts'
-import { PatternPatternTransitionState } from '../PatternPatternTransition/State.ts'
-import { PatternSilencePatternTransitionState } from '../PatternSilencePatternTransition/State.ts'
-import { PatternSilenceTransitionQueue } from './Queue.ts'
+import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
+import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
+import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
+import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import type { AdvanceFnReturn } from '../index.ts'
+import { FadingOutPatternPlayback, getAudioNow } from '../loopElements.ts'
+import { PatternState } from './Pattern.ts'
+import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
+import { PatternSilencePatternTransitionState } from './PatternSilencePatternTransition.ts'
+
+export const PatternSilenceTransitionQueue = Schema.Tuple([
+  FadingOutPatternPlayback,
+])
+export const isPatternSilenceTransitionQueue = Schema.is(
+  PatternSilenceTransitionQueue,
+)
 
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
