@@ -30,7 +30,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   static makeSimple = (pattern: Pattern, accord: Accord, strength: Strength) =>
     this.make({ accord, pattern, strength })
 
-  patch = (pressedParamButtonId: PressedParamButtonId) =>
+  makePatchedFrom = (pressedParamButtonId: PressedParamButtonId) =>
     PatternData.models(pressedParamButtonId)
       ? TaggedPatternPointer.makeSimple(
           pressedParamButtonId.pattern,

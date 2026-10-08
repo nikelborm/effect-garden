@@ -82,7 +82,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
       )
     }
 
-    const desiredAsset = incoming.asset.patch(pressedParamButtonId)
+    const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
     yield* incoming.drop()
     return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: oldest.playbackStartedAtSecond,

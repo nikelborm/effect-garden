@@ -66,7 +66,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       })
     }
 
-    const desiredAsset = incoming.asset.patch(pressedParamButtonId)
+    const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
 
     if (isInGreenZone && Equal.equals(desiredAsset, dying.asset)) {
       const revived = yield* dying.cancelFadeoutAndRestore()

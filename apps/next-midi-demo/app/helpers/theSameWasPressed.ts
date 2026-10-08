@@ -10,21 +10,21 @@ import { StrengthData } from '../domain/Strength.ts'
 export const theSameAccordWasPressed = <T extends PressedParamButtonId>(
   pressedParamButtonId: T,
   asset: AssetPointer,
-): pressedParamButtonId is T & AccordData =>
+): boolean =>
   AccordData.models(pressedParamButtonId) &&
   pressedParamButtonId.accord === asset.accord
 
 export const theSameStrengthWasPressed = <T extends PressedParamButtonId>(
   pressedParamButtonId: T,
   asset: AssetPointer,
-): pressedParamButtonId is T & StrengthData =>
+): boolean =>
   StrengthData.models(pressedParamButtonId) &&
   pressedParamButtonId.strength === asset.strength
 
 export const theSamePatternWasPressed = <T extends PressedParamButtonId>(
   pressedParamButtonId: T,
   asset: TaggedPatternPointer,
-): pressedParamButtonId is T & PatternData =>
+): boolean =>
   PatternData.models(pressedParamButtonId) &&
   pressedParamButtonId.pattern === asset.pattern
 
@@ -33,6 +33,6 @@ export const theSameAccordOrStrengthWasPressed = <
 >(
   pressedParamButtonId: T,
   asset: AssetPointer,
-): pressedParamButtonId is T & (AccordData | StrengthData) =>
+): boolean =>
   theSameAccordWasPressed(pressedParamButtonId, asset) ||
   theSameStrengthWasPressed(pressedParamButtonId, asset)

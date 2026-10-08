@@ -39,7 +39,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         yield* current.beginLongFadeoutToSilence(),
       )
 
-    const asset = current.asset.patch(pressedParamButtonId)
+    const asset = current.asset.makePatchedFrom(pressedParamButtonId)
 
     return PatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
