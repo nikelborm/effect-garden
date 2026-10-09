@@ -2,6 +2,7 @@
 
 import * as BunRuntime from '@effect/platform-bun/BunRuntime'
 import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Console from 'effect/Console'
 import * as Prompt from 'effect/cli/Prompt'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
@@ -25,7 +26,9 @@ const program = Effect.gen(function* () {
   }
 
   if (matchingPids.length === 0) {
-    console.log('No processes found with "bun server.ts" in command line.')
+    yield* Console.log(
+      'No processes found with "bun server.ts" in command line.',
+    )
     return
   }
 
@@ -45,7 +48,7 @@ const program = Effect.gen(function* () {
       cursor = parseInt(ppidMatch[1]!, 10)
     }
 
-    console.log(
+    yield* Console.log(
       `\n${'═'.repeat(60)}\nProcess tree for PID ${targetPid} (root → target)\n${'═'.repeat(60)}`,
     )
 
@@ -75,17 +78,17 @@ const program = Effect.gen(function* () {
 
       const marker = pid === targetPid ? ' ◀ TARGET' : ''
 
-      console.log(`\n┌─ PID: ${pid}${marker}`)
-      console.log(`│  Name:    ${name}`)
-      console.log(`│  PPid:    ${ppid}`)
-      console.log(`│  State:   ${state}`)
-      console.log(`│  Uid:     ${uid}`)
-      console.log(`│  Gid:     ${gid}`)
-      console.log(`│  Threads: ${threads}`)
-      console.log(`│  VmRSS:   ${vmRss}`)
-      console.log(`│  Command: ${args.join(' ')}`)
-      console.log(`│  Env (${envVars.length} vars)`)
-      console.log('└' + '─'.repeat(59))
+      yield* Console.log(`\n┌─ PID: ${pid}${marker}`)
+      yield* Console.log(`│  Name:    ${name}`)
+      yield* Console.log(`│  PPid:    ${ppid}`)
+      yield* Console.log(`│  State:   ${state}`)
+      yield* Console.log(`│  Uid:     ${uid}`)
+      yield* Console.log(`│  Gid:     ${gid}`)
+      yield* Console.log(`│  Threads: ${threads}`)
+      yield* Console.log(`│  VmRSS:   ${vmRss}`)
+      yield* Console.log(`│  Command: ${args.join(' ')}`)
+      yield* Console.log(`│  Env (${envVars.length} vars)`)
+      yield* Console.log('└' + '─'.repeat(59))
     }
 
     const confirmed = yield* Prompt.run(
@@ -96,10 +99,10 @@ const program = Effect.gen(function* () {
     )
 
     if (confirmed) {
-      process.kill(targetPid, 9)
-      console.log(`Sent SIGKILL to PID ${targetPid}.`)
+      yield* Effect.sync(() => process.kill(targetPid, 9))
+      yield* Console.log(`Sent SIGKILL to PID ${targetPid}.`)
     } else {
-      console.log(`Skipped PID ${targetPid}.`)
+      yield* Console.log(`Skipped PID ${targetPid}.`)
     }
   }
 }).pipe(Effect.provide(BunServices.layer), Effect.withSpan(import.meta.file))

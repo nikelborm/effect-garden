@@ -7,7 +7,10 @@ import * as Effect from 'effect/Effect'
 
 import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts'
 
-const program = runDevComposeCommandThatInheritsArgs('stats', '--no-stream').pipe(
+const program = runDevComposeCommandThatInheritsArgs(
+  'stats',
+  '--no-stream',
+).pipe(
   Effect.scoped,
   Effect.provide(BunServices.layer),
   Effect.withSpan(import.meta.file),
