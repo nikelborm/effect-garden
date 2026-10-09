@@ -1,8 +1,12 @@
 #!/usr/bin/env bun
 
-import type { Stats } from 'node:fs'
-import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
+import * as Result from 'effect/Result'
 
 const SRC_DIR = 'packages_dirty'
 const DEST_DIR = 'packages'
@@ -12,11 +16,13 @@ const getObjectSortedByKeys = (obj: Exclude<object, null>) =>
     Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0])),
   )
 
-async function writeOnlyRelevantDepsFieldsToNewFile(
-  fromFilePath: string,
-  toFilePath: string,
-) {
-  const content = await readFile(fromFilePath, 'utf8')
+const writeOnlyRelevantDepsFieldsToNewFile = Effect.fn(
+  'writeOnlyRelevantDepsFieldsToNewFile',
+)(function* (fromFilePath: string, toFilePath: string) {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
+
+  const content = yield* fs.readFileString(fromFilePath)
   const pkg = JSON.parse(content)
 
   const filtered: Record<string, any> = {}
@@ -37,15 +43,19 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
           : pkg[key]
 
   if ('dependencies' in pkg || 'devDependencies' in pkg) {
-    const commonDependencyNames = new Set(
-      Object.keys(pkg.dependencies || {}),
-    ).intersection(new Set(Object.keys(pkg.devDependencies || {})))
+    const pkgDeps = pkg.dependencies || {}
+    const pkgDevDeps = pkg.devDependencies || {}
+    const commonDependencyNames = new Set(Object.keys(pkgDeps)).intersection(
+      new Set(Object.keys(pkgDevDeps)),
+    )
 
     if (commonDependencyNames.size)
-      throw new Error(
-        `Found dependencies specified in both devDependencies and dependencies: ${[
-          ...commonDependencyNames.keys(),
-        ]}}`,
+      return yield* Effect.fail(
+        new Error(
+          `Found dependencies specified in both devDependencies and dependencies: ${[
+            ...commonDependencyNames.keys(),
+          ]}}`,
+        ),
       )
 
     // for (const key of ['dependencies', 'devDependencies']) {
@@ -69,47 +79,64 @@ async function writeOnlyRelevantDepsFieldsToNewFile(
     })
   }
 
-  await writeFile(toFilePath, JSON.stringify(filtered, null, 2) + '\n', 'utf8')
-}
-
-const sourceDirEntries = await readdir(SRC_DIR, { withFileTypes: true })
-
-const potentialFullPackageJsonPaths = sourceDirEntries.map(entry =>
-  join(SRC_DIR, entry.name, 'package.json'),
-)
-
-const statsAboutPackageJsons = await Promise.allSettled(
-  potentialFullPackageJsonPaths.map(async path => ({
-    path,
-    stats: await stat(path),
-  })),
-)
-
-const existingPackageJsonPaths = statsAboutPackageJsons
-  .filter(
-    (
-      e,
-    ): e is PromiseFulfilledResult<{
-      path: string
-      stats: Stats
-    }> => e.status === 'fulfilled' && e.value.stats.isFile(),
+  yield* fs.makeDirectory(path.dirname(toFilePath), { recursive: true })
+  yield* fs.writeFileString(
+    toFilePath,
+    JSON.stringify(filtered, null, 2) + '\n',
   )
-  .map(e => e.value.path)
+})
 
-await Promise.all(
-  existingPackageJsonPaths.map(async dirtyPackageJsonFilePath => {
-    const cleanPackageJsonFilePath = dirtyPackageJsonFilePath.replace(
-      SRC_DIR,
-      DEST_DIR,
-    )
-    const destDir = dirname(cleanPackageJsonFilePath)
+const program = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
 
-    await mkdir(destDir, { recursive: true })
-    await writeOnlyRelevantDepsFieldsToNewFile(
-      dirtyPackageJsonFilePath,
-      cleanPackageJsonFilePath,
-    )
+  const sourceDirEntries = yield* fs.readDirectory(SRC_DIR)
+  const potentialFullPackageJsonPaths = sourceDirEntries.map(entry =>
+    path.join(SRC_DIR, entry, 'package.json'),
+  )
+
+  const existingPackageJsonPaths = yield* Effect.filterMapEffect(
+    potentialFullPackageJsonPaths,
+    candidate =>
+      Effect.map(fs.stat(candidate), info =>
+        info.type === 'File' ? Result.succeed(candidate) : Result.failVoid,
+      ),
+    { concurrency: 'unbounded' },
+  )
+
+  yield* Effect.forEach(
+    existingPackageJsonPaths,
+    Effect.fnUntraced(function* (dirtyPackageJsonFilePath) {
+      const cleanPackageJsonFilePath = dirtyPackageJsonFilePath.replace(
+        SRC_DIR,
+        DEST_DIR,
+      )
+      const destDir = path.dirname(cleanPackageJsonFilePath)
+
+      yield* fs.makeDirectory(destDir, { recursive: true })
+
+      yield* writeOnlyRelevantDepsFieldsToNewFile(
+        dirtyPackageJsonFilePath,
+        cleanPackageJsonFilePath,
+      )
+    }),
+    { concurrency: 'unbounded', discard: true },
+  )
+
+  yield* writeOnlyRelevantDepsFieldsToNewFile(
+    './package.json',
+    './package.json',
+  )
+}).pipe(
+  Effect.scoped,
+  Effect.provide(BunServices.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catch(e => {
+    console.error(Cause.pretty(e))
+
+    return Effect.fail(e)
   }),
 )
 
-await writeOnlyRelevantDepsFieldsToNewFile('./package.json', './package.json')
+if (import.meta.main) BunRuntime.runMain(program)

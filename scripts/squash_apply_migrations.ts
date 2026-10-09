@@ -1,12 +1,19 @@
 #!/usr/bin/env bun
 
-import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import {
   generateDrizzleJson,
   generateMigration,
 } from 'drizzle-kit/api-postgres'
+
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Cause from 'effect/Cause'
+import * as Console from 'effect/Console'
+import * as Effect from 'effect/Effect'
+import * as Fiber from 'effect/Fiber'
+import * as FileSystem from 'effect/FileSystem'
 
 import { drizzleKitMigrateDev } from './lib/composeCommands.ts'
 import { ensureDevScriptRunnerIsReady } from './lib/ensureDevScriptRunnerIsReady.ts'
@@ -18,73 +25,97 @@ import {
   migrationsMetaDirPath,
 } from './lib/paths.ts'
 
-const [{ closePsql }] = await Promise.all([
-  executeSqlInDevPgContainer(
-    dbName =>
-      `\\c postgres\nDROP DATABASE IF EXISTS ${dbName}; CREATE DATABASE ${dbName}; \\c ${dbName}\n DROP SCHEMA public CASCADE; CREATE SCHEMA public; DROP SCHEMA drizzle CASCADE; CREATE SCHEMA drizzle;`,
-  ),
-  ensureDevScriptRunnerIsReady(),
-])
+const program = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
 
-const closer = closePsql()
+  const [{ closePsql }] = yield* Effect.all(
+    [
+      executeSqlInDevPgContainer(
+        dbName =>
+          `\\c postgres\nDROP DATABASE IF EXISTS ${dbName}; CREATE DATABASE ${dbName}; \\c ${dbName}\n DROP SCHEMA public CASCADE; CREATE SCHEMA public; DROP SCHEMA drizzle CASCADE; CREATE SCHEMA drizzle;`,
+      ),
+      ensureDevScriptRunnerIsReady,
+    ],
+    { concurrency: 'unbounded' },
+  )
 
-await rm(migrationsDirPath, { force: true, recursive: true })
+  const closer = yield* Effect.forkScoped(closePsql)
 
-const version = '8' as const
-const dialect = 'postgres' as const
-await mkdir(migrationsMetaDirPath, { recursive: true })
+  yield* fs.remove(migrationsDirPath, { force: true, recursive: true })
 
-const schema = await import(
-  join(databasePackageDirPath, 'dist', 'src', 'schema.js')
-)
+  const version = '8' as const
+  const dialect = 'postgres' as const
+  yield* fs.makeDirectory(migrationsMetaDirPath, { recursive: true })
 
-const newSnapshot = await generateDrizzleJson(schema)
+  const schema = yield* Effect.promise(
+    () => import(join(databasePackageDirPath, 'dist', 'src', 'schema.js')),
+  )
 
-// TODO: this shit needs a complete rewrite after they updated the format of the
-// migrations folder
-const sqlQueries = await generateMigration(
-  {
-    version,
-    dialect,
-    id: '00000000-0000-0000-0000-000000000000',
-    prevIds: [],
-    ddl: [],
-    renames: [],
-  },
-  newSnapshot,
-)
+  const newSnapshot = yield* Effect.promise(() => generateDrizzleJson(schema))
 
-await Promise.all([
-  writeFile(
-    join(migrationsMetaDirPath, '_journal.json'),
-    JSON.stringify(
+  // TODO: this shit needs a complete rewrite after they updated the format of the
+  // migrations folder
+  const sqlQueries = yield* Effect.promise(() =>
+    generateMigration(
       {
         version,
         dialect,
-        entries: [
-          {
-            idx: 0,
-            version,
-            when: Date.now(),
-            tag: '0000_bright_marten_broadcloak',
-            breakpoints: true,
-          },
-        ],
+        id: '00000000-0000-0000-0000-000000000000',
+        prevIds: [],
+        ddl: [],
+        renames: [],
       },
-      null,
-      2,
+      newSnapshot,
     ),
-  ),
-  writeFile(
-    join(migrationsMetaDirPath, '0000_snapshot.json'),
-    JSON.stringify(newSnapshot, null, 2),
-  ),
-  writeFile(
-    join(migrationsDirPath, '0000_bright_marten_broadcloak.sql'),
-    sqlQueries.map(q => q + '\n--> statement-breakpoint\n').join(''),
-  ),
-  closer,
-])
+  )
 
-await passthroughSpawn(...drizzleKitMigrateDev)
-console.log()
+  yield* Effect.all(
+    [
+      fs.writeFileString(
+        join(migrationsMetaDirPath, '_journal.json'),
+        JSON.stringify(
+          {
+            version,
+            dialect,
+            entries: [
+              {
+                idx: 0,
+                version,
+                when: Date.now(),
+                tag: '0000_bright_marten_broadcloak',
+                breakpoints: true,
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+      ),
+      fs.writeFileString(
+        join(migrationsMetaDirPath, '0000_snapshot.json'),
+        JSON.stringify(newSnapshot, null, 2),
+      ),
+      fs.writeFileString(
+        join(migrationsDirPath, '0000_bright_marten_broadcloak.sql'),
+        sqlQueries.map(q => q + '\n--> statement-breakpoint\n').join(''),
+      ),
+      Fiber.await(closer),
+    ],
+    { concurrency: 'unbounded', discard: true },
+  )
+
+  yield* passthroughSpawn(...(yield* drizzleKitMigrateDev))
+  yield* Console.log()
+}).pipe(
+  Effect.scoped,
+  Effect.provide(BunServices.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catch(e => {
+    console.error(Cause.pretty(e))
+
+    return Effect.fail(e)
+  }),
+)
+
+if (import.meta.main) BunRuntime.runMain(program)

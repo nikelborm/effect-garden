@@ -1,45 +1,53 @@
+import * as Effect from 'effect/Effect'
+
 import { devComposeStart } from './composeCommands.ts'
 import { getDevComposeServiceInfo } from './getDevComposeServiceInfo.ts'
 import { passthroughSpawn } from './passthroughSpawn.ts'
 
-export async function ensureDevComposeServiceIsRunning(serviceName: string) {
-  let serviceInfo = await getDevComposeServiceInfo(serviceName)
+export const ensureDevComposeServiceIsRunning = Effect.fn(
+  'ensureDevComposeServiceIsRunning',
+)(function* (serviceName: string) {
+  const serviceInfoEffect = Effect.map(
+    getDevComposeServiceInfo(serviceName),
+    info => {
+      const isServiceStrivesToBeRunning =
+        info.State === 'created' || info.State === 'restarting'
+      const isServiceRunning = info.State === 'running'
+      const isServiceFuckedUp = !(
+        isServiceRunning || isServiceStrivesToBeRunning
+      )
+      return {
+        ...info,
+        isServiceStrivesToBeRunning,
+        isServiceRunning,
+        isServiceFuckedUp,
+      }
+    },
+  )
 
-  const isServiceStrivesToBeRunning = () =>
-    serviceInfo.State === 'created' || serviceInfo.State === 'restarting'
+  let serviceInfo = yield* serviceInfoEffect
 
-  const isServiceRunning = () => serviceInfo.State === 'running'
+  if (serviceInfo.isServiceRunning) return
 
-  const isServiceFuckedUp = () =>
-    !(isServiceRunning() || isServiceStrivesToBeRunning())
-
-  if (isServiceRunning()) return
-
-  if (!isServiceStrivesToBeRunning())
-    await passthroughSpawn(...devComposeStart, serviceName)
+  if (!serviceInfo.isServiceStrivesToBeRunning)
+    yield* passthroughSpawn(...(yield* devComposeStart), serviceName)
 
   const timeoutMs = 5000
 
-  const signal = AbortSignal.timeout(timeoutMs)
-
-  do {
-    await Bun.sleep(200)
-    serviceInfo = await getDevComposeServiceInfo(serviceName)
-  } while (
-    !isServiceFuckedUp() &&
-    !signal.aborted &&
-    isServiceStrivesToBeRunning()
-  )
-
-  if (signal.aborted)
-    throw new Error(
-      `Failed to enforce running state. Timed-out after ${
-        timeoutMs / 1000
-      } seconds`,
+  yield* Effect.gen(function* () {
+    do {
+      yield* Effect.sleep('200 millis')
+      serviceInfo = yield* serviceInfoEffect
+    } while (
+      !serviceInfo.isServiceFuckedUp &&
+      serviceInfo.isServiceStrivesToBeRunning
     )
+  }).pipe(Effect.timeout(timeoutMs))
 
   if (serviceInfo.State !== 'running')
-    throw new Error(
-      `Running command to start container for ${serviceName} service din't have any effect. Service status currently is "${serviceInfo.State}"`,
+    return yield* Effect.fail(
+      new Error(
+        `Running command to start container for ${serviceName} service din't have any effect. Service status currently is "${serviceInfo.State}"`,
+      ),
     )
-}
+})

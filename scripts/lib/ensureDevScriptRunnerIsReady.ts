@@ -1,5 +1,7 @@
+import * as Effect from 'effect/Effect'
+
 import { ensureDevComposeServiceIsRunning } from './ensureDevComposeServiceIsRunning.ts'
 
-export async function ensureDevScriptRunnerIsReady() {
-  await ensureDevComposeServiceIsRunning('ts-dev-script-runner')
-}
+export const ensureDevScriptRunnerIsReady = ensureDevComposeServiceIsRunning(
+  'ts-dev-script-runner',
+).pipe(Effect.withSpan('ensureDevScriptRunnerIsReady'))

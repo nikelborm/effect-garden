@@ -22,7 +22,8 @@ export const projectTurboCacheDirPath = join(projectTurboDirPath, 'cache')
 // TODO: these paths should not be hardcoded as databases, migrations,
 // deployment and docker files can all appear more than once for different
 // subbprojects
-export const envDirAbsolutePath = join(projectRootAbsolutePath, 'env')
+export const deployDirAbsolutePath = join(projectRootAbsolutePath, 'deploy')
+export const envDirAbsolutePath = join(deployDirAbsolutePath, 'env')
 export const devEnvFilePath = join(envDirAbsolutePath, 'dev.env')
 export const drizzleKitDockerizedConfig = dockerizePath(
   join(scriptsPackageDirPath, 'drizzle.docker.config.ts'),
@@ -37,10 +38,10 @@ export const prodEnvTemplateFilePath = join(
   'prod.template.env',
 )
 export const devComposeFilePath = join(
-  projectRootAbsolutePath,
+  deployDirAbsolutePath,
   'dev.compose.yaml',
 )
-export const prodComposeFilePath = join(projectRootAbsolutePath, 'compose.yaml')
+export const prodComposeFilePath = join(deployDirAbsolutePath, 'compose.yaml')
 export const databasePackageDirPath = join(packagesDirPath, 'database')
 export const migrationsDirPath = join(databasePackageDirPath, 'migrations')
 export const migrationsMetaDirPath = join(migrationsDirPath, 'meta')

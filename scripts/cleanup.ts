@@ -1,11 +1,17 @@
 #!/usr/bin/env bun
 
-import { existsSync } from 'node:fs'
-import { readdir, rm, stat } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Cause from 'effect/Cause'
+import * as Console from 'effect/Console'
+import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
+import * as Path from 'effect/Path'
+import type * as PlatformError from 'effect/PlatformError'
 
 import { passthroughSpawn } from './lib/passthroughSpawn.ts'
-import { projectRootAbsolutePath, scriptsPackageDirPath } from './lib/paths.ts'
+import { projectRootAbsolutePath } from './lib/paths.ts'
+import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts'
 
 // TODO: add options to enable/disable node_modules, .lock and turbo stuff
 // dynamically, and don't forget about changing --frozen-lockfile below
@@ -26,50 +32,80 @@ const deleteSet = new Set<string>([
   'pnpm-lock.yaml',
 ])
 
-const cleanTree = async (dirPath: string): Promise<void> => {
-  if (deleteSet.has(basename(dirPath))) {
-    console.log(`Deleting: ${dirPath}`)
-    await rm(dirPath, { recursive: true, force: true })
+const cleanTree: (
+  dirPath: string,
+) => Effect.Effect<
+  void,
+  PlatformError.PlatformError,
+  FileSystem.FileSystem | Path.Path
+> = Effect.fn('cleanTree')(function* (dirPath: string) {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
+
+  if (deleteSet.has(path.basename(dirPath))) {
+    yield* Console.log(`Deleting: ${dirPath}`)
+    yield* fs.remove(dirPath, { recursive: true, force: true })
     return
   }
 
-  const stats = await stat(dirPath)
-  if (!stats.isDirectory()) return
+  const info = yield* fs.stat(dirPath)
+  if (info.type !== 'Directory') return
 
-  const entries = await readdir(dirPath)
+  const entries = yield* fs.readDirectory(dirPath)
 
-  await Promise.allSettled(
-    entries.map(entry => cleanTree(join(dirPath, entry))),
+  yield* Effect.forEach(
+    entries.map(entry => path.join(dirPath, entry)),
+    entry => Effect.ignore(cleanTree(entry)),
+    { concurrency: 'unbounded', discard: true },
   )
-}
+})
 
-console.log('Project root dir: ', projectRootAbsolutePath)
+const program = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
+  const path = yield* Path.Path
 
-if (projectRootAbsolutePath === '/')
-  throw new Error(
-    "WTF??? The script assumes it's deleting files from a project root folder, but somehow we reached FS root.",
+  yield* Console.log('Project root dir: ', projectRootAbsolutePath)
+
+  if (projectRootAbsolutePath === '/')
+    return yield* Effect.fail(
+      new Error(
+        "WTF??? The script assumes it's deleting files from a project root folder, but somehow we reached FS root.",
+      ),
+    )
+
+  if (!(yield* fs.exists(path.join(projectRootAbsolutePath, '.git'))))
+    return yield* Effect.fail(
+      new Error(
+        "WTF??? The script assumes it's deleting files from a project root folder, but there's no .git folder in it.",
+      ),
+    )
+
+  yield* Effect.ignore(runDevComposeCommandThatInheritsArgs('stop'))
+
+  yield* cleanTree(projectRootAbsolutePath)
+
+  // TODO: should also add pwd, otherwise it calls install it in the current
+  // directory, instead of root
+  yield* passthroughSpawn(
+    'bun',
+    'install',
+    // '--prefer-offline',
+    // '--frozen-lockfile',
   )
 
-if (!existsSync(join(projectRootAbsolutePath, '.git')))
-  throw new Error(
-    "WTF??? The script assumes it's deleting files from a project root folder, but there's no .git folder in it.",
-  )
+  yield* passthroughSpawn('bun', 'turbo', 'boundaries')
 
-try {
-  await import(join(scriptsPackageDirPath, './stop_dev_compose.ts'))
-} catch (_) {}
+  yield* passthroughSpawn('bun', 'run', 'build')
+}).pipe(
+  Effect.scoped,
+  Effect.provide(BunServices.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catch(e => {
+    console.error(Cause.pretty(e))
 
-await cleanTree(projectRootAbsolutePath)
-
-// TODO: should also add pwd, otherwise it calls install it in the current
-// directory, instead of root
-await passthroughSpawn(
-  'bun',
-  'install',
-  // '--prefer-offline',
-  // '--frozen-lockfile',
+    return Effect.fail(e)
+  }),
 )
 
-await passthroughSpawn('bun', 'turbo', 'boundaries')
-
-await passthroughSpawn('bun', 'run', 'build')
+if (import.meta.main) BunRuntime.runMain(program)

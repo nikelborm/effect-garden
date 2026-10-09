@@ -6,7 +6,7 @@ import * as Prompt from 'effect/cli/Prompt'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
 
-Effect.gen(function* () {
+const program = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
 
   const procEntries = yield* fs.readDirectory('/proc')
@@ -102,4 +102,6 @@ Effect.gen(function* () {
       console.log(`Skipped PID ${targetPid}.`)
     }
   }
-}).pipe(Effect.provide(BunServices.layer), BunRuntime.runMain)
+}).pipe(Effect.provide(BunServices.layer), Effect.withSpan(import.meta.file))
+
+if (import.meta.main) BunRuntime.runMain(program)

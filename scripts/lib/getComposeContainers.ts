@@ -1,8 +1,11 @@
-import * as Result from 'effect/Result'
+import { simpleExec } from '@evadev/effect-helpers'
+
+import * as Effect from 'effect/Effect'
+import * as ChildProcess from 'effect/process/ChildProcess'
 import * as Schema from 'effect/Schema'
 import * as SchemaGetter from 'effect/SchemaGetter'
 
-import { devComposePs } from './composeCommands.ts'
+import { concat, devComposePs } from './composeCommands.ts'
 
 const ContainerSchema = Schema.Struct({
   Service: Schema.NonEmptyString,
@@ -34,29 +37,18 @@ const PsCommandOutputSchema = LinesSchema.pipe(
   Schema.revealCodec,
 )
 
-const decodePsCommandOutput = Schema.decodeResult(PsCommandOutputSchema)
+const decodePsCommandOutput = Schema.decodeEffect(PsCommandOutputSchema)
 
-export async function getDevComposeContainers() {
-  const cmd = devComposePs.concat('--format', 'json', '-a')
+export const getDevComposeContainers = Effect.gen(function* () {
+  const cmd = yield* concat(devComposePs, '--format', 'json', '-a')
+  const [head, ...rest] = cmd
 
-  const proc = Bun.spawn({ cmd, stdin: 'ignore' })
+  const result = yield* simpleExec(ChildProcess.make(head, rest))
 
-  const [exitCode, stdoutText] = await Promise.all([
-    proc.exited,
-    proc.stdout.text(),
-  ])
+  if (result.exitCode !== 0)
+    return yield* Effect.fail(
+      new Error(`Failed to run \`${cmd.join(' ')}\` command`),
+    )
 
-  const processFinishedSuccessfully = exitCode === 0
-
-  if (!processFinishedSuccessfully)
-    throw new Error(`Failed to run \`${cmd}\` command`)
-
-  const containersResult = decodePsCommandOutput(stdoutText)
-
-  if (Result.isFailure(containersResult))
-    throw new Error(`Failed to parse \`${cmd}\` command output`, {
-      cause: containersResult.failure,
-    })
-
-  return containersResult.success
-}
+  return yield* decodePsCommandOutput(result.stdout)
+}).pipe(Effect.withSpan('getDevComposeContainers'))

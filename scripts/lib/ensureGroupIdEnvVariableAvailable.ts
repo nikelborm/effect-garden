@@ -1,3 +1,6 @@
+import * as Console from 'effect/Console'
+import * as Effect from 'effect/Effect'
+
 const warningAboutGID = `
 GID env var is not set. It's probably because you don't use \`mise\` or
 improperly configured it. Mise should have run \`source
@@ -8,6 +11,8 @@ docker environment into mounted host fs. These files may have improper group
 id set.
 `
 
-export function ensureGroupIdEnvVariableAvailable() {
-  if (!('GID' in import.meta.env)) console.warn(warningAboutGID)
-}
+export const ensureGroupIdEnvVariableAvailable = Effect.gen(function* () {
+  const hasGid = yield* Effect.sync(() => 'GID' in import.meta.env)
+
+  if (!hasGid) yield* Console.warn(warningAboutGID)
+}).pipe(Effect.withSpan('ensureGroupIdEnvVariableAvailable'))

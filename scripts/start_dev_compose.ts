@@ -1,10 +1,30 @@
 #!/usr/bin/env bun
 
-import { mkdir } from 'node:fs/promises'
+import * as BunRuntime from '@effect/platform-bun/BunRuntime'
+import * as BunServices from '@effect/platform-bun/BunServices'
+import * as Cause from 'effect/Cause'
+import * as Effect from 'effect/Effect'
+import * as FileSystem from 'effect/FileSystem'
 
 import { projectTurboCacheDirPath } from './lib/paths.ts'
 import { runDevComposeCommandThatInheritsArgs } from './lib/runDevComposeCommandInheritArgs.ts'
 
-await mkdir(projectTurboCacheDirPath, { recursive: true })
+const program = Effect.gen(function* () {
+  const fs = yield* FileSystem.FileSystem
 
-await runDevComposeCommandThatInheritsArgs('start')
+  yield* fs.makeDirectory(projectTurboCacheDirPath, { recursive: true })
+
+  yield* runDevComposeCommandThatInheritsArgs('start')
+}).pipe(
+  Effect.scoped,
+  Effect.provide(BunServices.layer),
+  Effect.withSpan(import.meta.file),
+  Effect.sandbox,
+  Effect.catch(e => {
+    console.error(Cause.pretty(e))
+
+    return Effect.fail(e)
+  }),
+)
+
+if (import.meta.main) BunRuntime.runMain(program)

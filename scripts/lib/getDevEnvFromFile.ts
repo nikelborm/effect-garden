@@ -1,6 +1,6 @@
 import { config } from 'dotenv'
 
-import * as Result from 'effect/Result'
+import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
@@ -30,19 +30,17 @@ const DevEnvSchema = Schema.Struct({
   DATABASE_PORT_EXPOSED_TO_DEV_LOCALHOST: PortSchema,
 })
 
-const decodeDevEnvResult = Schema.decodeUnknownResult(DevEnvSchema)
+const decodeDevEnv = Schema.decodeUnknownEffect(DevEnvSchema)
 export const decodeDbConfigSync = Schema.decodeUnknownSync(DatabaseConfigSchema)
 
-export async function getDevEnvFromFile() {
-  await ensureDevEnvExists()
+export const getDevEnvFromFile = Effect.gen(function* () {
+  yield* ensureDevEnvExists
 
-  const { parsed, error } = config({ path: devEnvFilePath, quiet: true })
+  const { parsed, error } = yield* Effect.sync(() =>
+    config({ path: devEnvFilePath, quiet: true }),
+  )
 
-  if (error) throw error
+  if (error) return yield* Effect.fail(error)
 
-  const envResult = decodeDevEnvResult(parsed)
-
-  if (Result.isFailure(envResult)) throw envResult.failure
-
-  return envResult.success
-}
+  return yield* decodeDevEnv(parsed)
+}).pipe(Effect.withSpan('getDevEnvFromFile'))

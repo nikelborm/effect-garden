@@ -1,23 +1,25 @@
+import * as Effect from 'effect/Effect'
+
 import { devCompose } from './composeCommands.ts'
 import { ensureDevEnvExists } from './ensureDevEnvExists.ts'
 import { ensureGroupIdEnvVariableAvailable } from './ensureGroupIdEnvVariableAvailable.ts'
 import { passthroughSpawnInheritArgs } from './passthroughSpawn.ts'
 
-export async function runDevComposeCommandThatInheritsArgs(
-  ...devComposeCmdSuffix: string[]
-) {
-  await runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(
-    ...devCompose,
+export const runDevComposeCommandThatInheritsArgs = Effect.fn(
+  'runDevComposeCommandThatInheritsArgs',
+)(function* (...devComposeCmdSuffix: string[]) {
+  yield* runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(
+    ...(yield* devCompose),
     ...devComposeCmdSuffix,
   )
-}
+})
 
-export async function runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId(
-  ...cmd: string[]
-) {
-  await ensureDevEnvExists()
+export const runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId = Effect.fn(
+  'runCmdThatInheritsArgsAndExpectsDevEnvAndGroupId',
+)(function* (...cmd: string[]) {
+  yield* ensureDevEnvExists
 
-  ensureGroupIdEnvVariableAvailable()
+  yield* ensureGroupIdEnvVariableAvailable
 
-  await passthroughSpawnInheritArgs(...cmd)
-}
+  yield* passthroughSpawnInheritArgs(...cmd)
+})
