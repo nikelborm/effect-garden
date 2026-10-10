@@ -6,6 +6,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
+    "@evadev/effect-helpers": "workspace:^",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "rolldown": "catalog:",

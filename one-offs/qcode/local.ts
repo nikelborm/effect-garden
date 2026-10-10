@@ -4,16 +4,23 @@
 // or, with `--opener shell`, drop into an interactive shell rooted at the
 // project directory in the same terminal window.
 
+import { dedupStreamHashedSimple } from '@evadev/effect-helpers/dedupStream.ts'
+
 import * as Effect from 'effect/Effect'
+import * as Fiber from 'effect/Fiber'
 import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
-import * as HashSet from 'effect/HashSet'
 import * as Path from 'effect/Path'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as Stream from 'effect/Stream'
 
-import { isNotFound, logErrorOnNotFound, PROJECTS_DIR } from './common.ts'
+import {
+  CACHE_DIR,
+  isNotFound,
+  logErrorOnNotFound,
+  PROJECTS_DIR,
+} from './common.ts'
 
 export const DIR_ICON = '\ue5ff' // 
 export const WORKSPACE_ICON = '\ue8da' // 
@@ -123,17 +130,9 @@ export const dirAndCodeWorkspacePathsInProjectsRoot = find(
   `-maxdepth 1 -mindepth 1 ( -type d -o -name *.code-workspace )`,
 )
 
-const dedupStreamHashedSimple = <A, E, R>(
-  self: Stream.Stream<A, E, R>,
-): Stream.Stream<A, E, R> =>
-  Stream.mapAccum(
-    self,
-    () => HashSet.empty<A>(),
-    (alreadyEmitted, value) =>
-      HashSet.has(alreadyEmitted, value)
-        ? [alreadyEmitted, [] as A[]]
-        : [HashSet.add(alreadyEmitted, value), [value]],
-  )
+// Raw `find` outputs from the previous run, stored as plain lines. Shown
+// immediately on startup while the fresh `find` commands still scan.
+export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
 
 const endsWithMarkerRegExp = new RegExp(
   '/(' +
@@ -142,29 +141,19 @@ const endsWithMarkerRegExp = new RegExp(
 )
 const anythingThatEndsWithSymbolsOtherThanSlashRegExp = /[^/]+$/
 
-export const vscodeArgCandidates = pipe(
-  [
-    gitAndVsCodeDirPaths,
-    packageJsonAndMiseTomlAndCodeWorkspacePaths,
-    dirAndCodeWorkspacePathsInProjectsRoot,
-  ],
-  Stream.mergeAll({ concurrency: 'unbounded' }),
-  Stream.map(currentLine =>
-    currentLine.endsWith('.code-workspace')
-      ? currentLine
-      : currentLine
-          // removes the special dir/file that's been found inside, leaving only
-          // the part of the parent dir's path and preserves trailing slash if
-          // the original had one
-          .replace(endsWithMarkerRegExp, '$2')
-          // adds slash at the end, but only to those without it. Important
-          // thing is that lines don't always contain markers.
-          // When listing direct children of ./projects, it gives just folder
-          // names, which is the reason why these 2 regexps can't be combined
-          .replace(anythingThatEndsWithSymbolsOtherThanSlashRegExp, '$&/'),
-  ),
-  dedupStreamHashedSimple,
-)
+export const toVscodeArgCandidate = (currentLine: string) =>
+  currentLine.endsWith('.code-workspace')
+    ? currentLine
+    : currentLine
+        // removes the special dir/file that's been found inside, leaving only
+        // the part of the parent dir's path and preserves trailing slash if
+        // the original had one
+        .replace(endsWithMarkerRegExp, '$2')
+        // adds slash at the end, but only to those without it. Important
+        // thing is that lines don't always contain markers.
+        // When listing direct children of ./projects, it gives just folder
+        // names, which is the reason why these 2 regexps can't be combined
+        .replace(anythingThatEndsWithSymbolsOtherThanSlashRegExp, '$&/')
 
 export const hyperlink = (uri: string, text: string) =>
   `\x1b]8;;${uri}\x1b\\${text}\x1b]8;;\x1b\\`
@@ -175,18 +164,17 @@ const ansiGreen = (s: string) => `\x1b[32m${s}\x1b[0m`
 // the tab delimiter is to support directories with space in their name
 const icon_path_delimiter = '\t'
 
-export const fzfPrettyCandidates = Path.Path.useSync(pathService =>
-  Stream.map(vscodeArgCandidates, vscodeArgCandidate => {
-    const path = pathService.relative(PROJECTS_DIR, vscodeArgCandidate)
+export const toPrettyFzfRenderedLine =
+  (pathService: Path.Path) => (vscodeArgCandidate: string) => {
+    const relativePath = pathService.relative(PROJECTS_DIR, vscodeArgCandidate)
     const isDir = vscodeArgCandidate.endsWith('/')
     const color = isDir ? ansiBlue : ansiGreen
     const icon = isDir ? DIR_ICON : WORKSPACE_ICON
     return hyperlink(
-      `file://${path}`,
-      color([icon, icon_path_delimiter, path, `\n`].join('')),
+      `file://${relativePath}`,
+      color([icon, icon_path_delimiter, relativePath, `\n`].join('')),
     )
-  }),
-).pipe(Stream.unwrap)
+  }
 
 // fzf replaces {2} with the raw relative path (second space-delimited field),
 // while the first icon is discarded.
@@ -219,6 +207,8 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
   if (yield* areSomeDependenciesMissing) return ChildProcessSpawner.ExitCode(1)
 
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+  const path = yield* Path.Path
+  const fs = yield* FileSystem.FileSystem
 
   // Keep fzf in our foreground process group so the terminal delivers
   // SIGWINCH (resize) and job-control signals straight to it — exactly as
@@ -249,14 +239,70 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
     ),
   )
 
-  const [fzfExitCode, selectedLine] = yield* Effect.all(
+  const collectedFreshRawLines: string[] = []
+
+  // Previous run's raw `find` lines. Missing file or any platform error
+  // means first run — just show nothing until the fresh scan streams in.
+  const cachedFindPaths = fs.stream(LOCAL_FIND_CACHE_FILE).pipe(
+    Stream.decodeText,
+    Stream.splitLines,
+    Stream.filter(line => line.length > 0),
+    Stream.catchCause(() => Stream.empty),
+  )
+
+  // Runs after the merged stream completes, so the cache file is already
+  // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
+  // Forked so the write happens in parallel without blocking the selection.
+  const persistFindCache = Effect.gen(function* () {
+    yield* fs.makeDirectory(CACHE_DIR, { recursive: true })
+    yield* fs.writeFileString(
+      LOCAL_FIND_CACHE_FILE,
+      collectedFreshRawLines.length > 0
+        ? collectedFreshRawLines.join('\n') + '\n'
+        : '',
+    )
+  }).pipe(
+    Effect.catchCause(cause =>
+      Effect.logError('failed to write local find cache', cause),
+    ),
+  )
+
+  // Fresh scan still runs every time, but its elements are tapped into an
+  // array while they stream into fzf, so the cache can be overwritten after.
+  const fzfInput = Stream.mergeAll(
+    [
+      gitAndVsCodeDirPaths,
+      packageJsonAndMiseTomlAndCodeWorkspacePaths,
+      dirAndCodeWorkspacePathsInProjectsRoot,
+    ],
+    { concurrency: 'unbounded' },
+  ).pipe(
+    Stream.tap(line =>
+      Effect.sync(() => {
+        collectedFreshRawLines.push(line)
+      }),
+    ),
+    Stream.merge(cachedFindPaths),
+    Stream.map(toVscodeArgCandidate),
+    dedupStreamHashedSimple,
+    Stream.map(toPrettyFzfRenderedLine(path)),
+    Stream.encodeText,
+  )
+
+  const [fzfExitCode, selectedLine, cacheUpdateFiber] = yield* Effect.all(
     [
       fzfProcess.exitCode,
       fzfProcess.stdout.pipe(Stream.decodeText, Stream.mkString),
-      Stream.run(Stream.encodeText(fzfPrettyCandidates), fzfProcess.stdin),
+      fzfInput.pipe(
+        Stream.run(fzfProcess.stdin),
+        // forkDetach so that program early exit won't interrupt the cache update
+        Effect.andThen(Effect.forkDetach(persistFindCache)),
+      ),
     ],
     { concurrency: 'unbounded' },
   )
+
+  yield* Effect.addFinalizer(() => Fiber.await(cacheUpdateFiber))
 
   if ((fzfExitCode as number) === 130) {
     yield* Effect.log('fzf canceled by user')
@@ -272,9 +318,6 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
     yield* Effect.logError('failed to parse relative path returned by fzf')
     return ChildProcessSpawner.ExitCode(1)
   }
-
-  const path = yield* Path.Path
-  const fs = yield* FileSystem.FileSystem
 
   const linkedPath = path.join(PROJECTS_DIR, relativePath)
   const projectPath = yield* fs

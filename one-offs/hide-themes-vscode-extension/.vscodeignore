@@ -1,0 +1,11 @@
+.vscode/**
+.git/**
+node_modules/**
+src/**
+dist-types/**
+**/*.tsbuildinfo
+*.vsix
+biome.jsonc
+mise.toml
+tsconfig.json
+.vscodeignore

@@ -1,0 +1,131 @@
+{
+  "name": "theme-hider",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Hide unwanted themes from a filtered theme picker. Keep only the one theme you want from each pack.",
+  "devDependencies": {
+    "@effect/tsgo": "catalog:",
+    "@evadev/tsconfig": "workspace:^",
+    "@types/node": "catalog:",
+    "@vscode/vsce": "catalog:",
+    "ts-namespace-import": "catalog:",
+    "ts-patch": "catalog:",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "@types/vscode": "catalog:"
+  },
+  "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/hide-themes-vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/nikelborm/effect-garden/issues",
+    "email": "evadev@duck.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nikelborm/effect-garden.git",
+    "directory": "one-offs/hide-themes-vscode-extension"
+  },
+  "scripts": {
+    "//": "@types/vscode must stay in dependencies: vsce reads the raw version string from devDependencies and cannot parse the catalog: protocol",
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput false",
+    "install:extension": "bun run package && code --install-extension ./dist/*.vsix",
+    "package": "rm -rf ./dist/*.vsix && vsce package --no-dependencies -o ./dist/",
+    "vscode:prepublish": "bun run build"
+  },
+  "author": {
+    "name": "nikelborm",
+    "email": "evadev@duck.com",
+    "url": "https://github.com/nikelborm"
+  },
+  "contributors": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "nikelborm",
+      "email": "evadev@duck.com",
+      "url": "https://github.com/nikelborm"
+    }
+  ],
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "displayName": "Theme Hider",
+  "categories": [
+    "Other"
+  ],
+  "publisher": "evadev",
+  "main": "./dist/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "themeHider.pickTheme",
+        "title": "Theme Hider: Pick Theme (Filtered)"
+      },
+      {
+        "command": "themeHider.hideTheme",
+        "title": "Theme Hider: Hide a Theme…"
+      },
+      {
+        "command": "themeHider.unhideTheme",
+        "title": "Theme Hider: Unhide a Theme…"
+      },
+      {
+        "command": "themeHider.manageHiddenThemes",
+        "title": "Theme Hider: Manage Hidden Themes…"
+      }
+    ],
+    "configuration": {
+      "title": "Theme Hider",
+      "properties": {
+        "themeHider.hiddenThemes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Theme labels to hide from the filtered theme picker (matches `workbench.colorTheme`).",
+          "scope": "global"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "themeHider.pickTheme",
+        "key": "ctrl+k ctrl+t",
+        "mac": "cmd+k cmd+t",
+        "when": "!inQuickOpen"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "themeHider.pickTheme"
+        },
+        {
+          "command": "themeHider.hideTheme"
+        },
+        {
+          "command": "themeHider.unhideTheme"
+        },
+        {
+          "command": "themeHider.manageHiddenThemes"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "engines": {
+    "vscode": "^1.101.0"
+  }
+}
