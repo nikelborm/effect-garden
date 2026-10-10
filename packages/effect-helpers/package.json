@@ -27,6 +27,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "b": "bun run build",
     "dev": "tsc --watch --preserveWatchOutput false",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
   },

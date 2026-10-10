@@ -4,16 +4,21 @@
 // or, with `--opener shell`, drop into an interactive shell rooted at the
 // project directory in the same terminal window.
 
-import { dedupStreamHashedSimple } from '@evadev/effect-helpers/dedupStream.ts'
+import {
+  dedupStreamWithExternalSet,
+  dedupStreamWithSet,
+} from '@evadev/effect-helpers/dedupStream.ts'
 
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as FileSystem from 'effect/FileSystem'
 import { pipe } from 'effect/Function'
+import * as Iterable from 'effect/Iterable'
 import * as Path from 'effect/Path'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as Stream from 'effect/Stream'
+import { ReducerConcat } from 'effect/String'
 
 import {
   CACHE_DIR,
@@ -24,6 +29,10 @@ import {
 
 export const DIR_ICON = '\ue5ff' // 
 export const WORKSPACE_ICON = '\ue8da' // 
+
+// Raw `find` outputs from the previous run, stored as plain lines. Shown
+// immediately on startup while the fresh `find` commands still scan.
+export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/qcode/local-find-cache.txt`
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -130,10 +139,6 @@ export const dirAndCodeWorkspacePathsInProjectsRoot = find(
   `-maxdepth 1 -mindepth 1 ( -type d -o -name *.code-workspace )`,
 )
 
-// Raw `find` outputs from the previous run, stored as plain lines. Shown
-// immediately on startup while the fresh `find` commands still scan.
-export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
-
 const endsWithMarkerRegExp = new RegExp(
   '/(' +
     [...dirMarkers, ...fileMarkers].map(RegExp.escape).join('|') +
@@ -239,11 +244,12 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
     ),
   )
 
-  const collectedFreshRawLines: string[] = []
+  const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
 
   // Previous run's raw `find` lines. Missing file or any platform error
   // means first run — just show nothing until the fresh scan streams in.
-  const cachedFindPaths = fs.stream(LOCAL_FIND_CACHE_FILE).pipe(
+  const cachedVscodeArgCandidatesFromPreviousRun = pipe(
+    fs.stream(LOCAL_FIND_CACHE_FILE),
     Stream.decodeText,
     Stream.splitLines,
     Stream.filter(line => line.length > 0),
@@ -253,15 +259,20 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
   // Runs after the merged stream completes, so the cache file is already
   // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
   // Forked so the write happens in parallel without blocking the selection.
-  const persistFindCache = Effect.gen(function* () {
-    yield* fs.makeDirectory(CACHE_DIR, { recursive: true })
-    yield* fs.writeFileString(
-      LOCAL_FIND_CACHE_FILE,
-      collectedFreshRawLines.length > 0
-        ? collectedFreshRawLines.join('\n') + '\n'
-        : '',
-    )
-  }).pipe(
+  const persistFindCache = pipe(
+    fs.makeDirectory(CACHE_DIR, { recursive: true }),
+    Effect.andThen(
+      fs.writeFileString(
+        LOCAL_FIND_CACHE_FILE,
+        collectedFreshVscodeArgCandidatesFromCurrentRun.size > 0
+          ? pipe(
+              collectedFreshVscodeArgCandidatesFromCurrentRun,
+              Iterable.intersperse('\n'),
+              ReducerConcat.combineAll,
+            ) + '\n'
+          : '',
+      ),
+    ),
     Effect.catchCause(cause =>
       Effect.logError('failed to write local find cache', cause),
     ),
@@ -277,14 +288,10 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
     ],
     { concurrency: 'unbounded' },
   ).pipe(
-    Stream.tap(line =>
-      Effect.sync(() => {
-        collectedFreshRawLines.push(line)
-      }),
-    ),
-    Stream.merge(cachedFindPaths),
     Stream.map(toVscodeArgCandidate),
-    dedupStreamHashedSimple,
+    dedupStreamWithExternalSet(collectedFreshVscodeArgCandidatesFromCurrentRun),
+    Stream.merge(cachedVscodeArgCandidatesFromPreviousRun),
+    dedupStreamWithSet,
     Stream.map(toPrettyFzfRenderedLine(path)),
     Stream.encodeText,
   )
