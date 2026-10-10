@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "description": "Now it's just a showcase of drizzle-fp's capabilities. Previously were a promising startup",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

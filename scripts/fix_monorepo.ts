@@ -711,6 +711,55 @@ const ensureTsconfigDepsAreInAllPackages = Effect.gen(function* () {
   )
 }).pipe(Effect.withSpan('ensureTsconfigDepsAreInAllPackages'))
 
+const ensureBiomeAndOxlintDepsAreInAllPackages = Effect.gen(function* () {
+  const myMonorepoPackages = yield* myMonorepoPackagesEffect
+
+  const otherPackages = myMonorepoPackages.filter(
+    pkg =>
+      pkg.pkg.name !== 'oxlint-plugin-effect-imports' &&
+      pkg.pkg.name !== '@evadev/tsconfig',
+  )
+
+  yield* Effect.forEach(
+    otherPackages,
+    Effect.fn('ensureBiomeAndOxlintDepsInPackage')(function* (pkg) {
+      yield* Effect.annotateCurrentSpan({
+        name: pkg.pkg.name,
+        absolutePackageDirPath: pkg.absolutePackageDirPath,
+      })
+
+      const devDeps = pkg.pkg.devDependencies ?? {}
+
+      const toInstall: { dep: string; version: string }[] = []
+
+      if (!devDeps['@biomejs/biome'])
+        toInstall.push({ dep: '@biomejs/biome', version: 'catalog:' })
+
+      // biome-ignore lint/complexity/useLiteralKeys: tsc conflict
+      if (!devDeps['oxlint'])
+        toInstall.push({ dep: 'oxlint', version: 'catalog:' })
+
+      if (!toInstall.length) return
+
+      yield* Console.log(
+        `\nInstalling missing biome and oxlint deps into ${pkg.pkg.name}:`,
+      )
+      const installArgs = toInstall.map(
+        ({ dep, version }) => `${dep}@${version}`,
+      )
+      yield* Console.log(installArgs.join(', '))
+
+      yield* reinstallDepsInCategory({
+        deps: toInstall,
+        depType: 'devDependencies',
+        cwd: pkg.absolutePackageDirPath,
+        packageName: pkg.pkg.name,
+      })
+    }),
+    { discard: true },
+  )
+}).pipe(Effect.withSpan('ensureBiomeAndOxlintDepsAreInAllPackages'))
+
 const shouldBePeerDep = (name: string) =>
   ['effect', '@types/node', '@types/bun'].includes(name) ||
   name.startsWith('@effect/')
@@ -1161,6 +1210,7 @@ const program = Effect.all([
   ensureBiomeJsoncExistsInAllPackages,
   ensureAllMonorepoPackagesAreRootDeps,
   ensureTsconfigDepsAreInAllPackages,
+  ensureBiomeAndOxlintDepsAreInAllPackages,
   ensureCatalogHasNoUnusedOrUsedOnceEntries,
   sortPackageJsonEffect,
 ]).pipe(

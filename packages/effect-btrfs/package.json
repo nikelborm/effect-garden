@@ -4,8 +4,10 @@
   "version": "0.1.2",
   "description": "Tooling to work with btrfs with Effect",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

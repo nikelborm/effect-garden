@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "description": "Effect HTTP API declarations for NPM Registry",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/openapi-gen": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

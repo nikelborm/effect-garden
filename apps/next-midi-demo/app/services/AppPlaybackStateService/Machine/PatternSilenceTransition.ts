@@ -37,7 +37,8 @@ export const isPatternSilenceTransitionQueue = Schema.is(
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
   {
-    firstPlaybackInitAtSecond: Schema.Finite,
+    firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+      Schema.Finite,
     accord: AccordSchema,
     strength: StrengthSchema,
     transitionQueue: PatternSilenceTransitionQueue,
@@ -52,7 +53,9 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     if (StrengthData.models(pressedParamButtonId))
       return PatternSilenceTransitionState.make({
-        firstPlaybackInitAtSecond: this.firstPlaybackInitAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+          this
+            .firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
         accord,
         strength: pressedParamButtonId.strength,
         transitionQueue: [current],
@@ -80,7 +83,8 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
       const revived = yield* current.cancelFadeoutAndRestore()
       return PatternState.make({
-        firstPlaybackInitAtSecond: revived.playbackStartedAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+          revived.playbackStartedAtSecond,
         transitionQueue: [revived],
       })
     }

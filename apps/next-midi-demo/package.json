@@ -14,6 +14,7 @@
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "esbuild": "catalog:",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:",
@@ -68,16 +69,16 @@
     "directory": "apps/next-midi-demo"
   },
   "scripts": {
-    "build": "next build && serwist build",
     "b": "bun typecheck",
-    "l": "bun lint",
+    "build": "next build && serwist build",
     "dev": "next dev --experimental-https",
     "format": "biome format --write",
+    "l": "bun lint",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe",
     "max": "cd ../../; bun max",
+    "prepare": "effect-tsgo patch --typescript --no-oxlint",
     "start": "next start",
-    "typecheck": "tsc",
-    "prepare": "effect-tsgo patch --typescript --no-oxlint"
+    "typecheck": "tsc"
   },
   "author": {
     "name": "nikelborm",

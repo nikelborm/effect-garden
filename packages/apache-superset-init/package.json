@@ -4,10 +4,12 @@
   "version": "0.1.6",
   "description": "Quickly download files needed to run Apache Superset deployment in docker and preconfigure them for production",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "oxlint": "catalog:",
     "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

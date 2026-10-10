@@ -4,11 +4,13 @@
   "version": "0.1.0",
   "description": "Generates missing Effect wrappers for Web Audio API using @webref/idl",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "@types/webref__idl": "workspace:^",
     "@webref/idl": "catalog:",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:",

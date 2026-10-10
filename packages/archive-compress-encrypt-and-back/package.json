@@ -4,8 +4,10 @@
   "version": "0.1.2",
   "description": "Archive, compress, encrypt and back",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

@@ -28,3 +28,7 @@ const asd: TaggedPatternPointer = {
 // Property ''~brand~'' is protected but type '{ pattern: "1" & Brand<"Pattern">; accord: "C" & Brand<"Accord">; _tag: "TaggedPatternPointer"; '~brand~': never; strength: "s" & Brand<"Strength">; }' is not a class derived from 'TaggedPatternPointer'.
 // because we didn't use new keyword. this forces you to always go through new keyword construction
 ```
+
+Long variable names are not a problem. The time to read doesn't matter. What
+matters is the ability to restore the full semantic meaning of the code after
+not visiting it for a long time. Short names prevent that.

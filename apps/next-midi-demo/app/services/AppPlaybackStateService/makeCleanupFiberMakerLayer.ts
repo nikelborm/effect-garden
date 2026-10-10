@@ -118,7 +118,8 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     const q = state.transitionQueue
     yield* q[0].dispose()
     return PatternState.make({
-      firstPlaybackInitAtSecond: state.playbackStartedAtSecond,
+      firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+        state.playbackStartedAtSecond,
       transitionQueue: [q[1].becomeLive()],
     })
   }

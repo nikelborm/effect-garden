@@ -14,7 +14,8 @@ export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
 export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   'SlowStrumState',
   {
-    firstPlaybackInitAtSecond: Schema.Finite,
+    firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+      Schema.Finite,
     transitionQueue: SlowStrumQueue,
   },
 ) {
@@ -37,20 +38,22 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
     function* (asset: TaggedSlowStrumPointer) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
-      const firstPlaybackInitAtSecond = yield* getAudioNow
+      const firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit =
+        yield* getAudioNow
 
       const playback = yield* StartFreshPlayback.runLooping(
         audioBuffer,
-        firstPlaybackInitAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
       )
 
       return this.make({
-        firstPlaybackInitAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
         transitionQueue: [
           SlowStrumPlayback.make({
             asset,
             playback,
-            playbackStartedAtSecond: firstPlaybackInitAtSecond,
+            playbackStartedAtSecond:
+              firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
           }),
         ],
       })

@@ -5,9 +5,11 @@
   "description": "Painfully copy-pasted better auth wrapper.",
   "devDependencies": {
     "@better-auth/cli": "catalog:",
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/pg": "catalog:",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"

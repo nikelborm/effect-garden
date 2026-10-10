@@ -4,6 +4,7 @@
   "version": "1.0.10",
   "description": "Keyboard events have .key string property. This package allows type-safe comparison of that property with non-printable values",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/platform-bun": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
@@ -13,6 +14,7 @@
     "@types/unist": "catalog:",
     "effect": "catalog:",
     "gray-matter": "catalog:",
+    "oxlint": "catalog:",
     "prettier": "catalog:",
     "prettier-plugin-jsdoc": "catalog:",
     "rehype-stringify": "catalog:",

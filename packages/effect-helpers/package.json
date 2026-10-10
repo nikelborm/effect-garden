@@ -4,8 +4,10 @@
   "version": "0.1.5",
   "description": "Just a bunch of helpers for my effect repos",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -26,8 +28,8 @@
     "directory": "packages/effect-helpers"
   },
   "scripts": {
-    "build": "tsc",
     "b": "bun run build",
+    "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput false",
     "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
   },

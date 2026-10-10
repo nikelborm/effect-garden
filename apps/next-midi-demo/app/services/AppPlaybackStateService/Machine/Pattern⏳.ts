@@ -21,7 +21,11 @@ export const isPatternQueue = Schema.is(PatternQueue)
 
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
-  { firstPlaybackInitAtSecond: Schema.Finite, transitionQueue: PatternQueue },
+  {
+    firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+      Schema.Finite,
+    transitionQueue: PatternQueue,
+  },
 ) {
   declare protected '~brand~': never
   static models = Schema.is(this);
@@ -56,20 +60,22 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     function* (asset: TaggedPatternPointer) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
-      const firstPlaybackInitAtSecond = yield* getAudioNow
+      const firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit =
+        yield* getAudioNow
 
       const playback = yield* StartFreshPlayback.runLooping(
         audioBuffer,
-        firstPlaybackInitAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
       )
 
       return this.make({
-        firstPlaybackInitAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
         transitionQueue: [
           PatternPlayback.make({
             asset,
             playback,
-            playbackStartedAtSecond: firstPlaybackInitAtSecond,
+            playbackStartedAtSecond:
+              firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
           }),
         ],
       })

@@ -4,6 +4,7 @@
   "version": "1.0.2",
   "description": "Oxlint plugin to enforce namespace imports from Effect package subpaths",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "eslint": "catalog:",

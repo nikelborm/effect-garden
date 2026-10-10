@@ -9,6 +9,7 @@
     "@evadev/effect-helpers": "workspace:^",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
+    "oxlint": "catalog:",
     "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:"
@@ -31,8 +32,8 @@
     "directory": "one-offs/qcode"
   },
   "scripts": {
-    "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
     "b": "bun run build",
+    "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
     "lint": "oxlint --fix --quiet && biome check --write --unsafe"
   },
   "author": {

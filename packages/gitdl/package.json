@@ -4,10 +4,12 @@
   "version": "0.2.6",
   "description": "Download any directory at any depth from any repo on GitHub on any git ref",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@vitest/coverage-v8": "catalog:",
+    "oxlint": "catalog:",
     "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

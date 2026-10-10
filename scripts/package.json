@@ -4,9 +4,11 @@
   "version": "0.1.0",
   "description": "A bunch of scripts to automate things and maintain the monorepo",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
+    "oxlint": "catalog:",
     "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",

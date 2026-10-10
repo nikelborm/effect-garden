@@ -72,7 +72,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
       const revived = yield* current.cancelFadeoutAndRestore()
       yield* incoming.drop()
       return PatternState.make({
-        firstPlaybackInitAtSecond: revived.playbackStartedAtSecond,
+        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+          revived.playbackStartedAtSecond,
         transitionQueue: [revived],
       })
     }

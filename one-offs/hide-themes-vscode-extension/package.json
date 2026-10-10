@@ -1,13 +1,15 @@
 {
   "name": "theme-hider",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.15",
   "description": "Hide unwanted themes from a filtered theme picker. Keep only the one theme you want from each pack.",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "@types/node": "catalog:",
     "@vscode/vsce": "catalog:",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
@@ -29,8 +31,8 @@
     "//": "@types/vscode must stay in dependencies: vsce reads the raw version string from devDependencies and cannot parse the catalog: protocol",
     "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput false",
-    "install:extension": "bun run package && code --install-extension ./dist/*.vsix",
-    "package": "rm -rf ./dist/*.vsix && vsce package --no-dependencies -o ./dist/",
+    "install:extension": "bun pm version patch && bun run package && code --install-extension ./dist/*.vsix",
+    "package": "rm -rf ./dist/*.vsix && vsce package --skip-license --no-dependencies -o ./dist/",
     "vscode:prepublish": "bun run build"
   },
   "author": {
@@ -92,7 +94,21 @@
             "type": "string"
           },
           "default": [],
-          "description": "Theme labels to hide from the filtered theme picker (matches `workbench.colorTheme`).",
+          "description": "Theme labels to hide from the filtered theme picker (names as shown in the picker).",
+          "scope": "global"
+        },
+        "themeHider.previewDebounceMs": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 400,
+          "description": "Quiet time in ms before a newly highlighted theme previews instantly. Raise it on OSs/machines with slow key repeat so held arrows don't apply mid-hold themes. Held arrows always preview the final theme after a pause.",
+          "scope": "global"
+        },
+        "themeHider.previewTrailMs": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 500,
+          "description": "Pause in ms after the last highlight change before previewing the final theme. Raise it if held arrows still apply themes mid-hold (slow theme loading stalls events).",
           "scope": "global"
         }
       }

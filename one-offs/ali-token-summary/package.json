@@ -11,6 +11,7 @@
     "@evadev/tsconfig": "workspace:^",
     "@types/bun": "catalog:",
     "effect": "catalog:",
+    "oxlint": "catalog:",
     "rolldown": "catalog:",
     "ts-namespace-import": "catalog:",
     "typescript": "catalog:",

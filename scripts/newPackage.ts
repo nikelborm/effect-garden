@@ -89,8 +89,10 @@ const packageJson = (config: { name: string; description: string }) =>
     // TODO: Ask for package name and folder name separately
     homepage: `${httpsRepoLink}/tree/main/packages/${config.name}#readme`,
     devDependencies: {
+      '@biomejs/biome': 'catalog:',
       '@evadev/tsconfig': 'workspace:^',
       '@effect/tsgo': 'catalog:',
+      oxlint: 'catalog:',
       'ts-namespace-import': 'catalog:',
       'ts-patch': 'catalog:',
       typescript: 'catalog:',

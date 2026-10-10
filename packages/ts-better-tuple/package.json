@@ -4,8 +4,10 @@
   "version": "0.1.0",
   "description": "Typesafe iteration over tuples, where you iterate the types as unions of index_value pairs",
   "devDependencies": {
+    "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
     "@evadev/tsconfig": "workspace:^",
+    "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
     "typescript": "catalog:"
