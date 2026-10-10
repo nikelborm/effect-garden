@@ -27,12 +27,14 @@ import {
   PROJECTS_DIR,
 } from './common.ts'
 
+// TODO: add lock on the cache file
+
 export const DIR_ICON = '\ue5ff' // 
 export const WORKSPACE_ICON = '\ue8da' // 
 
 // Raw `find` outputs from the previous run, stored as plain lines. Shown
 // immediately on startup while the fresh `find` commands still scan.
-export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/qcode/local-find-cache.txt`
+export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -46,9 +48,6 @@ export const PRUNE_DIRS = [
   ['.pnpm-store', '.stryker-tmp', 'logs', 'output', 'zig-pkg', '.zig-cache'],
   ['zig-out'],
   // TODO: potentially add garbage '.agents', '.better-agents', '.context' etc
-  // the last 3 here because they're too heavy. They will still be listed anyway
-  // because they're in root directory, we just wont search for subdirectories
-  ['firefox', 'mdn-content', 'base-ui'],
 ].flat()
 
 export const README_FILES = ['README', 'Readme', 'readme']
@@ -259,9 +258,10 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
   // Runs after the merged stream completes, so the cache file is already
   // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
   // Forked so the write happens in parallel without blocking the selection.
-  const persistFindCache = pipe(
+  const persistFindCache = Effect.flatMap(
     fs.makeDirectory(CACHE_DIR, { recursive: true }),
-    Effect.andThen(
+    // flatMap instead of andThen to make sure .size is captured at the end
+    () =>
       fs.writeFileString(
         LOCAL_FIND_CACHE_FILE,
         collectedFreshVscodeArgCandidatesFromCurrentRun.size > 0
@@ -272,10 +272,6 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
             ) + '\n'
           : '',
       ),
-    ),
-    Effect.catchCause(cause =>
-      Effect.logError('failed to write local find cache', cause),
-    ),
   )
 
   // Fresh scan still runs every time, but its elements are tapped into an
