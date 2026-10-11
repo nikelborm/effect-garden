@@ -19,6 +19,7 @@ import * as Effect from 'effect/Effect'
 import * as Exit from 'effect/Exit'
 import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
+import * as Option from 'effect/Option'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 
 import { localMode, openers } from './local.ts'
@@ -28,6 +29,9 @@ import { runProvider } from './remote-provider.ts'
 // `Command.run` collapses every handler down to `Effect<void>`, discarding the
 // numeric code each mode returns. We stash that code here so the teardown below
 // can still read it out of the final `Exit` and pass it to `process.exit`.
+// Action flags (`--help`, `--version`, ...) succeed without running any
+// handler, leaving the Deferred empty — so the main effect polls it and falls
+// back to 0 instead of awaiting it (await would hang forever on those paths).
 
 class ExitCodeHandler extends Context.Service<ExitCodeHandler>()(
   'ExitCodeHandler',
@@ -46,7 +50,7 @@ class ExitCodeHandler extends Context.Service<ExitCodeHandler>()(
             ),
             Effect.asVoid,
           ),
-        await: Deferred.await(def),
+        poll: Deferred.poll(def),
       }
     }),
   },
@@ -57,7 +61,7 @@ class ExitCodeHandler extends Context.Service<ExitCodeHandler>()(
   static readonly codeFromEffect = <E, R>(
     self: Effect.Effect<ChildProcessSpawner.ExitCode, E, R>,
   ) => this.use(s => s.codeFromEffect(self))
-  static readonly await = this.use(s => s.await)
+  static readonly poll = this.use(s => s.poll)
 }
 
 const remoteCommand = CliCommand.make(
@@ -86,7 +90,7 @@ const provideCommand = CliCommand.make('provide', {}, () =>
 
 const openerFlag = CliFlag.Literals('opener', openers).pipe(
   CliFlag.withDescription(
-    'Where to open the selected project: in VS Code, or in an interactive shell in the same terminal window',
+    'Where to open the selected project: in VS Code, in opencode, or in an interactive shell in the same terminal window',
   ),
   CliFlag.withDefault('vscode' as const),
 )
@@ -97,7 +101,7 @@ export const cli = CliCommand.make(
   ({ opener }) => ExitCodeHandler.codeFromEffect(localMode({ opener })),
 ).pipe(
   CliCommand.withDescription(
-    'Fuzzy project opener for VS Code or shell. With no subcommand, searches ~/projects on this machine.',
+    'Fuzzy project opener for VS Code, opencode, or shell. With no subcommand, searches ~/projects on this machine.',
   ),
   CliCommand.withSubcommands([remoteCommand, provideCommand]),
 )
@@ -121,7 +125,12 @@ const AppLayer = BunChildProcessSpawner.layer.pipe(
 if (import.meta.main)
   pipe(
     CliCommand.run(cli, { version: '4.0.0' }),
-    Effect.andThen(ExitCodeHandler.await),
+    // Empty poll means `Command.run` succeeded with no handler (`--help`,
+    // `--version`, ...), which is a success — hence 0, not 1. Real failures
+    // never reach here: they fail the effect and the teardown maps them to 1.
+    Effect.andThen(ExitCodeHandler.poll),
+    Effect.flatMap(Effect.transposeOption),
+    Effect.map(Option.getOrElse(() => ChildProcessSpawner.ExitCode(0))),
     Effect.provide(AppLayer),
     BunRuntime.runMain({
       teardown: (exit, onExit) => {

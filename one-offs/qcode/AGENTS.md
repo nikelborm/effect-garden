@@ -4,12 +4,18 @@ Do not run this script (`bun index.ts`, `bun run build` output in
 `dist/minified/index.mjs`, or the `kitty ...` shortcut from the README).
 
 It is an interactive terminal UI: it takes over stdin/stderr to show a
-fullscreen `fzf` picker, then either launches VS Code or execs an interactive
-`$SHELL` rooted at the selected project (see `--opener` in `README.md` /
-`index.ts`). There is no non-interactive mode, so under an agent it will block
-waiting for input that never comes (or hijack the terminal / spawn a nested
-shell).
+fullscreen `fzf` picker, then launches the selected project with the
+configured `--opener` (`vscode`, `shell`, or `opencode` — see `--opener` in
+`README.md` / `index.ts` / `local.ts`). Default (no-flags) mode has no
+non-interactive fallback, so under an agent it will block waiting for input
+that never comes (or hijack the terminal / spawn a nested shell).
+
+Exception: `--help` and `--version` never touch `fzf` and exit promptly
+(`--help`/`--version` exit 0, unknown flags exit 1), so
+`timeout 20 bun index.ts --help < /dev/null` is a safe smoke test after
+touching `index.ts`. Anything without those flags is still off-limits.
 
 To verify changes, read `index.ts` / `local.ts` statically and run
-non-interactive checks only (e.g. `tsc --noEmit`, `bun lint`). Do not execute
-the built bundle.
+non-interactive checks only (e.g. `bunx tsc --noEmit`, `bun run lint` from
+this directory — from the repo root `bun run lint` checks the whole
+monorepo). Do not execute the built bundle.

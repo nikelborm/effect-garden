@@ -1,6 +1,6 @@
 # @evadev/qcode
 
-A keyboard-shortcut-triggered fuzzy project opener for VS Code or shell. It
+A keyboard-shortcut-triggered fuzzy project opener for VS Code, opencode, or shell. It
 recursively scans `~/projects` for project roots (detected via `.git`,
 `.vscode`, `package.json`, `mise.toml`, or `.code-workspace` files) while
 skipping noisy dirs like `node_modules`, `dist`, etc. The results are piped into
@@ -38,6 +38,10 @@ bun index.ts --opener vscode
 # drop into an interactive shell rooted at the selected project,
 # in the same terminal window
 bun index.ts --opener shell
+
+# launch opencode rooted at the selected project,
+# in the same terminal window
+bun index.ts --opener opencode
 ```
 
 - `vscode` (default): launches `code` with the resolved project path and exits.
@@ -46,6 +50,10 @@ bun index.ts --opener shell
   set to the resolved project directory, so you stay in the same terminal
   window. If the selection is a `.code-workspace` file, `cwd` is its parent
   directory. The shell runs until you exit it, then `qcode` exits 0.
+- `opencode`: launches `opencode <projectDir>` with stdio inherited and `cwd`
+  set to the resolved project directory, so you stay in the same terminal
+  window. If the selection is a `.code-workspace` file, the parent directory
+  is used. Requires the `opencode` binary on `PATH`.
 
 Running the bundled and minified version produces the fastest startup times.
 

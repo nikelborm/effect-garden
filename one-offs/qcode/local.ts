@@ -1,8 +1,9 @@
 /** biome-ignore-all lint/correctness/useHookAtTopLevel: because it's not React.js */
 
-// Local mode — the default: scan ~/projects, pick with fzf, open in VS Code
-// or, with `--opener shell`, drop into an interactive shell rooted at the
-// project directory in the same terminal window.
+// Local mode — the default: scan ~/projects, pick with fzf, open in VS Code,
+// with `--opener shell` drop into an interactive shell rooted at the project
+// directory in the same terminal window, or with `--opener opencode` launch
+// opencode rooted at the project directory in the same terminal window.
 
 import {
   dedupStreamWithExternalSet,
@@ -202,8 +203,33 @@ else
   bat --style=plain --language=json --color=always "$path"
 fi`
 
-export const openers = ['vscode', 'shell'] as const
+export const openers = ['vscode', 'shell', 'opencode'] as const
 export type Opener = (typeof openers)[number]
+
+const runLauncher = Effect.fn('qcode.runLauncher')(function* (
+  binary: string,
+  args: ReadonlyArray<string>,
+  cwd: string,
+  notFoundMessage: string,
+  nonZeroMessage: string,
+) {
+  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+
+  const code = yield* ChildProcess.make(binary, args, {
+    cwd,
+    stdin: 'inherit',
+    stdout: 'inherit',
+    stderr: 'inherit',
+    detached: false,
+  }).pipe(
+    spawner.exitCode,
+    Effect.tapError(logErrorOnNotFound(notFoundMessage)),
+  )
+
+  if ((code as number) !== 0) yield* Effect.logError(nonZeroMessage, code)
+
+  return ChildProcessSpawner.ExitCode((code as number) === 0 ? 0 : 1)
+})
 
 export const localMode = Effect.fn('qcode.local')(function* (options: {
   readonly opener: Opener
@@ -323,63 +349,45 @@ export const localMode = Effect.fn('qcode.local')(function* (options: {
   }
 
   const linkedPath = path.join(PROJECTS_DIR, relativePath)
-  const projectPath = yield* fs
+  const projectPathOrWorkspaceFile = yield* fs
     .realPath(linkedPath)
     .pipe(Effect.orElseSucceed(() => linkedPath))
 
-  if (options.opener === 'shell') {
-    const shellCwd = projectPath.endsWith('.code-workspace')
-      ? path.dirname(projectPath)
-      : projectPath
+  const launcherCwd = projectPathOrWorkspaceFile.endsWith('.code-workspace')
+    ? path.dirname(projectPathOrWorkspaceFile)
+    : projectPathOrWorkspaceFile
 
-    // biome-ignore lint/complexity/useLiteralKeys: biome dum
-    const shell = process.env['SHELL'] ?? 'bash'
+  switch (options.opener) {
+    case 'shell': {
+      // biome-ignore lint/complexity/useLiteralKeys: biome dum
+      const shell = process.env['SHELL'] ?? 'bash'
 
-    yield* pipe(
-      ChildProcess.make(shell, [], {
-        cwd: shellCwd,
-        stdin: 'inherit',
-        stdout: 'inherit',
-        stderr: 'inherit',
-        detached: false,
-      }),
-      spawner.exitCode,
-      Effect.tapError(
-        logErrorOnNotFound(
-          `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
-        ),
-      ),
-    )
-
-    return ChildProcessSpawner.ExitCode(0)
-  }
-
-  if (options.opener === 'vscode') {
-    const vscodeLauncherExitCode = yield* pipe(
-      ChildProcess.make('code', [projectPath], {
-        stdout: 'inherit',
-        stderr: 'inherit',
-      }),
-      spawner.exitCode,
-      Effect.tapError(
-        logErrorOnNotFound(
-          'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
-        ),
-      ),
-    )
-
-    if ((vscodeLauncherExitCode as number) !== 0) {
-      yield* Effect.logError(
-        'vs code launcher exited with non-zero code: ',
-        vscodeLauncherExitCode,
+      return yield* runLauncher(
+        shell,
+        [],
+        launcherCwd,
+        `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
+        'shell exited with non-zero code: ',
       )
-
-      return ChildProcessSpawner.ExitCode(1)
     }
-
-    return ChildProcessSpawner.ExitCode(0)
+    case 'opencode':
+      return yield* runLauncher(
+        'opencode',
+        [launcherCwd],
+        launcherCwd,
+        'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
+        'opencode exited with non-zero code: ',
+      )
+    case 'vscode':
+      return yield* runLauncher(
+        'code',
+        [projectPathOrWorkspaceFile],
+        launcherCwd,
+        'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
+        'vs code launcher exited with non-zero code: ',
+      )
+    default:
+      options.opener satisfies never
+      return ChildProcessSpawner.ExitCode(1)
   }
-
-  options.opener satisfies never
-  return ChildProcessSpawner.ExitCode(1)
 }, Effect.scoped)
