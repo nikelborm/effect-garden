@@ -106,12 +106,6 @@ export const cli = CliCommand.make(
   CliCommand.withSubcommands([remoteCommand, provideCommand]),
 )
 
-// Built explicitly from the minimal set of services actually used, so the
-// bundle doesn't drag in layers we never touch. The first three
-// lines are the original local-mode layer; Terminal + Stdio are added because
-// the CLI runner (`Command.run`) reads argv/help through them, and FileSystem
-// is surfaced in the output because remote mode reads/writes the cache.
-// TODO: experimentally test if removing any of them possible
 const AppLayer = BunChildProcessSpawner.layer.pipe(
   Layer.provideMerge(BunPath.layer),
   Layer.provideMerge(BunTerminal.layer),
@@ -120,8 +114,6 @@ const AppLayer = BunChildProcessSpawner.layer.pipe(
   Layer.provideMerge(ExitCodeHandler.layer),
 )
 
-// TODO: add special mode so that it doesn't immediately close the window on
-// crash, hiding the error, and waits for any input
 if (import.meta.main)
   pipe(
     CliCommand.run(cli, { version: '4.0.0' }),

@@ -10,6 +10,7 @@ import {
   dedupStreamWithSet,
 } from '@evadev/effect-helpers/dedupStream.ts'
 
+import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as FileSystem from 'effect/FileSystem'
@@ -20,6 +21,7 @@ import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import * as Stream from 'effect/Stream'
 import { ReducerConcat } from 'effect/String'
+import * as Terminal from 'effect/Terminal'
 
 import {
   CACHE_DIR,
@@ -231,163 +233,186 @@ const runLauncher = Effect.fn('qcode.runLauncher')(function* (
   return ChildProcessSpawner.ExitCode((code as number) === 0 ? 0 : 1)
 })
 
-export const localMode = Effect.fn('qcode.local')(function* (options: {
-  readonly opener: Opener
-}) {
-  if (yield* areSomeDependenciesMissing) return ChildProcessSpawner.ExitCode(1)
+// The launcher runs from a `kitty --single-instance` shortcut, so the window
+// closes the moment qcode exits — hiding the error. Hold it open on any error
+// until Enter is pressed.
+const waitForEnterToClose = Effect.gen(function* () {
+  if (!process.stdin.isTTY) return
+  yield* Console.log('Press Enter to close...\n')
+  yield* Effect.ignore(Terminal.Terminal.use(terminal => terminal.readLine))
+})
 
-  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
-  const path = yield* Path.Path
-  const fs = yield* FileSystem.FileSystem
-
-  // Keep fzf in our foreground process group so the terminal delivers
-  // SIGWINCH (resize) and job-control signals straight to it — exactly as
-  // when run directly from the shell. Effect defaults to `detached: true`
-  // (new session), which would isolate fzf from those signals.
-  const fzfProcess = yield* ChildProcess.make(
-    'fzf',
-    [
-      '--ansi',
-      // so that tab is rendered as one space
-      '--tabstop=1',
-      // delimiter between icon and path
-      `--delimiter=${icon_path_delimiter}`,
-      // fzf prints to stdout only path
-      '--accept-nth=2..',
-      // searches only path, ignores icon
-      '--nth=2..',
-      '--preview-window=50%',
-      `--preview=${PREVIEW_CMD}`,
-    ],
-    { stderr: 'inherit', detached: false },
-  ).pipe(
-    spawner.spawn,
-    Effect.tapError(
-      logErrorOnNotFound(
-        'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
-      ),
-    ),
-  )
-
-  const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
-
-  // Previous run's raw `find` lines. Missing file or any platform error
-  // means first run — just show nothing until the fresh scan streams in.
-  const cachedVscodeArgCandidatesFromPreviousRun = pipe(
-    fs.stream(LOCAL_FIND_CACHE_FILE),
-    Stream.decodeText,
-    Stream.splitLines,
-    Stream.filter(line => line.length > 0),
-    Stream.catchCause(() => Stream.empty),
-  )
-
-  // Runs after the merged stream completes, so the cache file is already
-  // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
-  // Forked so the write happens in parallel without blocking the selection.
-  const persistFindCache = Effect.flatMap(
-    fs.makeDirectory(CACHE_DIR, { recursive: true }),
-    // flatMap instead of andThen to make sure .size is captured at the end
-    () =>
-      fs.writeFileString(
-        LOCAL_FIND_CACHE_FILE,
-        collectedFreshVscodeArgCandidatesFromCurrentRun.size > 0
-          ? pipe(
-              collectedFreshVscodeArgCandidatesFromCurrentRun,
-              Iterable.intersperse('\n'),
-              ReducerConcat.combineAll,
-            ) + '\n'
-          : '',
-      ),
-  )
-
-  // Fresh scan still runs every time, but its elements are tapped into an
-  // array while they stream into fzf, so the cache can be overwritten after.
-  const fzfInput = Stream.mergeAll(
-    [
-      gitAndVsCodeDirPaths,
-      packageJsonAndMiseTomlAndCodeWorkspacePaths,
-      dirAndCodeWorkspacePathsInProjectsRoot,
-    ],
-    { concurrency: 'unbounded' },
-  ).pipe(
-    Stream.map(toVscodeArgCandidate),
-    dedupStreamWithExternalSet(collectedFreshVscodeArgCandidatesFromCurrentRun),
-    Stream.merge(cachedVscodeArgCandidatesFromPreviousRun),
-    dedupStreamWithSet,
-    Stream.map(toPrettyFzfRenderedLine(path)),
-    Stream.encodeText,
-  )
-
-  const [fzfExitCode, selectedLine, cacheUpdateFiber] = yield* Effect.all(
-    [
-      fzfProcess.exitCode,
-      fzfProcess.stdout.pipe(Stream.decodeText, Stream.mkString),
-      fzfInput.pipe(
-        Stream.run(fzfProcess.stdin),
-        // forkDetach so that program early exit won't interrupt the cache update
-        Effect.andThen(Effect.forkDetach(persistFindCache)),
-      ),
-    ],
-    { concurrency: 'unbounded' },
-  )
-
-  yield* Effect.addFinalizer(() => Fiber.await(cacheUpdateFiber))
-
-  if ((fzfExitCode as number) === 130) {
-    yield* Effect.log('fzf canceled by user')
-    return ChildProcessSpawner.ExitCode(0)
-  } else if ((fzfExitCode as number) !== 0) {
-    yield* Effect.logError('fzf exited with non-zero code: ', fzfExitCode)
-    return ChildProcessSpawner.ExitCode(1)
-  }
-
-  const relativePath = selectedLine.trim()
-
-  if (!relativePath) {
-    yield* Effect.logError('failed to parse relative path returned by fzf')
-    return ChildProcessSpawner.ExitCode(1)
-  }
-
-  const linkedPath = path.join(PROJECTS_DIR, relativePath)
-  const projectPathOrWorkspaceFile = yield* fs
-    .realPath(linkedPath)
-    .pipe(Effect.orElseSucceed(() => linkedPath))
-
-  const launcherCwd = projectPathOrWorkspaceFile.endsWith('.code-workspace')
-    ? path.dirname(projectPathOrWorkspaceFile)
-    : projectPathOrWorkspaceFile
-
-  switch (options.opener) {
-    case 'shell': {
-      // biome-ignore lint/complexity/useLiteralKeys: biome dum
-      const shell = process.env['SHELL'] ?? 'bash'
-
-      return yield* runLauncher(
-        shell,
-        [],
-        launcherCwd,
-        `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
-        'shell exited with non-zero code: ',
-      )
-    }
-    case 'opencode':
-      return yield* runLauncher(
-        'opencode',
-        [launcherCwd],
-        launcherCwd,
-        'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
-        'opencode exited with non-zero code: ',
-      )
-    case 'vscode':
-      return yield* runLauncher(
-        'code',
-        [projectPathOrWorkspaceFile],
-        launcherCwd,
-        'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
-        'vs code launcher exited with non-zero code: ',
-      )
-    default:
-      options.opener satisfies never
+export const localMode = Effect.fn('qcode.local')(
+  function* (options: { readonly opener: Opener }) {
+    if (yield* areSomeDependenciesMissing)
       return ChildProcessSpawner.ExitCode(1)
-  }
-}, Effect.scoped)
+
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+    const path = yield* Path.Path
+    const fs = yield* FileSystem.FileSystem
+
+    // Keep fzf in our foreground process group so the terminal delivers
+    // SIGWINCH (resize) and job-control signals straight to it — exactly as
+    // when run directly from the shell. Effect defaults to `detached: true`
+    // (new session), which would isolate fzf from those signals.
+    const fzfProcess = yield* ChildProcess.make(
+      'fzf',
+      [
+        '--ansi',
+        // so that tab is rendered as one space
+        '--tabstop=1',
+        // delimiter between icon and path
+        `--delimiter=${icon_path_delimiter}`,
+        // fzf prints to stdout only path
+        '--accept-nth=2..',
+        // searches only path, ignores icon
+        '--nth=2..',
+        '--preview-window=50%',
+        `--preview=${PREVIEW_CMD}`,
+      ],
+      { stderr: 'inherit', detached: false },
+    ).pipe(
+      spawner.spawn,
+      Effect.tapError(
+        logErrorOnNotFound(
+          'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
+        ),
+      ),
+    )
+
+    const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
+
+    // Previous run's raw `find` lines. Missing file or any platform error
+    // means first run — just show nothing until the fresh scan streams in.
+    const cachedVscodeArgCandidatesFromPreviousRun = pipe(
+      fs.stream(LOCAL_FIND_CACHE_FILE),
+      Stream.decodeText,
+      Stream.splitLines,
+      Stream.filter(line => line.length > 0),
+      Stream.catchCause(() => Stream.empty),
+    )
+
+    // Runs after the merged stream completes, so the cache file is already
+    // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
+    // Forked so the write happens in parallel without blocking the selection.
+    const persistFindCache = Effect.flatMap(
+      fs.makeDirectory(CACHE_DIR, { recursive: true }),
+      // flatMap instead of andThen to make sure .size is captured at the end
+      () =>
+        fs.writeFileString(
+          LOCAL_FIND_CACHE_FILE,
+          collectedFreshVscodeArgCandidatesFromCurrentRun.size > 0
+            ? pipe(
+                collectedFreshVscodeArgCandidatesFromCurrentRun,
+                Iterable.intersperse('\n'),
+                ReducerConcat.combineAll,
+              ) + '\n'
+            : '',
+        ),
+    )
+
+    // Fresh scan still runs every time, but its elements are tapped into an
+    // array while they stream into fzf, so the cache can be overwritten after.
+    const fzfInput = Stream.mergeAll(
+      [
+        gitAndVsCodeDirPaths,
+        packageJsonAndMiseTomlAndCodeWorkspacePaths,
+        dirAndCodeWorkspacePathsInProjectsRoot,
+      ],
+      { concurrency: 'unbounded' },
+    ).pipe(
+      Stream.map(toVscodeArgCandidate),
+      dedupStreamWithExternalSet(
+        collectedFreshVscodeArgCandidatesFromCurrentRun,
+      ),
+      Stream.merge(cachedVscodeArgCandidatesFromPreviousRun),
+      dedupStreamWithSet,
+      Stream.map(toPrettyFzfRenderedLine(path)),
+      Stream.encodeText,
+    )
+
+    const [fzfExitCode, selectedLine, cacheUpdateFiber] = yield* Effect.all(
+      [
+        fzfProcess.exitCode,
+        fzfProcess.stdout.pipe(Stream.decodeText, Stream.mkString),
+        fzfInput.pipe(
+          Stream.run(fzfProcess.stdin),
+          // forkDetach so that program early exit won't interrupt the cache update
+          Effect.andThen(Effect.forkDetach(persistFindCache)),
+        ),
+      ],
+      { concurrency: 'unbounded' },
+    )
+
+    yield* Effect.addFinalizer(() => Fiber.await(cacheUpdateFiber))
+
+    if ((fzfExitCode as number) === 130) {
+      yield* Effect.log('fzf canceled by user')
+      return ChildProcessSpawner.ExitCode(0)
+    } else if ((fzfExitCode as number) !== 0) {
+      yield* Effect.logError('fzf exited with non-zero code: ', fzfExitCode)
+      return ChildProcessSpawner.ExitCode(1)
+    }
+
+    const relativePath = selectedLine.trim()
+
+    if (!relativePath) {
+      yield* Effect.logError('failed to parse relative path returned by fzf')
+      return ChildProcessSpawner.ExitCode(1)
+    }
+
+    const linkedPath = path.join(PROJECTS_DIR, relativePath)
+    const projectPathOrWorkspaceFile = yield* fs
+      .realPath(linkedPath)
+      .pipe(Effect.orElseSucceed(() => linkedPath))
+
+    const launcherCwd = projectPathOrWorkspaceFile.endsWith('.code-workspace')
+      ? path.dirname(projectPathOrWorkspaceFile)
+      : projectPathOrWorkspaceFile
+
+    switch (options.opener) {
+      case 'shell': {
+        // biome-ignore lint/complexity/useLiteralKeys: biome dum
+        const shell = process.env['SHELL'] ?? 'bash'
+
+        return yield* runLauncher(
+          shell,
+          [],
+          launcherCwd,
+          `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
+          'shell exited with non-zero code: ',
+        )
+      }
+      case 'opencode':
+        return yield* runLauncher(
+          // '/home/nikel/.bun/bin/opencode',
+          // dont touch for now
+          'opencode',
+          [launcherCwd],
+          launcherCwd,
+          'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
+          'opencode exited with non-zero code: ',
+        )
+      case 'vscode':
+        return yield* runLauncher(
+          'code',
+          [projectPathOrWorkspaceFile],
+          launcherCwd,
+          'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
+          'vs code launcher exited with non-zero code: ',
+        )
+      default:
+        options.opener satisfies never
+        return ChildProcessSpawner.ExitCode(1)
+    }
+  },
+  Effect.scoped,
+  Effect.flatMap(code =>
+    (code as number) === 0
+      ? Effect.succeed(code)
+      : Effect.as(waitForEnterToClose, code),
+  ),
+  Effect.catchCause(cause =>
+    Effect.andThen(waitForEnterToClose, Effect.failCause(cause)),
+  ),
+)
