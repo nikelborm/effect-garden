@@ -47,11 +47,10 @@ const ensureControlSocket = (host: string) =>
     )
 
     const masterAlive = yield* pipe(
-      ChildProcess.make(
-        'ssh',
-        ['-o', `ControlPath=${socket}`, '-O', 'check', host],
-        { stdout: 'ignore', stderr: 'ignore' },
-      ),
+      ChildProcess.make({
+        stderr: 'ignore',
+        stdout: 'ignore',
+      })`ssh -o ControlPath=${socket} -O check ${host}`,
       spawner.exitCode,
       Effect.map(code => (code as number) === 0),
       Effect.orElseSucceed(() => false),
@@ -59,22 +58,13 @@ const ensureControlSocket = (host: string) =>
 
     if (!masterAlive) {
       yield* Effect.log(`establishing ssh control master for '${host}'`)
+      // -fN: go to background, run no remote command
+      // -M: this connection is the master
       const code = yield* pipe(
-        ChildProcess.make(
-          'ssh',
-          [
-            '-fN', // go to background, run no remote command
-            '-M', // this connection is the master
-            '-o',
-            'ControlMaster=auto',
-            '-o',
-            `ControlPath=${socket}`,
-            '-o',
-            'ControlPersist=10m',
-            host,
-          ],
-          { stdout: 'inherit', stderr: 'inherit' },
-        ),
+        ChildProcess.make({
+          stderr: 'inherit',
+          stdout: 'inherit',
+        })`ssh -fN -M -o ControlMaster=auto -o ControlPath=${socket} -o ControlPersist=10m ${host}`,
         spawner.exitCode,
       )
 
@@ -118,17 +108,11 @@ export const runController = (host: string) =>
 
     // `-T` disables pseudo-terminal allocation so the script bytes travel over
     // stdin/stdout untouched (no echo, no CR/LF mangling).
-    const proc = yield* ChildProcess.make(
-      'ssh',
-      [
-        '-T',
-        '-o',
-        `ControlPath=${socket}`,
-        host,
-        makeRemoteBootstrap(self.hash),
-      ],
-      { stderr: 'inherit' },
-    ).pipe(spawner.spawn)
+    const proc = yield* ChildProcess.make({
+      stderr: 'inherit',
+    })`ssh -T -o ControlPath=${socket} ${host} ${makeRemoteBootstrap(self.hash)}`.pipe(
+      spawner.spawn,
+    )
 
     // Resolved to `true` when the remote asked for the script (cache miss),
     // `false` on a hit (or if the stream ends before any marker appears).

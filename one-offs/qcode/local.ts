@@ -24,6 +24,11 @@ import { ReducerConcat } from 'effect/String'
 import * as Terminal from 'effect/Terminal'
 
 import {
+  readBinaryPathsCache,
+  streamLinesWithCachedBinaryFallback,
+  withCachedBinaryFallback,
+} from './binary-cache.ts'
+import {
   CACHE_DIR,
   isNotFound,
   logErrorOnNotFound,
@@ -38,6 +43,9 @@ export const WORKSPACE_ICON = '\ue8da' // 
 // Raw `find` outputs from the previous run, stored as plain lines. Shown
 // immediately on startup while the fresh `find` commands still scan.
 export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
+
+// Binary-path cache (file, save subcommand, spawn fallbacks) lives in
+// `./binary-cache.ts`.
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -77,17 +85,30 @@ export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
 
 const areSomeDependenciesMissing = Effect.gen(function* () {
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+  const fs = yield* FileSystem.FileSystem
   const depResults = yield* Effect.forEach(
     Object.entries({
       eza: 'modern ls replacement — https://github.com/eza-community/eza',
       bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
     }),
     ([name, hint]) =>
-      pipe(
-        ChildProcess.make('which', [name]),
-        spawner.exitCode,
-        Effect.map(code => ({ name, hint, isPresent: (code as number) === 0 })),
-      ),
+      Effect.gen(function* () {
+        const code = yield* withCachedBinaryFallback(
+          ChildProcess.make`which ${name}`,
+          cmd => spawner.exitCode(cmd),
+        ).pipe(Effect.orElseSucceed(() => ChildProcessSpawner.ExitCode(1)))
+        if ((code as number) === 0) return { name, hint, isPresent: true }
+        // `which` ran fine but the dep is not on this PATH — trust the
+        // `--cache-binary-paths` snapshot if the file is still executable.
+        const cache = yield* readBinaryPathsCache
+        const cachedPath = cache[name]
+        if (!cachedPath) return { name, hint, isPresent: false }
+        const accessible = yield* fs.access(cachedPath).pipe(
+          Effect.as(true),
+          Effect.orElseSucceed(() => false),
+        )
+        return { name, hint, isPresent: accessible }
+      }),
     { concurrency: 'unbounded' },
   )
 
@@ -105,12 +126,11 @@ const areSomeDependenciesMissing = Effect.gen(function* () {
 
 export const find = (args: string) => {
   const stream = (main: string, message: string) =>
-    ChildProcessSpawner.ChildProcessSpawner.useSync(spawner =>
-      spawner.streamLines(
-        // -H to follow if the "projects" is a symlink somewhere
-        ChildProcess.make(main, ['-H', PROJECTS_DIR, ...args.split(' ')]),
-      ),
-    ).pipe(Stream.unwrap, Stream.tapError(logErrorOnNotFound(message)))
+    streamLinesWithCachedBinaryFallback(
+      // -H to follow if the "projects" is a symlink somewhere
+      ChildProcess.make(main, ['-H', PROJECTS_DIR, ...args.split(' ')]),
+      message,
+    )
 
   return stream(
     'bfs',
@@ -217,16 +237,16 @@ const runLauncher = Effect.fn('qcode.runLauncher')(function* (
 ) {
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
-  const code = yield* ChildProcess.make(binary, args, {
-    cwd,
-    stdin: 'inherit',
-    stdout: 'inherit',
-    stderr: 'inherit',
-    detached: false,
-  }).pipe(
+  const code = yield* withCachedBinaryFallback(
+    ChildProcess.make(binary, args, {
+      cwd,
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
+      detached: false,
+    }),
     spawner.exitCode,
-    Effect.tapError(logErrorOnNotFound(notFoundMessage)),
-  )
+  ).pipe(Effect.tapError(logErrorOnNotFound(notFoundMessage)))
 
   if ((code as number) !== 0) yield* Effect.logError(nonZeroMessage, code)
 
@@ -255,24 +275,26 @@ export const localMode = Effect.fn('qcode.local')(
     // SIGWINCH (resize) and job-control signals straight to it — exactly as
     // when run directly from the shell. Effect defaults to `detached: true`
     // (new session), which would isolate fzf from those signals.
-    const fzfProcess = yield* ChildProcess.make(
-      'fzf',
-      [
-        '--ansi',
-        // so that tab is rendered as one space
-        '--tabstop=1',
-        // delimiter between icon and path
-        `--delimiter=${icon_path_delimiter}`,
-        // fzf prints to stdout only path
-        '--accept-nth=2..',
-        // searches only path, ignores icon
-        '--nth=2..',
-        '--preview-window=50%',
-        `--preview=${PREVIEW_CMD}`,
-      ],
-      { stderr: 'inherit', detached: false },
+    const fzfProcess = yield* withCachedBinaryFallback(
+      ChildProcess.make(
+        'fzf',
+        [
+          '--ansi',
+          // so that tab is rendered as one space
+          '--tabstop=1',
+          // delimiter between icon and path
+          `--delimiter=${icon_path_delimiter}`,
+          // fzf prints to stdout only path
+          '--accept-nth=2..',
+          // searches only path, ignores icon
+          '--nth=2..',
+          '--preview-window=50%',
+          `--preview=${PREVIEW_CMD}`,
+        ],
+        { stderr: 'inherit', detached: false },
+      ),
+      cmd => spawner.spawn(cmd),
     ).pipe(
-      spawner.spawn,
       Effect.tapError(
         logErrorOnNotFound(
           'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',

@@ -55,6 +55,29 @@ bun index.ts --opener opencode
   window. If the selection is a `.code-workspace` file, the parent directory
   is used. Requires the `opencode` binary on `PATH`.
 
+## Partial-PATH launches (kitty shortcut)
+
+When `qcode` is launched directly (e.g. via a `kitty --single-instance`
+shortcut) instead of from an interactive shell, `.bashrc` never runs and
+`PATH` may miss entries like `~/.bun/bin` — so `opencode` fails with "not
+found" even though it works from a manually opened terminal.
+
+To fix, run once from a terminal with a full `PATH`:
+
+```bash
+bun index.ts cache-binary-paths
+```
+
+This resolves every known binary (`bfs`, `find`, `fzf`, `eza`, `bat`, `code`,
+`opencode`, `which`, `bash`, `sh`, `ssh`, plus your current `$SHELL`) via
+`which` and saves the name-to-absolute-path map to
+`~/.cache/qcode/binary-paths.json`, then exits without opening `fzf`.
+
+Later launches read that file in a parallel fiber alongside the optimistic
+spawn. The cache is awaited only if the first attempt fails with "not found"
+— then the command is immutably patched to the cached absolute path and
+retried. The "not found" error is logged only if the retry also fails.
+
 Running the bundled and minified version produces the fastest startup times.
 
 Build and minify with `bun run build`

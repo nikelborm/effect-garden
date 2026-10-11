@@ -22,6 +22,7 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 
+import { saveBinaryPathsCache } from './binary-cache.ts'
 import { localMode, openers } from './local.ts'
 import { runController } from './remote-controller.ts'
 import { runProvider } from './remote-provider.ts'
@@ -88,6 +89,16 @@ const provideCommand = CliCommand.make('provide', {}, () =>
   ),
 )
 
+const cacheBinaryPathsCommand = CliCommand.make('cache-binary-paths', {}, () =>
+  ExitCodeHandler.codeFromEffect(
+    Effect.as(saveBinaryPathsCache, ChildProcessSpawner.ExitCode(0)),
+  ),
+).pipe(
+  CliCommand.withDescription(
+    'Resolve every known binary via `which` and save the name-to-absolute-path map to ~/.cache/qcode/binary-paths.json, then exit. Run once from a terminal with full PATH so later kitty-shortcut launches with a partial PATH can still retry via the cache.',
+  ),
+)
+
 const openerFlag = CliFlag.Literals('opener', openers).pipe(
   CliFlag.withDescription(
     'Where to open the selected project: in VS Code, in opencode, or in an interactive shell in the same terminal window',
@@ -103,7 +114,11 @@ export const cli = CliCommand.make(
   CliCommand.withDescription(
     'Fuzzy project opener for VS Code, opencode, or shell. With no subcommand, searches ~/projects on this machine.',
   ),
-  CliCommand.withSubcommands([remoteCommand, provideCommand]),
+  CliCommand.withSubcommands([
+    remoteCommand,
+    provideCommand,
+    cacheBinaryPathsCommand,
+  ]),
 )
 
 const AppLayer = BunChildProcessSpawner.layer.pipe(
