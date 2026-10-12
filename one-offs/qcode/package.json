@@ -34,7 +34,8 @@
   "scripts": {
     "b": "bun run build",
     "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
-    "lint": "oxlint --fix --quiet && biome check --write --unsafe"
+    "lint": "oxlint --fix --quiet && biome check --write --unsafe",
+    "l": "bun run lint"
   },
   "author": {
     "name": "nikelborm",
