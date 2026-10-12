@@ -9,10 +9,17 @@ export const PROJECTS_DIR = `${HOME}/projects`
 export const isNotFound = (error: PlatformError) =>
   error.reason._tag === 'NotFound'
 
-export const logErrorOnNotFound =
-  (message: string) =>
+export const notFoundMessageCommon =
+  'This error might also be caused by missing PATH. Try `qcode cache-binary-paths` in a shell where it resolves successfully to remember its path'
+
+export const logErrorMessageWithBetterNotFound =
+  (notFoundMessage: string) =>
   (error: PlatformError): Effect.Effect<void> =>
-    isNotFound(error) ? Effect.logError(message) : Effect.void
+    Effect.logError(
+      isNotFound(error)
+        ? notFoundMessage + '\n' + notFoundMessageCommon
+        : error.message,
+    )
 
 // Everything the controller ships / the remote caches lives here. The hash of
 // the controller's own bundled source is the cache key, so a changed script

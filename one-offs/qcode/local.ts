@@ -31,7 +31,7 @@ import {
 import {
   CACHE_DIR,
   isNotFound,
-  logErrorOnNotFound,
+  logErrorMessageWithBetterNotFound,
   PROJECTS_DIR,
 } from './common.ts'
 
@@ -102,7 +102,7 @@ const areSomeDependenciesMissing = Effect.gen(function* () {
         if (cachedPath)
           return yield* fs.access(cachedPath).pipe(
             Effect.as(true),
-            Effect.orElseSucceed(() => false),
+            Effect.catchIf(isNotFound, () => Effect.succeed(false)),
           )
 
         return false
@@ -113,11 +113,11 @@ const areSomeDependenciesMissing = Effect.gen(function* () {
     { concurrency: 'unbounded' },
   ).pipe(
     Effect.tapError(
-      logErrorOnNotFound(
+      logErrorMessageWithBetterNotFound(
         `"which" command is not found. Cannot resolve binary pathes from PATH`,
       ),
     ),
-    Effect.orElseSucceed(() => []),
+    Effect.orDie,
   )
 
   const missingDeps = depResults.filter(r => !r.isPresent)
@@ -236,38 +236,41 @@ fi`
 export const openers = ['vscode', 'shell', 'opencode'] as const
 export type Opener = (typeof openers)[number]
 
-const runLauncher = Effect.fn('qcode.runLauncher')(function* (
-  binary: string,
-  args: ReadonlyArray<string>,
-  cwd: string,
-  notFoundMessage: string,
-) {
-  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+const runLauncher = Effect.fn('qcode.runLauncher')(
+  function* (
+    binary: string,
+    args: ReadonlyArray<string>,
+    cwd: string,
+    notFoundMessage: string,
+  ) {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
-  const code = yield* withCachedBinaryFallback(
-    ChildProcess.make(binary, args, {
-      cwd,
-      stdin: 'inherit',
-      stdout: 'inherit',
-      stderr: 'inherit',
-      detached: false,
-    }),
-    spawner.exitCode,
-    notFoundMessage,
-  )
+    const code = yield* withCachedBinaryFallback(
+      ChildProcess.make(binary, args, {
+        cwd,
+        stdin: 'inherit',
+        stdout: 'inherit',
+        stderr: 'inherit',
+        detached: false,
+      }),
+      spawner.exitCode,
+      notFoundMessage,
+    )
 
-  if (code !== 0)
-    yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
+    if (code !== 0)
+      yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
 
-  return ChildProcessSpawner.ExitCode(code === 0 ? 0 : 1)
-})
+    return ChildProcessSpawner.ExitCode(code === 0 ? 0 : 1)
+  },
+  Effect.orElseSucceed(() => ChildProcessSpawner.ExitCode(1)),
+)
 
 // The launcher runs from a `kitty --single-instance` shortcut, so the window
 // closes the moment qcode exits — hiding the error. Hold it open on any error
 // until Enter is pressed.
 const waitForEnterToClose = Effect.gen(function* () {
   if (!process.stdin.isTTY) return
-  yield* Console.log('Press Enter to close...\n')
+  yield* Console.log('\nPress Enter to close...')
   yield* Effect.ignore(Terminal.Terminal.use(t => t.readLine))
 })
 

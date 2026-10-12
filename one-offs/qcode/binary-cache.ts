@@ -13,7 +13,11 @@ import type { ReadonlyRecord } from 'effect/Record'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
-import { CACHE_DIR, isNotFound, logErrorOnNotFound } from './common.ts'
+import {
+  CACHE_DIR,
+  isNotFound,
+  logErrorMessageWithBetterNotFound,
+} from './common.ts'
 
 // Binary name -> absolute path, written once via the `cache-binary-paths`
 // subcommand when PATH is full (interactive terminal) and read back on later
@@ -95,6 +99,19 @@ export const saveBinaryPathsCache = Effect.gen(function* () {
   )
 })
 
+const fallback =
+  <A>(
+    standard: ChildProcess.StandardCommand,
+    wrappedError: A,
+    run: (cmd: ChildProcess.StandardCommand) => A,
+  ) =>
+  (cache: typeof BinaryPathsCache.Type) => {
+    const cachedPath = cache[standard.command]
+    return !cachedPath || cachedPath === standard.command
+      ? wrappedError
+      : run(ChildProcess.make(cachedPath, standard.args, standard.options))
+  }
+
 export const withCachedBinaryFallback = <A, R>(
   command: ChildProcess.StandardCommand,
   run: (
@@ -106,15 +123,12 @@ export const withCachedBinaryFallback = <A, R>(
     command.pipe(
       run,
       Effect.catchIf(isNotFound, originalError =>
-        Effect.flatMap(Fiber.join(cacheFiber), cache => {
-          const cachedPath = cache[command.command]
-
-          return !cachedPath || cachedPath === command.command
-            ? Effect.fail(originalError)
-            : run(ChildProcess.make(cachedPath, command.args, command.options))
-        }),
+        Effect.flatMap(
+          Fiber.join(cacheFiber),
+          fallback(command, Effect.fail(originalError), run),
+        ),
       ),
-      Effect.tapError(logErrorOnNotFound(notFoundMessage)),
+      Effect.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
     ),
   )
 
@@ -128,16 +142,11 @@ export const streamLinesWithCachedBinaryFallback = (
 
     return spawner.streamLines(command).pipe(
       Stream.catchIf(isNotFound, originalError =>
-        Stream.flatMap(Stream.fromEffect(Fiber.join(cacheFiber)), cache => {
-          const cachedPath = cache[command.command]
-
-          return !cachedPath || cachedPath === command.command
-            ? Stream.fail(originalError)
-            : spawner.streamLines(
-                ChildProcess.make(cachedPath, command.args, command.options),
-              )
-        }),
+        Stream.flatMap(
+          Stream.fromEffect(Fiber.join(cacheFiber)),
+          fallback(command, Stream.fail(originalError), spawner.streamLines),
+        ),
       ),
-      Stream.tapError(logErrorOnNotFound(notFoundMessage)),
+      Stream.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
     )
   }).pipe(Stream.unwrap)
