@@ -86,30 +86,38 @@ export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
 const areSomeDependenciesMissing = Effect.gen(function* () {
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
   const fs = yield* FileSystem.FileSystem
+  const cacheFiber = yield* readBinaryPathsCache
+
   const depResults = yield* Effect.forEach(
     Object.entries({
       eza: 'modern ls replacement — https://github.com/eza-community/eza',
       bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
     }),
-    ([name, hint]) =>
-      Effect.gen(function* () {
-        const code = yield* withCachedBinaryFallback(
-          ChildProcess.make`which ${name}`,
-          cmd => spawner.exitCode(cmd),
-        ).pipe(Effect.orElseSucceed(() => ChildProcessSpawner.ExitCode(1)))
-        if ((code as number) === 0) return { name, hint, isPresent: true }
-        // `which` ran fine but the dep is not on this PATH — trust the
-        // `--cache-binary-paths` snapshot if the file is still executable.
-        const cache = yield* readBinaryPathsCache
-        const cachedPath = cache[name]
-        if (!cachedPath) return { name, hint, isPresent: false }
-        const accessible = yield* fs.access(cachedPath).pipe(
-          Effect.as(true),
-          Effect.orElseSucceed(() => false),
-        )
-        return { name, hint, isPresent: accessible }
-      }),
+    Effect.fnUntraced(
+      function* ([name]) {
+        const code = yield* spawner.exitCode(ChildProcess.make`which ${name}`)
+        if (code === 0) return true
+
+        const { [name]: cachedPath } = yield* Fiber.join(cacheFiber)
+        if (cachedPath)
+          return yield* fs.access(cachedPath).pipe(
+            Effect.as(true),
+            Effect.orElseSucceed(() => false),
+          )
+
+        return false
+      },
+      (self, [name, hint]) =>
+        Effect.map(self, isPresent => ({ name, hint, isPresent })),
+    ),
     { concurrency: 'unbounded' },
+  ).pipe(
+    Effect.tapError(
+      logErrorOnNotFound(
+        `"which" command is not found. Cannot resolve binary pathes from PATH`,
+      ),
+    ),
+    Effect.orElseSucceed(() => []),
   )
 
   const missingDeps = depResults.filter(r => !r.isPresent)
@@ -233,7 +241,6 @@ const runLauncher = Effect.fn('qcode.runLauncher')(function* (
   args: ReadonlyArray<string>,
   cwd: string,
   notFoundMessage: string,
-  nonZeroMessage: string,
 ) {
   const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
@@ -246,11 +253,13 @@ const runLauncher = Effect.fn('qcode.runLauncher')(function* (
       detached: false,
     }),
     spawner.exitCode,
-  ).pipe(Effect.tapError(logErrorOnNotFound(notFoundMessage)))
+    notFoundMessage,
+  )
 
-  if ((code as number) !== 0) yield* Effect.logError(nonZeroMessage, code)
+  if (code !== 0)
+    yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
 
-  return ChildProcessSpawner.ExitCode((code as number) === 0 ? 0 : 1)
+  return ChildProcessSpawner.ExitCode(code === 0 ? 0 : 1)
 })
 
 // The launcher runs from a `kitty --single-instance` shortcut, so the window
@@ -259,7 +268,7 @@ const runLauncher = Effect.fn('qcode.runLauncher')(function* (
 const waitForEnterToClose = Effect.gen(function* () {
   if (!process.stdin.isTTY) return
   yield* Console.log('Press Enter to close...\n')
-  yield* Effect.ignore(Terminal.Terminal.use(terminal => terminal.readLine))
+  yield* Effect.ignore(Terminal.Terminal.use(t => t.readLine))
 })
 
 export const localMode = Effect.fn('qcode.local')(
@@ -293,13 +302,8 @@ export const localMode = Effect.fn('qcode.local')(
         ],
         { stderr: 'inherit', detached: false },
       ),
-      cmd => spawner.spawn(cmd),
-    ).pipe(
-      Effect.tapError(
-        logErrorOnNotFound(
-          'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
-        ),
-      ),
+      spawner.spawn,
+      'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
     )
 
     const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
@@ -368,10 +372,10 @@ export const localMode = Effect.fn('qcode.local')(
 
     yield* Effect.addFinalizer(() => Fiber.await(cacheUpdateFiber))
 
-    if ((fzfExitCode as number) === 130) {
+    if (fzfExitCode === 130) {
       yield* Effect.log('fzf canceled by user')
       return ChildProcessSpawner.ExitCode(0)
-    } else if ((fzfExitCode as number) !== 0) {
+    } else if (fzfExitCode !== 0) {
       yield* Effect.logError('fzf exited with non-zero code: ', fzfExitCode)
       return ChildProcessSpawner.ExitCode(1)
     }
@@ -384,9 +388,10 @@ export const localMode = Effect.fn('qcode.local')(
     }
 
     const linkedPath = path.join(PROJECTS_DIR, relativePath)
-    const projectPathOrWorkspaceFile = yield* fs
-      .realPath(linkedPath)
-      .pipe(Effect.orElseSucceed(() => linkedPath))
+    const projectPathOrWorkspaceFile = yield* Effect.orElseSucceed(
+      fs.realPath(linkedPath),
+      () => linkedPath,
+    )
 
     const launcherCwd = projectPathOrWorkspaceFile.endsWith('.code-workspace')
       ? path.dirname(projectPathOrWorkspaceFile)
@@ -402,18 +407,14 @@ export const localMode = Effect.fn('qcode.local')(
           [],
           launcherCwd,
           `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
-          'shell exited with non-zero code: ',
         )
       }
       case 'opencode':
         return yield* runLauncher(
-          // '/home/nikel/.bun/bin/opencode',
-          // dont touch for now
           'opencode',
           [launcherCwd],
           launcherCwd,
           'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
-          'opencode exited with non-zero code: ',
         )
       case 'vscode':
         return yield* runLauncher(
@@ -421,7 +422,6 @@ export const localMode = Effect.fn('qcode.local')(
           [projectPathOrWorkspaceFile],
           launcherCwd,
           'VS Code (`code` binary) is not found. Are you using VS Code Insiders?',
-          'vs code launcher exited with non-zero code: ',
         )
       default:
         options.opener satisfies never
@@ -430,9 +430,7 @@ export const localMode = Effect.fn('qcode.local')(
   },
   Effect.scoped,
   Effect.flatMap(code =>
-    (code as number) === 0
-      ? Effect.succeed(code)
-      : Effect.as(waitForEnterToClose, code),
+    code === 0 ? Effect.succeed(code) : Effect.as(waitForEnterToClose, code),
   ),
   Effect.catchCause(cause =>
     Effect.andThen(waitForEnterToClose, Effect.failCause(cause)),

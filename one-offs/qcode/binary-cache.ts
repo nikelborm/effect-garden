@@ -10,7 +10,6 @@ import type { PlatformError } from 'effect/PlatformError'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import type { ReadonlyRecord } from 'effect/Record'
-import * as Record from 'effect/Record'
 import * as Schema from 'effect/Schema'
 import * as Stream from 'effect/Stream'
 
@@ -38,72 +37,28 @@ export const KNOWN_BINARIES = [
   'ssh',
 ] as const
 
-// Missing file, parse error, or wrong shape all mean "no cache yet" — silently
-// fall back to {} so the optimistic spawn error can be reported as usual.
 const BinaryPathsCache = Schema.fromJsonString(
-  Schema.Record(Schema.Literals(KNOWN_BINARIES), Schema.NonEmptyString),
+  Schema.StructWithRest(
+    Schema.Struct(
+      Object.fromEntries(
+        KNOWN_BINARIES.map(key => [
+          key,
+          Schema.optionalKey(Schema.NonEmptyString),
+        ]),
+      ) as ReadonlyRecord<
+        (typeof KNOWN_BINARIES)[number],
+        Schema.optionalKey<Schema.NonEmptyString>
+      >,
+    ),
+    [Schema.Record(Schema.NonEmptyString, Schema.NonEmptyString)],
+  ),
   { space: 2 },
 )
-
-const asd = Schema.StructWithRest(BinaryPathsCache, [
-  Schema.Record(Schema.NonEmptyString, Schema.NonEmptyString),
-])
-// const asd: Schema.StructWithRest<
-//   Schema.fromJsonString<
-//     Schema.$Record<
-//       Schema.Literals<readonly ["bfs", "find", "fzf", "eza", "bat", "code", "opencode", "which", "bash", "sh", "ssh"]>,
-//       Schema.NonEmptyString
-//     >
-//   >,
-//   readonly [
-//     Schema.$Record<
-//       Schema.NonEmptyString,
-//       Schema.NonEmptyString
-//     >
-//   ]
-// >
-
-type Encoded = (typeof asd)['Encoded']
-// type Encoded = {
-//     readonly [x: number]: string;
-//     readonly [x: string]: string;
-//     toString: () => string;
-//     charAt: (pos: number) => string;
-//     charCodeAt: (index: number) => number;
-//     concat: (...strings: string[]) => string;
-//     indexOf: (searchString: string, position?: number) => number;
-//     lastIndexOf: (searchString: string, position?: number) => number;
-//     localeCompare: {
-//         (that: string): number;
-//         (that: string, locales?: string | string[], options?: Intl.CollatorOptions): number;
-//         (that: string, locales?: Intl.LocalesArgument, options?: Intl.CollatorOptions): number;
-//     };
-//     ... 44 more ...;
-//     toWellFormed: () => string;
-// }
-
-type Type = (typeof asd)['Type']
-// type Type = {
-//     readonly [x: string]: string;
-//     readonly bash: string;
-//     readonly bat: string;
-//     readonly bfs: string;
-//     readonly code: string;
-//     readonly eza: string;
-//     readonly find: string;
-//     readonly fzf: string;
-//     readonly opencode: string;
-//     readonly sh: string;
-//     readonly ssh: string;
-//     readonly which: string;
-// }
-
-// const lll = Schema.decodeSync(asd)('')
 
 export const readBinaryPathsCache = pipe(
   FileSystem.FileSystem.use(fs => fs.readFileString(BINARY_PATHS_CACHE_FILE)),
   Effect.flatMap(Schema.decodeEffect(BinaryPathsCache)),
-  Effect.orElseSucceed(constant<ReadonlyRecord<string, string>>({})),
+  Effect.orElseSucceed(constant<typeof BinaryPathsCache.Type>({})),
   Effect.cached,
   Effect.flatMap(identity),
   Effect.forkScoped(),
@@ -128,75 +83,61 @@ export const saveBinaryPathsCache = Effect.gen(function* () {
     { concurrency: 'unbounded' },
   )
 
-  const map = Record.fromEntries(entries.filter(e => e !== ''))
+  const map = Object.fromEntries(entries.filter(e => e !== ''))
 
   yield* fs.makeDirectory(CACHE_DIR, { recursive: true })
-  const content = yield* Schema.encodeEffect(BinaryPathsCache)(map)
+  const content = yield* Schema.encodeUnknownEffect(BinaryPathsCache)(map).pipe(
+    Effect.orDie,
+  )
   yield* fs.writeFileString(BINARY_PATHS_CACHE_FILE, content)
   yield* Effect.log(
     `cached ${Object.keys(map).length} binary paths to ${BINARY_PATHS_CACHE_FILE}`,
   )
 })
 
-export const withCachedBinaryFallback = Effect.fnUntraced(function* <A, R>(
-  command: ChildProcess.Command,
-  run: (cmd: ChildProcess.Command) => Effect.Effect<A, PlatformError, R>,
-) {
-  if (!ChildProcess.isStandardCommand(command)) return yield* run(command)
-  const cacheFiber = yield* readBinaryPathsCache
-  return yield* Effect.catchIf(run(command), isNotFound, originalError =>
-    Effect.flatMap(Fiber.join(cacheFiber), cache => {
-      const cachedPath = cache[command.command]
-      if (!cachedPath || cachedPath === command.command)
-        return Effect.fail(originalError)
-      const patched = ChildProcess.make(
-        cachedPath,
-        command.args,
-        command.options,
-      )
-      return run(patched)
-    }),
-  )
-})
-
-// Stream twin of the above, for `spawner.streamLines`. Same deal: cache reads
-// in parallel, retried patch is silent on success, caller logs after both fail.
-export const streamLinesWithCachedBinaryFallback = (
-  command: ChildProcess.Command,
+export const withCachedBinaryFallback = <A, R>(
+  command: ChildProcess.StandardCommand,
+  run: (
+    cmd: ChildProcess.StandardCommand,
+  ) => Effect.Effect<A, PlatformError, R>,
   notFoundMessage: string,
 ) =>
-  Stream.unwrap(
-    Effect.gen(function* () {
-      const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
-      if (!ChildProcess.isStandardCommand(command))
-        return spawner
-          .streamLines(command)
-          .pipe(Stream.tapError(logErrorOnNotFound(notFoundMessage)))
-      // Detached so returning the stream (which completes this effect) can't
-      // interrupt the read before the retry joins it; Stream.ensuring below
-      // cleans it up.
-      const cacheFiber = yield* readBinaryPathsCache
-      const retry = (originalError: PlatformError) =>
-        Stream.unwrap(
-          Effect.gen(function* () {
-            const cache = yield* Fiber.join(cacheFiber)
-            const cachedPath = cache[command.command]
-            if (!cachedPath || cachedPath === command.command)
-              return Stream.fail(originalError)
-            const patched = ChildProcess.make(
-              cachedPath,
-              command.args,
-              command.options,
-            )
-            return spawner.streamLines(patched)
-          }),
-        )
-      return spawner
-        .streamLines(command)
-        .pipe(
-          Stream.catchIf(isNotFound, retry),
-          Stream.tapError(logErrorOnNotFound(notFoundMessage)),
-          Stream.ensuring(Fiber.interrupt(cacheFiber)),
-        )
-    }),
+  Effect.flatMap(readBinaryPathsCache, cacheFiber =>
+    command.pipe(
+      run,
+      Effect.catchIf(isNotFound, originalError =>
+        Effect.flatMap(Fiber.join(cacheFiber), cache => {
+          const cachedPath = cache[command.command]
+
+          return !cachedPath || cachedPath === command.command
+            ? Effect.fail(originalError)
+            : run(ChildProcess.make(cachedPath, command.args, command.options))
+        }),
+      ),
+      Effect.tapError(logErrorOnNotFound(notFoundMessage)),
+    ),
   )
+
+export const streamLinesWithCachedBinaryFallback = (
+  command: ChildProcess.StandardCommand,
+  notFoundMessage: string,
+) =>
+  Effect.gen(function* () {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+    const cacheFiber = yield* readBinaryPathsCache
+
+    return spawner.streamLines(command).pipe(
+      Stream.catchIf(isNotFound, originalError =>
+        Stream.flatMap(Stream.fromEffect(Fiber.join(cacheFiber)), cache => {
+          const cachedPath = cache[command.command]
+
+          return !cachedPath || cachedPath === command.command
+            ? Stream.fail(originalError)
+            : spawner.streamLines(
+                ChildProcess.make(cachedPath, command.args, command.options),
+              )
+        }),
+      ),
+      Stream.tapError(logErrorOnNotFound(notFoundMessage)),
+    )
+  }).pipe(Stream.unwrap)
