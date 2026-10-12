@@ -19,6 +19,7 @@ import * as Iterable from 'effect/Iterable'
 import * as Path from 'effect/Path'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
+import type { ReadonlyRecord } from 'effect/Record'
 import * as Stream from 'effect/Stream'
 import { ReducerConcat } from 'effect/String'
 import * as Terminal from 'effect/Terminal'
@@ -35,13 +36,7 @@ import { CACHE_DIR, isNotFound, PROJECTS_DIR } from './common.ts'
 
 export const DIR_ICON = '\ue5ff' // 
 export const WORKSPACE_ICON = '\ue8da' // 
-
-// Raw `find` outputs from the previous run, stored as plain lines. Shown
-// immediately on startup while the fresh `find` commands still scan.
 export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
-
-// Binary-path cache (file, save subcommand, spawn fallbacks) lives in
-// `./binary-cache.ts`.
 
 export const PRUNE_DIRS = [
   ['node_modules', '__fixtures__', '__mocks__', '__pycache__', '__snapshots__'],
@@ -76,8 +71,6 @@ const fileMarkers = [
 const joinNames = (names: string[]) => names.map(e => `-name ${e}`).join(' -o ')
 
 export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
-
-// TODO: add error message queue, so that it doesn't mess with fzf's on screen output
 
 const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
@@ -120,12 +113,10 @@ const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
     return null
   }
 
-  return {
+  return Object.fromEntries(
     // biome-ignore lint/style/noNonNullAssertion: verified by missingDeps.length === 0
-    eza: depResults.find(e => e.name === 'eza')!.path!,
-    // biome-ignore lint/style/noNonNullAssertion: verified by missingDeps.length === 0
-    bat: depResults.find(e => e.name === 'bat')!.path!,
-  }
+    depResults.map(e => [e.name, e.path!]),
+  ) as ReadonlyRecord<'eza' | 'bat', string>
 })
 
 export const find = (args: string) => {
