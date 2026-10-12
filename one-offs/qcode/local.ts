@@ -29,12 +29,7 @@ import {
   which,
   withCachedBinaryFallback,
 } from './binary-cache.ts'
-import {
-  CACHE_DIR,
-  isNotFound,
-  logErrorMessageWithBetterNotFound,
-  PROJECTS_DIR,
-} from './common.ts'
+import { CACHE_DIR, isNotFound, PROJECTS_DIR } from './common.ts'
 
 // TODO: add lock on the cache file
 
@@ -141,16 +136,17 @@ export const find = (args: string) => {
       message,
     )
 
-  return stream(
-    'bfs',
-    'Breadth-first finder (`bfs` binary) is not found. Read more here: https://github.com/tavianator/bfs, https://terminaltrove.com/bfs/. The script will attempt to fallback to find',
-  ).pipe(
-    Stream.catchIf(isNotFound, () =>
+  return Stream.catchIf(
+    stream(
+      'bfs',
+      'Breadth-first finder (`bfs` binary) is not found. Read more here: https://github.com/tavianator/bfs, https://terminaltrove.com/bfs/. The script will attempt to fallback to find',
+    ),
+    isNotFound,
+    () =>
       stream(
         'find',
         '`find` binary is not found. Read more here: https://www.man7.org/linux/man-pages/man1/find.1.html',
       ),
-    ),
   )
 }
 
@@ -283,13 +279,7 @@ export const localMode = Effect.fn('qcode.local')(
     `
 
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
-    const path = yield* Path.Path
-    const fs = yield* FileSystem.FileSystem
 
-    // Keep fzf in our foreground process group so the terminal delivers
-    // SIGWINCH (resize) and job-control signals straight to it — exactly as
-    // when run directly from the shell. Effect defaults to `detached: true`
-    // (new session), which would isolate fzf from those signals.
     const fzfProcess = yield* withCachedBinaryFallback(
       ChildProcess.make(
         'fzf',
@@ -306,12 +296,17 @@ export const localMode = Effect.fn('qcode.local')(
           '--preview-window=50%',
           `--preview=${PREVIEW_CMD}`,
         ],
+        // Keep fzf in our foreground process group so the terminal delivers
+        // SIGWINCH (resize) and job-control signals straight to it — exactly as
+        // when run directly from the shell. Effect defaults to `detached: true`
+        // (new session), which would isolate fzf from those signals.
         { stderr: 'inherit', detached: false },
       ),
       spawner.spawn,
       'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
     )
 
+    const fs = yield* FileSystem.FileSystem
     const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
 
     // Previous run's raw `find` lines. Missing file or any platform error
@@ -342,6 +337,8 @@ export const localMode = Effect.fn('qcode.local')(
             : '',
         ),
     )
+
+    const path = yield* Path.Path
 
     // Fresh scan still runs every time, but its elements are tapped into an
     // array while they stream into fzf, so the cache can be overwritten after.
