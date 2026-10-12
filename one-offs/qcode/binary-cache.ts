@@ -68,26 +68,34 @@ export const readBinaryPathsCache = pipe(
   Effect.forkScoped(),
 )
 
-export const saveBinaryPathsCache = Effect.gen(function* () {
-  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
-  const fs = yield* FileSystem.FileSystem
+export const which = (name: string) =>
+  ChildProcessSpawner.ChildProcessSpawner.pipe(
+    Effect.flatMap(spawner => spawner.string(ChildProcess.make`which ${name}`)),
+    Effect.map(out => out.trim() || null),
+    Effect.tapError(
+      logErrorMessageWithBetterNotFound(
+        `"which" command is not found. Cannot resolve binary pathes from PATH`,
+      ),
+    ),
+    Effect.orDie,
+  )
 
+export const saveBinaryPathsCache = Effect.gen(function* () {
   const shell = yield* Config.String('SHELL').pipe(Config.withDefault('bash'))
   const names = [...new Set([...KNOWN_BINARIES, shell])]
 
   const entries = yield* Effect.forEach(
     names,
     name =>
-      ChildProcess.make`which ${name}`.pipe(
-        spawner.string,
-        Effect.map(out => out.trim() || ''),
-        Effect.orElseSucceed(() => ''),
-        Effect.map(resolved => resolved && ([name, resolved] as const)),
+      Effect.map(
+        which(name),
+        resolved => (resolved && ([name, resolved] as const)) || null,
       ),
     { concurrency: 'unbounded' },
   )
 
-  const map = Object.fromEntries(entries.filter(e => e !== ''))
+  const map = Object.fromEntries(entries.filter(e => !!e))
+  const fs = yield* FileSystem.FileSystem
 
   yield* fs.makeDirectory(CACHE_DIR, { recursive: true })
   const content = yield* Schema.encodeUnknownEffect(BinaryPathsCache)(map).pipe(

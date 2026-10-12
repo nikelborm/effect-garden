@@ -26,6 +26,7 @@ import * as Terminal from 'effect/Terminal'
 import {
   readBinaryPathsCache,
   streamLinesWithCachedBinaryFallback,
+  which,
   withCachedBinaryFallback,
 } from './binary-cache.ts'
 import {
@@ -83,53 +84,53 @@ export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
 
 // TODO: add error message queue, so that it doesn't mess with fzf's on screen output
 
-const areSomeDependenciesMissing = Effect.gen(function* () {
-  const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
+const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
   const cacheFiber = yield* readBinaryPathsCache
-
-  const depResults = yield* Effect.forEach(
-    Object.entries({
-      eza: 'modern ls replacement — https://github.com/eza-community/eza',
-      bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
-    }),
-    Effect.fnUntraced(
-      function* ([name]) {
-        const code = yield* spawner.exitCode(ChildProcess.make`which ${name}`)
-        if (code === 0) return true
-
-        const { [name]: cachedPath } = yield* Fiber.join(cacheFiber)
-        if (cachedPath)
-          return yield* fs.access(cachedPath).pipe(
-            Effect.as(true),
-            Effect.catchIf(isNotFound, () => Effect.succeed(false)),
-          )
-
-        return false
-      },
-      (self, [name, hint]) =>
-        Effect.map(self, isPresent => ({ name, hint, isPresent })),
-    ),
-    { concurrency: 'unbounded' },
-  ).pipe(
-    Effect.tapError(
-      logErrorMessageWithBetterNotFound(
-        `"which" command is not found. Cannot resolve binary pathes from PATH`,
-      ),
-    ),
-    Effect.orDie,
-  )
-
-  const missingDeps = depResults.filter(r => !r.isPresent)
-
-  if (missingDeps.length > 0) {
-    for (const { name, hint } of missingDeps)
-      yield* Effect.logError(`Missing required tool '${name}': ${hint}`)
-
-    return true
+  const map = {
+    eza: 'modern ls replacement — https://github.com/eza-community/eza',
+    bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
   }
 
-  return false
+  const depResults = yield* Effect.forEach(
+    Object.keys(map) as ('eza' | 'bat')[],
+    Effect.fnUntraced(
+      function* (name) {
+        const pathResolved = yield* Effect.catchCause(which(name), () =>
+          Effect.succeed(null),
+        )
+        if (pathResolved) return pathResolved
+
+        const { [name]: pathCached } = yield* Fiber.join(cacheFiber)
+        if (pathCached)
+          return yield* fs.access(pathCached).pipe(
+            Effect.as(pathCached),
+            Effect.catchIf(isNotFound, () => Effect.succeed(null)),
+            Effect.tapError(Effect.logError),
+            Effect.orDie,
+          )
+
+        return null
+      },
+      (self, name) => Effect.map(self, path => ({ name, path })),
+    ),
+    { concurrency: 'unbounded' },
+  )
+
+  const missingDeps = depResults.filter(r => !r.path)
+
+  if (missingDeps.length > 0) {
+    for (const { name } of missingDeps)
+      yield* Effect.logError(`Missing required tool '${name}': ${map[name]}`)
+    return null
+  }
+
+  return {
+    // biome-ignore lint/style/noNonNullAssertion: verified by missingDeps.length === 0
+    eza: depResults.find(e => e.name === 'eza')!.path!,
+    // biome-ignore lint/style/noNonNullAssertion: verified by missingDeps.length === 0
+    bat: depResults.find(e => e.name === 'bat')!.path!,
+  }
 })
 
 export const find = (args: string) => {
@@ -211,28 +212,6 @@ export const toPrettyFzfRenderedLine =
     )
   }
 
-// fzf replaces {2} with the raw relative path (second space-delimited field),
-// while the first icon is discarded.
-export const PREVIEW_CMD = `\
-path=${PROJECTS_DIR}/{2}
-if [ -d "$path" ]; then
-  cd "$path"
-  for file in ${README_FILES.join(' ')}; do
-    if [ -f "$file" ]; then
-      PAGER="" bat --style=plain --color=always "$file"
-      echo
-      break
-    fi
-  done
-  echo
-  eza --long --all --binary --group --mounts --group-directories-first \\
-    --no-time --octal-permissions --classify=always --icons=always \\
-    --color-scale=size --color-scale-mode=gradient --color=always --hyperlink \\
-    --smart-group --no-quotes --header ./
-else
-  bat --style=plain --language=json --color=always "$path"
-fi`
-
 export const openers = ['vscode', 'shell', 'opencode'] as const
 export type Opener = (typeof openers)[number]
 
@@ -276,8 +255,32 @@ const waitForEnterToClose = Effect.gen(function* () {
 
 export const localMode = Effect.fn('qcode.local')(
   function* (options: { readonly opener: Opener }) {
-    if (yield* areSomeDependenciesMissing)
-      return ChildProcessSpawner.ExitCode(1)
+    const previewBinaryPaths = yield* resolvePreviewDependenciesToBinaryPaths
+    if (!previewBinaryPaths) return ChildProcessSpawner.ExitCode(1)
+    const { bat, eza } = previewBinaryPaths
+
+    // fzf replaces {2} with the raw relative path (second space-delimited field),
+    // while the first icon is discarded.
+    const PREVIEW_CMD = `\
+      path=${PROJECTS_DIR}/{2}
+      if [ -d "$path" ]; then
+        cd "$path"
+        for file in ${README_FILES.join(' ')}; do
+          if [ -f "$file" ]; then
+            PAGER="" ${bat} --style=plain --color=always "$file"
+            echo
+            break
+          fi
+        done
+        echo
+        ${eza} --long --all --binary --group --mounts --group-directories-first \\
+          --no-time --octal-permissions --classify=always --icons=always \\
+          --color-scale=size --color-scale-mode=gradient --color=always --hyperlink \\
+          --smart-group --no-quotes --header ./
+      else
+        ${bat} --style=plain --language=json --color=always "$path"
+      fi
+    `
 
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
     const path = yield* Path.Path
