@@ -219,9 +219,8 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
         stderr: 'inherit',
         detached: false,
       }),
-      spawner.exitCode,
       notFoundMessage,
-    )
+    )(spawner.exitCode)
 
     if (code !== 0)
       yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
@@ -293,9 +292,8 @@ export const localMode = Effect.fn('qcode.local')(
         // (new session), which would isolate fzf from those signals.
         { stderr: 'inherit', detached: false },
       ),
-      spawner.spawn,
       'Fuzzy finder (`fzf` binary) is not found. Read more here: https://github.com/junegunn/fzf.',
-    )
+    )(spawner.spawn)
 
     const fs = yield* FileSystem.FileSystem
     const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()

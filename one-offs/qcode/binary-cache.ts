@@ -5,8 +5,8 @@ import * as Config from 'effect/Config'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as FileSystem from 'effect/FileSystem'
-import { constant, identity, pipe } from 'effect/Function'
-import type { PlatformError } from 'effect/PlatformError'
+import { constant, flow, identity, pipe } from 'effect/Function'
+import type { TypeLambda } from 'effect/HKT'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 import type { ReadonlyRecord } from 'effect/Record'
@@ -18,6 +18,12 @@ import {
   isNotFound,
   logErrorMessageWithBetterNotFound,
 } from './common.ts'
+import {
+  EffectUnified,
+  type Kind3,
+  StreamUnified,
+  type UnifiedTypeClass,
+} from './fpStuff.ts'
 
 // Binary name -> absolute path, written once via the `cache-binary-paths`
 // subcommand when PATH is full (interactive terminal) and read back on later
@@ -107,54 +113,35 @@ export const saveBinaryPathsCache = Effect.gen(function* () {
   )
 })
 
-const fallback =
-  <A>(
-    standard: ChildProcess.StandardCommand,
-    wrappedError: A,
-    run: (cmd: ChildProcess.StandardCommand) => A,
+export const withFallback =
+  <F extends TypeLambda>(F: UnifiedTypeClass<F>) =>
+  (cmd: ChildProcess.StandardCommand, notFoundMessage: string) =>
+  <A, E extends Error, R>(
+    run: (cmd: ChildProcess.StandardCommand) => Kind3<F, A, E, R>,
   ) =>
-  (cache: typeof BinaryPathsCache.Type) => {
-    const cachedPath = cache[standard.command]
-    return !cachedPath || cachedPath === standard.command
-      ? wrappedError
-      : run(ChildProcess.make(cachedPath, standard.args, standard.options))
-  }
-
-export const withCachedBinaryFallback = <A, R>(
-  command: ChildProcess.StandardCommand,
-  run: (
-    cmd: ChildProcess.StandardCommand,
-  ) => Effect.Effect<A, PlatformError, R>,
-  notFoundMessage: string,
-) =>
-  Effect.flatMap(readBinaryPathsCache, cacheFiber =>
-    command.pipe(
-      run,
-      Effect.catchIf(isNotFound, originalError =>
-        Effect.flatMap(
-          Fiber.join(cacheFiber),
-          fallback(command, Effect.fail(originalError), run),
+    readBinaryPathsCache.pipe(
+      F.fromEffect,
+      F.map(flow(Fiber.join, F.fromEffect)),
+      F.flatMap(cacheInF =>
+        F.catchIf(run(cmd), isNotFound, notFoundError =>
+          F.flatMap(cacheInF, ({ [cmd.command]: cachedBinPath }) =>
+            !cachedBinPath || cachedBinPath === cmd.command
+              ? F.fail<A, E, R>(notFoundError)
+              : run(ChildProcess.make(cachedBinPath, cmd.args, cmd.options)),
+          ),
         ),
       ),
-      Effect.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
-    ),
-  )
-
-export const streamLinesWithCachedBinaryFallback = (
-  command: ChildProcess.StandardCommand,
-  notFoundMessage: string,
-) =>
-  Effect.gen(function* () {
-    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
-    const cacheFiber = yield* readBinaryPathsCache
-
-    return spawner.streamLines(command).pipe(
-      Stream.catchIf(isNotFound, originalError =>
-        Stream.flatMap(
-          Stream.fromEffect(Fiber.join(cacheFiber)),
-          fallback(command, Stream.fail(originalError), spawner.streamLines),
-        ),
-      ),
-      Stream.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
+      // here because the first run(cmd) can give other kinds of PlatformError
+      F.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
     )
-  }).pipe(Stream.unwrap)
+
+export const withCachedBinaryFallback = withFallback(EffectUnified)
+
+export const streamLinesWithCachedBinaryFallback = flow(
+  withFallback(StreamUnified),
+  runAndMapWith =>
+    ChildProcessSpawner.ChildProcessSpawner.pipe(
+      Effect.map(spawner => runAndMapWith(spawner.streamLines)),
+      Stream.unwrap,
+    ),
+)
