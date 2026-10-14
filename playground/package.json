@@ -124,6 +124,7 @@
     "gitdl": "workspace:^",
     "googleapis": "catalog:",
     "gray-matter": "catalog:",
+    "is-kit": "catalog:",
     "joiners": "workspace:^",
     "level": "catalog:",
     "music-metadata": "catalog:",

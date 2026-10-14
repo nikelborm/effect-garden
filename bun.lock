@@ -496,6 +496,7 @@
       "name": "@evadev/qcode",
       "version": "0.1.0",
       "dependencies": {
+        "is-kit": "catalog:",
         "tslib": "catalog:",
       },
       "devDependencies": {
@@ -1149,6 +1150,7 @@
         "gitdl": "workspace:^",
         "googleapis": "catalog:",
         "gray-matter": "catalog:",
+        "is-kit": "catalog:",
         "joiners": "workspace:^",
         "level": "catalog:",
         "music-metadata": "catalog:",
@@ -1304,6 +1306,7 @@
     "eslint": "^10.12.0",
     "googleapis": "^185.0.0",
     "gray-matter": "^4.0.3",
+    "is-kit": "^1.15.3",
     "level": "^10.0.0",
     "music-metadata": "^12.1.1",
     "next": "16.4.0",
@@ -3309,6 +3312,8 @@
 
     "is-installed-globally": ["is-installed-globally@1.0.1", "", { "dependencies": { "global-directory": "^4.0.1", "is-path-inside": "^4.0.0" } }, "sha512-li88H4QGRoNMX27jEmY8nR515oJVspAgC/WFMlhHfFV8RJ4QyGpHhXnwAe9gH5RIgKmdYRUmrOhQobcgEjIdSw=="],
 
+    "is-kit": ["is-kit@1.15.3", "", { "bin": { "is-kit": "bin/is-kit.mjs" } }, "sha512-v0cIDrb/GFF3c8hr1gvUL/lr/WKV+0kRus75w9qAGdwuq6J/UHuHDzIzJjUuhk9SGoExPgDSObKGy7JhjFJ/cw=="],
+
     "is-npm": ["is-npm@6.1.0", "", {}, "sha512-O2z4/kNgyjhQwVR1Wpkbfc19JIhggF97NZNCpWTnjH7kVcZMUrnut9XSN7txI7VdyIYk5ZatOq3zvSuWpU8hoA=="],
 
     "is-number": ["is-number@2.1.0", "", { "dependencies": { "kind-of": "^3.0.2" } }, "sha512-QUzH43Gfb9+5yckcrSA0VBDwEtDUchrk4F6tfJZQuNzDJbEDB9cZNzSfXGQ1jqmdDY/kl41lUOWM9syA8z8jlg=="],
@@ -4567,45 +4572,29 @@
 
     "@cacheable/utils/keyv": ["keyv@5.6.0", "", { "dependencies": { "@keyv/serialize": "^1.1.1" } }, "sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw=="],
 
-    "@effect/ai/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/ai-amazon-bedrock/@effect/ai-anthropic": ["@effect/ai-anthropic@4.0.0", "", { "peerDependencies": { "effect": "^4.0.0" } }, "sha512-/xZYmvRE9yDLKiz1pOIx0CVaB+o0zdJd6sTG9KQbFSkM+Ule0U/6yeN+Q6KD9I7Z73t3WxhK9Xmg1eqU6+IVmQ=="],
-
-    "@effect/ai-amazon-bedrock/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/cluster/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
     "@effect/docgen/chalk": ["chalk@6.0.1", "", {}, "sha512-/Ce6KNm3vIbWdMlNna6RVIZ/ICQxnJxCicet5LBKK9ZffBkqzDw0xh9EiKSljdRtiIQ1S1z4YgcscUUGzNCWrA=="],
 
     "@effect/docgen/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
-
-    "@effect/experimental/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
 
     "@effect/experimental/uuid": ["uuid@11.1.1", "", { "bin": { "uuid": "dist/esm/bin/uuid" } }, "sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ=="],
 
     "@effect/markdown-toc/gray-matter": ["gray-matter@3.1.1", "", { "dependencies": { "extend-shallow": "^2.0.1", "js-yaml": "^3.10.0", "kind-of": "^5.0.2", "strip-bom-string": "^1.0.0" } }, "sha512-nZ1qjLmayEv0/wt3sHig7I0s3/sJO0dkAaKYQ5YAOApUtYEOonXSFdWvL1khvnZMTvov4UufkqlFsilPnejEXA=="],
 
-    "@effect/platform/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/printer/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/rpc/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/sql/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
     "@effect/sql/uuid": ["uuid@11.1.1", "", { "bin": { "uuid": "dist/esm/bin/uuid" } }, "sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ=="],
-
-    "@effect/sql-kysely/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
 
     "@effect/sql-kysely/kysely": ["kysely@0.28.17", "", {}, "sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q=="],
 
-    "@effect/typeclass/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
-    "@effect/workflow/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
-
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 
-    "@fp-ts/optic/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
+    "@evadev/backend-config/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@evadev/effect-helpers/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@evadev/effect-schema-i18n/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@evadev/scripts/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@evadev/tsconfig/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "@grpc/proto-loader/yargs": ["yargs@17.7.3", "", { "dependencies": { "cliui": "^8.0.1", "escalade": "^3.1.1", "get-caller-file": "^2.0.5", "require-directory": "^2.1.1", "string-width": "^4.2.3", "y18n": "^5.0.5", "yargs-parser": "^21.1.1" } }, "sha512-GZtjxm/J/4TSxuL3FNYjCmLktBTnIw/rVmKSIyKeYAZpmJB2ig9VauCC5xsa82GNKVKDAqpOn3KVzNt0zmrU0g=="],
 
@@ -4675,6 +4664,18 @@
 
     "@stryker-mutator/instrumenter/@babel/traverse": ["@babel/traverse@8.0.6", "", { "dependencies": { "@babel/code-frame": "^8.0.6", "@babel/generator": "^8.0.6", "@babel/helper-globals": "^8.0.6", "@babel/parser": "^8.0.6", "@babel/template": "^8.0.0", "@babel/types": "^8.0.6", "obug": "^2.1.1" } }, "sha512-ilYV+qLStGzSKLipJlETdvdtpK3rAuwfCmCoGKv15MU4EoeIuLkespSNoNLFGOPSciEHx9TLWtN5mv0fz5w5mQ=="],
 
+    "@trellisform/api/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@trellisform/backend-better-auth-service/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@trellisform/database/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@trellisform/database-effect-schema/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@trellisform/model/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "@types/webref__idl/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
     "@typespec/ts-http-runtime/https-proxy-agent": ["https-proxy-agent@7.0.6", "", { "dependencies": { "agent-base": "^7.1.2", "debug": "4" } }, "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw=="],
 
     "@vscode/vsce/typed-rest-client": ["typed-rest-client@1.8.11", "", { "dependencies": { "qs": "^6.9.1", "tunnel": "0.0.6", "underscore": "^1.12.1" } }, "sha512-5UvfMpd1oelmUPRbbaVnq+rHP7ng2cE4qoQkQeAqxRL6PklkxsM0g32/HL0yfvruK6ojQ5x8EE+HF4YV6DtuCA=="],
@@ -4690,6 +4691,8 @@
     "ansi-align/string-width": ["string-width@4.2.3", "", { "dependencies": { "emoji-regex": "^8.0.0", "is-fullwidth-code-point": "^3.0.0", "strip-ansi": "^6.0.1" } }, "sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g=="],
 
     "anymatch/picomatch": ["picomatch@2.3.2", "", {}, "sha512-V7+vQEJ06Z+c5tSye8S+nHUfI51xoXIXjHQ99cQtKUkQqqO1kO/KCJUfZXuB47h/YBlDhah2H3hdUGXn8ie0oA=="],
+
+    "apache-superset-init/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "azure-devops-node-api/typed-rest-client": ["typed-rest-client@1.8.11", "", { "dependencies": { "qs": "^6.9.1", "tunnel": "0.0.6", "underscore": "^1.12.1" } }, "sha512-5UvfMpd1oelmUPRbbaVnq+rHP7ng2cE4qoQkQeAqxRL6PklkxsM0g32/HL0yfvruK6ojQ5x8EE+HF4YV6DtuCA=="],
 
@@ -4743,13 +4746,23 @@
 
     "dot-prop/type-fest": ["type-fest@4.41.0", "", {}, "sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA=="],
 
+    "drizzle-fp/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
     "drizzle-kit/esbuild": ["esbuild@0.25.12", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.25.12", "@esbuild/android-arm": "0.25.12", "@esbuild/android-arm64": "0.25.12", "@esbuild/android-x64": "0.25.12", "@esbuild/darwin-arm64": "0.25.12", "@esbuild/darwin-x64": "0.25.12", "@esbuild/freebsd-arm64": "0.25.12", "@esbuild/freebsd-x64": "0.25.12", "@esbuild/linux-arm": "0.25.12", "@esbuild/linux-arm64": "0.25.12", "@esbuild/linux-ia32": "0.25.12", "@esbuild/linux-loong64": "0.25.12", "@esbuild/linux-mips64el": "0.25.12", "@esbuild/linux-ppc64": "0.25.12", "@esbuild/linux-riscv64": "0.25.12", "@esbuild/linux-s390x": "0.25.12", "@esbuild/linux-x64": "0.25.12", "@esbuild/netbsd-arm64": "0.25.12", "@esbuild/netbsd-x64": "0.25.12", "@esbuild/openbsd-arm64": "0.25.12", "@esbuild/openbsd-x64": "0.25.12", "@esbuild/openharmony-arm64": "0.25.12", "@esbuild/sunos-x64": "0.25.12", "@esbuild/win32-arm64": "0.25.12", "@esbuild/win32-ia32": "0.25.12", "@esbuild/win32-x64": "0.25.12" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-bbPBYYrtZbkt6Os6FiTLCTFxvq4tt3JKall1vRwshA3fdVztsLAatFaZobhkBC8/BrPetoa0oksYoKXoG4ryJg=="],
+
+    "effect-btrfs/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "effect-octokit-layer/@octokit/core": ["@octokit/core@7.0.6", "", { "dependencies": { "@octokit/auth-token": "^6.0.0", "@octokit/graphql": "^9.0.3", "@octokit/request": "^10.0.6", "@octokit/request-error": "^7.0.2", "@octokit/types": "^16.0.0", "before-after-hook": "^4.0.0", "universal-user-agent": "^7.0.0" } }, "sha512-DhGl4xMVFGVIyMwswXeyzdL4uXD5OGILGX5N8Y+f6W7LhC1Ze2poSNrkF/fedpVDHEEZ+PHFW0vL14I+mm8K3Q=="],
 
     "effect-octokit-layer/date-fns": ["date-fns@4.1.0", "", {}, "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="],
 
-    "effect-octokit-layer/effect": ["effect@4.0.0", "", {}, "sha512-ooc1TG5t+FfzgYnFz2ff6BBKyZ7EwBRVXC7c4RhQUAD6/TZ2gTXXMeb4WX7a19ozQo4J73/QW+S00YAIresoMQ=="],
+    "effect-opfs/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "effect-web-audio/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "effect-web-mediacapture-streams/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
+    "effect-web-midi/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "eslint/ajv": ["ajv@6.15.0", "", { "dependencies": { "fast-deep-equal": "^3.1.1", "fast-json-stable-stringify": "^2.0.0", "json-schema-traverse": "^0.4.1", "uri-js": "^4.2.2" } }, "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="],
 
@@ -4768,6 +4781,8 @@
     "gaxios/https-proxy-agent": ["https-proxy-agent@7.0.6", "", { "dependencies": { "agent-base": "^7.1.2", "debug": "4" } }, "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw=="],
 
     "gaxios/node-fetch": ["node-fetch@3.3.2", "", { "dependencies": { "data-uri-to-buffer": "^4.0.0", "fetch-blob": "^3.1.4", "formdata-polyfill": "^4.0.10" } }, "sha512-dRB78srN/l6gqWulah9SrxeYnxeddIG30+GOqK/9OlLVyLg3HPnr6SqOWTWOXKRwC2eGYCkZ59NNuSgvSrpgOA=="],
+
+    "gitdl/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "global-directory/ini": ["ini@4.1.1", "", {}, "sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g=="],
 
@@ -4792,6 +4807,8 @@
     "jest-validate/camelcase": ["camelcase@6.3.0", "", {}, "sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA=="],
 
     "jest-worker/supports-color": ["supports-color@8.1.1", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q=="],
+
+    "joiners/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "libsql/detect-libc": ["detect-libc@2.0.2", "", {}, "sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw=="],
 
@@ -4835,6 +4852,8 @@
 
     "next/postcss": ["postcss@8.5.23", "", { "dependencies": { "nanoid": "^3.3.16", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg=="],
 
+    "next-midi-demo/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
+
     "next-yak/@babel/parser": ["@babel/parser@8.0.6", "", { "dependencies": { "@babel/types": "^8.0.6" }, "bin": "./bin/babel-parser.js" }, "sha512-LpGDIYJAzc3Y3PT9x+FxBrGYu2PlWxLmyN7SwPTzaX0LSwEmFJBsRnPBqmaXF2r1v+Zhz6lNiEJ+7yKtM5+Ugg=="],
 
     "next-yak/@swc/core": ["@swc/core@1.15.47", "", { "dependencies": { "@swc/counter": "^0.1.3", "@swc/types": "^0.1.27" }, "optionalDependencies": { "@swc/core-darwin-arm64": "1.15.47", "@swc/core-darwin-x64": "1.15.47", "@swc/core-linux-arm-gnueabihf": "1.15.47", "@swc/core-linux-arm64-gnu": "1.15.47", "@swc/core-linux-arm64-musl": "1.15.47", "@swc/core-linux-ppc64-gnu": "1.15.47", "@swc/core-linux-s390x-gnu": "1.15.47", "@swc/core-linux-x64-gnu": "1.15.47", "@swc/core-linux-x64-musl": "1.15.47", "@swc/core-win32-arm64-msvc": "1.15.47", "@swc/core-win32-ia32-msvc": "1.15.47", "@swc/core-win32-x64-msvc": "1.15.47" }, "peerDependencies": { "@swc/helpers": ">=0.5.17" }, "optionalPeers": ["@swc/helpers"] }, "sha512-FbsO5JcfOjfH38W/rohBRBweJeERsAuIP4f377lmkmxTcq9exjtx4SkRuZY5CdfhR2CBVwDIJegBpJDffwNsOg=="],
@@ -4862,6 +4881,8 @@
     "pg/pg-protocol": ["pg-protocol@1.16.1", "", {}, "sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg=="],
 
     "pkg-types/confbox": ["confbox@0.3.1", "", {}, "sha512-cKUSoKa8YxFZZSmraVi7onONx3amu77ngK3kGpsYHDH7drPwCRkQE1RYMPlLRrMtnciRj274XNRxcHxnKmDSnA=="],
+
+    "playground/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "postcss-styled-syntax/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
@@ -4926,6 +4947,8 @@
     "to-object-path/kind-of": ["kind-of@3.2.2", "", { "dependencies": { "is-buffer": "^1.1.5" } }, "sha512-NOW9QQXMoZGg/oqnVNoNTTIFEIid1627WCffUBJEdMxYApq7mNE7CpzucIPc+ZQg25Phej7IJSmX3hO+oblOtQ=="],
 
     "to-regex-range/is-number": ["is-number@7.0.0", "", {}, "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng=="],
+
+    "ts-key-not-enum/ts-namespace-import": ["ts-namespace-import@github:nounder/ts-namespace-import#140c405", { "dependencies": { "tsutils": "^3.21.0" }, "peerDependencies": { "typescript": "^5" } }, "nounder-ts-namespace-import-140c405", "sha512-xfJO/qvqdzwHk7MRgfRfcZHlkz4hrsC6KHEJql8lzLQua6mo/tBm9gXYPzLK9p9f3QfArn7wxP6d4Pv3m+znzw=="],
 
     "tsutils/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
 

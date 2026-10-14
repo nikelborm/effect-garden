@@ -15,8 +15,8 @@ import * as Stream from 'effect/Stream'
 
 import {
   CACHE_DIR,
-  isNotFound,
-  logErrorMessageWithBetterNotFound,
+  isNotFoundError,
+  logAnyErrorWithNotFoundImproved,
 } from './common.ts'
 import {
   EffectUnified,
@@ -65,7 +65,7 @@ const BinaryPathsCache = Schema.fromJsonString(
   { space: 2 },
 )
 
-export const readBinaryPathsCache = pipe(
+export const startBinaryPathsCacheReading = pipe(
   FileSystem.FileSystem.use(fs => fs.readFileString(BINARY_PATHS_CACHE_FILE)),
   Effect.flatMap(Schema.decodeEffect(BinaryPathsCache)),
   Effect.orElseSucceed(constant<typeof BinaryPathsCache.Type>({})),
@@ -79,15 +79,17 @@ export const which = (name: string) =>
     Effect.flatMap(spawner => spawner.string(ChildProcess.make`which ${name}`)),
     Effect.map(out => out.trim() || null),
     Effect.tapError(
-      logErrorMessageWithBetterNotFound(
+      logAnyErrorWithNotFoundImproved(
         `"which" command is not found. Cannot resolve binary pathes from PATH`,
       ),
     ),
     Effect.orDie,
   )
 
+export const SHELL = Config.String('SHELL').pipe(Config.withDefault('bash'))
+
 export const saveBinaryPathsCache = Effect.gen(function* () {
-  const shell = yield* Config.String('SHELL').pipe(Config.withDefault('bash'))
+  const shell = yield* SHELL
   const names = [...new Set([...KNOWN_BINARIES, shell])]
 
   const entries = yield* Effect.forEach(
@@ -119,11 +121,11 @@ export const withFallback =
   <A, E extends Error, R>(
     run: (cmd: ChildProcess.StandardCommand) => Kind3<F, A, E, R>,
   ) =>
-    readBinaryPathsCache.pipe(
+    startBinaryPathsCacheReading.pipe(
       F.fromEffect,
       F.map(flow(Fiber.join, F.fromEffect)),
       F.flatMap(cacheInF =>
-        F.catchIf(run(cmd), isNotFound, notFoundError =>
+        F.catchIf(run(cmd), isNotFoundError, notFoundError =>
           F.flatMap(cacheInF, ({ [cmd.command]: cachedBinPath }) =>
             !cachedBinPath || cachedBinPath === cmd.command
               ? F.fail<A, E, R>(notFoundError)
@@ -132,7 +134,7 @@ export const withFallback =
         ),
       ),
       // here because the first run(cmd) can give other kinds of PlatformError
-      F.tapError(logErrorMessageWithBetterNotFound(notFoundMessage)),
+      F.tapError(logAnyErrorWithNotFoundImproved(notFoundMessage)),
     )
 
 export const withCachedBinaryFallback = withFallback(EffectUnified)

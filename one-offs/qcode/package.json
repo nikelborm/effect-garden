@@ -19,6 +19,7 @@
     "effect": "catalog:"
   },
   "dependencies": {
+    "is-kit": "catalog:",
     "tslib": "catalog:"
   },
   "homepage": "https://github.com/nikelborm/effect-garden/tree/main/one-offs/qcode#readme",
@@ -34,8 +35,8 @@
   "scripts": {
     "b": "bun run build",
     "build": "tsc && rolldown -c rolldown.config.mts && chmod +x dist/minified/*",
-    "lint": "oxlint --fix --quiet && biome check --write --unsafe",
-    "l": "bun run lint"
+    "l": "bun run lint",
+    "lint": "oxlint --fix --quiet && biome check --write --unsafe"
   },
   "author": {
     "name": "nikelborm",

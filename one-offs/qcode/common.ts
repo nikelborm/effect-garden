@@ -1,22 +1,25 @@
 // biome-ignore-all lint/complexity/useLiteralKeys: https://github.com/biomejs/biome/issues/463
 
+import { and, equalsKey, isObject, refineDefinedKey } from 'is-kit'
+
 import * as Effect from 'effect/Effect'
-import type { PlatformError } from 'effect/PlatformError'
 
 export const HOME = process.env['HOME'] ?? '/root'
 export const PROJECTS_DIR = `${HOME}/projects`
 
-export const isNotFound = (error: PlatformError) =>
-  error.reason._tag === 'NotFound'
+export const isNotFoundError = and(
+  isObject,
+  refineDefinedKey('reason', equalsKey('_tag', 'NotFound')),
+)
 
 export const notFoundMessageCommon =
   'This error might also be caused by missing PATH. Try `qcode cache-binary-paths` in a shell where it resolves successfully to remember its path'
 
-export const logErrorMessageWithBetterNotFound =
+export const logAnyErrorWithNotFoundImproved =
   (notFoundMessage: string) =>
-  (error: PlatformError): Effect.Effect<void> =>
+  (error: Error): Effect.Effect<void> =>
     Effect.logError(
-      isNotFound(error)
+      isNotFoundError(error)
         ? notFoundMessage + '\n' + notFoundMessageCommon
         : error.message,
     )

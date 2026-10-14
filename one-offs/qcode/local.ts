@@ -25,12 +25,13 @@ import { ReducerConcat } from 'effect/String'
 import * as Terminal from 'effect/Terminal'
 
 import {
-  readBinaryPathsCache,
+  SHELL,
+  startBinaryPathsCacheReading,
   streamLinesWithCachedBinaryFallback,
   which,
   withCachedBinaryFallback,
 } from './binary-cache.ts'
-import { CACHE_DIR, isNotFound, PROJECTS_DIR } from './common.ts'
+import { CACHE_DIR, isNotFoundError, PROJECTS_DIR } from './common.ts'
 
 // TODO: add lock on the cache file
 
@@ -74,7 +75,7 @@ export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
 
 const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
   const fs = yield* FileSystem.FileSystem
-  const cacheFiber = yield* readBinaryPathsCache
+  const binaryPathsCacheFiber = yield* startBinaryPathsCacheReading
   const map = {
     eza: 'modern ls replacement — https://github.com/eza-community/eza',
     bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
@@ -89,11 +90,11 @@ const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
         )
         if (pathResolved) return pathResolved
 
-        const { [name]: pathCached } = yield* Fiber.join(cacheFiber)
-        if (pathCached)
-          return yield* fs.access(pathCached).pipe(
-            Effect.as(pathCached),
-            Effect.catchIf(isNotFound, () => Effect.succeed(null)),
+        const { [name]: cachedPath } = yield* Fiber.join(binaryPathsCacheFiber)
+        if (cachedPath)
+          return yield* fs.access(cachedPath).pipe(
+            Effect.as(cachedPath),
+            Effect.catchIf(isNotFoundError, () => Effect.succeed(null)),
             Effect.tapError(Effect.logError),
             Effect.orDie,
           )
@@ -132,7 +133,7 @@ export const find = (args: string) => {
       'bfs',
       'Breadth-first finder (`bfs` binary) is not found. Read more here: https://github.com/tavianator/bfs, https://terminaltrove.com/bfs/. The script will attempt to fallback to find',
     ),
-    isNotFound,
+    isNotFoundError,
     () =>
       stream(
         'find',
@@ -279,7 +280,7 @@ export const localMode = Effect.fn('qcode.local')(
           '--tabstop=1',
           // delimiter between icon and path
           `--delimiter=${icon_path_delimiter}`,
-          // fzf prints to stdout only path
+          // fzf prints to stdout only path, when selected
           '--accept-nth=2..',
           // searches only path, ignores icon
           '--nth=2..',
@@ -298,8 +299,6 @@ export const localMode = Effect.fn('qcode.local')(
     const fs = yield* FileSystem.FileSystem
     const collectedFreshVscodeArgCandidatesFromCurrentRun = new Set<string>()
 
-    // Previous run's raw `find` lines. Missing file or any platform error
-    // means first run — just show nothing until the fresh scan streams in.
     const cachedVscodeArgCandidatesFromPreviousRun = pipe(
       fs.stream(LOCAL_FIND_CACHE_FILE),
       Stream.decodeText,
@@ -308,10 +307,7 @@ export const localMode = Effect.fn('qcode.local')(
       Stream.catchCause(() => Stream.empty),
     )
 
-    // Runs after the merged stream completes, so the cache file is already
-    // closed (done streaming into fzf) and `collectedFreshRawLines` is full.
-    // Forked so the write happens in parallel without blocking the selection.
-    const persistFindCache = Effect.flatMap(
+    const persistProjectsCache = Effect.flatMap(
       fs.makeDirectory(CACHE_DIR, { recursive: true }),
       // flatMap instead of andThen to make sure .size is captured at the end
       () =>
@@ -329,8 +325,6 @@ export const localMode = Effect.fn('qcode.local')(
 
     const path = yield* Path.Path
 
-    // Fresh scan still runs every time, but its elements are tapped into an
-    // array while they stream into fzf, so the cache can be overwritten after.
     const fzfInput = Stream.mergeAll(
       [
         gitAndVsCodeDirPaths,
@@ -356,7 +350,8 @@ export const localMode = Effect.fn('qcode.local')(
         fzfInput.pipe(
           Stream.run(fzfProcess.stdin),
           // forkDetach so that program early exit won't interrupt the cache update
-          Effect.andThen(Effect.forkDetach(persistFindCache)),
+          // previous contents of the file are done streaming by now
+          Effect.andThen(Effect.forkDetach(persistProjectsCache)),
         ),
       ],
       { concurrency: 'unbounded' },
@@ -379,10 +374,10 @@ export const localMode = Effect.fn('qcode.local')(
       return ChildProcessSpawner.ExitCode(1)
     }
 
-    const linkedPath = path.join(PROJECTS_DIR, relativePath)
+    const potentiallySymlinkedPath = path.join(PROJECTS_DIR, relativePath)
     const projectPathOrWorkspaceFile = yield* Effect.orElseSucceed(
-      fs.realPath(linkedPath),
-      () => linkedPath,
+      fs.realPath(potentiallySymlinkedPath),
+      () => potentiallySymlinkedPath,
     )
 
     const launcherCwd = projectPathOrWorkspaceFile.endsWith('.code-workspace')
@@ -391,8 +386,7 @@ export const localMode = Effect.fn('qcode.local')(
 
     switch (options.opener) {
       case 'shell': {
-        // biome-ignore lint/complexity/useLiteralKeys: biome dum
-        const shell = process.env['SHELL'] ?? 'bash'
+        const shell = yield* SHELL
 
         return yield* runLauncher(
           shell,
