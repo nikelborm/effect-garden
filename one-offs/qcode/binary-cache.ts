@@ -25,6 +25,11 @@ import {
   type UnifiedTypeClass,
 } from './fpStuff.ts'
 
+// TODO: Cache instead of a bunch of specific binary paths the whole environment
+// PATH variable. Because opencode when it launches for the first time tries to
+// launch the daemon and it can't locate proper MCP binaries installed as Bun
+// dependencies.
+
 // Binary name -> absolute path, written once via the `cache-binary-paths`
 // subcommand when PATH is full (interactive terminal) and read back on later
 // launches with a partial PATH (kitty shortcut without .bashrc). Tiny JSON,
