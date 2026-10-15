@@ -7,7 +7,7 @@
 import * as Config from 'effect/Config'
 import * as Effect from 'effect/Effect'
 import * as FileSystem from 'effect/FileSystem'
-import { constant, flow, identity, pipe } from 'effect/Function'
+import { constant, flow, pipe } from 'effect/Function'
 import type { TypeLambda } from 'effect/HKT'
 import * as ChildProcess from 'effect/process/ChildProcess'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
@@ -61,7 +61,7 @@ export const savePathCache = Effect.gen(function* () {
   )
 })
 
-export const withPATHResolver =
+const withPATHResolver =
   <F extends TypeLambda>(F: UnifiedTypeClass<F>) =>
   (cmd: ChildProcess.StandardCommand, notFoundMessage: string) =>
   <A, E extends Error, R>(
