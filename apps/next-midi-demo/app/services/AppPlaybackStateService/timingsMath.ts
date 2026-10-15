@@ -1,5 +1,3 @@
-import * as Struct from 'effect/Struct'
-
 import {
   schedulingSafeBufferInSeconds,
   tickSizeInSeconds,
@@ -10,7 +8,7 @@ import {
 export const calcBlissfulGridTimingsMath = (
   firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
   secondsDecimalNowPassedSinceAudioContextInit: number,
-): TimingsMath => {
+) => {
   const secondsDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted =
     secondsDecimalNowPassedSinceAudioContextInit -
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit
@@ -36,14 +34,14 @@ export const calcBlissfulGridTimingsMath = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit +
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart
 
-  //
-
   const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder =
-    nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit -
-    transitionTimeInSeconds
+    nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit
 
   const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder =
-    nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit
+    nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit +
+    transitionTimeInSeconds
+
+  // TODO: separate in-pattern transitions between ticks and 8th-tick-of-pattern -> 1th-tick-of-pattern
 
   const secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder =
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
@@ -54,73 +52,51 @@ export const calcBlissfulGridTimingsMath = (
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
       schedulingSafeBufferInSeconds
 
+  const nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted =
+    nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted +
+    (fitsIntoBufferOfClosestTransition ? 1 : 0)
+
+  const nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit =
+    nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit +
+    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+
+  const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit =
+    patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
+    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+
+  const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit =
+    patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
+    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+
+  const secondsSinceNowUpUntilAntialiasingFadeoutEnds =
+    secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder +
+    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+
+  const secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart =
+    secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart +
+    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+
   return {
     fitsIntoBufferOfClosestTransition,
     secondsDecimalNowPassedSinceAudioContextInit,
 
+    secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
     secondsDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
 
+    // recommended to use because they're adjusted
+    nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
+    nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+    secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+    secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart,
+
+    // NOT recommended to use because they're NOT adjusted
     nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
-    secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart,
     nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit,
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder,
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder,
-
-    secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
     secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder,
+    secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart,
   } as const
 }
-
-export interface TimingsMath {
-  fitsIntoBufferOfClosestTransition: boolean
-  secondsDecimalNowPassedSinceAudioContextInit: number
-
-  secondsDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted: number
-
-  /**
-   * might happen to be the index of the current tick if we are right at the
-   * border between ticks (integer). otherwise predictably the index of the next
-   * tick
-   */
-  nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted: number
-  secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart: number
-  nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit: number
-  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder: number
-  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder: number
-
-  secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted: number
-  secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder: number
-}
-
-// TODO: add export of Evolver type from effect/Struct internals
-type TimingsMathEvolver = {
-  readonly [K in keyof TimingsMath]?: (a: TimingsMath[K]) => TimingsMath[K]
-}
-
-const timingsMathEvolver: TimingsMathEvolver = {
-  nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted:
-    v => v + 1,
-  secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart:
-    v => v + tickSizeInSeconds,
-  nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit:
-    v => v + tickSizeInSeconds,
-  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder:
-    v => v + tickSizeInSeconds,
-  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder:
-    v => v + tickSizeInSeconds,
-  secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder: v =>
-    v + tickSizeInSeconds,
-}
-
-export const postponeTimingsToTheNextSlot: (
-  timingsMath: TimingsMath,
-) => TimingsMath = Struct.evolve<TimingsMath, TimingsMathEvolver>(
-  timingsMathEvolver,
-)
-
-export const adjustTimingsIfTransitionDoesntFitIntoTheCurrentSlot = (
-  timingsMath: TimingsMath,
-) =>
-  timingsMath.fitsIntoBufferOfClosestTransition
-    ? timingsMath
-    : postponeTimingsToTheNextSlot(timingsMath)
