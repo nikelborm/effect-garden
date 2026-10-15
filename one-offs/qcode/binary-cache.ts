@@ -35,7 +35,7 @@ export const getCachedPATH = pipe(
   Effect.map(s => s || null),
   Effect.orElseSucceed(constant(null)),
   Effect.cached,
-  Effect.flatMap(identity),
+  Effect.flatten,
 )
 
 const withFullPath = (cmd: ChildProcess.StandardCommand, fullPath: string) =>
