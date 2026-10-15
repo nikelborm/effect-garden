@@ -8,11 +8,6 @@ memory, write it into `.claude/memory/` and add a line to its `MEMORY.md` (see
 
 @.claude/memory/MEMORY.md
 
-Use /home/evadev/projects/effect@4.0.0 as a reference folder for all the tests,
-documentation etc about `effect` library and `@effect/...` family of packages.
-It's a git clone of the exact monorepo (has `packages` folder). Always prefer it
-instead of `node_modules`, because the cloned monorepo strictly has more info.
-
 The project uses convention that all `Schema.Class` and `Schema.TaggedClass`
 must define `declare protected '~brand~': never` in class body, so that it's
 impossible to construct the type like this:
