@@ -4,24 +4,6 @@ import * as Stream from 'effect/Stream'
 
 export type Kind3<F extends TypeLambda, A, E, R> = Kind<F, never, R, E, A>
 
-export interface Fail<F extends TypeLambda> extends TypeClass<F> {
-  fail<A, E, R>(error: E): Kind<F, never, R, E, A>
-}
-
-export interface CatchIf<F extends TypeLambda> extends TypeClass<F> {
-  catchIf<A, E, R, A2, E2, R2>(
-    self: Kind<F, never, R, E, A>,
-    predicate: (e: E) => boolean,
-    f: (e: E) => Kind<F, never, R2, E2, A2>,
-  ): Kind<F, never, R | R2, E | E2, A | A2>
-  catchIf<E, A2, E2, R2>(
-    predicate: (e: E) => boolean,
-    f: (e: E) => Kind<F, never, R2, E2, A2>,
-  ): <A, R>(
-    self: Kind<F, never, R, E, A>,
-  ) => Kind<F, never, R | R2, E | E2, A | A2>
-}
-
 export interface TapError<F extends TypeLambda> extends TypeClass<F> {
   tapError<A, E, R, X, E2, R2>(
     self: Kind<F, never, R, E, A>,
@@ -44,33 +26,17 @@ export interface FlatMap<F extends TypeLambda> extends TypeClass<F> {
   ) => Kind<F, R1 | R2, O1 | O2, E1 | E2, B>
 }
 
-export interface Map<F extends TypeLambda> extends TypeClass<F> {
-  map<R1, O1, E1, A, B>(
-    self: Kind<F, R1, O1, E1, A>,
-    f: (a: A) => B,
-  ): Kind<F, R1, O1, E1, B>
-  map<A, B>(
-    f: (a: A) => B,
-  ): <R1, O1, E1>(self: Kind<F, R1, O1, E1, A>) => Kind<F, R1, O1, E1, B>
-}
-
 export interface FromEffect<F extends TypeLambda> extends TypeClass<F> {
   fromEffect<A, E, R>(self: Effect.Effect<A, E, R>): Kind<F, never, R, E, A>
 }
 
 export interface UnifiedTypeClass<F extends TypeLambda>
   extends FlatMap<F>,
-    Fail<F>,
-    Map<F>,
-    CatchIf<F>,
     TapError<F>,
     FromEffect<F> {}
 
 export const EffectUnified: UnifiedTypeClass<Effect.EffectTypeLambda> = {
   flatMap: Effect.flatMap,
-  fail: Effect.fail,
-  map: Effect.map,
-  catchIf: Effect.catchIf,
   tapError: Effect.tapError,
   fromEffect: x => x,
 }
