@@ -92,4 +92,7 @@ export const which = (name: string) =>
       ChildProcess.make`which ${name}`,
       `"which" command is not found. Cannot resolve binary paths from PATH`,
     )(spawner.string),
-  ).pipe(Effect.orDie)
+  ).pipe(
+    Effect.map(out => out.trim() || null),
+    Effect.orDie,
+  )
