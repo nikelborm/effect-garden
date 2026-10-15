@@ -65,18 +65,17 @@ found" even though it works from a manually opened terminal.
 To fix, run once from a terminal with a full `PATH`:
 
 ```bash
-bun index.ts cache-binary-paths
+bun index.ts cache-path
 ```
 
-This resolves every known binary (`bfs`, `find`, `fzf`, `eza`, `bat`, `code`,
-`opencode`, `which`, `bash`, `sh`, `ssh`, plus your current `$SHELL`) via
-`which` and saves the name-to-absolute-path map to
-`~/.cache/qcode/binary-paths.json`, then exits without opening `fzf`.
+This saves the current full `$PATH` to `~/.cache/qcode/PATH.txt`, then exits
+without opening `fzf`.
 
-Later launches read that file in a parallel fiber alongside the optimistic
-spawn. The cache is awaited only if the first attempt fails with "not found"
-— then the command is immutably patched to the cached absolute path and
-retried. The "not found" error is logged only if the retry also fails.
+Later launches read that file. If no cache file exists the command spawns
+unchanged. Spawning with the full `PATH` instead of an absolute binary path also
+fixes `opencode`'s first launch: the `opencode` process itself gets the full
+`PATH`, so its daemon children (MCP binaries like `effect-mcp` from bun deps)
+inherit it too.
 
 Running the bundled and minified version produces the fastest startup times.
 

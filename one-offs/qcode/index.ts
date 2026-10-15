@@ -22,7 +22,7 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as ChildProcessSpawner from 'effect/process/ChildProcessSpawner'
 
-import { saveBinaryPathsCache } from './binary-cache.ts'
+import { savePathCache } from './binary-cache.ts'
 import { localMode, openers } from './local.ts'
 import { runController } from './remote-controller.ts'
 import { runProvider } from './remote-provider.ts'
@@ -89,13 +89,13 @@ const provideCommand = CliCommand.make('provide', {}, () =>
   ),
 )
 
-const cacheBinaryPathsCommand = CliCommand.make('cache-binary-paths', {}, () =>
+const cachePathCommand = CliCommand.make('cache-path', {}, () =>
   ExitCodeHandler.codeFromEffect(
-    Effect.as(saveBinaryPathsCache, ChildProcessSpawner.ExitCode(0)),
+    Effect.as(savePathCache, ChildProcessSpawner.ExitCode(0)),
   ),
 ).pipe(
   CliCommand.withDescription(
-    'Resolve every known binary via `which` and save the name-to-absolute-path map to ~/.cache/qcode/binary-paths.json, then exit. Run once from a terminal with full PATH so later kitty-shortcut launches with a partial PATH can still retry via the cache.',
+    "Save the current full $PATH to ~/.cache/qcode/PATH.txt, then exit. Run once from a terminal with full PATH so later kitty-shortcut launches with a partial PATH still spawn with the cached PATH (this also gives opencode's daemon children, like effect-mcp, the full PATH).",
   ),
 )
 
@@ -114,11 +114,7 @@ export const cli = CliCommand.make(
   CliCommand.withDescription(
     'Fuzzy project opener for VS Code, opencode, or shell. With no subcommand, searches ~/projects on this machine.',
   ),
-  CliCommand.withSubcommands([
-    remoteCommand,
-    provideCommand,
-    cacheBinaryPathsCommand,
-  ]),
+  CliCommand.withSubcommands([remoteCommand, provideCommand, cachePathCommand]),
 )
 
 const AppLayer = BunChildProcessSpawner.layer.pipe(

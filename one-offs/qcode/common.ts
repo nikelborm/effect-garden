@@ -13,7 +13,7 @@ export const isNotFoundError = and(
 )
 
 export const notFoundMessageCommon =
-  'This error might also be caused by missing PATH. Try `qcode cache-binary-paths` in a shell where it resolves successfully to remember its path'
+  'This error might also be caused by missing PATH. Try `qcode cache-path` in a shell where it resolves successfully to remember full PATH'
 
 export const logAnyErrorWithNotFoundImproved =
   (notFoundMessage: string) =>

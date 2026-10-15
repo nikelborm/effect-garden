@@ -26,10 +26,9 @@ import * as Terminal from 'effect/Terminal'
 
 import {
   SHELL,
-  startBinaryPathsCacheReading,
-  streamLinesWithCachedBinaryFallback,
+  streamLinesWithCachedPATHResolver,
   which,
-  withCachedBinaryFallback,
+  withCachedPATHResolver,
 } from './binary-cache.ts'
 import { CACHE_DIR, isNotFoundError, PROJECTS_DIR } from './common.ts'
 
@@ -74,8 +73,6 @@ const joinNames = (names: string[]) => names.map(e => `-name ${e}`).join(' -o ')
 export const PRUNE_ARGS = joinNames(PRUNE_DIRS)
 
 const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
-  const fs = yield* FileSystem.FileSystem
-  const binaryPathsCacheFiber = yield* startBinaryPathsCacheReading
   const map = {
     eza: 'modern ls replacement — https://github.com/eza-community/eza',
     bat: 'syntax-highlighting cat — https://github.com/sharkdp/bat',
@@ -83,26 +80,7 @@ const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
 
   const depResults = yield* Effect.forEach(
     Object.keys(map) as ('eza' | 'bat')[],
-    Effect.fnUntraced(
-      function* (name) {
-        const pathResolved = yield* Effect.catchCause(which(name), () =>
-          Effect.succeed(null),
-        )
-        if (pathResolved) return pathResolved
-
-        const { [name]: cachedPath } = yield* Fiber.join(binaryPathsCacheFiber)
-        if (cachedPath)
-          return yield* fs.access(cachedPath).pipe(
-            Effect.as(cachedPath),
-            Effect.catchIf(isNotFoundError, () => Effect.succeed(null)),
-            Effect.tapError(Effect.logError),
-            Effect.orDie,
-          )
-
-        return null
-      },
-      (self, name) => Effect.map(self, path => ({ name, path })),
-    ),
+    name => Effect.map(which(name), path => ({ name, path })),
     { concurrency: 'unbounded' },
   )
 
@@ -122,7 +100,7 @@ const resolvePreviewDependenciesToBinaryPaths = Effect.gen(function* () {
 
 export const find = (args: string) => {
   const stream = (main: string, message: string) =>
-    streamLinesWithCachedBinaryFallback(
+    streamLinesWithCachedPATHResolver(
       // -H to follow if the "projects" is a symlink somewhere
       ChildProcess.make(main, ['-H', PROJECTS_DIR, ...args.split(' ')]),
       message,
@@ -212,7 +190,7 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
   ) {
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
-    const code = yield* withCachedBinaryFallback(
+    const code = yield* withCachedPATHResolver(
       ChildProcess.make(binary, args, {
         cwd,
         stdin: 'inherit',
@@ -271,7 +249,7 @@ export const localMode = Effect.fn('qcode.local')(
 
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
-    const fzfProcess = yield* withCachedBinaryFallback(
+    const fzfProcess = yield* withCachedPATHResolver(
       ChildProcess.make(
         'fzf',
         [
