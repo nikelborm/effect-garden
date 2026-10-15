@@ -31,6 +31,7 @@ import {
   withCachedPATHResolver,
 } from './binary-cache.ts'
 import { CACHE_DIR, isNotFoundError, PROJECTS_DIR } from './common.ts'
+import { resumeParkedTui } from './suspend-guard.ts'
 
 // TODO: add lock on the cache file
 
@@ -187,6 +188,13 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
     args: ReadonlyArray<string>,
     cwd: string,
     notFoundMessage: string,
+    // Ctrl+Z in a window that has no shell can never suspend anything (the
+    // kernel drops stop signals for the orphaned process group kitty gave
+    // qcode), which leaves apps that suspend themselves — opencode does —
+    // parked on a blank screen instead of resumed. Enable this only for
+    // openers that leave no shell behind; a shell has real job control, where
+    // Ctrl+Z must stay a real suspend. See suspend-guard.ts.
+    { resumeParkedApp = false } = {},
   ) {
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
@@ -199,7 +207,13 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
         detached: false,
       }),
       notFoundMessage,
-    )(spawner.exitCode)
+    )(spawner.spawn).pipe(
+      Effect.flatMap(child =>
+        resumeParkedApp
+          ? Effect.race(child.exitCode, resumeParkedTui(child.pid))
+          : child.exitCode,
+      ),
+    )
 
     if (code !== 0)
       yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
@@ -379,6 +393,7 @@ export const localMode = Effect.fn('qcode.local')(
           [launcherCwd],
           launcherCwd,
           'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
+          { resumeParkedApp: true },
         )
       case 'vscode':
         return yield* runLauncher(

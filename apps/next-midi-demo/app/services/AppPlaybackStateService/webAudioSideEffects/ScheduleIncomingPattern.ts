@@ -12,14 +12,15 @@ import {
   maxLoudness,
   minLoudness,
 } from '../constants.ts'
-import type { Slot } from '../zones.ts'
 
 export interface ScheduledNextPlaybackTiming {
   readonly startAtSecond: number
 
   readonly bufferPhaseOffsetSeconds: number
 
-  readonly slot: Slot
+  readonly patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit: number
+
+  readonly patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit: number
 }
 
 export class ScheduleIncomingPattern extends Context.Service<
@@ -53,11 +54,11 @@ export const ScheduleIncomingPatternLayer = Layer.effect(
           )
           playback.gainNode.gain.setValueAtTime(
             minLoudness,
-            timing.slot.fadeoutStartsAtSecond,
+            timing.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
           )
           playback.gainNode.gain.exponentialRampToValueAtTime(
             maxLoudness,
-            timing.slot.fadeoutEndsAtSecond,
+            timing.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
           )
           playback.bufferSource.start(
             timing.startAtSecond,

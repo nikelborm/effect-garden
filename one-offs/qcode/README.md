@@ -55,6 +55,16 @@ bun index.ts --opener opencode
   window. If the selection is a `.code-workspace` file, the parent directory
   is used. Requires the `opencode` binary on `PATH`.
 
+  Ctrl+Z stays harmless here. opencode suspends itself by handing the terminal
+  back and waiting for `SIGCONT` — but in a `kitty --single-instance` window
+  there is no shell, so the process group kitty gives `qcode` is orphaned and
+  the kernel drops the stop request altogether. The result used to be a blank
+  window with nothing actually stopped (and nothing to resume it). While
+  opencode runs, `qcode` watches the terminal and sends that `SIGCONT` itself,
+  so Ctrl+Z shows up as a ~50 ms flicker instead of a dead window. `--opener
+  shell` is deliberately left alone: a real shell resumes its own jobs, so
+  Ctrl+Z there stays a real suspend.
+
 ## Partial-PATH launches (kitty shortcut)
 
 When `qcode` is launched directly (e.g. via a `kitty --single-instance`

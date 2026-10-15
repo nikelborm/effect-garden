@@ -46,11 +46,11 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
     const now = yield* getAudioNow
 
-    const isInGreenZone =
+    const incomingFadeInIsStillRevocable =
       now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
-      if (isInGreenZone) {
+      if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
         return PatternSilenceTransitionState.make({
           accord: incoming.asset.accord,
@@ -68,7 +68,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
 
-    if (isInGreenZone && Equal.equals(desiredAsset, dying.asset)) {
+    if (incomingFadeInIsStillRevocable && Equal.equals(desiredAsset, dying.asset)) {
       const revived = yield* dying.cancelFadeoutAndRestore()
       yield* incoming.drop()
       return PatternState.make({
@@ -78,7 +78,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       })
     }
 
-    if (!isInGreenZone) {
+    if (!incomingFadeInIsStillRevocable) {
       return PatternPatternPatternTransitionState.make({
         playbackStartedAtSecond: dying.playbackStartedAtSecond,
         transitionQueue: [

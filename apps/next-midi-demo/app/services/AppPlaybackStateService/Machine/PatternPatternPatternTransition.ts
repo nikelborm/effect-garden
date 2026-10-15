@@ -43,11 +43,11 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
 
     const now = yield* getAudioNow
 
-    const isInGreenZone =
+    const incomingFadeInIsStillRevocable =
       now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
-      if (isInGreenZone) {
+      if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
         return PatternPatternSilenceTransitionState.make({
           accord: incoming.asset.accord,
@@ -63,12 +63,12 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
       })
       return yield* Effect.die(
         new Error(
-          'red-zone deselect during a full queue (a 4th input): would need a 3rd fading-to-silence loop — excluded from the MVP',
+          'late deselect during a full queue (a 4th input): would need a 3rd fading-to-silence loop — excluded from the MVP',
         ),
       )
     }
 
-    if (!isInGreenZone) {
+    if (!incomingFadeInIsStillRevocable) {
       yield* Effect.logError({
         oldest,
         middle,
@@ -77,7 +77,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
       })
       return yield* Effect.die(
         new Error(
-          'red-zone switch during a full queue (a 4th input): would need a 4th queue element — excluded from the MVP',
+          'late switch during a full queue (a 4th input): would need a 4th queue element — excluded from the MVP',
         ),
       )
     }

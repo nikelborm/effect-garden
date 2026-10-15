@@ -70,11 +70,11 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     const now = yield* getAudioNow
 
-    const isInGreenZone =
+    const fadingLoopFadeoutIsStillRevocable =
       now <= current.fadeoutStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (pressedParamButtonId.pattern === current.asset.pattern) {
-      if (!isInGreenZone)
+      if (!fadingLoopFadeoutIsStillRevocable)
         return yield* Effect.die(
           new Error(
             're-press of the same pattern during active fade-out: not yet handled',
