@@ -28,7 +28,7 @@ import {
 // TODO: Cache instead of a bunch of specific binary paths the whole environment
 // PATH variable. Because opencode when it launches for the first time tries to
 // launch the daemon and it can't locate proper MCP binaries installed as Bun
-// dependencies.
+// dependencies like effect-mcp
 
 // Binary name -> absolute path, written once via the `cache-binary-paths`
 // subcommand when PATH is full (interactive terminal) and read back on later
