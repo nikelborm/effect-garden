@@ -1,6 +1,8 @@
 // Binary-path cache — remembers where binaries live so kitty-shortcut
 // launches with a partial PATH (no .bashrc) can still retry via absolutes.
 
+import type { A, E } from 'ts-key-not-enum'
+
 import * as Config from 'effect/Config'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
@@ -127,9 +129,9 @@ export const withFallback =
       F.flatMap(cacheInF =>
         F.catchIf(run(cmd), isNotFoundError, notFoundError =>
           F.flatMap(cacheInF, ({ [cmd.command]: cachedBinPath }) =>
-            !cachedBinPath || cachedBinPath === cmd.command
-              ? F.fail<A, E, R>(notFoundError)
-              : run(ChildProcess.make(cachedBinPath, cmd.args, cmd.options)),
+            cachedBinPath && cachedBinPath !== cmd.command
+              ? run(ChildProcess.make(cachedBinPath, cmd.args, cmd.options))
+              : F.fail<A, E, R>(notFoundError),
           ),
         ),
       ),
