@@ -4,9 +4,7 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
 import { maxLoudness, minLoudness } from '../constants.ts'
-import type { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
-
-type BlissfulGridTimingsMath = ReturnType<typeof calcBlissfulGridTimingsMath>
+import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
 
 export class ScheduleFadeOut extends Context.Service<
   ScheduleFadeOut,
@@ -22,16 +20,13 @@ export class ScheduleFadeOut extends Context.Service<
     blissfulGridTimingsMath: BlissfulGridTimingsMath,
   ) =>
     this.use(scheduleFadeOut =>
-      scheduleFadeOut(playback, blissfulGridTimingsMath)
+      scheduleFadeOut(playback, blissfulGridTimingsMath),
     )
 }
 
 export const ScheduleFadeOutLayer = Layer.succeed(
   ScheduleFadeOut,
-  (
-    playback: AudioPlayback,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ) =>
+  (playback: AudioPlayback, blissfulGridTimingsMath: BlissfulGridTimingsMath) =>
     Effect.sync(() => {
       playback.gainNode.gain.setValueAtTime(
         maxLoudness,

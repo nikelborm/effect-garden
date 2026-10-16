@@ -100,3 +100,6 @@ export const calcBlissfulGridTimingsMath = (
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart,
   } as const
 }
+
+export interface BlissfulGridTimingsMath
+  extends ReturnType<typeof calcBlissfulGridTimingsMath> {}
