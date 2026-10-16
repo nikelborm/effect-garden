@@ -82,6 +82,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     },
   )
 
+  /** 🏁 */
   static init = Effect.fn('PatternPlayback.init')(
     { self: this },
     function* (asset: TaggedPatternPointer, now: number) {

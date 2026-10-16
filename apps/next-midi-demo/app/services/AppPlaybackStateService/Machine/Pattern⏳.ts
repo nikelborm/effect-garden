@@ -64,6 +64,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     )
   }
 
+  /** 🏁 */
   static init = Effect.fn('PatternState.init')(
     { self: this },
     function* (asset: TaggedPatternPointer) {
