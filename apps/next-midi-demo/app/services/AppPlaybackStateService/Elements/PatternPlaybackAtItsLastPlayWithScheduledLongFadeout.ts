@@ -108,8 +108,6 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
         playback,
         fadeInStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
         playbackStartedAtSecond: this.playbackStartedAtSecond,
       })
     },
