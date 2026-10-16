@@ -6,7 +6,8 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { FadingOutPatternPlayback } from '../loopElements.ts'
+import { FadingOutPatternPlayback, getAudioNow } from '../loopElements.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 
@@ -52,12 +53,17 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
       accord,
       strength,
     })
+    const now = yield* getAudioNow
+    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+      oldest.playbackStartedAtSecond,
+      now,
+    )
     return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: oldest.playbackStartedAtSecond,
       transitionQueue: [
         oldest,
         fading,
-        yield* oldest.scheduleNextPattern(asset),
+        yield* oldest.scheduleNextPattern(asset, now, blissfulGridTimingsMath),
       ],
     })
   }

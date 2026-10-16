@@ -20,6 +20,7 @@ import {
   getAudioNow,
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 } from '../loopElements.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -81,7 +82,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
           ),
         )
 
-      const revived = yield* current.cancelFadeoutAndRestore()
+      const revived = yield* current.cancelFadeoutAndRestore(now)
       return PatternState.make({
         firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
           revived.playbackStartedAtSecond,
@@ -94,7 +95,15 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       accord,
       strength,
     })
-    const incoming = yield* current.scheduleNextPattern(asset)
+    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+      current.playbackStartedAtSecond,
+      now,
+    )
+    const incoming = yield* current.scheduleNextPattern(
+      asset,
+      now,
+      blissfulGridTimingsMath,
+    )
 
     if (
       current._tag ===

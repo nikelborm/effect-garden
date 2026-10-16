@@ -13,6 +13,7 @@ import {
   IncomingPatternFadingIn,
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 } from '../loopElements.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -45,6 +46,10 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       return this
 
     const now = yield* getAudioNow
+    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+      dying.playbackStartedAtSecond,
+      now,
+    )
 
     const incomingFadeInIsStillRevocable =
       now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
@@ -62,14 +67,17 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       return PatternPatternSilenceTransitionState.make({
         accord: incoming.asset.accord,
         strength: incoming.asset.strength,
-        transitionQueue: [dying, yield* incoming.promoteToFadeToSilence()],
+        transitionQueue: [
+          dying,
+          yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
+        ],
       })
     }
 
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
 
     if (incomingFadeInIsStillRevocable && Equal.equals(desiredAsset, dying.asset)) {
-      const revived = yield* dying.cancelFadeoutAndRestore()
+      const revived = yield* dying.cancelFadeoutAndRestore(now)
       yield* incoming.drop()
       return PatternState.make({
         firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
@@ -83,8 +91,12 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
         playbackStartedAtSecond: dying.playbackStartedAtSecond,
         transitionQueue: [
           dying,
-          yield* incoming.promoteToFadingOut(),
-          yield* dying.scheduleNextPattern(desiredAsset),
+          yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
+          yield* dying.scheduleNextPattern(
+            desiredAsset,
+            now,
+            blissfulGridTimingsMath,
+          ),
         ],
       })
     }
@@ -92,7 +104,14 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
     yield* incoming.drop()
     return PatternSilencePatternTransitionState.make({
       playbackStartedAtSecond: dying.playbackStartedAtSecond,
-      transitionQueue: [dying, yield* dying.scheduleNextPattern(desiredAsset)],
+      transitionQueue: [
+        dying,
+        yield* dying.scheduleNextPattern(
+          desiredAsset,
+          now,
+          blissfulGridTimingsMath,
+        ),
+      ],
     })
   }
 }

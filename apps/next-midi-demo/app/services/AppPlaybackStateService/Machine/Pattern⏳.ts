@@ -10,6 +10,7 @@ import {
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { getAudioNow, PatternPlayback } from '../loopElements.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
@@ -37,19 +38,29 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, asset))
       return this
 
+    const now = yield* getAudioNow
+    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+      current.playbackStartedAtSecond,
+      now,
+    )
+
     if (theSamePatternWasPressed(pressedParamButtonId, asset))
       return PatternSilenceTransitionState.makeSimple(
         asset.accord,
         asset.strength,
-        yield* current.beginLongFadeoutToSilence(),
+        yield* current.beginLongFadeoutToSilence(blissfulGridTimingsMath),
       )
 
     return PatternPatternTransitionState.make({
       playbackStartedAtSecond: current.playbackStartedAtSecond,
       transitionQueue: [
-        yield* current.beginShortFadeoutBeforeAnotherPattern(),
+        yield* current.beginShortFadeoutBeforeAnotherPattern(
+          blissfulGridTimingsMath,
+        ),
         yield* current.scheduleNextPattern(
           asset.makePatchedFrom(pressedParamButtonId),
+          now,
+          blissfulGridTimingsMath,
         ),
       ],
     })

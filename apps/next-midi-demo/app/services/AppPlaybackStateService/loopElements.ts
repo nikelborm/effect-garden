@@ -10,7 +10,7 @@ import { AudioBufferStore } from '../AudioBufferStore.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import { AudioPlayback } from './common.ts'
-import { calcBlissfulGridTimingsMath } from './timingsMath.ts'
+import type { calcBlissfulGridTimingsMath } from './timingsMath.ts'
 import { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
 import { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
@@ -26,18 +26,16 @@ interface FadingOutPatternFields {
 
 export const getAudioNow = GetAudioNow.run()
 
+export type BlissfulGridTimingsMath = ReturnType<typeof calcBlissfulGridTimingsMath>
+
 const schedulePatternPatternFadeout = Effect.fn(
   'schedulePatternPatternFadeout',
 )(function* (
   playback: AudioPlayback,
   asset: TaggedPatternPointer,
   playbackStartedAtSecond: number,
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
 ) {
-  const now = yield* getAudioNow
-  const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-    playbackStartedAtSecond,
-    now,
-  )
   yield* ScheduleFadeOut.run(playback, blissfulGridTimingsMath)
   const cleanupFiberToolkit = yield* Effect.flatMap(
     CleanupFiberMaker,
@@ -61,12 +59,8 @@ const scheduleSilenceFadeout = Effect.fn('scheduleSilenceFadeout')(function* (
   playback: AudioPlayback,
   asset: TaggedPatternPointer,
   playbackStartedAtSecond: number,
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
 ) {
-  const now = yield* getAudioNow
-  const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-    playbackStartedAtSecond,
-    now,
-  )
   yield* ScheduleFadeOut.run(playback, blissfulGridTimingsMath)
   const cleanupFiberToolkit = yield* Effect.flatMap(
     CleanupFiberMaker,
@@ -89,13 +83,10 @@ const scheduleSilenceFadeout = Effect.fn('scheduleSilenceFadeout')(function* (
 const scheduleIncomingPattern = Effect.fn('scheduleIncomingPattern')(function* (
   playbackStartedAtSecond: number,
   asset: TaggedPatternPointer,
+  now: number,
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
 ) {
   const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-  const now = yield* getAudioNow
-  const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-    playbackStartedAtSecond,
-    now,
-  )
   const playback = yield* ScheduleIncomingPattern.run(audioBuffer, {
     startAtSecond: now,
     bufferPhaseOffsetSeconds:
@@ -118,8 +109,8 @@ const scheduleIncomingPattern = Effect.fn('scheduleIncomingPattern')(function* (
 
 const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
   el: FadingOutPatternFields,
+  now: number,
 ) {
-  const now = yield* getAudioNow
   yield* RestoreFullVolume.run(el.playback, now)
   yield* el.cleanupFiberToolkit.cancelCleanup
   return PatternPlayback.make({
@@ -130,14 +121,18 @@ const reviveToPlaying = Effect.fn('reviveToPlaying')(function* (
 })
 
 const reanchorToPatternPattern = Effect.fn('reanchorToPatternPattern')(
-  function* (el: FadingOutPatternFields) {
-    const now = yield* getAudioNow
+  function* (
+    el: FadingOutPatternFields,
+    now: number,
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
     yield* el.cleanupFiberToolkit.cancelCleanup
     yield* RestoreFullVolume.run(el.playback, now)
     return yield* schedulePatternPatternFadeout(
       el.playback,
       el.asset,
       el.playbackStartedAtSecond,
+      blissfulGridTimingsMath,
     )
   },
 )
@@ -155,24 +150,37 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     this.make = this.make.bind(this)
   }
 
-  beginShortFadeoutBeforeAnotherPattern() {
+  beginShortFadeoutBeforeAnotherPattern(
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
     return schedulePatternPatternFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
+      blissfulGridTimingsMath,
     )
   }
 
-  beginLongFadeoutToSilence() {
+  beginLongFadeoutToSilence(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
     return scheduleSilenceFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
+      blissfulGridTimingsMath,
     )
   }
 
-  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(
+    desiredAsset: TaggedPatternPointer,
+    now: number,
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
+    return scheduleIncomingPattern(
+      this.playbackStartedAtSecond,
+      desiredAsset,
+      now,
+      blissfulGridTimingsMath,
+    )
   }
 }
 
@@ -227,19 +235,21 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     return disposeOf(this.playback)
   }
 
-  promoteToFadingOut() {
+  promoteToFadingOut(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
     return schedulePatternPatternFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
+      blissfulGridTimingsMath,
     )
   }
 
-  promoteToFadeToSilence() {
+  promoteToFadeToSilence(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
     return scheduleSilenceFadeout(
       this.playback,
       this.asset,
       this.playbackStartedAtSecond,
+      blissfulGridTimingsMath,
     )
   }
 
@@ -268,16 +278,25 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     this.make = this.make.bind(this)
   }
 
-  cancelFadeoutAndRestore() {
-    return reviveToPlaying(this)
+  cancelFadeoutAndRestore(now: number) {
+    return reviveToPlaying(this, now)
   }
 
-  reanchorFadeoutOnto() {
-    return reanchorToPatternPattern(this)
+  reanchorFadeoutOnto(now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    return reanchorToPatternPattern(this, now, blissfulGridTimingsMath)
   }
 
-  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(
+    desiredAsset: TaggedPatternPointer,
+    now: number,
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
+    return scheduleIncomingPattern(
+      this.playbackStartedAtSecond,
+      desiredAsset,
+      now,
+      blissfulGridTimingsMath,
+    )
   }
 
   dispose() {
@@ -301,16 +320,25 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     this.make = this.make.bind(this)
   }
 
-  cancelFadeoutAndRestore() {
-    return reviveToPlaying(this)
+  cancelFadeoutAndRestore(now: number) {
+    return reviveToPlaying(this, now)
   }
 
-  reanchorFadeoutOnto() {
-    return reanchorToPatternPattern(this)
+  reanchorFadeoutOnto(now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    return reanchorToPatternPattern(this, now, blissfulGridTimingsMath)
   }
 
-  scheduleNextPattern(desiredAsset: TaggedPatternPointer) {
-    return scheduleIncomingPattern(this.playbackStartedAtSecond, desiredAsset)
+  scheduleNextPattern(
+    desiredAsset: TaggedPatternPointer,
+    now: number,
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
+    return scheduleIncomingPattern(
+      this.playbackStartedAtSecond,
+      desiredAsset,
+      now,
+      blissfulGridTimingsMath,
+    )
   }
 
   dispose() {

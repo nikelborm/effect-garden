@@ -13,6 +13,7 @@ import {
   getAudioNow,
   IncomingPatternFadingIn,
 } from '../loopElements.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 
@@ -84,12 +85,20 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
 
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
     yield* incoming.drop()
+    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+      oldest.playbackStartedAtSecond,
+      now,
+    )
     return PatternPatternPatternTransitionState.make({
       playbackStartedAtSecond: oldest.playbackStartedAtSecond,
       transitionQueue: [
         oldest,
         middle,
-        yield* oldest.scheduleNextPattern(desiredAsset),
+        yield* oldest.scheduleNextPattern(
+          desiredAsset,
+          now,
+          blissfulGridTimingsMath,
+        ),
       ],
     })
   }
