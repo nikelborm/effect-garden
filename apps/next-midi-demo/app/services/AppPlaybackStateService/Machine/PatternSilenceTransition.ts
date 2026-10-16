@@ -38,10 +38,8 @@ export const isPatternSilenceTransitionQueue = Schema.is(
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
   {
-    firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
       Schema.Finite,
-    accord: AccordSchema,
-    strength: StrengthSchema,
     transitionQueue: PatternSilenceTransitionQueue,
   },
 ) {
@@ -54,9 +52,9 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     if (StrengthData.models(pressedParamButtonId))
       return PatternSilenceTransitionState.make({
-        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
           this
-            .firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         accord,
         strength: pressedParamButtonId.strength,
         transitionQueue: [current],
@@ -84,7 +82,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
       const revived = yield* current.cancelFadeoutAndRestore(now)
       return PatternState.make({
-        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
           revived.playbackStartedAtSecond,
         transitionQueue: [revived],
       })
@@ -121,8 +119,19 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
   }
 
   static makeSimple = (
-    accord: Accord,
-    strength: Strength,
-    playback: FadingOutPatternPlayback,
-  ) => this.make({ accord, strength, transitionQueue: [playback] })
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+    playback: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+  ) =>
+    this.make({
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      transitionQueue: [playback],
+    })
+
+  get accord() {
+    return this.transitionQueue[0].asset.accord
+  }
+
+  get strength() {
+    return this.transitionQueue[0].asset.strength
+  }
 }

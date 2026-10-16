@@ -23,7 +23,7 @@ export const isPatternQueue = Schema.is(PatternQueue)
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
   {
-    firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit:
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
       Schema.Finite,
     transitionQueue: PatternQueue,
   },
@@ -46,8 +46,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
 
     if (theSamePatternWasPressed(pressedParamButtonId, asset))
       return PatternSilenceTransitionState.makeSimple(
-        asset.accord,
-        asset.strength,
+        this
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         yield* current.beginLongFadeoutToSilence(blissfulGridTimingsMath),
       )
 
@@ -71,27 +71,39 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     function* (asset: TaggedPatternPointer) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
-      const firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit =
+      const firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit =
         yield* getAudioNow
 
       const playback = yield* StartFreshPlayback.runLooping(
         audioBuffer,
-        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       )
 
       return this.make({
-        firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [
           PatternPlayback.make({
             asset,
             playback,
             playbackStartedAtSecond:
-              firstPlaybackOfTheCurrentGridStartedAtSecondSinceAudioContextInit,
+              firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
           }),
         ],
       })
     },
   )
+
+  get accord() {
+    return this.transitionQueue[0].asset.accord
+  }
+
+  get pattern() {
+    return this.transitionQueue[0].asset.pattern
+  }
+
+  get strength() {
+    return this.transitionQueue[0].asset.strength
+  }
 
   // handleSecondTapForDeactivation
 }
