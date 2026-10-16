@@ -14,8 +14,8 @@ import type { BlissfulGridTimingsMath } from './timingsMath.ts'
 import { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
 import { RestoreFullVolume } from './webAudioSideEffects/RestoreFullVolume.ts'
+import { ScheduleFadeIntoLoopPlayback } from './webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOut } from './webAudioSideEffects/ScheduleFadeOut.ts'
-import { ScheduleIncomingPattern } from './webAudioSideEffects/ScheduleIncomingPattern.ts'
 
 export const getAudioNow = GetAudioNow.run()
 
@@ -100,13 +100,13 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
       blissfulGridTimingsMath: BlissfulGridTimingsMath,
     ) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
-      const playback = yield* ScheduleIncomingPattern.run(audioBuffer, {
+      const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
         startAtSecond: now,
         bufferPhaseOffsetSeconds:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-        patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
+        fadeInStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
+        fadeInEndsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       return IncomingPatternFadingIn.make({
@@ -310,13 +310,13 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
       blissfulGridTimingsMath: BlissfulGridTimingsMath,
     ) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
-      const playback = yield* ScheduleIncomingPattern.run(audioBuffer, {
+      const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
         startAtSecond: now,
         bufferPhaseOffsetSeconds:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-        patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
+        fadeInStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
+        fadeInEndsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       return IncomingPatternFadingIn.make({
@@ -406,13 +406,13 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
       blissfulGridTimingsMath: BlissfulGridTimingsMath,
     ) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
-      const playback = yield* ScheduleIncomingPattern.run(audioBuffer, {
+      const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
         startAtSecond: now,
         bufferPhaseOffsetSeconds:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-        patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
+        fadeInStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
+        fadeInEndsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       return IncomingPatternFadingIn.make({

@@ -7,6 +7,9 @@ import * as Logger from 'effect/Logger'
 import * as AsyncResult from 'effect/reactivity/AsyncResult'
 import * as Atom from 'effect/reactivity/Atom'
 import * as Scope from 'effect/Scope'
+
+// import * as LogLevel from 'effect/LogLevel'
+
 // import * as LogLevel from 'effect/LogLevel'
 
 import {
@@ -38,8 +41,8 @@ import {
 import { DisposePlaybackLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNowLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/GetAudioNow.ts'
 import { RestoreFullVolumeLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/RestoreFullVolume.ts'
+import { ScheduleFadeIntoLoopPlaybackLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOutLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeOut.ts'
-import { ScheduleIncomingPatternLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/ScheduleIncomingPattern.ts'
 import { StartFreshPlaybackLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/StartFreshPlayback.ts'
 import { AssetDownloadSchedulerLayer } from '../services/AssetDownloadScheduler.ts'
 import { AudioBufferStoreLayer } from '../services/AudioBufferStore.ts'
@@ -189,7 +192,7 @@ const WebAudioSideEffectsNoDeps = Layer.mergeAll(
   GetAudioNowLayer,
   RestoreFullVolumeLayer,
   ScheduleFadeOutLayer,
-  ScheduleIncomingPatternLayer,
+  ScheduleFadeIntoLoopPlaybackLayer,
   StartFreshPlaybackLayer,
 ).pipe(
   Layer.provide(DeferredAudioContextNoDeps),
