@@ -8,11 +8,9 @@ import {
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import {
-  getAudioNow,
-  IncomingPatternFadingIn,
-  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
-} from '../loopElements.ts'
+import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { IncomingPatternFadingIn } from '../loopElements/IncomingPatternFadingIn.ts'
+import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../loopElements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'

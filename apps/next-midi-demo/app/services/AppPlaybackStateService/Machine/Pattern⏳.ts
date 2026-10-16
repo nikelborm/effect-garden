@@ -9,7 +9,8 @@ import {
 } from '../../../helpers/theSameWasPressed.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { getAudioNow, PatternPlayback } from '../loopElements.ts'
+import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { PatternPlayback } from '../loopElements/PatternPlayback.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
