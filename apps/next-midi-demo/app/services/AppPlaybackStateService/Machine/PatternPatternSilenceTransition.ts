@@ -5,10 +5,10 @@ import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
-import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback } from '../Elements/FadingOutPatternPlayback.ts'
-import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
+import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 

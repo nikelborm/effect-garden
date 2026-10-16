@@ -1,24 +1,15 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import {
-  type Accord,
-  AccordData,
-  AccordSchema,
-} from '../../../domain/Accord.ts'
+import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import {
-  type Strength,
-  StrengthData,
-  StrengthSchema,
-} from '../../../domain/Strength.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import type { AdvanceFnReturn } from '../index.ts'
-import type { FadingOutPatternPlayback } from '../Elements/FadingOutPatternPlayback.ts'
-import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
+import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected

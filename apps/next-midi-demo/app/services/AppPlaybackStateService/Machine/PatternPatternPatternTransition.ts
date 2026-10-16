@@ -7,11 +7,11 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback } from '../Elements/FadingOutPatternPlayback.ts'
-import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
+import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 

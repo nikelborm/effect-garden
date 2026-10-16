@@ -8,10 +8,10 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import type { AdvanceFnReturn } from '../index.ts'
-import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPlayback } from '../Elements/PatternPlayback.ts'
+import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
@@ -52,43 +52,30 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         yield* current.beginLongFadeoutToSilence(blissfulGridTimingsMath),
       )
 
-    return PatternPatternTransitionState.make({
-      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-        this
-          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [
-        yield* current.beginShortFadeoutBeforeAnotherPattern(
-          blissfulGridTimingsMath,
-        ),
-        yield* current.scheduleNextPattern(
-          asset.makePatchedFrom(pressedParamButtonId),
-          now,
-          blissfulGridTimingsMath,
-        ),
-      ],
-    })
+    return PatternPatternTransitionState.makeSimple(
+      this
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      yield* current.beginShortFadeoutBeforeAnotherPattern(
+        blissfulGridTimingsMath,
+      ),
+      yield* current.scheduleNextPattern(
+        asset.makePatchedFrom(pressedParamButtonId),
+        now,
+        blissfulGridTimingsMath,
+      ),
+    )
   }
 
   static init = Effect.fn('PatternState.init')(
     { self: this },
     function* (asset: TaggedPatternPointer) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-
-      const firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit =
-        yield* GetAudioNow.run
-
-      const playback = yield* StartFreshPlayback.runLooping(
-        audioBuffer,
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      )
+      const now = yield* GetAudioNow.run
+      const playback = yield* StartFreshPlayback.runLooping(audioBuffer, now)
 
       return this.makeSimple(
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        PatternPlayback.makeSimple(
-          asset,
-          playback,
-          firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        ),
+        now,
+        PatternPlayback.makeSimple(asset, playback, now),
       )
     },
   )

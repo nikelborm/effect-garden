@@ -4,9 +4,9 @@ import * as Schema from 'effect/Schema'
 import type { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
+import { SlowStrumPlayback } from '../Elements/SlowStrumPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { SlowStrumPlayback } from '../Elements/SlowStrumPlayback.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
