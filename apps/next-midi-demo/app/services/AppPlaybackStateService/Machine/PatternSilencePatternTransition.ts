@@ -32,7 +32,8 @@ export const isPatternSilencePatternTransitionQueue = Schema.is(
 export class PatternSilencePatternTransitionState extends Schema.TaggedClass<PatternSilencePatternTransitionState>()(
   'PatternSilencePatternTransitionState',
   {
-    playbackStartedAtSecond: Schema.Finite,
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+      Schema.Finite,
     transitionQueue: PatternSilencePatternTransitionQueue,
   },
 ) {

@@ -19,7 +19,9 @@ export const isSlowStrumPatternTransitionQueue = Schema.is(
 export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStrumPatternTransitionState>()(
   'SlowStrumPatternTransitionState',
   {
-    playbackStartedAtSecond: Schema.Finite,
+    // TODO: wrong concept applied!?!?
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+      Schema.Finite,
     transitionQueue: SlowStrumPatternTransitionQueue,
   },
 ) {

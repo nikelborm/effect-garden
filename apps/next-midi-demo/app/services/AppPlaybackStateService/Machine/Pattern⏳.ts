@@ -52,7 +52,9 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       )
 
     return PatternPatternTransitionState.make({
-      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+        this
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [
         yield* current.beginShortFadeoutBeforeAnotherPattern(
           blissfulGridTimingsMath,

@@ -32,7 +32,8 @@ export const isPatternPatternTransitionQueue = Schema.is(
 export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPatternTransitionState>()(
   'PatternPatternTransitionState',
   {
-    playbackStartedAtSecond: Schema.Finite,
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+      Schema.Finite,
     transitionQueue: PatternPatternTransitionQueue,
   },
 ) {
@@ -117,4 +118,6 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
       ],
     })
   }
+
+  // static makeSimple
 }
