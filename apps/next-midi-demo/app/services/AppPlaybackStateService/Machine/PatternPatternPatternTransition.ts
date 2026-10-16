@@ -9,7 +9,7 @@ import {
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback } from '../loopElements/FadingOutPatternPlayback.ts'
-import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { IncomingPatternFadingIn } from '../loopElements/IncomingPatternFadingIn.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -41,7 +41,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
 
-    const now = yield* getAudioNow
+    const now = yield* GetAudioNow.run
 
     const incomingFadeInIsStillRevocable =
       now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds

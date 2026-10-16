@@ -9,7 +9,7 @@ import {
 } from '../../../helpers/theSameWasPressed.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPlayback } from '../loopElements/PatternPlayback.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
@@ -39,7 +39,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, asset))
       return this
 
-    const now = yield* getAudioNow
+    const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
       current.playbackStartedAtSecond,
       now,
@@ -75,7 +75,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
       const firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit =
-        yield* getAudioNow
+        yield* GetAudioNow.run
 
       const playback = yield* StartFreshPlayback.runLooping(
         audioBuffer,

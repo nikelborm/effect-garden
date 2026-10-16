@@ -7,15 +7,15 @@ import * as DeferredAudioContextService from '../../DeferredAudioContextService.
 
 export class GetAudioNow extends Context.Service<
   GetAudioNow,
-  () => Effect.Effect<number, AudioContextInitError>
+  Effect.Effect<number, AudioContextInitError>
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/GetAudioNow',
 ) {
-  static run = () => this.use(getNow => getNow())
+  static run = this.use(getNow => getNow)
 }
 
 export const GetAudioNowLayer =
   DeferredAudioContextService.DeferredAudioContextService.pipe(
-    Effect.map(context => () => context.currentTime),
+    Effect.map(context => context.currentTime),
     Layer.effect(GetAudioNow),
   )

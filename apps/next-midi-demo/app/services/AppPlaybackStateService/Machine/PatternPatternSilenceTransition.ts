@@ -7,7 +7,7 @@ import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.
 import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { FadingOutPatternPlayback } from '../loopElements/FadingOutPatternPlayback.ts'
-import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
@@ -54,7 +54,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
       accord,
       strength,
     })
-    const now = yield* getAudioNow
+    const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
       oldest.playbackStartedAtSecond,
       now,

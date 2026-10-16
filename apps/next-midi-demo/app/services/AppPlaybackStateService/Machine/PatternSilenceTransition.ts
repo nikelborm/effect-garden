@@ -16,7 +16,7 @@ import {
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import type { FadingOutPatternPlayback } from '../loopElements/FadingOutPatternPlayback.ts'
-import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../loopElements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -65,7 +65,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         ),
       )
 
-    const now = yield* getAudioNow
+    const now = yield* GetAudioNow.run
 
     const fadingLoopFadeoutIsStillRevocable =
       now <= current.fadeoutStartsAtSecond - schedulingSafeBufferInSeconds

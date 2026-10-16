@@ -5,7 +5,7 @@ import type { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { getAudioNow } from '../loopElements/getAudioNow.ts'
+import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { SlowStrumPlayback } from '../loopElements/SlowStrumPlayback.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
@@ -41,7 +41,7 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
       const firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit =
-        yield* getAudioNow
+        yield* GetAudioNow.run
 
       const playback = yield* StartFreshPlayback.runLooping(
         audioBuffer,
