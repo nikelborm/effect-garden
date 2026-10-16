@@ -31,6 +31,11 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   static {
     this.make = this.make.bind(this)
   }
+  static makeSimple = (
+    asset: TaggedPatternPointer,
+    playback: AudioPlayback,
+    playbackStartedAtSecond: number,
+  ) => this.make({ asset, playback, playbackStartedAtSecond })
 
   beginShortFadeoutBeforeAnotherPattern = Effect.fn(
     'PatternPlayback.beginShortFadeoutBeforeAnotherPattern',
@@ -148,10 +153,11 @@ export class DisposedPatternPlayback extends Schema.TaggedClass<DisposedPatternP
   static {
     this.make = this.make.bind(this)
   }
+  static default = this.make({})
 }
 
 const disposeOf = Effect.fn('disposeOf')(
-  flow(DisposePlayback.run, Effect.as(DisposedPatternPlayback.make({}))),
+  flow(DisposePlayback.run, Effect.as(DisposedPatternPlayback.default)),
 )
 
 export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternFadingIn>()(
@@ -232,11 +238,11 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   )
 
   becomeLive() {
-    return PatternPlayback.make({
-      asset: this.asset,
-      playback: this.playback,
-      playbackStartedAtSecond: this.playbackStartedAtSecond,
-    })
+    return PatternPlayback.makeSimple(
+      this.asset,
+      this.playback,
+      this.playbackStartedAtSecond,
+    )
   }
 }
 
@@ -261,11 +267,11 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
   )({ self: this }, function* (now: number) {
     yield* RestoreFullVolume.run(this.playback, now)
     yield* this.cleanupFiberToolkit.cancelCleanup
-    return PatternPlayback.make({
-      asset: this.asset,
-      playback: this.playback,
-      playbackStartedAtSecond: this.playbackStartedAtSecond,
-    })
+    return PatternPlayback.makeSimple(
+      this.asset,
+      this.playback,
+      this.playbackStartedAtSecond,
+    )
   })
 
   reanchorFadeoutOnto = Effect.fn(
@@ -357,11 +363,11 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
   )({ self: this }, function* (now: number) {
     yield* RestoreFullVolume.run(this.playback, now)
     yield* this.cleanupFiberToolkit.cancelCleanup
-    return PatternPlayback.make({
-      asset: this.asset,
-      playback: this.playback,
-      playbackStartedAtSecond: this.playbackStartedAtSecond,
-    })
+    return PatternPlayback.makeSimple(
+      this.asset,
+      this.playback,
+      this.playbackStartedAtSecond,
+    )
   })
 
   reanchorFadeoutOnto = Effect.fn(

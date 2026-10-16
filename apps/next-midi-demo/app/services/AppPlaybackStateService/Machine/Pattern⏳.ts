@@ -79,19 +79,25 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       )
 
-      return this.make({
+      return this.makeSimple(
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        transitionQueue: [
-          PatternPlayback.make({
-            asset,
-            playback,
-            playbackStartedAtSecond:
-              firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-          }),
-        ],
-      })
+        PatternPlayback.makeSimple(
+          asset,
+          playback,
+          firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        ),
+      )
     },
   )
+
+  static makeSimple = (
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+    playback: PatternPlayback,
+  ) =>
+    this.make({
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      transitionQueue: [playback],
+    })
 
   get accord() {
     return this.transitionQueue[0].asset.accord
