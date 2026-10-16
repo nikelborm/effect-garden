@@ -3,11 +3,9 @@ import * as Schema from 'effect/Schema'
 
 import type { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { SlowStrumPlayback } from '../Elements/SlowStrumPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
 export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
@@ -38,23 +36,18 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   static init = Effect.fn('SlowStrumState.init')(
     { self: this },
     function* (asset: TaggedSlowStrumPointer) {
-      const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-
       const now = yield* GetAudioNow.run
 
-      const playback = yield* StartFreshPlayback.runLooping(audioBuffer, now)
-
-      return this.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          now,
-        transitionQueue: [
-          SlowStrumPlayback.make({
-            asset,
-            playback,
-            playbackStartedAtSecond: now,
-          }),
-        ],
-      })
+      return this.makeSimple(now, yield* SlowStrumPlayback.init(asset, now))
     },
   )
+
+  static makeSimple = (
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+    playback: SlowStrumPlayback,
+  ) =>
+    this.make({
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      transitionQueue: [playback],
+    })
 }

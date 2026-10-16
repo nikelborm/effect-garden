@@ -7,16 +7,11 @@ import {
   theSameAccordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
-import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
-import {
-  PatternPlayback,
-  scheduleNextPattern,
-} from '../Elements/PatternPlayback.ts'
+import { PatternPlayback } from '../Elements/PatternPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -73,14 +68,9 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   static init = Effect.fn('PatternState.init')(
     { self: this },
     function* (asset: TaggedPatternPointer) {
-      const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
       const now = yield* GetAudioNow.run
-      const playback = yield* StartFreshPlayback.runLooping(audioBuffer, now)
 
-      return this.makeSimple(
-        now,
-        PatternPlayback.makeSimple(asset, playback, now),
-      )
+      return this.makeSimple(now, yield* PatternPlayback.init(asset, now))
     },
   )
 
