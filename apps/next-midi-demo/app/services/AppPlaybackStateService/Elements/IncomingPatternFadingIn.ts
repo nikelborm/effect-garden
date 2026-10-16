@@ -22,7 +22,6 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     fadeInStartsAtSecond: Schema.Finite,
-    fadeInEndsAtSecond: Schema.Finite,
     playbackStartedAtSecond: Schema.Finite,
   },
 ) {
@@ -92,29 +91,28 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   }
 
   static init = Effect.fn('IncomingPatternFadingIn.init')(function* (
-    desiredAsset: TaggedPatternPointer,
+    asset: TaggedPatternPointer,
     now: number,
     blissfulGridTimingsMath: BlissfulGridTimingsMath,
-    playbackStartedAtSecond: number,
   ) {
-    const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
+    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
+    const fadeInStartsAtSecond =
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+      fadeInEndsAtSecond =
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
+
     const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
       startAtSecond: now,
       bufferPhaseOffsetSeconds:
         blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-      fadeInStartsAtSecond:
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-      fadeInEndsAtSecond:
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      fadeInStartsAtSecond,
+      fadeInEndsAtSecond,
     })
     return IncomingPatternFadingIn.make({
-      asset: desiredAsset,
+      asset,
       playback,
-      fadeInStartsAtSecond:
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-      fadeInEndsAtSecond:
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-      playbackStartedAtSecond,
+      fadeInStartsAtSecond,
+      playbackStartedAtSecond: now,
     })
   })
 }
