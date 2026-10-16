@@ -40,22 +40,18 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
     function* (asset: TaggedSlowStrumPointer) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
-      const firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit =
-        yield* GetAudioNow.run
+      const now = yield* GetAudioNow.run
 
-      const playback = yield* StartFreshPlayback.runLooping(
-        audioBuffer,
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      )
+      const playback = yield* StartFreshPlayback.runLooping(audioBuffer, now)
 
       return this.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+          now,
         transitionQueue: [
           SlowStrumPlayback.make({
             asset,
             playback,
-            playbackStartedAtSecond:
-              firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+            playbackStartedAtSecond: now,
           }),
         ],
       })
