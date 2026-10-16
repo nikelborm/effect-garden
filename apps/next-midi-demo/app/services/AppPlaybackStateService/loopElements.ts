@@ -10,7 +10,10 @@ import { AudioBufferStore } from '../AudioBufferStore.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import { AudioPlayback } from './common.ts'
-import { fadeToSilenceTimeInSeconds } from './constants.ts'
+import {
+  fadeToSilenceTimeInSeconds,
+  transitionTimeInSeconds,
+} from './constants.ts'
 import type { BlissfulGridTimingsMath } from './timingsMath.ts'
 import { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from './webAudioSideEffects/GetAudioNow.ts'
@@ -242,13 +245,23 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
     fadeoutStartsAtSecond: Schema.Finite,
-    fadeoutEndsAtSecond: Schema.Finite,
     playbackStartedAtSecond: Schema.Finite,
   },
 ) {
   declare protected '~brand~': never
   static {
     this.make = this.make.bind(this)
+  }
+
+  static makeSimple = (
+    asset: TaggedPatternPointer,
+    playback: AudioPlayback,
+    cleanupFiberToolkit: CleanupFiberToolkit,
+    rest: { fadeoutStartsAtSecond: number; playbackStartedAtSecond: number },
+  ) => this.make({ asset, playback, cleanupFiberToolkit, ...rest })
+
+  get fadeoutEndsAtSecond() {
+    return this.fadeoutStartsAtSecond + transitionTimeInSeconds
   }
 
   cancelFadeoutAndRestore = Effect.fn(
