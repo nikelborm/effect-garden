@@ -84,33 +84,4 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
       )
     },
   )
-
-  scheduleNextPattern = Effect.fn('PatternPlayback.scheduleNextPattern')(
-    { self: this },
-    function* (
-      desiredAsset: TaggedPatternPointer,
-      now: number,
-      blissfulGridTimingsMath: BlissfulGridTimingsMath,
-    ) {
-      const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
-      const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
-        startAtSecond: now,
-        bufferPhaseOffsetSeconds:
-          blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-        fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-      })
-      return IncomingPatternFadingIn.make({
-        asset: desiredAsset,
-        playback,
-        fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
-      })
-    },
-  )
 }

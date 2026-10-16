@@ -2,9 +2,11 @@ import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { AudioPlayback } from '../common.ts'
 import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { disposeOf } from './DisposedPatternPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -88,4 +90,31 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       this.playbackStartedAtSecond,
     )
   }
+
+  static init = Effect.fn('IncomingPatternFadingIn.init')(function* (
+    desiredAsset: TaggedPatternPointer,
+    now: number,
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+    playbackStartedAtSecond: number,
+  ) {
+    const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
+    const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
+      startAtSecond: now,
+      bufferPhaseOffsetSeconds:
+        blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
+      fadeInStartsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+      fadeInEndsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+    })
+    return IncomingPatternFadingIn.make({
+      asset: desiredAsset,
+      playback,
+      fadeInStartsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+      fadeInEndsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      playbackStartedAtSecond,
+    })
+  })
 }

@@ -15,11 +15,7 @@ import { type Strength, type StrengthData, StrengthSchema } from './Strength.ts'
 
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
   'TaggedPatternPointer',
-  {
-    pattern: PatternSchema,
-    accord: AccordSchema,
-    strength: StrengthSchema,
-  },
+  { pattern: PatternSchema, accord: AccordSchema, strength: StrengthSchema },
 ) {
   declare protected '~brand~': never
   static models = Schema.is(this)
@@ -54,11 +50,7 @@ export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 
 export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPointer>()(
   'TaggedSlowStrumPointer',
-  {
-    pattern: AbsentProperty,
-    accord: AccordSchema,
-    strength: StrengthSchema,
-  },
+  { pattern: AbsentProperty, accord: AccordSchema, strength: StrengthSchema },
 ) {
   declare protected '~brand~': never
   static models = Schema.is(this)

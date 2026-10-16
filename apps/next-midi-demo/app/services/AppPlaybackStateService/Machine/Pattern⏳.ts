@@ -8,7 +8,11 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
-import { PatternPlayback } from '../Elements/PatternPlayback.ts'
+import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
+import {
+  PatternPlayback,
+  scheduleNextPattern,
+} from '../Elements/PatternPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
@@ -58,7 +62,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       yield* current.beginShortFadeoutBeforeAnotherPattern(
         blissfulGridTimingsMath,
       ),
-      yield* current.scheduleNextPattern(
+      yield* IncomingPatternFadingIn.init(
         asset.makePatchedFrom(pressedParamButtonId),
         now,
         blissfulGridTimingsMath,
