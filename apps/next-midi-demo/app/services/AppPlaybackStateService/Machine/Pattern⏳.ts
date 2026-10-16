@@ -18,7 +18,6 @@ import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
 import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 
 export const PatternQueue = Schema.Tuple([PatternPlayback])
-export const isPatternQueue = Schema.is(PatternQueue)
 
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
@@ -40,7 +39,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
 
     const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      current.playbackStartedAtSecond,
+      this
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
 

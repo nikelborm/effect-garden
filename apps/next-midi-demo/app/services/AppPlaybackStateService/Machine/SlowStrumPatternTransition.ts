@@ -12,9 +12,6 @@ export const SlowStrumPatternTransitionQueue = Schema.Tuple([
   SlowStrumTransitionQueueElement,
   ScheduledPatternTransitionQueueElement,
 ])
-export const isSlowStrumPatternTransitionQueue = Schema.is(
-  SlowStrumPatternTransitionQueue,
-)
 
 export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStrumPatternTransitionState>()(
   'SlowStrumPatternTransitionState',

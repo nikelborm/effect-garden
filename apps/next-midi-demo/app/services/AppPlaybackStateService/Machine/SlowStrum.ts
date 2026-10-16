@@ -8,7 +8,6 @@ import type { AdvanceFnReturn } from '../index.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
-export const isSlowStrumQueue = Schema.is(SlowStrumQueue)
 
 export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   'SlowStrumState',

@@ -20,9 +20,6 @@ import { PatternState } from './Pattern⏳.ts'
 export const PatternSilenceTransitionQueue = Schema.Tuple([
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
-export const isPatternSilenceTransitionQueue = Schema.is(
-  PatternSilenceTransitionQueue,
-)
 
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',

@@ -28,7 +28,6 @@ import { PatternState } from './Pattern⏳.ts'
 import { SlowStrumState } from './SlowStrum.ts'
 
 export const SilenceQueue = Schema.Tuple([])
-export const isSilenceQueue = Schema.is(SilenceQueue)
 
 // !!!VERIFIED!!!
 

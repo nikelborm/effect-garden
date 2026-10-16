@@ -20,9 +20,6 @@ export const PatternPatternPatternTransitionQueue = Schema.Tuple([
   FadingOutPatternPlayback,
   IncomingPatternFadingIn,
 ])
-export const isPatternPatternPatternTransitionQueue = Schema.is(
-  PatternPatternPatternTransitionQueue,
-)
 
 export class PatternPatternPatternTransitionState extends Schema.TaggedClass<PatternPatternPatternTransitionState>()(
   'PatternPatternPatternTransitionState',
