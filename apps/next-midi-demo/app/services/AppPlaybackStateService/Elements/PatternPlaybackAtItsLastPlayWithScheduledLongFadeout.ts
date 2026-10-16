@@ -80,8 +80,6 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
         cleanupFiberToolkit,
         fadeoutStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
     },
   )
