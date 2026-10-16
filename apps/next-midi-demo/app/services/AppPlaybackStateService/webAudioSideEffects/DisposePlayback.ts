@@ -13,7 +13,7 @@ export class DisposePlayback extends Context.Service<
   static run = (playback: AudioPlayback) =>
     this.use(dispose => dispose(playback))
 }
-// TODO layer
+
 export const DisposePlaybackLayer = Layer.succeed(
   DisposePlayback,
   ({ bufferSource, gainNode }: AudioPlayback) =>
