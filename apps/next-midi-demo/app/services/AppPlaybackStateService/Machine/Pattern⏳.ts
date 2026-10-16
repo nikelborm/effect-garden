@@ -37,11 +37,10 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, asset))
       return this
 
-    const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
       this
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      now,
+      yield* GetAudioNow.run,
     )
 
     if (theSamePatternWasPressed(pressedParamButtonId, asset))
