@@ -14,10 +14,8 @@ export class GetAudioNow extends Context.Service<
   static run = () => this.use(getNow => getNow())
 }
 
-export const GetAudioNowLayer = Layer.effect(
-  GetAudioNow,
-  Effect.map(
-    DeferredAudioContextService.DeferredAudioContextService,
-    context => () => context.currentTime,
-  ),
-)
+export const GetAudioNowLayer =
+  DeferredAudioContextService.DeferredAudioContextService.pipe(
+    Effect.map(context => () => context.currentTime),
+    Layer.effect(GetAudioNow),
+  )

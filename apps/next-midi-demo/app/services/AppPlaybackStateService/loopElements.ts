@@ -37,7 +37,12 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(
@@ -62,7 +67,12 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(
@@ -166,7 +176,12 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   promoteToFadingOut = Effect.fn('IncomingPatternFadingIn.promoteToFadingOut')(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(
@@ -191,7 +206,12 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(
@@ -255,7 +275,12 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     function* (now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       yield* this.cleanupFiberToolkit.cancelCleanup
       yield* RestoreFullVolume.run(this.playback, now)
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(
@@ -346,7 +371,12 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     function* (now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       yield* this.cleanupFiberToolkit.cancelCleanup
       yield* RestoreFullVolume.run(this.playback, now)
-      yield* ScheduleFadeOut.run(this.playback, blissfulGridTimingsMath)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
       const cleanupFiberToolkit = yield* Effect.flatMap(
         CleanupFiberMaker,
         apply(

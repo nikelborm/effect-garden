@@ -76,7 +76,10 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
 
-    if (incomingFadeInIsStillRevocable && Equal.equals(desiredAsset, dying.asset)) {
+    if (
+      incomingFadeInIsStillRevocable &&
+      Equal.equals(desiredAsset, dying.asset)
+    ) {
       const revived = yield* dying.cancelFadeoutAndRestore(now)
       yield* incoming.drop()
       return PatternState.make({

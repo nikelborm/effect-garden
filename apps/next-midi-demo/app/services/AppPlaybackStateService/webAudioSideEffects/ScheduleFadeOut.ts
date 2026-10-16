@@ -4,37 +4,33 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
 import { maxLoudness, minLoudness } from '../constants.ts'
-import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
+
+export interface FadeoutTiming {
+  readonly fadeoutStartsAtSecond: number
+  readonly fadeoutEndsAtSecond: number
+}
 
 export class ScheduleFadeOut extends Context.Service<
   ScheduleFadeOut,
-  (
-    playback: AudioPlayback,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ) => Effect.Effect<void>
+  (playback: AudioPlayback, timing: FadeoutTiming) => Effect.Effect<void>
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeOut',
 ) {
-  static run = (
-    playback: AudioPlayback,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ) =>
-    this.use(scheduleFadeOut =>
-      scheduleFadeOut(playback, blissfulGridTimingsMath),
-    )
+  static run = (playback: AudioPlayback, timing: FadeoutTiming) =>
+    this.use(scheduleFadeOut => scheduleFadeOut(playback, timing))
 }
 
 export const ScheduleFadeOutLayer = Layer.succeed(
   ScheduleFadeOut,
-  (playback: AudioPlayback, blissfulGridTimingsMath: BlissfulGridTimingsMath) =>
+  (playback: AudioPlayback, timing: FadeoutTiming) =>
     Effect.sync(() => {
       playback.gainNode.gain.setValueAtTime(
         maxLoudness,
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        timing.fadeoutStartsAtSecond,
       )
       playback.gainNode.gain.exponentialRampToValueAtTime(
         minLoudness,
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+        timing.fadeoutEndsAtSecond,
       )
     }),
 )

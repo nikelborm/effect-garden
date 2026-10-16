@@ -37,11 +37,8 @@ export class ScheduleIncomingPattern extends Context.Service<
     timing: ScheduledNextPlaybackTiming,
   ) => this.use(scheduleIncoming => scheduleIncoming(audioBuffer, timing))
 }
-
-export const ScheduleIncomingPatternLayer = Layer.effect(
-  ScheduleIncomingPattern,
+export const ScheduleIncomingPatternLayer = DeferredAudioContextService.pipe(
   Effect.map(
-    DeferredAudioContextService,
     context =>
       (
         audioBuffer: EAudioBuffer.EAudioBuffer,
@@ -67,4 +64,5 @@ export const ScheduleIncomingPatternLayer = Layer.effect(
           return playback
         }),
   ),
+  Layer.effect(ScheduleIncomingPattern),
 )
