@@ -184,7 +184,7 @@ const AudioBufferStoreNoDeps = AudioBufferStoreLayer.pipe(
 )
 
 // Every WebAudio side effect the playback state machine
-// (AppPlaybackStateService/types/loopElements.ts + advancePlayback/) can
+// (AppPlaybackStateService/types/Elements.ts + advancePlayback/) can
 // perform, each scoped to at most one playback. Tests provide their own
 // per-tag spy layers instead of this one.
 const WebAudioSideEffectsNoDeps = Layer.mergeAll(

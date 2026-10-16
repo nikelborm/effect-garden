@@ -6,7 +6,7 @@ import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { SlowStrumPlayback } from '../loopElements/SlowStrumPlayback.ts'
+import { SlowStrumPlayback } from '../Elements/SlowStrumPlayback.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])

@@ -15,9 +15,9 @@ import {
 } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import type { FadingOutPatternPlayback } from '../loopElements/FadingOutPatternPlayback.ts'
+import type { FadingOutPatternPlayback } from '../Elements/FadingOutPatternPlayback.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../loopElements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
+import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
