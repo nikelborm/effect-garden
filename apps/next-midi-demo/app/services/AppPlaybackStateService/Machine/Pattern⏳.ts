@@ -59,7 +59,6 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       ),
       yield* IncomingPatternFadingIn.init(
         asset.makePatchedFrom(pressedParamButtonId),
-        now,
         blissfulGridTimingsMath,
       ),
     )
@@ -94,6 +93,4 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   get strength() {
     return this.transitionQueue[0].asset.strength
   }
-
-  // handleSecondTapForDeactivation
 }

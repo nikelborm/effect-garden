@@ -90,29 +90,32 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     )
   }
 
+  /** 🏁 */
   static init = Effect.fn('IncomingPatternFadingIn.init')(function* (
     asset: TaggedPatternPointer,
-    now: number,
     blissfulGridTimingsMath: BlissfulGridTimingsMath,
   ) {
-    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-    const fadeInStartsAtSecond =
+    const audioBuffer = yield* AudioBufferStore.getByAsset(asset),
+      fadeInStartsAtSecond =
         blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
       fadeInEndsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      playbackStartedAtSecond =
+        blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit
 
     const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
-      startAtSecond: now,
-      bufferPhaseOffsetSeconds:
+      startAtSecond: playbackStartedAtSecond,
+      skippedSecondsDuringStart:
         blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
       fadeInStartsAtSecond,
       fadeInEndsAtSecond,
     })
+
     return IncomingPatternFadingIn.make({
       asset,
       playback,
       fadeInStartsAtSecond,
-      playbackStartedAtSecond: now,
+      playbackStartedAtSecond,
     })
   })
 }

@@ -77,6 +77,9 @@ export const calcBlissfulGridTimingsMath = (
     (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
 
   return {
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+    ticksDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
+
     fitsIntoBufferOfClosestTransition,
     secondsDecimalNowPassedSinceAudioContextInit,
 

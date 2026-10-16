@@ -96,7 +96,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
       const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
       const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
         startAtSecond: now,
-        bufferPhaseOffsetSeconds:
+        skippedSecondsDuringStart:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
         fadeInStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,

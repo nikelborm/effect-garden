@@ -15,7 +15,7 @@ import {
 
 export interface FadeIntoLoopPlaybackTiming {
   readonly startAtSecond: number
-  readonly bufferPhaseOffsetSeconds: number
+  readonly skippedSecondsDuringStart: number
   readonly fadeInStartsAtSecond: number
   readonly fadeInEndsAtSecond: number
 }
@@ -61,7 +61,7 @@ export const ScheduleFadeIntoLoopPlaybackLayer =
             )
             playback.bufferSource.start(
               timing.startAtSecond,
-              timing.bufferPhaseOffsetSeconds,
+              timing.skippedSecondsDuringStart,
             )
             return playback
           }),
