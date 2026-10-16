@@ -116,6 +116,8 @@ export const send: DualSendMIDIMessageFromPort = EFunction.dual<
             // InvalidAccessError is kept for compatibility reason
             // (https://github.com/WebAudio/web-midi-api/pull/278):
             InvalidAccessError: MIDIErrors.CannotSendSysexMessageError,
+            // TODO: https://github.com/WebAudio/web-midi-api/pull/283
+            // RangeError:,
 
             InvalidStateError: MIDIErrors.CannotSendToDisconnectedPortError,
             TypeError: MIDIErrors.MalformedMIDIMessageError,
