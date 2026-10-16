@@ -26,28 +26,31 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     this.make = this.make.bind(this)
   }
 
+  /** 🏁 */
   beginShortFadeoutBeforeAnotherPattern = Effect.fn(
     'PatternPlayback.beginShortFadeoutBeforeAnotherPattern',
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+      const { playbackStartedAtSecond } = this,
+        fadeoutStartsAtSecond =
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond =
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
+
       yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutStartsAtSecond,
+        fadeoutEndsAtSecond,
       })
-      const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
-        blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+
+      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
+        this.asset,
+        this.playback,
+        yield* CleanupFiberMaker.make(
+          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+        ),
+        { playbackStartedAtSecond, fadeoutStartsAtSecond },
       )
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
-        asset: this.asset,
-        playback: this.playback,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
-        cleanupFiberToolkit,
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-      })
     },
   )
 
@@ -56,16 +59,17 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      const { playbackStartedAtSecond } = this
       //!!!! PROBLEMATIC INCORRECT TIMINGS
-      const fadeoutStartsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit
+      const { playbackStartedAtSecond } = this,
+        fadeoutStartsAtSecond =
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond =
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
 
-      const fadeoutEndsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
-
-      const fadeoutTimings = { fadeoutStartsAtSecond, fadeoutEndsAtSecond }
-      yield* ScheduleFadeOut.run(this.playback, fadeoutTimings)
+      yield* ScheduleFadeOut.run(this.playback, {
+        fadeoutStartsAtSecond,
+        fadeoutEndsAtSecond,
+      })
 
       return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.makeSimple(
         this.asset,
