@@ -35,8 +35,8 @@ import { resumeParkedTui } from './suspend-guard.ts'
 
 // TODO: add lock on the cache file
 
-export const DIR_ICON = '\ue5ff' // 
-export const WORKSPACE_ICON = '\ue8da' // 
+export const DIR_ICON = process.env['QCODE_DIR_ICON'] ?? '\ue5ff' // 
+export const WORKSPACE_ICON = process.env['QCODE_WORKSPACE_ICON'] ?? '\ue8da' // 
 export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
 
 export const PRUNE_DIRS = [

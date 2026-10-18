@@ -11,6 +11,22 @@ configured opener.
 **Runtime dependencies:** `fzf`, `eza`, `bat`. Optionally `bfs` for faster
 directory traversal (falls back to `find`).
 
+## Icon customization
+
+The picker uses Nerd Font icons by default. If those glyphs render correctly in
+your terminal but appear incorrectly inside `fzf`, or if you prefer different
+icons, override them with environment variables:
+
+```bash
+QCODE_DIR_ICON='🗀' \\
+QCODE_WORKSPACE_ICON='▣' \\
+bun index.ts --opener shell
+```
+
+`QCODE_DIR_ICON` and `QCODE_WORKSPACE_ICON` replace the directory and workspace
+icons respectively. This is a rendering compatibility option for environments
+where Nerd Font PUA glyphs do not display as expected inside `fzf`.
+
 To install only `node_module` deps (the binaries from above must be present):
 
 ```bash
