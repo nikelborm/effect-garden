@@ -18,8 +18,8 @@ your terminal but appear incorrectly inside `fzf`, or if you prefer different
 icons, override them with environment variables:
 
 ```bash
-QCODE_DIR_ICON='🗀' \\
-QCODE_WORKSPACE_ICON='▣' \\
+QCODE_DIR_ICON='🗀' \
+QCODE_WORKSPACE_ICON='▣' \
 bun index.ts --opener shell
 ```
 
