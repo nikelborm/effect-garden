@@ -46,9 +46,23 @@ export const calcBlissfulGridTimingsMath = (
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
     secondsDecimalNowPassedSinceAudioContextInit
 
+  const nextTickAdjustedUpwardsIsOnThePatternBoundary =
+    nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted %
+      ticksPerTrack ===
+    0
+
+  // The fadeout does not start on the tick itself: it is shifted earlier either
+  // by a whole transition (pattern boundary) or by half of it (mid-pattern). The
+  // buffer check has to look at that real start, not at the tick.
+  const patternPlaybackAntialiasingFadeoutOfTheClosestTickShiftedEarlierBySeconds =
+    nextTickAdjustedUpwardsIsOnThePatternBoundary
+      ? transitionTimeInSeconds
+      : transitionTimeInSeconds / 2
+
   const doesntFitIntoBufferOfClosestTransition =
     secondsDecimalNowPassedSinceAudioContextInit >
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
+      patternPlaybackAntialiasingFadeoutOfTheClosestTickShiftedEarlierBySeconds -
       schedulingSafeBufferInSeconds
 
   const postponeTicks = Number(doesntFitIntoBufferOfClosestTransition)
