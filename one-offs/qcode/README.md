@@ -65,6 +65,17 @@ bun index.ts --opener opencode
   shell` is deliberately left alone: a real shell resumes its own jobs, so
   Ctrl+Z there stays a real suspend.
 
+## Icon customization
+
+The picker uses Nerd Font icons by default. Override them with environment variables:
+
+```bash
+QCODE_DIR_ICON='🗀' QCODE_WORKSPACE_ICON='▣' bun index.ts
+```
+
+- `QCODE_DIR_ICON`: Directory icon
+- `QCODE_WORKSPACE_ICON`: Workspace icon
+
 ## Partial-PATH launches (kitty shortcut)
 
 When `qcode` is launched directly (e.g. via a `kitty --single-instance`
