@@ -1,6 +1,7 @@
 import {
   schedulingSafeBufferInSeconds,
   tickSizeInSeconds,
+  ticksPerTrack,
   trackSizeInSeconds,
   transitionTimeInSeconds,
 } from './constants.ts'
@@ -41,8 +42,6 @@ export const calcBlissfulGridTimingsMath = (
     nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit +
     transitionTimeInSeconds
 
-  // TODO: separate in-pattern transitions between ticks and 8th-tick-of-pattern -> 1th-tick-of-pattern
-
   const secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder =
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
     secondsDecimalNowPassedSinceAudioContextInit
@@ -63,17 +62,48 @@ export const calcBlissfulGridTimingsMath = (
     nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit +
     postponeSeconds
 
+  const nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary =
+    nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted %
+      ticksPerTrack ===
+    0
+
+  // On a pattern boundary the outgoing fadeout ends exactly on the tick and the
+  // incoming fadein starts there. Between ticks both windows are centered on the
+  // tick, so half of the transition happens at the end of the outgoing pattern
+  // and half at the start of the incoming one.
+  const patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds =
+    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+      ? transitionTimeInSeconds
+      : transitionTimeInSeconds / 2
+
+  const patternPlaybackAntialiasingFadeinShiftEarlierBySeconds =
+    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+      ? 0
+      : transitionTimeInSeconds / 2
+
   const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit =
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    postponeSeconds
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
 
   const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit =
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    postponeSeconds
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
+
+  const patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit =
+    nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit -
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
+
+  const patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit =
+    nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit +
+    transitionTimeInSeconds -
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
 
   const secondsSinceNowUpUntilAntialiasingFadeoutEnds =
     secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder +
-    postponeSeconds
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
 
   const secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart =
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart +
@@ -94,6 +124,8 @@ export const calcBlissfulGridTimingsMath = (
     nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit,
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
     secondsSinceNowUpUntilAntialiasingFadeoutEnds,
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart,
 
