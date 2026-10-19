@@ -18,7 +18,6 @@ bun install
 ```
 
 To use:
-
 ```bash
 # I assigned a keybinding in GNOME to ctrl+alt+r
 kitty --single-instance /home/nikel/.local/share/mise/installs/bun/latest/bin/bun /home/evadev/projects/effect-garden/one-offs/qcode/dist/minified/index.mjs
@@ -63,7 +62,7 @@ bun index.ts --opener opencode
   window with nothing actually stopped (and nothing to resume it). While
   opencode runs, `qcode` watches the terminal and sends that `SIGCONT` itself,
   so Ctrl+Z shows up as a ~50 ms flicker instead of a dead window. `--opener
-shell` is deliberately left alone: a real shell resumes its own jobs, so
+  shell` is deliberately left alone: a real shell resumes its own jobs, so
   Ctrl+Z there stays a real suspend.
 
 ## Icon customization
