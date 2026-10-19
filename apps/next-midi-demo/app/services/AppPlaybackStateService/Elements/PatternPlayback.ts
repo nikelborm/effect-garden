@@ -54,12 +54,14 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     },
   )
 
+  /** ⚠️ */
   beginLongFadeoutToSilence = Effect.fn(
     'PatternPlayback.beginLongFadeoutToSilence',
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       //!!!! PROBLEMATIC INCORRECT TIMINGS
+      /** ⚠️ */
       const { playbackStartedAtSecond } = this,
         fadeoutStartsAtSecond =
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
