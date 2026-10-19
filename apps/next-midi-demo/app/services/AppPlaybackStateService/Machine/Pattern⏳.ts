@@ -33,9 +33,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   /** ⚠️ */
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current] = this.transitionQueue
-    const { asset } = current
 
-    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, asset))
+    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, current.asset))
       return this
 
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
@@ -44,7 +43,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       yield* GetAudioNow.run,
     )
 
-    if (theSamePatternWasPressed(pressedParamButtonId, asset))
+    if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
       return PatternSilenceTransitionState.makeSimple(
         this
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
@@ -59,7 +58,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         blissfulGridTimingsMath,
       ),
       yield* IncomingPatternFadingIn.init(
-        asset.makePatchedFrom(pressedParamButtonId),
+        current.asset.makePatchedFrom(pressedParamButtonId),
         blissfulGridTimingsMath,
       ),
     )
