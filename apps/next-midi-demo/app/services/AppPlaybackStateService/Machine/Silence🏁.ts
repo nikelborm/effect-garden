@@ -42,6 +42,7 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   declare protected '~brand~': never
   static models = Schema.is(this);
 
+  /** 🏁 */
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     return yield* matchParamButtonId(pressedParamButtonId)({
       onAccord: flow(this.getAssetToPlay, SlowStrumState.init),
@@ -50,17 +51,22 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
     })
   }
 
+  /** 🏁 */
   static makeSimple = (accord: Accord, strength: Strength) =>
     this.make({ accord, strength, transitionQueue: [] })
 
+  /** 🏁 */
   static default = this.makeSimple(defaultAccord, defaultStrength)
 
+  /** 🏁 */
   withNewStrengthFromData = (container: StrengthData) =>
     SilenceState.makeSimple(this.accord, container.strength)
 
+  /** 🏁 */
   withNewAccordFromData = (container: AccordData) =>
     SilenceState.makeSimple(container.accord, this.strength)
 
+  /** 🏁 */
   getAssetToPlay = <T extends PatternData | AccordData>(
     pressedParamButtonId: T,
   ) =>
