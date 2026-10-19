@@ -11,22 +11,6 @@ configured opener.
 **Runtime dependencies:** `fzf`, `eza`, `bat`. Optionally `bfs` for faster
 directory traversal (falls back to `find`).
 
-## Icon customization
-
-The picker uses Nerd Font icons by default. If those glyphs render correctly in
-your terminal but appear incorrectly inside `fzf`, or if you prefer different
-icons, override them with environment variables:
-
-```bash
-QCODE_DIR_ICON='🗀' \
-QCODE_WORKSPACE_ICON='▣' \
-bun index.ts --opener shell
-```
-
-`QCODE_DIR_ICON` and `QCODE_WORKSPACE_ICON` replace the directory and workspace
-icons respectively. This is a rendering compatibility option for environments
-where Nerd Font PUA glyphs do not display as expected inside `fzf`.
-
 To install only `node_module` deps (the binaries from above must be present):
 
 ```bash
@@ -34,6 +18,7 @@ bun install
 ```
 
 To use:
+
 ```bash
 # I assigned a keybinding in GNOME to ctrl+alt+r
 kitty --single-instance /home/nikel/.local/share/mise/installs/bun/latest/bin/bun /home/evadev/projects/effect-garden/one-offs/qcode/dist/minified/index.mjs
@@ -78,8 +63,19 @@ bun index.ts --opener opencode
   window with nothing actually stopped (and nothing to resume it). While
   opencode runs, `qcode` watches the terminal and sends that `SIGCONT` itself,
   so Ctrl+Z shows up as a ~50 ms flicker instead of a dead window. `--opener
-  shell` is deliberately left alone: a real shell resumes its own jobs, so
+shell` is deliberately left alone: a real shell resumes its own jobs, so
   Ctrl+Z there stays a real suspend.
+
+## Icon customization
+
+The picker uses Nerd Font icons by default. Override them with environment variables:
+
+```bash
+QCODE_DIR_ICON='🗀' QCODE_WORKSPACE_ICON='▣' bun index.ts
+```
+
+- `QCODE_DIR_ICON`: Directory icon
+- `QCODE_WORKSPACE_ICON`: Workspace icon
 
 ## Partial-PATH launches (kitty shortcut)
 

@@ -10,6 +10,7 @@ import {
   dedupStreamWithSet,
 } from '@evadev/effect-helpers/dedupStream.ts'
 
+import * as Config from 'effect/Config'
 import * as Console from 'effect/Console'
 import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
@@ -35,8 +36,16 @@ import { resumeParkedTui } from './suspend-guard.ts'
 
 // TODO: add lock on the cache file
 
-export const DIR_ICON = process.env['QCODE_DIR_ICON'] ?? '\ue5ff' // 
-export const WORKSPACE_ICON = process.env['QCODE_WORKSPACE_ICON'] ?? '\ue8da' // 
+export const DIR_ICON = Config.String('QCODE_DIR_ICON').pipe(
+  Config.withDefault('\ue5ff'), // 
+  // fzf uses tabs and newlines to delimit and separate entries.
+  Config.map(icon => icon.replaceAll(/[\t\r\n]/g, '')),
+)
+
+export const WORKSPACE_ICON = Config.String('QCODE_WORKSPACE_ICON').pipe(
+  Config.withDefault('\ue8da'), // 
+  Config.map(icon => icon.replaceAll(/[\t\r\n]/g, '')),
+)
 export const LOCAL_FIND_CACHE_FILE = `${CACHE_DIR}/local-find-cache.txt`
 
 export const PRUNE_DIRS = [
@@ -168,11 +177,15 @@ const ansiGreen = (s: string) => `\x1b[32m${s}\x1b[0m`
 const icon_path_delimiter = '\t'
 
 export const toPrettyFzfRenderedLine =
-  (pathService: Path.Path) => (vscodeArgCandidate: string) => {
+  (
+    pathService: Path.Path,
+    { dirIcon, workspaceIcon }: { dirIcon: string; workspaceIcon: string },
+  ) =>
+  (vscodeArgCandidate: string) => {
     const relativePath = pathService.relative(PROJECTS_DIR, vscodeArgCandidate)
     const isDir = vscodeArgCandidate.endsWith('/')
     const color = isDir ? ansiBlue : ansiGreen
-    const icon = isDir ? DIR_ICON : WORKSPACE_ICON
+    const icon = isDir ? dirIcon : workspaceIcon
     return hyperlink(
       `file://${relativePath}`,
       color([icon, icon_path_delimiter, relativePath, `\n`].join('')),
@@ -234,6 +247,10 @@ const waitForEnterToClose = Effect.gen(function* () {
 
 export const localMode = Effect.fn('qcode.local')(
   function* (options: { readonly opener: Opener }) {
+    const icons = yield* Config.all({
+      dirIcon: DIR_ICON,
+      workspaceIcon: WORKSPACE_ICON,
+    })
     const previewBinaryPaths = yield* resolvePreviewDependenciesToBinaryPaths
     if (!previewBinaryPaths) return ChildProcessSpawner.ExitCode(1)
     const { bat, eza } = previewBinaryPaths
@@ -331,7 +348,7 @@ export const localMode = Effect.fn('qcode.local')(
       ),
       Stream.merge(cachedVscodeArgCandidatesFromPreviousRun),
       dedupStreamWithSet,
-      Stream.map(toPrettyFzfRenderedLine(path)),
+      Stream.map(toPrettyFzfRenderedLine(path, icons)),
       Stream.encodeText,
     )
 
