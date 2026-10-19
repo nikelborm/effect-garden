@@ -70,8 +70,9 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     { self: this },
     function* (asset: TaggedPatternPointer) {
       const now = yield* GetAudioNow.run
+      const math = calcBlissfulGridTimingsMath(now, now)
 
-      return this.makeSimple(now, yield* PatternPlayback.init(asset, now))
+      return this.makeSimple(now, yield* PatternPlayback.init(asset, math))
     },
   )
 

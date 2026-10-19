@@ -5,7 +5,7 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { AudioPlayback } from '../common.ts'
-import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { disposeOf } from './DisposedPatternPlayback🏁.ts'
@@ -21,8 +21,7 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
-    fadeInStartsAtSecond: Schema.Finite,
-    playbackStartedAtSecond: Schema.Finite,
+    math: BlissfulGridTimingsMath,
   },
 ) {
   declare protected '~brand~': never
@@ -49,10 +48,8 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
         asset: this.asset,
         playback: this.playback,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
         cleanupFiberToolkit,
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        math: blissfulGridTimingsMath,
       })
     },
   )
@@ -74,20 +71,14 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
         asset: this.asset,
         playback: this.playback,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
         cleanupFiberToolkit,
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        math: blissfulGridTimingsMath,
       })
     },
   )
 
   becomeLive() {
-    return PatternPlayback.makeSimple(
-      this.asset,
-      this.playback,
-      this.playbackStartedAtSecond,
-    )
+    return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
   }
 
   /** 🏁 */
@@ -95,27 +86,23 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     asset: TaggedPatternPointer,
     blissfulGridTimingsMath: BlissfulGridTimingsMath,
   ) {
-    const audioBuffer = yield* AudioBufferStore.getByAsset(asset),
-      fadeInStartsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
-      fadeInEndsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
-      playbackStartedAtSecond =
-        blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit
+    const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
 
     const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
-      startAtSecond: playbackStartedAtSecond,
+      startAtSecond:
+        blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit,
       skippedSecondsDuringStart:
         blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-      fadeInStartsAtSecond,
-      fadeInEndsAtSecond,
+      fadeInStartsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+      fadeInEndsAtSecond:
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
     })
 
     return IncomingPatternFadingIn.make({
       asset,
       playback,
-      fadeInStartsAtSecond,
-      playbackStartedAtSecond,
+      math: blissfulGridTimingsMath,
     })
   })
 }

@@ -6,8 +6,7 @@ import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { AudioPlayback } from '../common.ts'
-import { fadeToSilenceTimeInSeconds } from '../constants.ts'
-import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { RestoreFullVolume } from '../webAudioSideEffects/RestoreFullVolume.ts'
 import { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
@@ -25,8 +24,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    fadeoutStartsAtSecond: Schema.Finite,
-    playbackStartedAtSecond: Schema.Finite,
+    math: BlissfulGridTimingsMath,
   },
 ) {
   declare protected '~brand~': never
@@ -38,23 +36,15 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    rest: { fadeoutStartsAtSecond: number; playbackStartedAtSecond: number },
-  ) => this.make({ asset, playback, cleanupFiberToolkit, ...rest })
-
-  get fadeoutEndsAtSecond() {
-    return this.fadeoutStartsAtSecond + fadeToSilenceTimeInSeconds
-  }
+    math: BlissfulGridTimingsMath,
+  ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
   cancelFadeoutAndRestore = Effect.fn(
     'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.cancelFadeoutAndRestore',
   )({ self: this }, function* (now: number) {
     yield* RestoreFullVolume.run(this.playback, now)
     yield* this.cleanupFiberToolkit.cancelCleanup
-    return PatternPlayback.makeSimple(
-      this.asset,
-      this.playback,
-      this.playbackStartedAtSecond,
-    )
+    return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
   })
 
   reanchorFadeoutOnto = Effect.fn(
@@ -76,10 +66,8 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
       return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
         asset: this.asset,
         playback: this.playback,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
         cleanupFiberToolkit,
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        math: blissfulGridTimingsMath,
       })
     },
   )
@@ -106,9 +94,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
       return IncomingPatternFadingIn.make({
         asset: desiredAsset,
         playback,
-        fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
-        playbackStartedAtSecond: this.playbackStartedAtSecond,
+        math: blissfulGridTimingsMath,
       })
     },
   )

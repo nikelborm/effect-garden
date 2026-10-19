@@ -1,3 +1,5 @@
+import * as Schema from 'effect/Schema'
+
 import {
   schedulingSafeBufferInSeconds,
   tickSizeInSeconds,
@@ -5,6 +7,54 @@ import {
   trackSizeInSeconds,
   transitionTimeInSeconds,
 } from './constants.ts'
+
+export const BlissfulGridTimingsMath = Schema.Struct({
+  firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+    Schema.Finite,
+  ticksDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted:
+    Schema.Finite,
+
+  doesntFitIntoBufferOfClosestTransition: Schema.Boolean,
+  secondsDecimalNowPassedSinceAudioContextInit: Schema.Finite,
+
+  secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted:
+    Schema.Finite,
+  secondsDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted:
+    Schema.Finite,
+
+  // recommended to use because they're adjusted
+  nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted:
+    Schema.Finite,
+  nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  secondsSinceNowUpUntilAntialiasingFadeoutEnds: Schema.Finite,
+  secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart:
+    Schema.Finite,
+
+  // NOT recommended to use because they're NOT adjusted
+  nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted:
+    Schema.Finite,
+  nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder:
+    Schema.Finite,
+  secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder:
+    Schema.Finite,
+  secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart:
+    Schema.Finite,
+})
+
+export type BlissfulGridTimingsMath = typeof BlissfulGridTimingsMath.Type
 
 export const calcBlissfulGridTimingsMath = (
   firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
@@ -123,7 +173,7 @@ export const calcBlissfulGridTimingsMath = (
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart +
     postponeSeconds
 
-  return {
+  return BlissfulGridTimingsMath.make({
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
     ticksDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
 
@@ -150,8 +200,5 @@ export const calcBlissfulGridTimingsMath = (
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder,
     secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder,
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart,
-  } as const
+  })
 }
-
-export interface BlissfulGridTimingsMath
-  extends ReturnType<typeof calcBlissfulGridTimingsMath> {}

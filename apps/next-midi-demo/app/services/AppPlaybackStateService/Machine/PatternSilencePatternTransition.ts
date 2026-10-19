@@ -43,12 +43,16 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
     const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      dying.playbackStartedAtSecond,
+      dying.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
 
+    const incomingFadeInStartsAtSecond =
+      incoming.math
+        .patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit
     const incomingFadeInIsStillRevocable =
-      now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
+      now <= incomingFadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
@@ -80,14 +84,17 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       yield* incoming.drop()
       return PatternState.make({
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          revived.playbackStartedAtSecond,
+          revived.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [revived],
       })
     }
 
     if (!incomingFadeInIsStillRevocable) {
       return PatternPatternPatternTransitionState.make({
-        playbackStartedAtSecond: dying.playbackStartedAtSecond,
+        playbackStartedAtSecond:
+          dying.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [
           dying,
           yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
@@ -102,7 +109,9 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
     yield* incoming.drop()
     return PatternSilencePatternTransitionState.make({
-      playbackStartedAtSecond: dying.playbackStartedAtSecond,
+      playbackStartedAtSecond:
+        dying.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [
         dying,
         yield* dying.scheduleNextPattern(

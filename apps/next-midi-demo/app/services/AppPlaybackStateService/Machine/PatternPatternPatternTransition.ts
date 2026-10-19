@@ -40,8 +40,11 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
 
     const now = yield* GetAudioNow.run
 
+    const incomingFadeInStartsAtSecond =
+      incoming.math
+        .patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit
     const incomingFadeInIsStillRevocable =
-      now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
+      now <= incomingFadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
@@ -82,11 +85,14 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
     yield* incoming.drop()
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      oldest.playbackStartedAtSecond,
+      oldest.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
     return PatternPatternPatternTransitionState.make({
-      playbackStartedAtSecond: oldest.playbackStartedAtSecond,
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+        oldest.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [
         oldest,
         middle,

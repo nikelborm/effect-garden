@@ -43,12 +43,16 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
 
     const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      current.playbackStartedAtSecond,
+      current.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
 
+    const incomingFadeInStartsAtSecond =
+      incoming.math
+        .patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit
     const incomingFadeInIsStillRevocable =
-      now <= incoming.fadeInStartsAtSecond - schedulingSafeBufferInSeconds
+      now <= incomingFadeInStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
@@ -81,7 +85,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
       yield* incoming.drop()
       return PatternState.make({
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          revived.playbackStartedAtSecond,
+          revived.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [revived],
       })
     }
@@ -89,7 +94,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     if (!incomingFadeInIsStillRevocable) {
       return PatternPatternPatternTransitionState.make({
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          current.playbackStartedAtSecond,
+          current.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [
           current,
           yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
@@ -105,7 +111,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     yield* incoming.drop()
     return PatternPatternTransitionState.make({
       firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-        current.playbackStartedAtSecond,
+        current.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [
         yield* current.reanchorFadeoutOnto(now, blissfulGridTimingsMath),
         yield* current.scheduleNextPattern(

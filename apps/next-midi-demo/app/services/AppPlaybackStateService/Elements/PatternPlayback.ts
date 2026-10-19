@@ -5,7 +5,7 @@ import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { AudioPlayback } from '../common.ts'
-import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -18,7 +18,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
-    playbackStartedAtSecond: Schema.Finite,
+    math: BlissfulGridTimingsMath,
   },
 ) {
   declare protected '~brand~': never
@@ -32,15 +32,11 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      const { playbackStartedAtSecond } = this,
-        fadeoutStartsAtSecond =
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond =
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
-
       yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond,
-        fadeoutEndsAtSecond,
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
 
       return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
@@ -49,7 +45,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
         yield* CleanupFiberMaker.make(
           blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
         ),
-        { playbackStartedAtSecond, fadeoutStartsAtSecond },
+        blissfulGridTimingsMath,
       )
     },
   )
@@ -62,15 +58,11 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       //!!!! PROBLEMATIC INCORRECT TIMINGS
       /** ⚠️ */
-      const { playbackStartedAtSecond } = this,
-        fadeoutStartsAtSecond =
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond =
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit
-
       yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond,
-        fadeoutEndsAtSecond,
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
 
       return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.makeSimple(
@@ -79,7 +71,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
         yield* CleanupFiberMaker.make(
           blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
         ),
-        { playbackStartedAtSecond, fadeoutStartsAtSecond },
+        blissfulGridTimingsMath,
       )
     },
   )
@@ -87,11 +79,14 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   /** 🏁 */
   static init = Effect.fn('PatternPlayback.init')(
     { self: this },
-    function* (asset: TaggedPatternPointer, now: number) {
+    function* (asset: TaggedPatternPointer, math: BlissfulGridTimingsMath) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-      const playback = yield* StartFreshPlayback.runLooping(audioBuffer, now)
+      const playback = yield* StartFreshPlayback.runLooping(
+        audioBuffer,
+        math.secondsDecimalNowPassedSinceAudioContextInit,
+      )
 
-      return this.makeSimple(asset, playback, now)
+      return this.makeSimple(asset, playback, math)
     },
   )
 
@@ -99,8 +94,8 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   static makeSimple = (
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
-    playbackStartedAtSecond: number,
-  ) => this.make({ asset, playback, playbackStartedAtSecond })
+    math: BlissfulGridTimingsMath,
+  ) => this.make({ asset, playback, math })
 
   /** 🏁 */
   get accord() {

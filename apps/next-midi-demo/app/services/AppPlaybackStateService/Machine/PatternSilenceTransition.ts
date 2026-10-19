@@ -55,8 +55,11 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     const now = yield* GetAudioNow.run
 
+    const fadingLoopFadeoutStartsAtSecond =
+      current.math
+        .patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit
     const fadingLoopFadeoutIsStillRevocable =
-      now <= current.fadeoutStartsAtSecond - schedulingSafeBufferInSeconds
+      now <= fadingLoopFadeoutStartsAtSecond - schedulingSafeBufferInSeconds
 
     if (pressedParamButtonId.pattern === current.asset.pattern) {
       if (!fadingLoopFadeoutIsStillRevocable)
@@ -69,7 +72,8 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       const revived = yield* current.cancelFadeoutAndRestore(now)
       return PatternState.make({
         firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          revived.playbackStartedAtSecond,
+          revived.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [revived],
       })
     }
@@ -80,7 +84,8 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       strength,
     })
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      current.playbackStartedAtSecond,
+      current.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
     const incoming = yield* current.scheduleNextPattern(
@@ -94,12 +99,16 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
     )
       return PatternPatternTransitionState.make({
-        playbackStartedAtSecond: current.playbackStartedAtSecond,
+        playbackStartedAtSecond:
+          current.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         transitionQueue: [current, incoming],
       })
 
     return PatternSilencePatternTransitionState.make({
-      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      playbackStartedAtSecond:
+        current.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [current, incoming],
     })
   }

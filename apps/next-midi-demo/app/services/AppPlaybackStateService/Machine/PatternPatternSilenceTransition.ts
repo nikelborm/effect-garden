@@ -54,11 +54,14 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
     })
     const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      oldest.playbackStartedAtSecond,
+      oldest.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
     return PatternPatternPatternTransitionState.make({
-      playbackStartedAtSecond: oldest.playbackStartedAtSecond,
+      playbackStartedAtSecond:
+        oldest.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       transitionQueue: [
         oldest,
         fading,

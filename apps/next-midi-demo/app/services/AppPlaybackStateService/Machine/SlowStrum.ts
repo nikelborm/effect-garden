@@ -5,6 +5,7 @@ import type { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { SlowStrumPlayback } from '../Elements/SlowStrumPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
+import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
@@ -36,8 +37,9 @@ export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
     { self: this },
     function* (asset: TaggedSlowStrumPointer) {
       const now = yield* GetAudioNow.run
+      const math = calcBlissfulGridTimingsMath(now, now)
 
-      return this.makeSimple(now, yield* SlowStrumPlayback.init(asset, now))
+      return this.makeSimple(now, yield* SlowStrumPlayback.init(asset, math))
     },
   )
 

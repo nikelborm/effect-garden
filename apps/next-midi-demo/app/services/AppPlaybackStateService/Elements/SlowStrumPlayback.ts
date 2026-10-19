@@ -4,12 +4,13 @@ import * as Schema from 'effect/Schema'
 import { TaggedSlowStrumPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { AudioPlayback } from '../common.ts'
+import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
 export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
   'SlowStrumPlayback',
   {
-    playbackStartedAtSecond: Schema.Finite,
+    math: BlissfulGridTimingsMath,
     asset: TaggedSlowStrumPointer,
     playback: AudioPlayback,
   },
@@ -21,19 +22,22 @@ export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
 
   static init = Effect.fn('SlowStrumPlayback.init')(
     { self: this },
-    function* (asset: TaggedSlowStrumPointer, now: number) {
+    function* (asset: TaggedSlowStrumPointer, math: BlissfulGridTimingsMath) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(asset)
-      const playback = yield* StartFreshPlayback.runOnce(audioBuffer, now)
+      const playback = yield* StartFreshPlayback.runOnce(
+        audioBuffer,
+        math.secondsDecimalNowPassedSinceAudioContextInit,
+      )
 
-      return this.makeSimple(asset, playback, now)
+      return this.makeSimple(asset, playback, math)
     },
   )
 
   static makeSimple = (
     asset: TaggedSlowStrumPointer,
     playback: AudioPlayback,
-    playbackStartedAtSecond: number,
-  ) => this.make({ asset, playback, playbackStartedAtSecond })
+    math: BlissfulGridTimingsMath,
+  ) => this.make({ asset, playback, math })
 
   get accord() {
     return this.asset.accord
