@@ -99,15 +99,15 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
         skippedSecondsDuringStart:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
         fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
         fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       return IncomingPatternFadingIn.make({
         asset: desiredAsset,
         playback,
         fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
         playbackStartedAtSecond: this.playbackStartedAtSecond,
       })
     },

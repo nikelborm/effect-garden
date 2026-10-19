@@ -97,9 +97,9 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
   ) {
     const audioBuffer = yield* AudioBufferStore.getByAsset(asset),
       fadeInStartsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
       fadeInEndsAtSecond =
-        blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+        blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
       playbackStartedAtSecond =
         blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit
 

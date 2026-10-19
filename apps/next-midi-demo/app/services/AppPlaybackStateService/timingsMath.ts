@@ -47,40 +47,43 @@ export const calcBlissfulGridTimingsMath = (
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
     secondsDecimalNowPassedSinceAudioContextInit
 
-  const fitsIntoBufferOfClosestTransition =
-    secondsDecimalNowPassedSinceAudioContextInit <=
+  const doesntFitIntoBufferOfClosestTransition =
+    secondsDecimalNowPassedSinceAudioContextInit >
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder -
       schedulingSafeBufferInSeconds
 
+  const postponeTicks = Number(doesntFitIntoBufferOfClosestTransition)
+  const postponeSeconds = postponeTicks * tickSizeInSeconds
+
   const nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted =
     nextTickIndexAdjustedUpwardsIfDecimalSince_FIRST_PatternPlaybackOfTheCurrentGridStarted +
-    (fitsIntoBufferOfClosestTransition ? 1 : 0)
+    postponeTicks
 
   const nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit =
     nextTickAdjustedUpwardsWhenDecimalStarts_AT_SECONDS_SinceAudioContextInit +
-    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+    postponeSeconds
 
   const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit =
     patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+    postponeSeconds
 
   const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit =
     patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+    postponeSeconds
 
   const secondsSinceNowUpUntilAntialiasingFadeoutEnds =
     secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder +
-    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+    postponeSeconds
 
   const secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart =
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart +
-    (fitsIntoBufferOfClosestTransition ? tickSizeInSeconds : 0)
+    postponeSeconds
 
   return {
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
     ticksDecimalPassedSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
 
-    fitsIntoBufferOfClosestTransition,
+    doesntFitIntoBufferOfClosestTransition,
     secondsDecimalNowPassedSinceAudioContextInit,
 
     secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,

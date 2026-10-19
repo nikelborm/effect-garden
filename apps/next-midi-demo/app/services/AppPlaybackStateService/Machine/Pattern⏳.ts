@@ -30,6 +30,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   declare protected '~brand~': never
   static models = Schema.is(this);
 
+  /** ⚠️ */
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current] = this.transitionQueue
     const { asset } = current
@@ -47,6 +48,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       return PatternSilenceTransitionState.makeSimple(
         this
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        /** ⚠️ */
         yield* current.beginLongFadeoutToSilence(blissfulGridTimingsMath),
       )
 
@@ -73,6 +75,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     },
   )
 
+  /** 🏁 */
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
     playback: PatternPlayback,
@@ -82,14 +85,17 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
       transitionQueue: [playback],
     })
 
+  /** 🏁 */
   get accord() {
     return this.transitionQueue[0].asset.accord
   }
 
+  /** 🏁 */
   get pattern() {
     return this.transitionQueue[0].asset.pattern
   }
 
+  /** 🏁 */
   get strength() {
     return this.transitionQueue[0].asset.strength
   }
