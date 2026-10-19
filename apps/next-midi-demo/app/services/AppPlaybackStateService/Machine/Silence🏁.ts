@@ -71,15 +71,15 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
     pressedParamButtonId: T,
   ) =>
     (PatternData.models(pressedParamButtonId)
-      ? TaggedPatternPointer.make({
-          pattern: pressedParamButtonId.pattern,
-          accord: this.accord,
-          strength: this.strength,
-        })
-      : TaggedSlowStrumPointer.make({
-          accord: pressedParamButtonId.accord,
-          strength: this.strength,
-        })) as T extends any // distrubute
+      ? TaggedPatternPointer.makeSimple(
+          pressedParamButtonId.pattern,
+          this.accord,
+          this.strength,
+        )
+      : TaggedSlowStrumPointer.makeSimple(
+          pressedParamButtonId.accord,
+          this.strength,
+        )) as T extends any // distrubute
       ? T extends PatternData
         ? TaggedPatternPointer
         : T extends AccordData

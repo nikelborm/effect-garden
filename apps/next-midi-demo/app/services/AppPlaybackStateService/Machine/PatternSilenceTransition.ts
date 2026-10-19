@@ -37,14 +37,11 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
     const [current] = this.transitionQueue
 
     if (StrengthData.models(pressedParamButtonId))
-      return PatternSilenceTransitionState.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          this
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        accord,
-        strength: pressedParamButtonId.strength,
-        transitionQueue: [current],
-      })
+      return PatternSilenceTransitionState.makeSimple(
+        this
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        current,
+      )
 
     if (AccordData.models(pressedParamButtonId))
       return yield* Effect.die(
@@ -70,19 +67,18 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         )
 
       const revived = yield* current.cancelFadeoutAndRestore(now)
-      return PatternState.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          revived.math
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        transitionQueue: [revived],
-      })
+      return PatternState.makeSimple(
+        revived.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        revived,
+      )
     }
 
-    const asset = TaggedPatternPointer.make({
-      pattern: pressedParamButtonId.pattern,
+    const asset = TaggedPatternPointer.makeSimple(
+      pressedParamButtonId.pattern,
       accord,
       strength,
-    })
+    )
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
       current.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
@@ -98,19 +94,19 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       current._tag ===
       'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
     )
-      return PatternPatternTransitionState.make({
-        playbackStartedAtSecond:
-          current.math
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        transitionQueue: [current, incoming],
-      })
-
-    return PatternSilencePatternTransitionState.make({
-      playbackStartedAtSecond:
+      return PatternPatternTransitionState.makeSimple(
         current.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [current, incoming],
-    })
+        current,
+        incoming,
+      )
+
+    return PatternSilencePatternTransitionState.makeSimple(
+      current.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      current,
+      incoming,
+    )
   }
 
   static makeSimple = (

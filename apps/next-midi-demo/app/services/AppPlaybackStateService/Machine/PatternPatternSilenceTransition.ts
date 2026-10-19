@@ -1,10 +1,18 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
+import {
+  type Accord,
+  AccordData,
+  AccordSchema,
+} from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
+import {
+  type Strength,
+  StrengthData,
+  StrengthSchema,
+} from '../../../domain/Strength.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
@@ -34,11 +42,12 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
     const [oldest, fading] = this.transitionQueue
 
     if (StrengthData.models(pressedParamButtonId))
-      return PatternPatternSilenceTransitionState.make({
+      return PatternPatternSilenceTransitionState.makeSimple(
         accord,
-        strength: pressedParamButtonId.strength,
-        transitionQueue: [oldest, fading],
-      })
+        pressedParamButtonId.strength,
+        oldest,
+        fading,
+      )
 
     if (AccordData.models(pressedParamButtonId))
       return yield* Effect.die(
@@ -47,26 +56,35 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
         ),
       )
 
-    const asset = TaggedPatternPointer.make({
-      pattern: pressedParamButtonId.pattern,
+    const asset = TaggedPatternPointer.makeSimple(
+      pressedParamButtonId.pattern,
       accord,
       strength,
-    })
+    )
     const now = yield* GetAudioNow.run
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
       oldest.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
-    return PatternPatternPatternTransitionState.make({
-      playbackStartedAtSecond:
-        oldest.math
-          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [
-        oldest,
-        fading,
-        yield* oldest.scheduleNextPattern(asset, now, blissfulGridTimingsMath),
-      ],
-    })
+    return PatternPatternPatternTransitionState.makeSimple(
+      oldest.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      oldest,
+      fading,
+      yield* oldest.scheduleNextPattern(asset, now, blissfulGridTimingsMath),
+    )
   }
+
+  static makeSimple = (
+    accord: Accord,
+    strength: Strength,
+    oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    fading: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+  ) =>
+    this.make({
+      accord,
+      strength,
+      transitionQueue: [oldest, fading],
+    })
 }

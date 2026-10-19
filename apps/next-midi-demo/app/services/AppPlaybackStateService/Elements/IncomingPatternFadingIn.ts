@@ -45,12 +45,12 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
         blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
       )
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
-        asset: this.asset,
-        playback: this.playback,
+      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
+        this.asset,
+        this.playback,
         cleanupFiberToolkit,
-        math: blissfulGridTimingsMath,
-      })
+        blissfulGridTimingsMath,
+      )
     },
   )
 
@@ -68,12 +68,12 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
         blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
       )
-      return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.make({
-        asset: this.asset,
-        playback: this.playback,
+      return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.makeSimple(
+        this.asset,
+        this.playback,
         cleanupFiberToolkit,
-        math: blissfulGridTimingsMath,
-      })
+        blissfulGridTimingsMath,
+      )
     },
   )
 
@@ -99,10 +99,16 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
         blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
     })
 
-    return IncomingPatternFadingIn.make({
+    return IncomingPatternFadingIn.makeSimple(
       asset,
       playback,
-      math: blissfulGridTimingsMath,
-    })
+      blissfulGridTimingsMath,
+    )
   })
+
+  static makeSimple = (
+    asset: TaggedPatternPointer,
+    playback: AudioPlayback,
+    math: BlissfulGridTimingsMath,
+  ) => this.make({ asset, playback, math })
 }

@@ -49,11 +49,12 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
-        return PatternPatternSilenceTransitionState.make({
-          accord: incoming.asset.accord,
-          strength: incoming.asset.strength,
-          transitionQueue: [oldest, middle],
-        })
+        return PatternPatternSilenceTransitionState.makeSimple(
+          incoming.asset.accord,
+          incoming.asset.strength,
+          oldest,
+          middle,
+        )
       }
       yield* Effect.logError({
         oldest,
@@ -89,19 +90,27 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
-    return PatternPatternPatternTransitionState.make({
-      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-        oldest.math
-          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [
-        oldest,
-        middle,
-        yield* oldest.scheduleNextPattern(
-          desiredAsset,
-          now,
-          blissfulGridTimingsMath,
-        ),
-      ],
-    })
+    return PatternPatternPatternTransitionState.makeSimple(
+      oldest.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      oldest,
+      middle,
+      yield* oldest.scheduleNextPattern(
+        desiredAsset,
+        now,
+        blissfulGridTimingsMath,
+      ),
+    )
   }
+
+  static makeSimple = (
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+    oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    middle: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    incoming: IncomingPatternFadingIn,
+  ) =>
+    this.make({
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      transitionQueue: [oldest, middle, incoming],
+    })
 }

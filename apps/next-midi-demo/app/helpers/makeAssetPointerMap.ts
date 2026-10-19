@@ -26,9 +26,9 @@ export const makeAssetPointerMapFactory = Effect.gen(function* () {
       Iterable.cartesian(accords, strengths),
       Iterable.flatMap(([accord, strength]) =>
         Iterable.appendAll(
-          Iterable.of(TaggedSlowStrumPointer.make({ accord, strength })),
+          Iterable.of(TaggedSlowStrumPointer.makeSimple(accord, strength)),
           Iterable.map(patterns, pattern =>
-            TaggedPatternPointer.make({ pattern, accord, strength }),
+            TaggedPatternPointer.makeSimple(pattern, accord, strength),
           ),
         ),
       ),

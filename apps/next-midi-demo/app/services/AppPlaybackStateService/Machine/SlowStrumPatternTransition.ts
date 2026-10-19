@@ -36,4 +36,14 @@ export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStru
       new Error('slow strums are deferred (SlowStrumPattern)'),
     )
   }
+
+  static makeSimple = (
+    firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+    strum: SlowStrumTransitionQueueElement,
+    scheduled: ScheduledPatternTransitionQueueElement,
+  ) =>
+    this.make({
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      transitionQueue: [strum, scheduled],
+    })
 }

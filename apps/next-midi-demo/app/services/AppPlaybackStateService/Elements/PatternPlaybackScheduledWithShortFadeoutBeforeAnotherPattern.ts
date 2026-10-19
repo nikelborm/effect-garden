@@ -61,12 +61,12 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
       const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
         blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
       )
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.make({
-        asset: this.asset,
-        playback: this.playback,
+      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
+        this.asset,
+        this.playback,
         cleanupFiberToolkit,
-        math: blissfulGridTimingsMath,
-      })
+        blissfulGridTimingsMath,
+      )
     },
   )
 
@@ -89,11 +89,11 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
         fadeInEndsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
-      return IncomingPatternFadingIn.make({
-        asset: desiredAsset,
+      return IncomingPatternFadingIn.makeSimple(
+        desiredAsset,
         playback,
-        math: blissfulGridTimingsMath,
-      })
+        blissfulGridTimingsMath,
+      )
     },
   )
 

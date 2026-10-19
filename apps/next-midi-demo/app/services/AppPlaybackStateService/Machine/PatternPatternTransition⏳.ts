@@ -57,22 +57,20 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
-        return PatternSilenceTransitionState.make({
-          accord: incoming.asset.accord,
-          strength: incoming.asset.strength,
-          // TODO: cancel current's old short fadeout and schedule the new long fadeout
-          transitionQueue: [current],
-        })
+        // TODO: cancel current's old short fadeout and schedule the new long fadeout
+        return PatternSilenceTransitionState.makeSimple(
+          current.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          current,
+        )
       }
 
-      return PatternPatternSilenceTransitionState.make({
-        accord: incoming.asset.accord,
-        strength: incoming.asset.strength,
-        transitionQueue: [
-          current,
-          yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
-        ],
-      })
+      return PatternPatternSilenceTransitionState.makeSimple(
+        incoming.asset.accord,
+        incoming.asset.strength,
+        current,
+        yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
+      )
     }
 
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
@@ -83,45 +81,38 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     ) {
       const revived = yield* current.cancelFadeoutAndRestore(now)
       yield* incoming.drop()
-      return PatternState.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          revived.math
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        transitionQueue: [revived],
-      })
+      return PatternState.makeSimple(
+        revived.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        revived,
+      )
     }
 
     if (!incomingFadeInIsStillRevocable) {
-      return PatternPatternPatternTransitionState.make({
-        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-          current.math
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        transitionQueue: [
-          current,
-          yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
-          yield* current.scheduleNextPattern(
-            desiredAsset,
-            now,
-            blissfulGridTimingsMath,
-          ),
-        ],
-      })
-    }
-
-    yield* incoming.drop()
-    return PatternPatternTransitionState.make({
-      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+      return PatternPatternPatternTransitionState.makeSimple(
         current.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [
-        yield* current.reanchorFadeoutOnto(now, blissfulGridTimingsMath),
+        current,
+        yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
         yield* current.scheduleNextPattern(
           desiredAsset,
           now,
           blissfulGridTimingsMath,
         ),
-      ],
-    })
+      )
+    }
+
+    yield* incoming.drop()
+    return PatternPatternTransitionState.makeSimple(
+      current.math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      yield* current.reanchorFadeoutOnto(now, blissfulGridTimingsMath),
+      yield* current.scheduleNextPattern(
+        desiredAsset,
+        now,
+        blissfulGridTimingsMath,
+      ),
+    )
   }
 
   /** 🏁 */

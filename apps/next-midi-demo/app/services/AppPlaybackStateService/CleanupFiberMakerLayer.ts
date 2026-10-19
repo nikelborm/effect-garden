@@ -76,21 +76,17 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
   if (PatternPatternSilenceTransitionState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return PatternSilenceTransitionState.make({
-      accord: state.accord,
-      strength: state.strength,
-      transitionQueue: [q[1]],
-    })
+    return PatternSilenceTransitionState.makeSimple(
+      q[1].math
+        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      q[1],
+    )
   }
 
   if (PatternSilenceTransitionState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return SilenceState.make({
-      accord: state.accord,
-      strength: state.strength,
-      transitionQueue: [],
-    })
+    return SilenceState.makeSimple(state.accord, state.strength)
   }
 
   if (PatternPatternPatternTransitionState.models(state)) {
@@ -101,14 +97,16 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
       middle._tag ===
       'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
     )
-      return PatternPatternTransitionState.make({
-        playbackStartedAtSecond: state.playbackStartedAtSecond,
-        transitionQueue: [middle, incoming],
-      })
-    return PatternSilencePatternTransitionState.make({
-      playbackStartedAtSecond: state.playbackStartedAtSecond,
-      transitionQueue: [middle, incoming],
-    })
+      return PatternPatternTransitionState.makeSimple(
+        state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        middle,
+        incoming,
+      )
+    return PatternSilencePatternTransitionState.makeSimple(
+      state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      middle,
+      incoming,
+    )
   }
 
   if (
@@ -117,11 +115,10 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
   ) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return PatternState.make({
-      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
-        state.playbackStartedAtSecond,
-      transitionQueue: [q[1].becomeLive()],
-    })
+    return PatternState.makeSimple(
+      state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      q[1].becomeLive(),
+    )
   }
 
   return state
