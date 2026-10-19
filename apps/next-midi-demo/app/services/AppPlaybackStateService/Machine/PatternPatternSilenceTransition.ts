@@ -5,16 +5,17 @@ import { AccordData, AccordSchema } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
-import { FadingOutPatternPlayback } from '../Elements/FadingOutPatternPlayback.ts'
+import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
+import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 
-export const TwoPatternsFadingToSilenceQueue = Schema.Tuple([
-  FadingOutPatternPlayback,
-  FadingOutPatternPlayback,
+export const PatternPatternSilenceTransitionQueue = Schema.Tuple([
+  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
 
 export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
@@ -22,7 +23,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
   {
     accord: AccordSchema,
     strength: StrengthSchema,
-    transitionQueue: TwoPatternsFadingToSilenceQueue,
+    transitionQueue: PatternPatternSilenceTransitionQueue,
   },
 ) {
   declare protected '~brand~': never
