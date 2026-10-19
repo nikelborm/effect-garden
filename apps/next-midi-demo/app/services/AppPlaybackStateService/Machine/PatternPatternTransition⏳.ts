@@ -56,6 +56,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
         return PatternSilenceTransitionState.make({
           accord: incoming.asset.accord,
           strength: incoming.asset.strength,
+          // TODO: cancel current's old short fadeout and schedule the new long fadeout
           transitionQueue: [current],
         })
       }
