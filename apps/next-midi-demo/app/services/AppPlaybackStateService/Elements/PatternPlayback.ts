@@ -95,20 +95,24 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
     },
   )
 
+  /** 🏁 */
   static makeSimple = (
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     playbackStartedAtSecond: number,
   ) => this.make({ asset, playback, playbackStartedAtSecond })
 
+  /** 🏁 */
   get accord() {
     return this.asset.accord
   }
 
+  /** 🏁 */
   get pattern() {
     return this.asset.pattern
   }
 
+  /** 🏁 */
   get strength() {
     return this.asset.strength
   }
