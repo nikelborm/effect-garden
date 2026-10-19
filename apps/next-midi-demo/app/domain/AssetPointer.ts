@@ -3,7 +3,7 @@ import { AbsentProperty } from '@evadev/effect-helpers/AbsentProperty'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
-import { type Accord, AccordData, AccordSchema } from './Accord.ts'
+import { type Chord, ChordData, ChordSchema } from './Chord.ts'
 import {
   type Pattern,
   PatternData,
@@ -15,7 +15,7 @@ import { type Strength, type StrengthData, StrengthSchema } from './Strength.ts'
 
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
   'TaggedPatternPointer',
-  { pattern: PatternSchema, accord: AccordSchema, strength: StrengthSchema },
+  { pattern: PatternSchema, chord: ChordSchema, strength: StrengthSchema },
 ) {
   declare protected '~brand~': never
   static models = Schema.is(this)
@@ -23,25 +23,25 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
     // to be able to pass a callback to array mappers for example
     this.make = this.make.bind(this)
   }
-  static makeSimple = (pattern: Pattern, accord: Accord, strength: Strength) =>
-    this.make({ accord, pattern, strength })
+  static makeSimple = (pattern: Pattern, chord: Chord, strength: Strength) =>
+    this.make({ chord, pattern, strength })
 
   makePatchedFrom = (pressedParamButtonId: PressedParamButtonId) =>
     PatternData.models(pressedParamButtonId)
       ? TaggedPatternPointer.makeSimple(
           pressedParamButtonId.pattern,
-          this.accord,
+          this.chord,
           this.strength,
         )
-      : AccordData.models(pressedParamButtonId)
+      : ChordData.models(pressedParamButtonId)
         ? TaggedPatternPointer.makeSimple(
             this.pattern,
-            pressedParamButtonId.accord,
+            pressedParamButtonId.chord,
             this.strength,
           )
         : TaggedPatternPointer.makeSimple(
             this.pattern,
-            this.accord,
+            this.chord,
             pressedParamButtonId.strength,
           )
 }
@@ -50,7 +50,7 @@ export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 
 export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPointer>()(
   'TaggedSlowStrumPointer',
-  { pattern: AbsentProperty, accord: AccordSchema, strength: StrengthSchema },
+  { pattern: AbsentProperty, chord: ChordSchema, strength: StrengthSchema },
 ) {
   declare protected '~brand~': never
   static models = Schema.is(this)
@@ -58,17 +58,17 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
     this.make = this.make.bind(this)
   }
 
-  static makeSimple = (accord: Accord, strength: Strength) =>
-    this.make({ accord, strength })
+  static makeSimple = (chord: Chord, strength: Strength) =>
+    this.make({ chord, strength })
 
-  patch = (pressedParamButtonId: AccordData | StrengthData) =>
-    AccordData.models(pressedParamButtonId)
+  patch = (pressedParamButtonId: ChordData | StrengthData) =>
+    ChordData.models(pressedParamButtonId)
       ? TaggedSlowStrumPointer.makeSimple(
-          pressedParamButtonId.accord,
+          pressedParamButtonId.chord,
           this.strength,
         )
       : TaggedSlowStrumPointer.makeSimple(
-          this.accord,
+          this.chord,
           pressedParamButtonId.strength,
         )
 }
@@ -94,7 +94,7 @@ export const complexifyAssetPointer = ({
 export const simplifyAssetPointer = (
   asset: AssetPointer,
 ): SimpleAssetPointer => ({
-  accord: asset.accord,
+  chord: asset.chord,
   pattern: TaggedPatternPointer.models(asset)
     ? Option.some(asset.pattern)
     : Option.none(),
@@ -102,7 +102,7 @@ export const simplifyAssetPointer = (
 })
 
 export interface SimpleAssetPointer {
-  readonly accord: Accord
+  readonly chord: Chord
   readonly pattern: PatternOption
   readonly strength: Strength
 }

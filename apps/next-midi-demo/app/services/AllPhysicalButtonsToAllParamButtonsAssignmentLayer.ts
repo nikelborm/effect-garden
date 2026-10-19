@@ -2,11 +2,7 @@ import * as EArray from 'effect/Array'
 import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
-import {
-  AccordData,
-  AccordParamButtonData,
-  AllAccords,
-} from '../domain/Accord.ts'
+import { AllChords, ChordData, ChordParamButtonData } from '../domain/Chord.ts'
 import { DOMPhysicalButtonData } from '../domain/DOMButton.ts'
 import { KeyboardKeyPhysicalButtonData } from '../domain/KeyboardKey.ts'
 import { NotePhysicalButtonData } from '../domain/MIDIValues.ts'
@@ -25,7 +21,7 @@ import { makeMIDINoteButtonPressStream } from '../helpers/makeMIDINoteButtonPres
 import { makeParamButtonTouchStateStream } from '../helpers/makeParamButtonTouchStateStream.ts'
 import { assignPhysicalButtonGroupToRespectiveParamButtons } from './assignPhysicalButtonGroupToRespectiveParamButtons.ts'
 import {
-  AccordInputBus,
+  ChordInputBus,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
@@ -42,11 +38,11 @@ const makePhysicalKeyDatas = (keys: Iterable<string>) =>
     KeyboardKeyPhysicalButtonData.makeUnsafe,
   ) as unknown as EArray.NonEmptyReadonlyArray<KeyboardKeyPhysicalButtonData>
 
-// Keyboard - Accord
-const keyboardAccordKeys = 'qwertyuiйцукенгш'
-const physicalKeyIdsHandlingAccords = makePhysicalKeyDatas(keyboardAccordKeys)
-const keysHandlingAccordsSet = new Set(
-  physicalKeyIdsHandlingAccords.map(data => data.id.key),
+// Keyboard - Chord
+const keyboardChordKeys = 'qwertyuiйцукенгш'
+const physicalKeyIdsHandlingChords = makePhysicalKeyDatas(keyboardChordKeys)
+const keysHandlingChordsSet = new Set(
+  physicalKeyIdsHandlingChords.map(data => data.id.key),
 )
 
 // Keyboard - Pattern
@@ -64,11 +60,11 @@ const keysHandlingStrengthsSet = new Set(
   physicalKeyIdsHandlingStrengths.map(data => data.id.key),
 )
 
-// MIDI - Accord
-const midiAccordNotes = EArray.range(84, 91)
-const physicalNoteIdsHandlingAccords = makePhysicalNoteDatas(midiAccordNotes)
-const notesHandlingAccordsSet = new Set(
-  physicalNoteIdsHandlingAccords.map(data => data.id.note),
+// MIDI - Chord
+const midiChordNotes = EArray.range(84, 91)
+const physicalNoteIdsHandlingChords = makePhysicalNoteDatas(midiChordNotes)
+const notesHandlingChordsSet = new Set(
+  physicalNoteIdsHandlingChords.map(data => data.id.note),
 )
 
 // MIDI - Pattern
@@ -87,17 +83,14 @@ const notesHandlingStrengthsSet = new Set(
 )
 
 const paramButtonIds = Effect.all({
-  AllAccords,
+  AllChords,
   AllPatterns,
   AllStrengths,
 }).pipe(
   Effect.map(
     _ =>
       ({
-        accordParamButtonIds: EArray.map(
-          _.AllAccords,
-          AccordParamButtonData.make,
-        ),
+        chordParamButtonIds: EArray.map(_.AllChords, ChordParamButtonData.make),
         patternParamButtonIds: EArray.map(
           _.AllPatterns,
           PatternParamButtonData.make,
@@ -113,19 +106,16 @@ const paramButtonIds = Effect.all({
 )
 
 export const KeyboardButtonMappingLayer = Effect.gen(function* () {
-  const {
-    accordParamButtonIds,
-    patternParamButtonIds,
-    strengthParamButtonIds,
-  } = yield* paramButtonIds
+  const { chordParamButtonIds, patternParamButtonIds, strengthParamButtonIds } =
+    yield* paramButtonIds
 
   yield* Effect.all(
     [
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        physicalKeyIdsHandlingAccords,
-        [...accordParamButtonIds, ...accordParamButtonIds],
-        makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingAccordsSet),
-        AccordInputBus,
+        physicalKeyIdsHandlingChords,
+        [...chordParamButtonIds, ...chordParamButtonIds],
+        makeKeyboardButtonPressStateStreamOfSomeKeys(keysHandlingChordsSet),
+        ChordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalKeyIdsHandlingPatterns,
@@ -147,20 +137,17 @@ export const KeyboardButtonMappingLayer = Effect.gen(function* () {
 }).pipe(Effect.withSpan('KeyboardButtonMappingLayer.init'), Layer.effectDiscard)
 
 export const MIDIPadButtonMappingLayer = Effect.gen(function* () {
-  const {
-    accordParamButtonIds,
-    patternParamButtonIds,
-    strengthParamButtonIds,
-  } = yield* paramButtonIds
+  const { chordParamButtonIds, patternParamButtonIds, strengthParamButtonIds } =
+    yield* paramButtonIds
 
   yield* Effect.all(
     [
       // TODO: midi device selector
       assignPhysicalButtonGroupToRespectiveParamButtons(
-        physicalNoteIdsHandlingAccords,
-        accordParamButtonIds,
-        makeMIDINoteButtonPressStream(notesHandlingAccordsSet),
-        AccordInputBus,
+        physicalNoteIdsHandlingChords,
+        chordParamButtonIds,
+        makeMIDINoteButtonPressStream(notesHandlingChordsSet),
+        ChordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         physicalNoteIdsHandlingPatterns,
@@ -180,11 +167,8 @@ export const MIDIPadButtonMappingLayer = Effect.gen(function* () {
 }).pipe(Effect.withSpan('MIDIPadButtonMappingLayer.init'), Layer.effectDiscard)
 
 export const OnScreenButtonMappingLayer = Effect.gen(function* () {
-  const {
-    accordParamButtonIds,
-    patternParamButtonIds,
-    strengthParamButtonIds,
-  } = yield* paramButtonIds
+  const { chordParamButtonIds, patternParamButtonIds, strengthParamButtonIds } =
+    yield* paramButtonIds
 
   yield* Effect.all(
     [
@@ -193,12 +177,12 @@ export const OnScreenButtonMappingLayer = Effect.gen(function* () {
 
       assignPhysicalButtonGroupToRespectiveParamButtons(
         EArray.map(
-          accordParamButtonIds,
+          chordParamButtonIds,
           DOMPhysicalButtonData.makeFromParamButton,
         ),
-        accordParamButtonIds,
-        makeParamButtonTouchStateStream('accord', AccordData.makeUnsafe),
-        AccordInputBus,
+        chordParamButtonIds,
+        makeParamButtonTouchStateStream('chord', ChordData.makeUnsafe),
+        ChordInputBus,
       ),
       assignPhysicalButtonGroupToRespectiveParamButtons(
         EArray.map(

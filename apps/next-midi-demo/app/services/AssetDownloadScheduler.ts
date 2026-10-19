@@ -7,13 +7,13 @@ import * as Stream from 'effect/Stream'
 import * as Struct from 'effect/Struct'
 
 import { MAX_PARALLEL_ASSET_DOWNLOADS } from '../constants.ts'
-import { defaultAccord } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   complexifyAssetPointer,
   type SimpleAssetPointer,
   simplifyAssetPointer,
 } from '../domain/AssetPointer.ts'
+import { defaultChord } from '../domain/Chord.ts'
 import { defaultStrength } from '../domain/Strength.ts'
 import { getNeighborMIDIPadButtons } from '../helpers/getNeighborMIDIPadButtons.ts'
 import { reactivelySchedule } from '../helpers/reactiveFiberScheduler.ts'
@@ -135,7 +135,7 @@ export const AssetDownloadSchedulerLayer = Effect.gen(function* () {
   // STUB: selection inference from playback state is deferred. Schedule
   // downloads around a fixed default asset for now.
   const stubSelectedAsset = complexifyAssetPointer({
-    accord: defaultAccord,
+    chord: defaultChord,
     pattern: Option.none(),
     strength: defaultStrength,
   })

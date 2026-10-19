@@ -14,13 +14,13 @@ impossible to construct the type like this:
 ```ts
 const asd: TaggedPatternPointer = {
   pattern: '1' as '1' & Brand.Brand<'Pattern'>,
-  accord: 'C' as 'C' & Brand.Brand<'Accord'>,
+  chord: 'C' as 'C' & Brand.Brand<'Chord'>,
   _tag: 'TaggedPatternPointer',
   '~brand~': 'any' as never,
   strength: 's' as 's' & Brand.Brand<'Strength'>,
 }
 // Gives this error as expected:
-// Property ''~brand~'' is protected but type '{ pattern: "1" & Brand<"Pattern">; accord: "C" & Brand<"Accord">; _tag: "TaggedPatternPointer"; '~brand~': never; strength: "s" & Brand<"Strength">; }' is not a class derived from 'TaggedPatternPointer'.
+// Property ''~brand~'' is protected but type '{ pattern: "1" & Brand<"Pattern">; chord: "C" & Brand<"Chord">; _tag: "TaggedPatternPointer"; '~brand~': never; strength: "s" & Brand<"Strength">; }' is not a class derived from 'TaggedPatternPointer'.
 // because we didn't use new keyword. this forces you to always go through new keyword construction
 ```
 

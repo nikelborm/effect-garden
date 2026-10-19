@@ -1,9 +1,9 @@
-import type { AccordData } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../domain/AssetPointer.ts'
+import type { ChordData } from '../domain/Chord.ts'
 import { PatternData } from '../domain/Pattern.ts'
 import type { StrengthData } from '../domain/Strength.ts'
 
@@ -15,4 +15,4 @@ export const makePatchApplier =
       : TaggedSlowStrumPointer
     ).make({ ...old, ...patch } as any)
 
-export type Patch = PatternData | AccordData | StrengthData
+export type Patch = PatternData | ChordData | StrengthData

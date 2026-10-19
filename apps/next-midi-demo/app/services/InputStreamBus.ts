@@ -14,8 +14,8 @@ import * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
-import type { AccordData } from '../domain/Accord.ts'
 import * as ButtonState from '../domain/ButtonState.ts'
+import type { ChordData } from '../domain/Chord.ts'
 import type { KeyboardKeyData } from '../domain/KeyboardKey.ts'
 import type { NoteIdData } from '../domain/MIDIValues.ts'
 import { ParamButtonIdData } from '../domain/ParamButton.ts'
@@ -207,15 +207,15 @@ export type SupportedPhysicalButtonIds =
   | NoteIdData
   // the last three come from onscreen buttons
   // TODO: probably would be better to wrap them with OnScreenButtonIdData<T>
-  | AccordData
+  | ChordData
   | PatternData
   | StrengthData
 
-export class AccordInputBus extends Context.Service<AccordInputBus>()(
-  'next-midi-demo/app/services/InputStreamBus/AccordInputBus',
+export class ChordInputBus extends Context.Service<ChordInputBus>()(
+  'next-midi-demo/app/services/InputStreamBus/ChordInputBus',
   {
-    make: makeInputBus<SupportedPhysicalButtonIds, AccordData>().pipe(
-      Effect.withSpan('AccordInputBus.init'),
+    make: makeInputBus<SupportedPhysicalButtonIds, ChordData>().pipe(
+      Effect.withSpan('ChordInputBus.init'),
     ),
   },
 ) {
@@ -224,9 +224,9 @@ export class AccordInputBus extends Context.Service<AccordInputBus>()(
   )
 }
 
-export const AccordInputBusLayer: Layer.Layer<AccordInputBus> = Layer.effect(
-  AccordInputBus,
-  AccordInputBus.make,
+export const ChordInputBusLayer: Layer.Layer<ChordInputBus> = Layer.effect(
+  ChordInputBus,
+  ChordInputBus.make,
 )
 
 export class PatternInputBus extends Context.Service<PatternInputBus>()(
@@ -263,7 +263,7 @@ export class StrengthInputBus extends Context.Service<StrengthInputBus>()(
 export const StrengthInputBusLayer: Layer.Layer<StrengthInputBus> =
   Layer.effect(StrengthInputBus, StrengthInputBus.make)
 
-export type AllInputBuses = AccordInputBus | PatternInputBus | StrengthInputBus
+export type AllInputBuses = ChordInputBus | PatternInputBus | StrengthInputBus
 
 export interface RegisterMethod<
   TPhysicalButtonId extends TaggedReadonlyObject,

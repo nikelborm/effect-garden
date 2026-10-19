@@ -12,7 +12,7 @@ export const inferSelection = (state: AppPlaybackState): SimpleAssetPointer => {
     state._tag === 'PatternSilenceTransitionState'
   )
     return {
-      accord: state.accord,
+      chord: state.chord,
       pattern: Option.none(),
       strength: state.strength,
     }

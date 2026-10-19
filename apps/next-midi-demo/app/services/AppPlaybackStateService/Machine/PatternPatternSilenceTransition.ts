@@ -1,12 +1,8 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import {
-  type Accord,
-  AccordData,
-  AccordSchema,
-} from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import { type Chord, ChordData, ChordSchema } from '../../../domain/Chord.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
   type Strength,
@@ -29,7 +25,7 @@ export const PatternPatternSilenceTransitionQueue = Schema.Tuple([
 export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
   'PatternPatternSilenceTransitionState',
   {
-    accord: AccordSchema,
+    chord: ChordSchema,
     strength: StrengthSchema,
     transitionQueue: PatternPatternSilenceTransitionQueue,
   },
@@ -38,18 +34,18 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
   static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    const { accord, strength } = this
+    const { chord, strength } = this
     const [oldest, fading] = this.transitionQueue
 
     if (StrengthData.models(pressedParamButtonId))
       return PatternPatternSilenceTransitionState.makeSimple(
-        accord,
+        chord,
         pressedParamButtonId.strength,
         oldest,
         fading,
       )
 
-    if (AccordData.models(pressedParamButtonId))
+    if (ChordData.models(pressedParamButtonId))
       return yield* Effect.die(
         new Error(
           'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
@@ -58,7 +54,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
 
     const asset = TaggedPatternPointer.makeSimple(
       pressedParamButtonId.pattern,
-      accord,
+      chord,
       strength,
     )
     const now = yield* GetAudioNow.run
@@ -77,13 +73,13 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
   }
 
   static makeSimple = (
-    accord: Accord,
+    chord: Chord,
     strength: Strength,
     oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
     fading: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
   ) =>
     this.make({
-      accord,
+      chord,
       strength,
       transitionQueue: [oldest, fading],
     })

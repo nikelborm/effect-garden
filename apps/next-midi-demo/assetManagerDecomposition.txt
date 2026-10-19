@@ -5,7 +5,7 @@ I have an application that features an interactive audio asset player
 A user has 3 controls, that work like radio buttons, so only one option can be
 selected in the list of possible options:
 
-1. 8 accord options
+1. 8 chord options
 2. 8 pattern options
 3. 3 loudness options
 

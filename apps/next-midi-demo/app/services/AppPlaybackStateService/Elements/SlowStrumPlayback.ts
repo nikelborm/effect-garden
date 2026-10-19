@@ -39,8 +39,8 @@ export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
     math: BlissfulGridTimingsMath,
   ) => this.make({ asset, playback, math })
 
-  get accord() {
-    return this.asset.accord
+  get chord() {
+    return this.asset.chord
   }
 
   get pattern() {

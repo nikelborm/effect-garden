@@ -86,7 +86,7 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
   if (PatternSilenceTransitionState.models(state)) {
     const q = state.transitionQueue
     yield* q[0].dispose()
-    return SilenceState.makeSimple(state.accord, state.strength)
+    return SilenceState.makeSimple(state.chord, state.strength)
   }
 
   if (PatternPatternPatternTransitionState.models(state)) {

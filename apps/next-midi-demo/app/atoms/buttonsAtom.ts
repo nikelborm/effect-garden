@@ -13,11 +13,11 @@ import * as Scope from 'effect/Scope'
 // import * as LogLevel from 'effect/LogLevel'
 
 import {
-  type Accord,
-  AccordParamButtonData,
-  AllAccordsLayer,
-  defaultAccord,
-} from '../domain/Accord.ts'
+  AllChordsLayer,
+  type Chord,
+  ChordParamButtonData,
+  defaultChord,
+} from '../domain/Chord.ts'
 import {
   AllPatternsLayer,
   type Pattern,
@@ -52,15 +52,15 @@ import { DeferredAudioContextServiceLayer } from '../services/DeferredAudioConte
 import { DeferredMIDIAccessServiceLayer } from '../services/DeferredMIDIAccessService.ts'
 import { DownloadManagerLayer } from '../services/DownloadManager.ts'
 import {
-  AccordInputBusLayer,
+  ChordInputBusLayer,
   PatternInputBusLayer,
   StrengthInputBusLayer,
 } from '../services/InputStreamBus.ts'
 import { LoadedAssetSizeEstimationMapLayer } from '../services/LoadedAssetSizeEstimationMap.ts'
 import { OpfsWritableHandleManagerLayer } from '../services/OpfsWritableHandleManager.ts'
 import {
-  AccordParamButtonService,
-  AccordParamButtonServiceLayer,
+  ChordParamButtonService,
+  ChordParamButtonServiceLayer,
   PatternParamButtonService,
   PatternParamButtonServiceLayer,
   StrengthParamButtonService,
@@ -70,8 +70,8 @@ import { RootDirectoryHandleLayer } from '../services/RootDirectoryHandle.ts'
 import { SelectedMIDIInputServiceLayer } from '../services/SelectedMIDIInputService.ts'
 import { somebodyKillMe, TracingLive } from './tracing.ts'
 
-const AccordInputBusNoDeps = AccordInputBusLayer.pipe(
-  Layer.withSpan('AccordInputBusLayer'),
+const ChordInputBusNoDeps = ChordInputBusLayer.pipe(
+  Layer.withSpan('ChordInputBusLayer'),
   Layer.satisfiesServicesType<never>(),
 )
 const PatternInputBusNoDeps = PatternInputBusLayer.pipe(
@@ -84,12 +84,12 @@ const StrengthInputBusNoDeps = StrengthInputBusLayer.pipe(
 )
 
 const AllBusesNoDeps = Layer.mergeAll(
-  AccordInputBusNoDeps,
+  ChordInputBusNoDeps,
   PatternInputBusNoDeps,
   StrengthInputBusNoDeps,
 ).pipe(Layer.withSpan('AllBusesNoDeps'), Layer.satisfiesServicesType<never>())
 
-const AllAccordsNoDeps = AllAccordsLayer.pipe(
+const AllChordsNoDeps = AllChordsLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 const AllPatternsNoDeps = AllPatternsLayer.pipe(
@@ -100,7 +100,7 @@ const AllStrengthsNoDeps = AllStrengthsLayer.pipe(
 )
 
 const AllConstantsNoDeps = Layer.mergeAll(
-  AllAccordsNoDeps,
+  AllChordsNoDeps,
   AllPatternsNoDeps,
   AllStrengthsNoDeps,
 ).pipe(Layer.satisfiesServicesType<never>())
@@ -242,10 +242,10 @@ const AssetDownloadSchedulerNoDeps = AssetDownloadSchedulerLayer.pipe(
   Layer.satisfiesServicesType<never>(),
 )
 
-const AccordParamButtonServiceNoDeps = AccordParamButtonServiceLayer.pipe(
-  Layer.provide(AccordInputBusNoDeps),
+const ChordParamButtonServiceNoDeps = ChordParamButtonServiceLayer.pipe(
+  Layer.provide(ChordInputBusNoDeps),
   Layer.provide(AppPlaybackStateServiceNoDeps),
-  Layer.withSpan('AccordParamButtonServiceNoDeps'),
+  Layer.withSpan('ChordParamButtonServiceNoDeps'),
   Layer.satisfiesServicesType<never>(),
 )
 
@@ -264,7 +264,7 @@ const StrengthParamButtonServiceNoDeps = StrengthParamButtonServiceLayer.pipe(
 )
 
 const ParamButtonServiceNoDeps = Layer.mergeAll(
-  AccordParamButtonServiceNoDeps,
+  ChordParamButtonServiceNoDeps,
   PatternParamButtonServiceNoDeps,
   StrengthParamButtonServiceNoDeps,
 ).pipe(
@@ -313,25 +313,25 @@ export const testAtom = builtRuntime.atom(() =>
 
 // runtime.
 
-// export const isAccordButtonPressableAtom = Atom.family((accord: Accord) =>
+// export const isChordButtonPressableAtom = Atom.family((chord: Chord) =>
 //   EFunction.pipe(
-//     accord,
-//     AccordParamButtonData.make,
-//     AccordParamButtonService.getPressabilityChangesStream,
+//     chord,
+//     ChordParamButtonData.make,
+//     ChordParamButtonService.getPressabilityChangesStream,
 //     Stream.unwrap,
 //     s =>
 //       runtime.atom(s, {
-//         initialValue: accord !== defaultAccord,
+//         initialValue: chord !== defaultChord,
 //       }),
 //     Atom.withFallback(
 //       Atom.readable(() =>
-//         Result.success(accord !== defaultAccord, { waiting: true }),
+//         Result.success(chord !== defaultChord, { waiting: true }),
 //       ),
 //     ),
 
 //     Atom.withServerValue(
 //       EFunction.constant(
-//         Result.success(accord !== defaultAccord, { waiting: true }),
+//         Result.success(chord !== defaultChord, { waiting: true }),
 //       ),
 //     ),
 //   ),
@@ -379,23 +379,23 @@ export const testAtom = builtRuntime.atom(() =>
 //   ),
 // )
 
-export const isAccordSelectedAtom = Atom.family((accord: Accord) =>
+export const isChordSelectedAtom = Atom.family((chord: Chord) =>
   EFunction.pipe(
-    accord,
-    AccordParamButtonData.make,
-    AccordParamButtonService.getIsSelectedStream,
+    chord,
+    ChordParamButtonData.make,
+    ChordParamButtonService.getIsSelectedStream,
     s =>
       builtRuntime.atom(s, {
-        initialValue: accord === defaultAccord,
+        initialValue: chord === defaultChord,
       }),
     Atom.withFallback(
       Atom.readable(() =>
-        AsyncResult.success(accord === defaultAccord, { waiting: true }),
+        AsyncResult.success(chord === defaultChord, { waiting: true }),
       ),
     ),
     Atom.withServerValue(
       EFunction.constant(
-        AsyncResult.success(accord === defaultAccord, { waiting: true }),
+        AsyncResult.success(chord === defaultChord, { waiting: true }),
       ),
     ),
   ),
@@ -441,11 +441,11 @@ export const isStrengthSelectedAtom = Atom.family((strength: Strength) =>
   ),
 )
 
-export const isAccordPressedAtom = Atom.family((accord: Accord) =>
+export const isChordPressedAtom = Atom.family((chord: Chord) =>
   EFunction.pipe(
-    accord,
-    AccordParamButtonData.make,
-    AccordParamButtonService.isPressedFlagChangesStream,
+    chord,
+    ChordParamButtonData.make,
+    ChordParamButtonService.isPressedFlagChangesStream,
     s =>
       builtRuntime.atom(s, {
         initialValue: false,
@@ -498,23 +498,22 @@ export const isStrengthPressedAtom = Atom.family((strength: Strength) =>
 // "Currently playing" = this button's value is part of whatever is actually
 // sounding right now (a loop stays playing while it fades out). Initial state
 // is Silence, so nothing plays yet.
-export const isAccordButtonCurrentlyPlayingAtom = Atom.family(
-  (accord: Accord) =>
-    EFunction.pipe(
-      accord,
-      AccordParamButtonData.make,
-      AccordParamButtonService.getIsPlayingStream,
-      s =>
-        builtRuntime.atom(s, {
-          initialValue: false,
-        }),
-      Atom.withFallback(
-        Atom.readable(() => AsyncResult.success(false, { waiting: true })),
-      ),
-      Atom.withServerValue(
-        EFunction.constant(AsyncResult.success(false, { waiting: true })),
-      ),
+export const isChordButtonCurrentlyPlayingAtom = Atom.family((chord: Chord) =>
+  EFunction.pipe(
+    chord,
+    ChordParamButtonData.make,
+    ChordParamButtonService.getIsPlayingStream,
+    s =>
+      builtRuntime.atom(s, {
+        initialValue: false,
+      }),
+    Atom.withFallback(
+      Atom.readable(() => AsyncResult.success(false, { waiting: true })),
     ),
+    Atom.withServerValue(
+      EFunction.constant(AsyncResult.success(false, { waiting: true })),
+    ),
+  ),
 )
 
 export const isPatternButtonCurrentlyPlayingAtom = Atom.family(
@@ -555,11 +554,11 @@ export const isStrengthButtonCurrentlyPlayingAtom = Atom.family(
     ),
 )
 
-export const accordButtonDownloadPercentAtom = Atom.family((accord: Accord) =>
+export const chordButtonDownloadPercentAtom = Atom.family((chord: Chord) =>
   EFunction.pipe(
-    accord,
-    AccordParamButtonData.make,
-    AccordParamButtonService.getDownloadPercent,
+    chord,
+    ChordParamButtonData.make,
+    ChordParamButtonService.getDownloadPercent,
     s =>
       builtRuntime.atom(s, {
         initialValue: 0,

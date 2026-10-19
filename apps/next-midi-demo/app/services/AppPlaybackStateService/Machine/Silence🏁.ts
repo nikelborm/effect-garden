@@ -3,15 +3,15 @@ import { flow } from 'effect/Function'
 import * as Schema from 'effect/Schema'
 
 import {
-  type Accord,
-  type AccordData,
-  AccordSchema,
-  defaultAccord,
-} from '../../../domain/Accord.ts'
-import {
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../../../domain/AssetPointer.ts'
+import {
+  type Chord,
+  type ChordData,
+  ChordSchema,
+  defaultChord,
+} from '../../../domain/Chord.ts'
 import { PatternData } from '../../../domain/Pattern.ts'
 import {
   matchParamButtonId,
@@ -34,7 +34,7 @@ export const SilenceQueue = Schema.Tuple([])
 export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   'SilenceState',
   {
-    accord: AccordSchema,
+    chord: ChordSchema,
     strength: StrengthSchema,
     transitionQueue: SilenceQueue,
   },
@@ -45,44 +45,44 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   /** 🏁 */
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     return yield* matchParamButtonId(pressedParamButtonId)({
-      onAccord: flow(this.getAssetToPlay, SlowStrumState.init),
+      onChord: flow(this.getAssetToPlay, SlowStrumState.init),
       onPattern: flow(this.getAssetToPlay, PatternState.init),
       onStrength: flow(this.withNewStrengthFromData, Effect.succeed),
     })
   }
 
   /** 🏁 */
-  static makeSimple = (accord: Accord, strength: Strength) =>
-    this.make({ accord, strength, transitionQueue: [] })
+  static makeSimple = (chord: Chord, strength: Strength) =>
+    this.make({ chord, strength, transitionQueue: [] })
 
   /** 🏁 */
-  static default = this.makeSimple(defaultAccord, defaultStrength)
+  static default = this.makeSimple(defaultChord, defaultStrength)
 
   /** 🏁 */
   withNewStrengthFromData = (container: StrengthData) =>
-    SilenceState.makeSimple(this.accord, container.strength)
+    SilenceState.makeSimple(this.chord, container.strength)
 
   /** 🏁 */
-  withNewAccordFromData = (container: AccordData) =>
-    SilenceState.makeSimple(container.accord, this.strength)
+  withNewChordFromData = (container: ChordData) =>
+    SilenceState.makeSimple(container.chord, this.strength)
 
   /** 🏁 */
-  getAssetToPlay = <T extends PatternData | AccordData>(
+  getAssetToPlay = <T extends PatternData | ChordData>(
     pressedParamButtonId: T,
   ) =>
     (PatternData.models(pressedParamButtonId)
       ? TaggedPatternPointer.makeSimple(
           pressedParamButtonId.pattern,
-          this.accord,
+          this.chord,
           this.strength,
         )
       : TaggedSlowStrumPointer.makeSimple(
-          pressedParamButtonId.accord,
+          pressedParamButtonId.chord,
           this.strength,
         )) as T extends any // distrubute
       ? T extends PatternData
         ? TaggedPatternPointer
-        : T extends AccordData
+        : T extends ChordData
           ? TaggedSlowStrumPointer
           : never
       : never

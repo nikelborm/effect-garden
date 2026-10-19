@@ -4,7 +4,7 @@ import * as Schema from 'effect/Schema'
 import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
-  theSameAccordOrStrengthWasPressed,
+  theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
@@ -34,7 +34,7 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [current] = this.transitionQueue
 
-    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, current.asset))
+    if (theSameChordOrStrengthWasPressed(pressedParamButtonId, current.asset))
       return this
 
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
@@ -86,8 +86,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     })
 
   /** 🏁 */
-  get accord() {
-    return this.transitionQueue[0].asset.accord
+  get chord() {
+    return this.transitionQueue[0].asset.chord
   }
 
   /** 🏁 */

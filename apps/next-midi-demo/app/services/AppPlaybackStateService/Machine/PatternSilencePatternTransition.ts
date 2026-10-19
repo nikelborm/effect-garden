@@ -3,7 +3,7 @@ import * as Schema from 'effect/Schema'
 
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
-  theSameAccordOrStrengthWasPressed,
+  theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
@@ -38,7 +38,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     const [dying, incoming] = this.transitionQueue
 
-    if (theSameAccordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
+    if (theSameChordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
 
     const now = yield* GetAudioNow.run
@@ -65,7 +65,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       }
 
       return PatternPatternSilenceTransitionState.makeSimple(
-        incoming.asset.accord,
+        incoming.asset.chord,
         incoming.asset.strength,
         dying,
         yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),

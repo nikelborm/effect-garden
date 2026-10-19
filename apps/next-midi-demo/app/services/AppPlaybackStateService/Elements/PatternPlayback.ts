@@ -98,8 +98,8 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   ) => this.make({ asset, playback, math })
 
   /** 🏁 */
-  get accord() {
-    return this.asset.accord
+  get chord() {
+    return this.asset.chord
   }
 
   /** 🏁 */

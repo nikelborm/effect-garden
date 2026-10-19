@@ -1,6 +1,6 @@
 TODO
 
-currrently selected asset should not be represented as tagged pattern VS slow strum. because semantically for slow strums we need to remember only strength, even though the accord also participates in what sound to play. rememberence of accord only plays a role for selection of pattern. There's a point in remembering everything. Though it should not be represented as semantically 2 categories.
+currrently selected asset should not be represented as tagged pattern VS slow strum. because semantically for slow strums we need to remember only strength, even though the chord also participates in what sound to play. rememberence of chord only plays a role for selection of pattern. There's a point in remembering everything. Though it should not be represented as semantically 2 categories.
 
 I need mock webaudio scheduler to ensure that it doesn't create overlapping sounds with property based spam of intentions.
 
@@ -9,22 +9,22 @@ I need mock webaudio scheduler to ensure that it doesn't create overlapping soun
 declare const ctx: {
   button:
     | { type: 'pattern',  id: PatternId  }
-    | { type: 'accord',   id: AccordId   }
+    | { type: 'chord',   id: ChordId   }
     | { type: 'strength', id: StrengthId }
 
   currentlySelected: {
-    accordId: AccordId,
+    chordId: ChordId,
     strengthId: StrengthId,
     patternId: None | Some<PatternId>
   }
 
   playbackState: Silence | PlayingAsset<{
     _tag: 'SlowStrumAsset',
-    accordId: AccordId,
+    chordId: ChordId,
     strengthId: StrengthId,
   } | {
     _tag: 'PatternAsset',
-    accordId: AccordId,
+    chordId: ChordId,
     strengthId: StrengthId,
     patternId: PatternId
   }>
@@ -78,7 +78,7 @@ if (ctx.selectionMode) {
   // if (ctx.button.type === 'pattern') {
 
   // }
-  // if (ctx.button.type === 'accord') {
+  // if (ctx.button.type === 'chord') {
 
   // }
   // ctx.button.type === 'strength'...
@@ -91,7 +91,7 @@ if (ctx.selectionMode) {
         return isDownloaded({
           _tag: 'PatternAsset',
           patternId: ctx.button.id,
-          accordId: currentlySelected.accordId,
+          chordId: currentlySelected.chordId,
           strengthId: currentlySelected.strengthId,
         })
       } else {
@@ -119,7 +119,7 @@ if (ctx.selectionMode) {
       return isDownloaded({
         _tag: 'PatternAsset',
         patternId: ctx.button.id,
-        accordId: currentlySelected.accordId,
+        chordId: currentlySelected.chordId,
         strengthId: currentlySelected.strengthId,
       })
     } else {
@@ -128,42 +128,42 @@ if (ctx.selectionMode) {
       return isDownloaded({
         _tag: 'PatternAsset',
         patternId: ctx.button.id,
-        accordId: currentlySelected.accordId,
+        chordId: currentlySelected.chordId,
         strengthId: currentlySelected.strengthId,
       })
     }
 
   }
-  if (ctx.button.type === 'accord') {
+  if (ctx.button.type === 'chord') {
     if (ctx.playbackState === Silence) {
       return isDownloaded({
         _tag: 'SlowStrumAsset',
-        accordId: ctx.button.id,
+        chordId: ctx.button.id,
         strengthId: currentlySelected.strengthId,
       })
     } else if (ctx.playbackState._tag === 'PatternAsset') {
       // ctx.playbackState === PlayingAsset...
 
-      // no point (?) in clicking the same accord (but only while it plays?)
+      // no point (?) in clicking the same chord (but only while it plays?)
       // TODO: уточнить у Максима
-      if (ctx.button.id === ctx.playbackState.accordId)
+      if (ctx.button.id === ctx.playbackState.chordId)
         return false
 
       if (currentlySelected.patternId === None) {
         // this case is quite realistic. still playing leftovers of the current
         // pattern into silence. latest selected patternId is None. and now the
-        // user clicks on accord. Should schedule and play the slow strum of the
-        // accord
+        // user clicks on chord. Should schedule and play the slow strum of the
+        // chord
         return isDownloaded({
           _tag: 'SlowStrumAsset',
-          accordId: ctx.button.id,
+          chordId: ctx.button.id,
           strengthId: currentlySelected.strengthId,
         })
       }
       return isDownloaded({
         _tag: 'PatternAsset',
         patternId: currentlySelected.patternId,
-        accordId: ctx.button.id,
+        chordId: ctx.button.id,
         strengthId: currentlySelected.strengthId,
       })
     } else {
@@ -171,7 +171,7 @@ if (ctx.selectionMode) {
       //   && ctx.playbackState._tag === 'SlowStrumAsset'...
       return isDownloaded({
         _tag: 'SlowStrumAsset',
-        accordId: ctx.button.id,
+        chordId: ctx.button.id,
         strengthId: currentlySelected.strengthId,
       })
     }

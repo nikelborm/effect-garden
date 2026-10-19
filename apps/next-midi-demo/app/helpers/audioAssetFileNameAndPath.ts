@@ -3,16 +3,16 @@ import * as Option from 'effect/Option'
 import * as Struct from 'effect/Struct'
 
 import {
-  type Accord,
-  accordFileNameRegExpSource,
-  decodeAccordOptionFromUnknown,
-  type UnbrandedAccord,
-} from '../domain/Accord.ts'
-import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../domain/AssetPointer.ts'
+import {
+  type Chord,
+  chordFileNameRegExpSource,
+  decodeChordOptionFromUnknown,
+  type UnbrandedChord,
+} from '../domain/Chord.ts'
 import {
   decodePatternOptionFromUnknown,
   type Pattern,
@@ -27,17 +27,16 @@ import {
 } from '../domain/Strength.ts'
 import type { StringToArray } from './StringToArray.ts'
 
-const getPaddedAccord = <const TAccord extends Accord>(accord: TAccord) =>
-  accord.padEnd(2, '_') as PaddedAccord<TAccord>
+const getPaddedChord = <const TChord extends Chord>(chord: TChord) =>
+  chord.padEnd(2, '_') as PaddedChord<TChord>
 
-export type PaddedAccord<TAccordBranded extends Accord> =
-  UnbrandedAccord<TAccordBranded> extends infer TAccord extends string
-    ? StringToArray<TAccord>['length'] extends infer TAccordLength extends
-        number
-      ? TAccordLength extends 2
-        ? TAccord
-        : TAccordLength extends 1
-          ? `${TAccord}_`
+export type PaddedChord<TChordBranded extends Chord> =
+  UnbrandedChord<TChordBranded> extends infer TChord extends string
+    ? StringToArray<TChord>['length'] extends infer TChordLength extends number
+      ? TChordLength extends 2
+        ? TChord
+        : TChordLength extends 1
+          ? `${TChord}_`
           : never
       : never
     : never
@@ -45,18 +44,18 @@ export type PaddedAccord<TAccordBranded extends Accord> =
 ///
 
 const getRemotePatternAssetFileName = <
-  const TAccord extends Accord,
+  const TChord extends Chord,
   const TStrength extends Strength,
 >(
-  accord: TAccord,
+  chord: TChord,
   strength: TStrength,
-): RemotePatternAssetFileName<TAccord, TStrength> =>
-  `accord_${getPaddedAccord(accord)}_strength_${UnbrandedStrength(strength)}.wav`
+): RemotePatternAssetFileName<TChord, TStrength> =>
+  `chord_${getPaddedChord(chord)}_strength_${UnbrandedStrength(strength)}.wav`
 
 export type RemotePatternAssetFileName<
-  TAccord extends Accord,
+  TChord extends Chord,
   TStrength extends Strength,
-> = `accord_${PaddedAccord<TAccord>}_strength_${UnbrandedStrength<TStrength>}.wav`
+> = `chord_${PaddedChord<TChord>}_strength_${UnbrandedStrength<TStrength>}.wav`
 
 ///
 
@@ -71,47 +70,47 @@ export type RemotePatternAssetFolderName<TPattern extends Pattern> =
 ///
 
 const getRemotePatternAssetPath = <
-  const TAccord extends Accord,
+  const TChord extends Chord,
   const TPattern extends Pattern,
   const TStrength extends Strength,
 >(
-  accord: TAccord,
+  chord: TChord,
   pattern: TPattern,
   strength: TStrength,
-): RemotePatternAssetPath<TAccord, TPattern, TStrength> =>
-  `/samples/${getRemotePatternAssetFolderName(pattern)}/${getRemotePatternAssetFileName(accord, strength)}` as const
+): RemotePatternAssetPath<TChord, TPattern, TStrength> =>
+  `/samples/${getRemotePatternAssetFolderName(pattern)}/${getRemotePatternAssetFileName(chord, strength)}` as const
 
 export type RemotePatternAssetPath<
-  TAccord extends Accord,
+  TChord extends Chord,
   TPattern extends Pattern,
   TStrength extends Strength,
 > = `/samples/${RemotePatternAssetFolderName<TPattern>}/${RemotePatternAssetFileName<
-  TAccord,
+  TChord,
   TStrength
 >}`
 
 ///
 
 const getRemoteSlowStrumAssetPath = <
-  const TAccord extends Accord,
+  const TChord extends Chord,
   const TStrength extends Strength,
 >(
-  accord: TAccord,
+  chord: TChord,
   strength: TStrength,
-): RemoteSlowStrumAssetPath<TAccord, TStrength> =>
-  `/samples/slow_strum/${getRemotePatternAssetFileName(accord, strength)}`
+): RemoteSlowStrumAssetPath<TChord, TStrength> =>
+  `/samples/slow_strum/${getRemotePatternAssetFileName(chord, strength)}`
 
 export type RemoteSlowStrumAssetPath<
-  TAccord extends Accord,
+  TChord extends Chord,
   TStrength extends Strength,
-> = `/samples/slow_strum/${RemotePatternAssetFileName<TAccord, TStrength>}`
+> = `/samples/slow_strum/${RemotePatternAssetFileName<TChord, TStrength>}`
 
 ///
 
-const getAssetAccord = <const TAsset extends AssetPointer>(asset: TAsset) =>
-  asset.accord as AssetAccord<TAsset>
+const getAssetChord = <const TAsset extends AssetPointer>(asset: TAsset) =>
+  asset.chord as AssetChord<TAsset>
 
-export type AssetAccord<TAsset extends AssetPointer> = TAsset['accord']
+export type AssetChord<TAsset extends AssetPointer> = TAsset['chord']
 
 ///
 
@@ -132,37 +131,37 @@ export type AssetStrength<TAsset extends AssetPointer> = TAsset['strength']
 ///
 
 const getLocalPatternAssetFileName = <
-  const TAccord extends Accord,
+  const TChord extends Chord,
   const TPattern extends Pattern,
   const TStrength extends Strength,
 >(
-  accord: TAccord,
+  chord: TChord,
   pattern: TPattern,
   strength: TStrength,
-): LocalPatternAssetFileName<TAccord, TPattern, TStrength> =>
-  `${getRemotePatternAssetFolderName(pattern)}_${getRemotePatternAssetFileName(accord, strength)}`
+): LocalPatternAssetFileName<TChord, TPattern, TStrength> =>
+  `${getRemotePatternAssetFolderName(pattern)}_${getRemotePatternAssetFileName(chord, strength)}`
 
 export type LocalPatternAssetFileName<
-  TAccord extends Accord,
+  TChord extends Chord,
   TPattern extends Pattern,
   TStrength extends Strength,
-> = `${RemotePatternAssetFolderName<TPattern>}_${RemotePatternAssetFileName<TAccord, TStrength>}`
+> = `${RemotePatternAssetFolderName<TPattern>}_${RemotePatternAssetFileName<TChord, TStrength>}`
 
 ///
 
 const getLocalSlowStrumAssetFileName = <
-  const TAccord extends Accord,
+  const TChord extends Chord,
   const TStrength extends Strength,
 >(
-  accord: TAccord,
+  chord: TChord,
   strength: TStrength,
-): LocalSlowStrumAssetFileName<TAccord, TStrength> =>
-  `slow_strum_${getRemotePatternAssetFileName(accord, strength)}`
+): LocalSlowStrumAssetFileName<TChord, TStrength> =>
+  `slow_strum_${getRemotePatternAssetFileName(chord, strength)}`
 
 export type LocalSlowStrumAssetFileName<
-  TAccord extends Accord,
+  TChord extends Chord,
   TStrength extends Strength,
-> = `slow_strum_${RemotePatternAssetFileName<TAccord, TStrength>}`
+> = `slow_strum_${RemotePatternAssetFileName<TChord, TStrength>}`
 
 ///
 
@@ -171,24 +170,21 @@ export const getRemoteAssetPath = <const TAsset extends AssetPointer>(
 ): RemoteAssetPath<TAsset> =>
   TaggedPatternPointer.models(asset)
     ? getRemotePatternAssetPath(
-        getAssetAccord(asset),
+        getAssetChord(asset),
         getAssetPattern(asset),
         getAssetStrength(asset),
       )
-    : getRemoteSlowStrumAssetPath(
-        getAssetAccord(asset),
-        getAssetStrength(asset),
-      )
+    : getRemoteSlowStrumAssetPath(getAssetChord(asset), getAssetStrength(asset))
 
 export type RemoteAssetPath<TAsset extends AssetPointer> =
   TAsset extends TaggedPatternPointer
     ? RemotePatternAssetPath<
-        AssetAccord<TAsset>,
+        AssetChord<TAsset>,
         AssetPattern<TAsset>,
         AssetStrength<TAsset>
       >
     : TAsset extends TaggedSlowStrumPointer
-      ? RemoteSlowStrumAssetPath<AssetAccord<TAsset>, AssetStrength<TAsset>>
+      ? RemoteSlowStrumAssetPath<AssetChord<TAsset>, AssetStrength<TAsset>>
       : never
 
 ///
@@ -198,24 +194,24 @@ export const getLocalAssetFileName = <const TAsset extends AssetPointer>(
 ): LocalAssetFileName<TAsset> =>
   TaggedPatternPointer.models(asset)
     ? getLocalPatternAssetFileName(
-        getAssetAccord(asset),
+        getAssetChord(asset),
         getAssetPattern(asset),
         getAssetStrength(asset),
       )
     : getLocalSlowStrumAssetFileName(
-        getAssetAccord(asset),
+        getAssetChord(asset),
         getAssetStrength(asset),
       )
 
 export type LocalAssetFileName<TAsset extends AssetPointer> =
   TAsset extends TaggedPatternPointer
     ? LocalPatternAssetFileName<
-        AssetAccord<TAsset>,
+        AssetChord<TAsset>,
         AssetPattern<TAsset>,
         AssetStrength<TAsset>
       >
     : TAsset extends TaggedSlowStrumPointer
-      ? LocalSlowStrumAssetFileName<AssetAccord<TAsset>, AssetStrength<TAsset>>
+      ? LocalSlowStrumAssetFileName<AssetChord<TAsset>, AssetStrength<TAsset>>
       : never
 
 ///
@@ -231,11 +227,11 @@ export type LocalAssetFilePath<TAsset extends AssetPointer> =
 
 // _? in regexp moved outside the group to make sure this padding is not included in the group
 const localPatternAssetFileNameRegExp = new RegExp(
-  `^pattern_(?<pattern>${patternFileNameRegExpSource})_accord_(?<accord>${accordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
+  `^pattern_(?<pattern>${patternFileNameRegExpSource})_chord_(?<chord>${chordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
 )
 
 const localSlowStrumAssetFileNameRegExp = new RegExp(
-  `^slow_strum_accord_(?<accord>${accordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
+  `^slow_strum_chord_(?<chord>${chordFileNameRegExpSource})_?_strength_(?<strength>${strengthFileNameRegExpSource})\\.wav$`,
 )
 
 export const getAssetFromLocalFileName = (
@@ -247,7 +243,7 @@ export const getAssetFromLocalFileName = (
       flow(
         Struct.evolve({
           pattern: decodePatternOptionFromUnknown,
-          accord: decodeAccordOptionFromUnknown,
+          chord: decodeChordOptionFromUnknown,
           strength: decodeStrengthOptionFromUnknown,
         }),
         Option.all as () => Option.Option<any>,

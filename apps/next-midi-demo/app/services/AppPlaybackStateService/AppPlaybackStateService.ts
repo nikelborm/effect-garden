@@ -10,8 +10,8 @@ import * as SubscriptionRef from 'effect/SubscriptionRef'
 
 import type { AudioBufferStore } from '../AudioBufferStore.ts'
 import {
-  AccordInputBus,
   type AllInputBuses,
+  ChordInputBus,
   PatternInputBus,
   StrengthInputBus,
 } from '../InputStreamBus.ts'
@@ -105,7 +105,7 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
   //           ) as ReadonlyArray<AssetPointer>,
   //         } as const),
   // )
-  yield* AccordInputBus.pressedDownParamButtonIdDataStream.pipe(
+  yield* ChordInputBus.pressedDownParamButtonIdDataStream.pipe(
     Stream.merge(PatternInputBus.pressedDownParamButtonIdDataStream),
     Stream.merge(StrengthInputBus.pressedDownParamButtonIdDataStream),
     Stream.runForEach(({ id: pressedDownParamButtonId }) =>

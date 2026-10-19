@@ -3,18 +3,18 @@ import { pipe } from 'effect/Function'
 import * as HashMap from 'effect/HashMap'
 import * as Iterable from 'effect/Iterable'
 
-import { AllAccords } from '../domain/Accord.ts'
 import {
   type AssetPointer,
   TaggedPatternPointer,
   TaggedSlowStrumPointer,
 } from '../domain/AssetPointer.ts'
+import { AllChords } from '../domain/Chord.ts'
 import { AllPatterns } from '../domain/Pattern.ts'
 import { AllStrengths } from '../domain/Strength.ts'
 
 export const makeAssetPointerMapFactory = Effect.gen(function* () {
-  const [accords, patterns, strengths] = yield* Effect.all([
-    AllAccords,
+  const [chords, patterns, strengths] = yield* Effect.all([
+    AllChords,
     AllPatterns,
     AllStrengths,
   ])
@@ -23,12 +23,12 @@ export const makeAssetPointerMapFactory = Effect.gen(function* () {
     getValue: (asset: AssetPointer) => TValue,
   ): HashMap.HashMap<AssetPointer, TValue> =>
     pipe(
-      Iterable.cartesian(accords, strengths),
-      Iterable.flatMap(([accord, strength]) =>
+      Iterable.cartesian(chords, strengths),
+      Iterable.flatMap(([chord, strength]) =>
         Iterable.appendAll(
-          Iterable.of(TaggedSlowStrumPointer.makeSimple(accord, strength)),
+          Iterable.of(TaggedSlowStrumPointer.makeSimple(chord, strength)),
           Iterable.map(patterns, pattern =>
-            TaggedPatternPointer.makeSimple(pattern, accord, strength),
+            TaggedPatternPointer.makeSimple(pattern, chord, strength),
           ),
         ),
       ),

@@ -9,11 +9,11 @@ import * as Hooks from '@effect/atom-react/Hooks'
 import * as AsyncResult from 'effect/reactivity/AsyncResult'
 
 import {
-  accordButtonDownloadPercentAtom,
-  // isAccordButtonCurrentlyPlayingAtom,
-  // isAccordButtonPressableAtom,
-  isAccordPressedAtom,
-  isAccordSelectedAtom,
+  chordButtonDownloadPercentAtom,
+  // isChordButtonCurrentlyPlayingAtom,
+  // isChordButtonPressableAtom,
+  isChordPressedAtom,
+  isChordSelectedAtom,
   // isPatternButtonCurrentlyPlayingAtom,
   // isPatternButtonPressableAtom,
   isPatternPressedAtom,
@@ -27,13 +27,13 @@ import {
   testAtom,
 } from '../atoms/buttonsAtom.ts'
 import { LAYOUT_HEIGHT, LAYOUT_WIDTH } from '../constants.ts'
-import { type Accord, allAccords } from '../domain/Accord.ts'
+import { allChords, type Chord } from '../domain/Chord.ts'
 import { allPatterns, type Pattern } from '../domain/Pattern.ts'
 import { allStrengths, type Strength } from '../domain/Strength.ts'
 
 export const MidiPadSlide = () => {
   Hooks.useAtomMount(testAtom)
-  // TODO: use actual atoms for allPatterns, allAccords, allStrengths resolving
+  // TODO: use actual atoms for allPatterns, allChords, allStrengths resolving
   // from context instead of direct addressing
   return (
     <ButtonGrid
@@ -47,8 +47,8 @@ export const MidiPadSlide = () => {
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={1}>
-        {Array.from(allAccords, accord => (
-          <AccordButton accord={accord} key={accord} />
+        {Array.from(allChords, chord => (
+          <ChordButton chord={chord} key={chord} />
         ))}
       </DisplayContentsWrapper>
       <DisplayContentsWrapper role="row" aria-rowindex={2}>
@@ -130,34 +130,34 @@ const PatternButton = ({ pattern }: { pattern: Pattern }) => {
   // )
 }
 
-const AccordButton = ({ accord }: { accord: Accord }) => {
-  // const isPressableRes = Hooks.useAtomValue(isAccordButtonPressableAtom(accord))
-  const isSelectedRes = Hooks.useAtomValue(isAccordSelectedAtom(accord))
-  const isPressedRes = Hooks.useAtomValue(isAccordPressedAtom(accord))
+const ChordButton = ({ chord }: { chord: Chord }) => {
+  // const isPressableRes = Hooks.useAtomValue(isChordButtonPressableAtom(chord))
+  const isSelectedRes = Hooks.useAtomValue(isChordSelectedAtom(chord))
+  const isPressedRes = Hooks.useAtomValue(isChordPressedAtom(chord))
   // const isPlayingRes = Hooks.useAtomValue(
-  //   isAccordButtonCurrentlyPlayingAtom(accord),
+  //   isChordButtonCurrentlyPlayingAtom(chord),
   // )
   const downloadPercentRes = Hooks.useAtomValue(
-    accordButtonDownloadPercentAtom(accord),
+    chordButtonDownloadPercentAtom(chord),
   )
   // if (!Result.isSuccess(isPlayingRes)) {
-  //   console.log(`wtf. accord №${accord}. isPlayingRes`, isPlayingRes)
+  //   console.log(`wtf. chord №${chord}. isPlayingRes`, isPlayingRes)
   //   return 'wtf'
   // }
   // if (!Result.isSuccess(isPressableRes)) {
-  //   console.log(`wtf accord №${accord}. isPressableRes`, isPressableRes)
+  //   console.log(`wtf chord №${chord}. isPressableRes`, isPressableRes)
   //   return 'wtf'
   // }
   if (!AsyncResult.isSuccess(isSelectedRes)) {
-    console.log(`wtf accord №${accord}. isSelectedRes`, isSelectedRes)
+    console.log(`wtf chord №${chord}. isSelectedRes`, isSelectedRes)
     return 'wtf'
   }
   if (!AsyncResult.isSuccess(isPressedRes)) {
-    console.log(`wtf accord №${accord}. isPressedRes`, isPressedRes)
+    console.log(`wtf chord №${chord}. isPressedRes`, isPressedRes)
     return 'wtf'
   }
   if (!AsyncResult.isSuccess(downloadPercentRes)) {
-    console.log(`wtf accord №${accord}. downloadPercentRes`, downloadPercentRes)
+    console.log(`wtf chord №${chord}. downloadPercentRes`, downloadPercentRes)
     return 'wtf'
   }
 
@@ -168,8 +168,8 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
   const { value: downloadPercent } = downloadPercentRes
 
   return (
-    <DebugButton data-accord={accord}>
-      Accord: {accord}
+    <DebugButton data-chord={chord}>
+      Chord: {chord}
       {/* <br />
       Pressable: {isPressable ? Yes : No} */}
       <br />
@@ -185,12 +185,12 @@ const AccordButton = ({ accord }: { accord: Accord }) => {
   // return (
   //   <NeumorphicButton
   //     data-is-externally-active={false}
-  //     data-button-id={accord}
+  //     data-button-id={chord}
   //     role="gridcell"
-  //     aria-colindex={accord}
+  //     aria-colindex={chord}
   //     type="button"
-  //     aria-label={accord}
-  //     children={accord}
+  //     aria-label={chord}
+  //     children={chord}
   //   />
   // )
 }

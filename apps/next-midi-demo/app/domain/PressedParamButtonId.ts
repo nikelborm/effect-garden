@@ -1,43 +1,43 @@
 import * as Effect from 'effect/Effect'
 
-import { AccordData } from './Accord.ts'
+import { ChordData } from './Chord.ts'
 import { PatternData } from './Pattern.ts'
 import { StrengthData } from './Strength.ts'
 
-export type PressedParamButtonId = AccordData | PatternData | StrengthData
+export type PressedParamButtonId = ChordData | PatternData | StrengthData
 
 export const matchParamButtonId =
   <TId extends PressedParamButtonId>(id: TId) =>
   <
-    OnAccordReturn extends Effect.Effect<any, any, any>,
+    OnChordReturn extends Effect.Effect<any, any, any>,
     OnPatternReturn extends Effect.Effect<any, any, any>,
     OnStrengthReturn extends Effect.Effect<any, any, any>,
   >({
-    onAccord,
+    onChord,
     onPattern,
     onStrength,
   }: ParamButtonIdMatchConfig<
     TId,
-    OnAccordReturn,
+    OnChordReturn,
     OnPatternReturn,
     OnStrengthReturn
   >): Effect.Effect<
-    | (TId extends AccordData<any> ? Effect.Success<OnAccordReturn> : never)
+    | (TId extends ChordData<any> ? Effect.Success<OnChordReturn> : never)
     | (TId extends PatternData<any> ? Effect.Success<OnPatternReturn> : never)
     | (TId extends StrengthData<any>
         ? Effect.Success<OnStrengthReturn>
         : never),
-    | (TId extends AccordData<any> ? Effect.Error<OnAccordReturn> : never)
+    | (TId extends ChordData<any> ? Effect.Error<OnChordReturn> : never)
     | (TId extends PatternData<any> ? Effect.Error<OnPatternReturn> : never)
     | (TId extends StrengthData<any> ? Effect.Error<OnStrengthReturn> : never),
-    | (TId extends AccordData<any> ? Effect.Services<OnAccordReturn> : never)
+    | (TId extends ChordData<any> ? Effect.Services<OnChordReturn> : never)
     | (TId extends PatternData<any> ? Effect.Services<OnPatternReturn> : never)
     | (TId extends StrengthData<any>
         ? Effect.Services<OnStrengthReturn>
         : never)
   > => {
-    if (AccordData.models(id) && typeof onAccord === 'function')
-      return onAccord(id)
+    if (ChordData.models(id) && typeof onChord === 'function')
+      return onChord(id)
     if (PatternData.models(id) && typeof onPattern === 'function')
       return onPattern(id)
     if (StrengthData.models(id) && typeof onStrength === 'function')
@@ -52,12 +52,12 @@ export const matchParamButtonId =
 
 export type ParamButtonIdMatchConfig<
   TId extends PressedParamButtonId,
-  OnAccordReturn,
+  OnChordReturn,
   OnPatternReturn,
   OnStrengthReturn,
-> = (TId extends AccordData<any>
-  ? { onAccord: (data: TId) => OnAccordReturn }
-  : { onAccord?: never }) &
+> = (TId extends ChordData<any>
+  ? { onChord: (data: TId) => OnChordReturn }
+  : { onChord?: never }) &
   (TId extends PatternData<any>
     ? { onPattern: (data: TId) => OnPatternReturn }
     : { onPattern?: never }) &

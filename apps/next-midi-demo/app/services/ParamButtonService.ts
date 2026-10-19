@@ -4,8 +4,8 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import * as Stream from 'effect/Stream'
 
-import type { AccordData } from '../domain/Accord.ts'
 import type { SimpleAssetPointer } from '../domain/AssetPointer.ts'
+import type { ChordData } from '../domain/Chord.ts'
 import type { ParamButtonIdData } from '../domain/ParamButton.ts'
 import type { PatternData } from '../domain/Pattern.ts'
 import type { StrengthData } from '../domain/Strength.ts'
@@ -15,14 +15,14 @@ import {
   inferSelection,
 } from './AppPlaybackStateService/inferSelection.ts'
 import {
-  AccordInputBus,
+  ChordInputBus,
   type InputBusReaderHandle,
   PatternInputBus,
   StrengthInputBus,
 } from './InputStreamBus.ts'
 
 const makeParamButtonService = <
-  TParamButtonId extends PatternData | AccordData | StrengthData,
+  TParamButtonId extends PatternData | ChordData | StrengthData,
   TBusId,
 >({
   busTag,
@@ -30,7 +30,7 @@ const makeParamButtonService = <
 }: {
   readonly busTag: Context.Key<TBusId, InputBusReaderHandle<TParamButtonId>>
   // Does this button's value correspond to the given (selected or playing)
-  // asset? The per-kind field comparison (accord / pattern / strength).
+  // asset? The per-kind field comparison (chord / pattern / strength).
   readonly matches: (
     asset: SimpleAssetPointer,
     value: ParamButtonIdData<TParamButtonId>,
@@ -197,13 +197,13 @@ const help =
       // @effect-diagnostics-next-line anyUnknownInErrorContext:off
     >(klass.useSync((s: TShape) => s[methodName](value)))
 
-export class AccordParamButtonService extends Context.Service<AccordParamButtonService>()(
-  'next-midi-demo/app/services/ParamButtonService/AccordParamButtonService',
+export class ChordParamButtonService extends Context.Service<ChordParamButtonService>()(
+  'next-midi-demo/app/services/ParamButtonService/ChordParamButtonService',
   {
     make: makeParamButtonService({
-      busTag: AccordInputBus,
-      matches: (asset, value) => asset.accord === value.id.accord,
-    }).pipe(Effect.withSpan('AccordParamButtonService.init')),
+      busTag: ChordInputBus,
+      matches: (asset, value) => asset.chord === value.id.chord,
+    }).pipe(Effect.withSpan('ChordParamButtonService.init')),
   },
 ) {
   static getIsSelectedStream = help(this)('getIsSelectedStream')
@@ -212,9 +212,9 @@ export class AccordParamButtonService extends Context.Service<AccordParamButtonS
   static getDownloadPercent = help(this)('getDownloadPercent')
 }
 
-export const AccordParamButtonServiceLayer = Layer.effect(
-  AccordParamButtonService,
-  AccordParamButtonService.make,
+export const ChordParamButtonServiceLayer = Layer.effect(
+  ChordParamButtonService,
+  ChordParamButtonService.make,
 )
 
 export class PatternParamButtonService extends Context.Service<PatternParamButtonService>()(

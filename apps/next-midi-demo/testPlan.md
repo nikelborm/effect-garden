@@ -11,7 +11,7 @@ snapshotted
 I want to test comprehensive matrix of inputs. As inputs I want to pass at least
 2 of each type of signals:
 1. 2 strengths. One would be different from the one stored in the base, the other will be equal
-2. 2 accords. same rule
+2. 2 chords. same rule
 3. 2 patterns. same rule
 
 so 6 potential inputs for the second param
@@ -21,9 +21,9 @@ There should be one root `describe` (describing according to that file) one spec
 one root describe should have all the tests without any deep nesting, but all in
 the same level. The semantic level of the matrix should be declated in the test
 name. The convention for the test name (single character names (all patterns,
-all strengths and some accords) should be padded on the right with an additional
+all strengths and some chords) should be padded on the right with an additional
 space):
-- `in: signal=A.C ; old={}` (accords: 'C ', 'Dm', 'Em', 'F ', 'G ', 'Am', 'D ', 'E ')
+- `in: signal=A.C ; old={}` (chords: 'C ', 'Dm', 'Em', 'F ', 'G ', 'Am', 'D ', 'E ')
 - `in: signal=A.Em; old={}`
 - `in: signal=S.s ; old={}` (strengths: 's ', 'm ', 'v ')
 - `in: signal=P.1 ; old={}` (patterns: '1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ', '8 ')

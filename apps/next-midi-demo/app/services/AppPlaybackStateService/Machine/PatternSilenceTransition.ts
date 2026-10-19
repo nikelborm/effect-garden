@@ -1,8 +1,8 @@
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
 
-import { AccordData } from '../../../domain/Accord.ts'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
+import { ChordData } from '../../../domain/Chord.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
@@ -33,7 +33,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
   static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    const { accord, strength } = this
+    const { chord, strength } = this
     const [current] = this.transitionQueue
 
     if (StrengthData.models(pressedParamButtonId))
@@ -43,7 +43,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         current,
       )
 
-    if (AccordData.models(pressedParamButtonId))
+    if (ChordData.models(pressedParamButtonId))
       return yield* Effect.die(
         new Error(
           'slow strum request during fade-to-silence: not yet handled (slow strums deferred)',
@@ -76,7 +76,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
 
     const asset = TaggedPatternPointer.makeSimple(
       pressedParamButtonId.pattern,
-      accord,
+      chord,
       strength,
     )
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
@@ -118,8 +118,8 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       transitionQueue: [playback],
     })
 
-  get accord() {
-    return this.transitionQueue[0].asset.accord
+  get chord() {
+    return this.transitionQueue[0].asset.chord
   }
 
   get strength() {
