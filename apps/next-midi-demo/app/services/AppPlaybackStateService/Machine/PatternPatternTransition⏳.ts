@@ -116,6 +116,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     })
   }
 
+  /** 🏁 */
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
     fadingOut: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
