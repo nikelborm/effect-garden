@@ -4,6 +4,7 @@ import * as Schema from 'effect/Schema'
 
 import { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
 
+/** 🏁 */
 export class DisposedPatternPlayback extends Schema.TaggedClass<DisposedPatternPlayback>()(
   'DisposedPatternPlayback',
   {},
@@ -15,6 +16,7 @@ export class DisposedPatternPlayback extends Schema.TaggedClass<DisposedPatternP
   static default = this.make({})
 }
 
+/** 🏁 */
 export const disposeOf = Effect.fn('disposeOf')(
   flow(DisposePlayback.run, Effect.as(DisposedPatternPlayback.default)),
 )

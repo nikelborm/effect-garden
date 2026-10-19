@@ -11,7 +11,7 @@ import type { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { RestoreFullVolume } from '../webAudioSideEffects/RestoreFullVolume.ts'
 import { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
-import { disposeOf } from './DisposedPatternPlayback.ts'
+import { disposeOf } from './DisposedPatternPlayback🏁.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { IncomingPatternFadingIn } from './IncomingPatternFadingIn.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
