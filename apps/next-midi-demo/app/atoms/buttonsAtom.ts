@@ -38,6 +38,8 @@ import {
   AppPlaybackStateService,
   AppPlaybackStateServiceLayer,
 } from '../services/AppPlaybackStateService/AppPlaybackStateService.ts'
+import { AppPlaybackStateSubscriptionRefLayer } from '../services/AppPlaybackStateService/AppPlaybackStateSubscriptionRef.ts'
+import { CleanupFiberMakerLayer } from '../services/AppPlaybackStateService/CleanupFiberMakerLayer.ts'
 import { DisposePlaybackLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNowLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/GetAudioNow.ts'
 import { RestoreFullVolumeLayer } from '../services/AppPlaybackStateService/webAudioSideEffects/RestoreFullVolume.ts'
@@ -200,7 +202,21 @@ const WebAudioSideEffectsNoDeps = Layer.mergeAll(
   Layer.satisfiesServicesType<never>(),
 )
 
+const AppPlaybackStateSubscriptionRefNoDeps =
+  AppPlaybackStateSubscriptionRefLayer.pipe(
+    Layer.withSpan('AppPlaybackStateSubscriptionRefNoDeps'),
+    Layer.satisfiesServicesType<never>(),
+  )
+
+const CleanupFiberMakerNoDeps = CleanupFiberMakerLayer.pipe(
+  Layer.provide(AppPlaybackStateSubscriptionRefNoDeps),
+  Layer.withSpan('CleanupFiberMakerNoDeps'),
+  Layer.satisfiesServicesType<never>(),
+)
+
 const AppPlaybackStateServiceNoDeps = AppPlaybackStateServiceLayer.pipe(
+  Layer.provide(AppPlaybackStateSubscriptionRefNoDeps),
+  Layer.provide(CleanupFiberMakerNoDeps),
   // TODO: research why DeferredAudioContextNoDeps no longer needed here. This
   // might come back after uncommenting code there
   // Layer.provide(DeferredAudioContextNoDeps),

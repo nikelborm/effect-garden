@@ -5,26 +5,26 @@ import * as Latch from 'effect/Latch'
 import * as Layer from 'effect/Layer'
 import * as SubscriptionRef from 'effect/SubscriptionRef'
 
+import { AppPlaybackStateSubscriptionRef } from './AppPlaybackStateSubscriptionRef.ts'
 import { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from './CleanupFiberToolkit.ts'
 import type { AppPlaybackState } from './index.ts'
 import { PatternPatternPatternTransitionState } from './Machine/PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransitionState } from './Machine/PatternPatternSilenceTransition.ts'
-import { PatternPatternTransitionState } from './Machine/PatternPatternTransition.ts'
+import { PatternPatternTransitionState } from './Machine/PatternPatternTransition⏳.ts'
 import { PatternSilencePatternTransitionState } from './Machine/PatternSilencePatternTransition.ts'
 import { PatternSilenceTransitionState } from './Machine/PatternSilenceTransition.ts'
 import { PatternState } from './Machine/Pattern⏳.ts'
 import { SilenceState } from './Machine/Silence🏁.ts'
 import type { DisposePlayback } from './webAudioSideEffects/DisposePlayback.ts'
 
-export const makeCleanupFiberMakerLayer = (
-  stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,
-) =>
-  Layer.sync(
-    CleanupFiberMaker,
-    () => (delayForSeconds: number) =>
+export const CleanupFiberMakerLayer = AppPlaybackStateSubscriptionRef.pipe(
+  Effect.map(
+    stateRef => (delayForSeconds: number) =>
       makeCleanupFibers(stateRef, delayForSeconds),
-  )
+  ),
+  Layer.effect(CleanupFiberMaker),
+)
 
 const makeCleanupFibers = Effect.fn('makeCleanupFibers')(function* (
   stateRef: SubscriptionRef.SubscriptionRef<AppPlaybackState>,

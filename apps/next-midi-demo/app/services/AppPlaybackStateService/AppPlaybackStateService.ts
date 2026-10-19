@@ -2,6 +2,7 @@
 
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
 import * as Stream from 'effect/Stream'
@@ -14,10 +15,10 @@ import {
   PatternInputBus,
   StrengthInputBus,
 } from '../InputStreamBus.ts'
+import { AppPlaybackStateSubscriptionRef } from './AppPlaybackStateSubscriptionRef.ts'
+import type { CleanupFiberMaker } from './CleanupFiberMaker.ts'
 // import { makeNewAssetState } from './makeNewAssetState.ts'
 import type { AppPlaybackState } from './index.ts'
-import { SilenceState } from './Machine/Silence🏁.ts'
-import { makeCleanupFiberMakerLayer } from './makeCleanupFiberMakerLayer.ts'
 import type { AllWebAudioSideEffects } from './webAudioSideEffects/All.ts'
 
 export interface AppPlaybackStateServiceShape {
@@ -40,13 +41,16 @@ export class AppPlaybackStateService extends Context.Service<
 type Return = Effect.gen.Return<
   AppPlaybackStateServiceShape,
   never,
-  AllInputBuses | AudioBufferStore | Scope.Scope | AllWebAudioSideEffects
+  | AllInputBuses
+  | AudioBufferStore
+  | Scope.Scope
+  | AllWebAudioSideEffects
+  | AppPlaybackStateSubscriptionRef
+  | CleanupFiberMaker
 >
 
 export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
-  const stateRef = yield* SubscriptionRef.make<AppPlaybackState>(
-    SilenceState.default,
-  )
+  const stateRef = yield* AppPlaybackStateSubscriptionRef
 
   // const switchPlayPauseFromCurrentlySelected = SubscriptionRef.updateEffect(
   //   stateRef,
@@ -66,8 +70,6 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
   //     state._tag === 'Silence' ? Effect.void : cleanupAllPlaybacks(state),
   //   ),
   // )
-
-  const cleanupFiberMakerLayer = makeCleanupFiberMakerLayer(stateRef)
 
   // const latestIsPlayingFlagStream = yield* SubscriptionRef.changes(
   //   stateRef,
@@ -109,20 +111,17 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
     Stream.runForEach(({ id: pressedDownParamButtonId }) =>
       SubscriptionRef.updateEffect(
         stateRef,
-        Effect.fn('advancePlayback')(
-          function* (oldState: AppPlaybackState) {
-            yield* Effect.log('advancePlayback', {
-              oldState,
-              pressedDownParamButtonId,
-            })
-            return yield* Effect.gen(() =>
-              oldState.advance(pressedDownParamButtonId),
-            ).pipe(Effect.withSpan(`${oldState.constructor.name}.advance`))
-          },
-          // @effect-diagnostics-next-line strictEffectProvide:off
-          Effect.provide(cleanupFiberMakerLayer),
-          Effect.tapCause(Effect.logError),
-        ),
+        Effect.fn('advancePlayback')(function* (oldState: AppPlaybackState) {
+          yield* Effect.log('advancePlayback', {
+            oldState,
+            pressedDownParamButtonId,
+          })
+          return yield* pipe(
+            Effect.gen(() => oldState.advance(pressedDownParamButtonId)),
+            Effect.withSpan(`${oldState.constructor.name}.advance`),
+            Effect.tapCause(Effect.logError),
+          )
+        }),
       ),
     ),
 

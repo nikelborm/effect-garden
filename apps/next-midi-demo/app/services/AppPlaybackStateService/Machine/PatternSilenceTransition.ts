@@ -11,7 +11,7 @@ import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternPatternTransitionState } from './PatternPatternTransition.ts'
+import { PatternPatternTransitionState } from './PatternPatternTransition⏳.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilencePatternTransitionState } from './PatternSilencePatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
