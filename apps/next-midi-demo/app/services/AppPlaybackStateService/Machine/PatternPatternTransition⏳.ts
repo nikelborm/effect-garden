@@ -87,7 +87,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
 
     if (!incomingFadeInIsStillRevocable) {
       return PatternPatternPatternTransitionState.make({
-        playbackStartedAtSecond: current.playbackStartedAtSecond,
+        firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+          current.playbackStartedAtSecond,
         transitionQueue: [
           current,
           yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
@@ -102,7 +103,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
 
     yield* incoming.drop()
     return PatternPatternTransitionState.make({
-      playbackStartedAtSecond: current.playbackStartedAtSecond,
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
+        current.playbackStartedAtSecond,
       transitionQueue: [
         yield* current.reanchorFadeoutOnto(now, blissfulGridTimingsMath),
         yield* current.scheduleNextPattern(
