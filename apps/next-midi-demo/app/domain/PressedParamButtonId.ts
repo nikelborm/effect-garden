@@ -22,19 +22,24 @@ export const matchParamButtonId =
     OnPatternReturn,
     OnStrengthReturn
   >): Effect.Effect<
-    | (TId extends ChordData<any> ? Effect.Success<OnChordReturn> : never)
-    | (TId extends PatternData<any> ? Effect.Success<OnPatternReturn> : never)
-    | (TId extends StrengthData<any>
-        ? Effect.Success<OnStrengthReturn>
-        : never),
-    | (TId extends ChordData<any> ? Effect.Error<OnChordReturn> : never)
-    | (TId extends PatternData<any> ? Effect.Error<OnPatternReturn> : never)
-    | (TId extends StrengthData<any> ? Effect.Error<OnStrengthReturn> : never),
-    | (TId extends ChordData<any> ? Effect.Services<OnChordReturn> : never)
-    | (TId extends PatternData<any> ? Effect.Services<OnPatternReturn> : never)
-    | (TId extends StrengthData<any>
-        ? Effect.Services<OnStrengthReturn>
-        : never)
+    ParamButtonIdMatchSuccess<
+      TId,
+      OnChordReturn,
+      OnPatternReturn,
+      OnStrengthReturn
+    >,
+    ParamButtonIdMatchError<
+      TId,
+      OnChordReturn,
+      OnPatternReturn,
+      OnStrengthReturn
+    >,
+    ParamButtonIdMatchServices<
+      TId,
+      OnChordReturn,
+      OnPatternReturn,
+      OnStrengthReturn
+    >
   > => {
     if (ChordData.models(id) && typeof onChord === 'function')
       return onChord(id)
@@ -64,3 +69,33 @@ export type ParamButtonIdMatchConfig<
   (TId extends StrengthData<any>
     ? { onStrength: (data: TId) => OnStrengthReturn }
     : { onStrength?: never })
+
+export type ParamButtonIdMatchSuccess<
+  TId extends PressedParamButtonId,
+  OnChordReturn,
+  OnPatternReturn,
+  OnStrengthReturn,
+> =
+  | (TId extends ChordData<any> ? Effect.Success<OnChordReturn> : never)
+  | (TId extends PatternData<any> ? Effect.Success<OnPatternReturn> : never)
+  | (TId extends StrengthData<any> ? Effect.Success<OnStrengthReturn> : never)
+
+export type ParamButtonIdMatchError<
+  TId extends PressedParamButtonId,
+  OnChordReturn,
+  OnPatternReturn,
+  OnStrengthReturn,
+> =
+  | (TId extends ChordData<any> ? Effect.Error<OnChordReturn> : never)
+  | (TId extends PatternData<any> ? Effect.Error<OnPatternReturn> : never)
+  | (TId extends StrengthData<any> ? Effect.Error<OnStrengthReturn> : never)
+
+export type ParamButtonIdMatchServices<
+  TId extends PressedParamButtonId,
+  OnChordReturn,
+  OnPatternReturn,
+  OnStrengthReturn,
+> =
+  | (TId extends ChordData<any> ? Effect.Services<OnChordReturn> : never)
+  | (TId extends PatternData<any> ? Effect.Services<OnPatternReturn> : never)
+  | (TId extends StrengthData<any> ? Effect.Services<OnStrengthReturn> : never)
