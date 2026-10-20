@@ -48,31 +48,6 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
   })
 
-  reanchorFadeoutOnto = Effect.fn(
-    'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.reanchorFadeoutOnto',
-  )(
-    { self: this },
-    function* (now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
-      yield* this.cleanupFiberToolkit.cancelCleanup
-      yield* RestoreFullVolume.run(this.playback, now)
-      yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-      })
-      const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
-        blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
-      )
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
-        this.asset,
-        this.playback,
-        cleanupFiberToolkit,
-        blissfulGridTimingsMath,
-      )
-    },
-  )
-
   dispose() {
     return disposeOf(this.playback)
   }

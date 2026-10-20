@@ -83,7 +83,6 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           return PatternPatternTransitionState.makeSimple(
             fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-            // Why was it fadingOut.reanchorFadeoutOnto before???
             fadingOut,
             yield* IncomingPatternFadingIn.init(
               desiredAsset,
