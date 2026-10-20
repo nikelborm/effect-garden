@@ -66,7 +66,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
           ),
         )
 
-      const revived = yield* current.cancelFadeoutAndRestore(now)
+      const revived = yield* current.cancelLongFadeoutAndRestore(now)
       return PatternState.makeSimple(
         revived.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,

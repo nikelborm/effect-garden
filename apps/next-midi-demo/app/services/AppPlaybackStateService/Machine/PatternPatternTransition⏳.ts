@@ -56,17 +56,17 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
             /** 🤷‍♀️ ⚠️ */
             yield* Effect.flatMap(
-              fadingOut.cancelFadeoutAndRestore(now),
+              fadingOut.cancelShortFadeoutAndRestore(now),
               playback =>
                 playback.beginLongFadeoutToSilence(blissfulGridTimingsMath),
             ),
           )
         },
         /** 🏁 */
-        *onPressedThePatternOfTheOneThatIsFadingOut() {
+        *onFadingOutAssetBroughtBack() {
           const [fadingOut, incoming] = this.transitionQueue
 
-          const revived = yield* fadingOut.cancelFadeoutAndRestore(now)
+          const revived = yield* fadingOut.cancelShortFadeoutAndRestore(now)
           yield* incoming.drop()
           return PatternState.makeSimple(
             revived.math
@@ -167,9 +167,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
         )
 
       if (Equal.equals(desiredAsset, fadingOut.asset))
-        return yield* onSafe.onPressedThePatternOfTheOneThatIsFadingOut.call(
-          this,
-        )
+        return yield* onSafe.onFadingOutAssetBroughtBack.call(this)
 
       return yield* onSafe.onPressedAnyOtherPattern.call(
         this,
@@ -198,7 +196,7 @@ export interface OnPressedParamButtonMatchHandlers {
       this: PatternPatternTransitionState,
       blissfulGridTimingsMath: BlissfulGridTimingsMath,
     ): AdvanceFnReturn
-    onPressedThePatternOfTheOneThatIsFadingOut(
+    onFadingOutAssetBroughtBack(
       this: PatternPatternTransitionState,
     ): AdvanceFnReturn
     onPressedAnyOtherPattern(

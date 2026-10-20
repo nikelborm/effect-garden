@@ -78,7 +78,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       incomingFadeInIsStillRevocable &&
       Equal.equals(desiredAsset, dying.asset)
     ) {
-      const revived = yield* dying.cancelFadeoutAndRestore(now)
+      const revived = yield* dying.cancelLongFadeoutAndRestore(now)
       yield* incoming.drop()
       return PatternState.makeSimple(
         revived.math

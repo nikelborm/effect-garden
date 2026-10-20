@@ -39,8 +39,8 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
   ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
   /** 🏁 */
-  cancelFadeoutAndRestore = Effect.fn(
-    'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelFadeoutAndRestore',
+  cancelShortFadeoutAndRestore = Effect.fn(
+    'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelShortFadeoutAndRestore',
   )({ self: this }, function* (now: number) {
     yield* RestoreFullVolume.run(this.playback, now)
     yield* this.cleanupFiberToolkit.cancelCleanup
