@@ -5,6 +5,7 @@ import * as Schema from 'effect/Schema'
 import { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
 
 /** 🏁 */
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class DisposedPatternPlayback extends Schema.TaggedClass<DisposedPatternPlayback>()(
   'DisposedPatternPlayback',
   {},

@@ -5,6 +5,7 @@ import {
   TaggedSlowStrumPointer,
 } from '../../domain/AssetPointer.ts'
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   'AudioPlayback',
   {
@@ -34,6 +35,7 @@ export class AudioPlayback extends Schema.TaggedClass<AudioPlayback>()(
   }
 }
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternTransitionQueueElement extends Schema.TaggedClass<PatternTransitionQueueElement>()(
   'PatternTransitionQueueElement',
   {
@@ -58,6 +60,7 @@ export class ScheduledPatternTransitionQueueElement extends PatternTransitionQue
   }
 }
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class SlowStrumTransitionQueueElement extends Schema.TaggedClass<SlowStrumTransitionQueueElement>()(
   'SlowStrumTransitionQueueElement',
   {

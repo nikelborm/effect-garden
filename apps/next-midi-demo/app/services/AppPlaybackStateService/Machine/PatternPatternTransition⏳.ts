@@ -29,6 +29,7 @@ export const PatternPatternTransitionQueue = Schema.Tuple([
   IncomingPatternFadingIn,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPatternTransitionState>()(
   'PatternPatternTransitionState',
   {
@@ -58,6 +59,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
             yield* Effect.flatMap(
               fadingOut.cancelShortFadeoutAndRestore(now),
               playback =>
+                // WHY does it need blissfulGridTimingsMath???
                 playback.beginLongFadeoutToSilence(blissfulGridTimingsMath),
             ),
           )
@@ -81,8 +83,9 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           return PatternPatternTransitionState.makeSimple(
             fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-            yield* fadingOut.reanchorFadeoutOnto(blissfulGridTimingsMath),
-            yield* fadingOut.scheduleNextPattern(
+            // Why was it fadingOut.reanchorFadeoutOnto before???
+            fadingOut,
+            yield* IncomingPatternFadingIn.init(
               desiredAsset,
               blissfulGridTimingsMath,
             ),
@@ -108,7 +111,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
             fadingOut,
             yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
-            yield* fadingOut.scheduleNextPattern(
+            yield* IncomingPatternFadingIn.init(
               desiredAsset,
               blissfulGridTimingsMath,
             ),

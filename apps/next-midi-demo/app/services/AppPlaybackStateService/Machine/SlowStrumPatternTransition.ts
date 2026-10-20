@@ -13,6 +13,7 @@ export const SlowStrumPatternTransitionQueue = Schema.Tuple([
   ScheduledPatternTransitionQueueElement,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class SlowStrumPatternTransitionState extends Schema.TaggedClass<SlowStrumPatternTransitionState>()(
   'SlowStrumPatternTransitionState',
   {

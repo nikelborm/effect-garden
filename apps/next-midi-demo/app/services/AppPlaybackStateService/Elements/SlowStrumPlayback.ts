@@ -7,6 +7,7 @@ import { AudioPlayback } from '../common.ts'
 import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class SlowStrumPlayback extends Schema.TaggedClass<SlowStrumPlayback>()(
   'SlowStrumPlayback',
   {

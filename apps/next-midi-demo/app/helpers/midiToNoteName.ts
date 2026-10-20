@@ -42,10 +42,12 @@ export function midiToNoteName(
   return Result.succeed(`${noteNames[noteIndex]}${octave}`)
 }
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class InvalidMIDINote extends Schema.TaggedError<InvalidMIDINote>()(
   'InvalidMIDINote',
   {},
 ) {
+  declare protected '~brand~': never
   override get message() {
     return 'MIDI note must be between 0 and 127'
   }

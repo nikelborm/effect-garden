@@ -59,10 +59,13 @@ export const prettyBytes = (bytes: number): string => {
   return `${isNegative ? '-' : ''}${formatted} ${unit}`
 }
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class OPFSFileNotFoundError extends Schema.TaggedError<OPFSFileNotFoundError>()(
   'OPFSFileNotFoundError',
   { cause: Schema.Unknown },
-) {}
+) {
+  declare protected '~brand~': never
+}
 
 // Augment FileSystemDirectoryHandle with async iterator methods not yet in TS DOM lib
 declare global {
@@ -76,12 +79,14 @@ declare global {
 /**
  * Error thrown when OPFS is not supported in the current environment.
  */
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class OPFSNotSupportedError extends Schema.TaggedError<OPFSNotSupportedError>()(
   'OPFSNotSupportedError',
   {
     message: Schema.String,
   },
 ) {
+  declare protected '~brand~': never
   static readonly notAvailable = OPFSNotSupportedError.make({
     message:
       'OPFS is not available: navigator.storage.getDirectory is not supported',

@@ -24,6 +24,7 @@ export const PatternSilencePatternTransitionQueue = Schema.Tuple([
   IncomingPatternFadingIn,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternSilencePatternTransitionState extends Schema.TaggedClass<PatternSilencePatternTransitionState>()(
   'PatternSilencePatternTransitionState',
   {
@@ -93,9 +94,8 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         dying,
         yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
-        yield* dying.scheduleNextPattern(
+        yield* IncomingPatternFadingIn.init(
           desiredAsset,
-          now,
           blissfulGridTimingsMath,
         ),
       )
@@ -106,9 +106,8 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       dying.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       dying,
-      yield* dying.scheduleNextPattern(
+      yield* IncomingPatternFadingIn.init(
         desiredAsset,
-        now,
         blissfulGridTimingsMath,
       ),
     )

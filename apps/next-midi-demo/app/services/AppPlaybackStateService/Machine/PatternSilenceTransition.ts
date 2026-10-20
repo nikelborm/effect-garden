@@ -6,6 +6,7 @@ import { ChordData } from '../../../domain/Chord.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
@@ -21,6 +22,7 @@ export const PatternSilenceTransitionQueue = Schema.Tuple([
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSilenceTransitionState>()(
   'PatternSilenceTransitionState',
   {
@@ -84,9 +86,8 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
-    const incoming = yield* current.scheduleNextPattern(
+    const incoming = yield* IncomingPatternFadingIn.init(
       asset,
-      now,
       blissfulGridTimingsMath,
     )
 

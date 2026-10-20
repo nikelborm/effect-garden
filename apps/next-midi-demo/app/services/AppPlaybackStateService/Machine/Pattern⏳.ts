@@ -19,6 +19,7 @@ import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 
 export const PatternQueue = Schema.Tuple([PatternPlayback])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternState extends Schema.TaggedClass<PatternState>()(
   'PatternState',
   {

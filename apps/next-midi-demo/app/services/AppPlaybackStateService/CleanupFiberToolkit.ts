@@ -12,6 +12,7 @@ const FiberVoidSchema = Schema.declare(
   { identifier: 'Fiber.Fiber<void>' },
 )
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class CleanupFiberToolkit extends Schema.TaggedClass<CleanupFiberToolkit>()(
   'CleanupFiberToolkit',
   {

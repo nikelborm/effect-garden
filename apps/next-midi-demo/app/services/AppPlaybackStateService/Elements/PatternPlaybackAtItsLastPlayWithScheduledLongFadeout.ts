@@ -18,6 +18,7 @@ import { PatternPlayback } from './PatternPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from './PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema.TaggedClass<PatternPlaybackAtItsLastPlayWithScheduledLongFadeout>()(
   'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout',
   {
@@ -67,33 +68,6 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
         this.asset,
         this.playback,
         cleanupFiberToolkit,
-        blissfulGridTimingsMath,
-      )
-    },
-  )
-
-  scheduleNextPattern = Effect.fn(
-    'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.scheduleNextPattern',
-  )(
-    { self: this },
-    function* (
-      desiredAsset: TaggedPatternPointer,
-      now: number,
-      blissfulGridTimingsMath: BlissfulGridTimingsMath,
-    ) {
-      const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
-      const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
-        startAtSecond: now,
-        skippedSecondsDuringStart:
-          blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-        fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
-      })
-      return IncomingPatternFadingIn.makeSimple(
-        desiredAsset,
-        playback,
         blissfulGridTimingsMath,
       )
     },

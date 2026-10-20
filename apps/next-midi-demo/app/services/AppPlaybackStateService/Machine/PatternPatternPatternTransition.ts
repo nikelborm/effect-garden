@@ -21,6 +21,7 @@ export const PatternPatternPatternTransitionQueue = Schema.Tuple([
   IncomingPatternFadingIn,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPatternPatternTransitionState extends Schema.TaggedClass<PatternPatternPatternTransitionState>()(
   'PatternPatternPatternTransitionState',
   {
@@ -95,9 +96,8 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       oldest,
       middle,
-      yield* oldest.scheduleNextPattern(
+      yield* IncomingPatternFadingIn.init(
         desiredAsset,
-        now,
         blissfulGridTimingsMath,
       ),
     )

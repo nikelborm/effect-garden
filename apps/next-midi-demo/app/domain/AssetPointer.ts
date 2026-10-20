@@ -13,6 +13,7 @@ import {
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
 import { type Strength, type StrengthData, StrengthSchema } from './Strength.ts'
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
   'TaggedPatternPointer',
   { pattern: PatternSchema, chord: ChordSchema, strength: StrengthSchema },
@@ -48,6 +49,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPointer>()(
   'TaggedSlowStrumPointer',
   { pattern: AbsentProperty, chord: ChordSchema, strength: StrengthSchema },

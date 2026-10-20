@@ -10,6 +10,7 @@ import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 
 export const SlowStrumQueue = Schema.Tuple([SlowStrumPlayback])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class SlowStrumState extends Schema.TaggedClass<SlowStrumState>()(
   'SlowStrumState',
   {

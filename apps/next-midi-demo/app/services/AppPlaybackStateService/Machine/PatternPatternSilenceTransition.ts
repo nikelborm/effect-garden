@@ -9,6 +9,7 @@ import {
   StrengthData,
   StrengthSchema,
 } from '../../../domain/Strength.ts'
+import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
@@ -22,6 +23,7 @@ export const PatternPatternSilenceTransitionQueue = Schema.Tuple([
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
   'PatternPatternSilenceTransitionState',
   {
@@ -68,7 +70,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       oldest,
       fading,
-      yield* oldest.scheduleNextPattern(asset, now, blissfulGridTimingsMath),
+      yield* IncomingPatternFadingIn.init(asset, blissfulGridTimingsMath),
     )
   }
 
@@ -77,10 +79,5 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
     strength: Strength,
     oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
     fading: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
-  ) =>
-    this.make({
-      chord,
-      strength,
-      transitionQueue: [oldest, fading],
-    })
+  ) => this.make({ chord, strength, transitionQueue: [oldest, fading] })
 }

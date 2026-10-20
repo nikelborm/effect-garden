@@ -31,6 +31,7 @@ export const SilenceQueue = Schema.Tuple([])
 
 // !!!VERIFIED!!!
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   'SilenceState',
   {

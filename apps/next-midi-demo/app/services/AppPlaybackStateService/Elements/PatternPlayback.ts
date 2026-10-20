@@ -13,6 +13,7 @@ import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from './PatternP
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from './PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   'PatternPlayback',
   {
