@@ -96,7 +96,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           return PatternPatternSilenceTransitionState.makeSimple(
             incoming.asset.chord,
             incoming.asset.strength,
-            current,
+            fadingOut,
             yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
           )
         },
@@ -106,7 +106,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           return PatternPatternPatternTransitionState.makeSimple(
             fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-            current,
+            fadingOut,
             yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
             yield* fadingOut.scheduleNextPattern(
               desiredAsset,
