@@ -30,6 +30,7 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     this.make = this.make.bind(this)
   }
 
+  /** 🏁 */
   static makeSimple = (
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -37,6 +38,7 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     math: BlissfulGridTimingsMath,
   ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
+  /** 🏁 */
   cancelFadeoutAndRestore = Effect.fn(
     'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelFadeoutAndRestore',
   )({ self: this }, function* (now: number) {

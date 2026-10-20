@@ -7,31 +7,29 @@ import { PatternData } from '../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../domain/Strength.ts'
 
-export const theSameChordWasPressed = <T extends PressedParamButtonId>(
-  pressedParamButtonId: T,
+export const theSameChordWasPressed = (
+  pressedParamButtonId: PressedParamButtonId,
   asset: AssetPointer,
 ): boolean =>
   ChordData.models(pressedParamButtonId) &&
   pressedParamButtonId.chord === asset.chord
 
-export const theSameStrengthWasPressed = <T extends PressedParamButtonId>(
-  pressedParamButtonId: T,
+export const theSameStrengthWasPressed = (
+  pressedParamButtonId: PressedParamButtonId,
   asset: AssetPointer,
 ): boolean =>
   StrengthData.models(pressedParamButtonId) &&
   pressedParamButtonId.strength === asset.strength
 
-export const theSamePatternWasPressed = <T extends PressedParamButtonId>(
-  pressedParamButtonId: T,
+export const theSamePatternWasPressed = (
+  pressedParamButtonId: PressedParamButtonId,
   asset: TaggedPatternPointer,
 ): boolean =>
   PatternData.models(pressedParamButtonId) &&
   pressedParamButtonId.pattern === asset.pattern
 
-export const theSameChordOrStrengthWasPressed = <
-  T extends PressedParamButtonId,
->(
-  pressedParamButtonId: T,
+export const theSameChordOrStrengthWasPressed = (
+  pressedParamButtonId: PressedParamButtonId,
   asset: AssetPointer,
 ): boolean =>
   theSameChordWasPressed(pressedParamButtonId, asset) ||
