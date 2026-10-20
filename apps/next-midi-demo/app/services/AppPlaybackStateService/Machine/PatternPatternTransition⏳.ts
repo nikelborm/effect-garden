@@ -140,6 +140,10 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     }: OnPressedParamButtonMatchHandlers,
   ): AdvanceFnReturn {
     const [fadingOut, incoming] = this.transitionQueue
+    // there's nothing guaranteeing that fadingOut and incoming will differ in
+    // only one dimension. The user can quickly click on all 3 different
+    // buttons, each of which will trigger a new overwrite and rescheduling of
+    // the latest pattern, while the base will stay as is
 
     if (theSameChordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
@@ -156,7 +160,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     )
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      fadingOut.math
+      this
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
