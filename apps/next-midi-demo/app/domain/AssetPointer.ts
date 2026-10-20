@@ -27,8 +27,8 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   static makeSimple = (pattern: Pattern, chord: Chord, strength: Strength) =>
     this.make({ chord, pattern, strength })
 
-  makePatchedFrom = (pressedParamButtonId: PressedParamButtonId) =>
-    PatternData.models(pressedParamButtonId)
+  makePatchedFrom(pressedParamButtonId: PressedParamButtonId) {
+    return PatternData.models(pressedParamButtonId)
       ? TaggedPatternPointer.makeSimple(
           pressedParamButtonId.pattern,
           this.chord,
@@ -45,6 +45,7 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
             this.chord,
             pressedParamButtonId.strength,
           )
+  }
 }
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
@@ -63,8 +64,8 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
   static makeSimple = (chord: Chord, strength: Strength) =>
     this.make({ chord, strength })
 
-  patch = (pressedParamButtonId: ChordData | StrengthData) =>
-    ChordData.models(pressedParamButtonId)
+  patch(pressedParamButtonId: ChordData | StrengthData) {
+    return ChordData.models(pressedParamButtonId)
       ? TaggedSlowStrumPointer.makeSimple(
           pressedParamButtonId.chord,
           this.strength,
@@ -73,6 +74,7 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
           this.chord,
           pressedParamButtonId.strength,
         )
+  }
 }
 
 export type SlowStrumPointer = Omit<TaggedSlowStrumPointer, '_tag'>

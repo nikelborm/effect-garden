@@ -46,9 +46,9 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   /** 🏁 */
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
     return yield* matchParamButtonId(pressedParamButtonId)({
-      onChord: flow(this.getAssetToPlay, SlowStrumState.init),
-      onPattern: flow(this.getAssetToPlay, PatternState.init),
-      onStrength: flow(this.withNewStrengthFromData, Effect.succeed),
+      onChord: flow(this.getAssetToPlay.bind(this), SlowStrumState.init),
+      onPattern: flow(this.getAssetToPlay.bind(this), PatternState.init),
+      onStrength: flow(this.withNewStrengthFromData.bind(this), Effect.succeed),
     })
   }
 
@@ -60,31 +60,34 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
   static default = this.makeSimple(defaultChord, defaultStrength)
 
   /** 🏁 */
-  withNewStrengthFromData = (container: StrengthData) =>
-    SilenceState.makeSimple(this.chord, container.strength)
+  withNewStrengthFromData(container: StrengthData) {
+    return SilenceState.makeSimple(this.chord, container.strength)
+  }
 
   /** 🏁 */
-  withNewChordFromData = (container: ChordData) =>
-    SilenceState.makeSimple(container.chord, this.strength)
+  withNewChordFromData(container: ChordData) {
+    return SilenceState.makeSimple(container.chord, this.strength)
+  }
 
   /** 🏁 */
-  getAssetToPlay = <T extends PatternData | ChordData>(
-    pressedParamButtonId: T,
-  ) =>
-    (PatternData.models(pressedParamButtonId)
-      ? TaggedPatternPointer.makeSimple(
-          pressedParamButtonId.pattern,
-          this.chord,
-          this.strength,
-        )
-      : TaggedSlowStrumPointer.makeSimple(
-          pressedParamButtonId.chord,
-          this.strength,
-        )) as T extends any // distrubute
+  getAssetToPlay<T extends PatternData | ChordData>(pressedParamButtonId: T) {
+    return (
+      PatternData.models(pressedParamButtonId)
+        ? TaggedPatternPointer.makeSimple(
+            pressedParamButtonId.pattern,
+            this.chord,
+            this.strength,
+          )
+        : TaggedSlowStrumPointer.makeSimple(
+            pressedParamButtonId.chord,
+            this.strength,
+          )
+    ) as T extends any // distrubute
       ? T extends PatternData
         ? TaggedPatternPointer
         : T extends ChordData
           ? TaggedSlowStrumPointer
           : never
       : never
+  }
 }

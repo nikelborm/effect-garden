@@ -28,11 +28,10 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   }
 
   /** 🏁 */
-  beginShortFadeoutBeforeAnotherPattern = Effect.fn(
-    'PatternPlayback.beginShortFadeoutBeforeAnotherPattern',
-  )(
-    { self: this },
-    function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+  beginShortFadeoutBeforeAnotherPattern(
+    blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  ) {
+    return Effect.gen({ self: this }, function* () {
       yield* ScheduleFadeOut.run(this.playback, {
         fadeoutStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
@@ -48,15 +47,14 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
         ),
         blissfulGridTimingsMath,
       )
-    },
-  )
+    }).pipe(
+      Effect.withSpan('PatternPlayback.beginShortFadeoutBeforeAnotherPattern'),
+    )
+  }
 
   /** ⚠️ */
-  beginLongFadeoutToSilence = Effect.fn(
-    'PatternPlayback.beginLongFadeoutToSilence',
-  )(
-    { self: this },
-    function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+  beginLongFadeoutToSilence(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    return Effect.gen({ self: this }, function* () {
       //!!!! PROBLEMATIC INCORRECT TIMINGS
       /** ⚠️ */
       yield* ScheduleFadeOut.run(this.playback, {
@@ -74,8 +72,8 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
         ),
         blissfulGridTimingsMath,
       )
-    },
-  )
+    }).pipe(Effect.withSpan('PatternPlayback.beginLongFadeoutToSilence'))
+  }
 
   /** 🏁 */
   static init = Effect.fn('PatternPlayback.init')(

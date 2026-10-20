@@ -40,13 +40,17 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     math: BlissfulGridTimingsMath,
   ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
-  cancelLongFadeoutAndRestore = Effect.fn(
-    'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.cancelLongFadeoutAndRestore',
-  )({ self: this }, function* (now: number) {
-    yield* RestoreFullVolume.run(this.playback, now)
-    yield* this.cleanupFiberToolkit.cancelCleanup
-    return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
-  })
+  cancelLongFadeoutAndRestore(now: number) {
+    return Effect.gen({ self: this }, function* () {
+      yield* RestoreFullVolume.run(this.playback, now)
+      yield* this.cleanupFiberToolkit.cancelCleanup
+      return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
+    }).pipe(
+      Effect.withSpan(
+        'PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.cancelLongFadeoutAndRestore',
+      ),
+    )
+  }
 
   dispose() {
     return disposeOf(this.playback)

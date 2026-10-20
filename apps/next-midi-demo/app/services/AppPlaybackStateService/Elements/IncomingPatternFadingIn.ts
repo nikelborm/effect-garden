@@ -34,11 +34,8 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     return disposeOf(this.playback)
   }
 
-  promoteToShortFadingOut = Effect.fn(
-    'IncomingPatternFadingIn.promoteToShortFadingOut',
-  )(
-    { self: this },
-    function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+  promoteToShortFadingOut(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    return Effect.gen({ self: this }, function* () {
       yield* ScheduleFadeOut.run(this.playback, {
         fadeoutStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
@@ -54,14 +51,11 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
         cleanupFiberToolkit,
         blissfulGridTimingsMath,
       )
-    },
-  )
+    }).pipe(Effect.withSpan('IncomingPatternFadingIn.promoteToShortFadingOut'))
+  }
 
-  promoteToFadeToSilence = Effect.fn(
-    'IncomingPatternFadingIn.promoteToFadeToSilence',
-  )(
-    { self: this },
-    function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+  promoteToFadeToSilence(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    return Effect.gen({ self: this }, function* () {
       yield* ScheduleFadeOut.run(this.playback, {
         fadeoutStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
@@ -77,8 +71,8 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
         cleanupFiberToolkit,
         blissfulGridTimingsMath,
       )
-    },
-  )
+    }).pipe(Effect.withSpan('IncomingPatternFadingIn.promoteToFadeToSilence'))
+  }
 
   becomeLive() {
     return PatternPlayback.makeSimple(this.asset, this.playback, this.math)

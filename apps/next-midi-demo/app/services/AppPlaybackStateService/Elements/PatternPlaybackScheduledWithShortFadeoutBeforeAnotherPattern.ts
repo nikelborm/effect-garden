@@ -40,13 +40,17 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
   ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
   /** 🏁 */
-  cancelShortFadeoutAndRestore = Effect.fn(
-    'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelShortFadeoutAndRestore',
-  )({ self: this }, function* (now: number) {
-    yield* RestoreFullVolume.run(this.playback, now)
-    yield* this.cleanupFiberToolkit.cancelCleanup
-    return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
-  })
+  cancelShortFadeoutAndRestore(now: number) {
+    return Effect.gen({ self: this }, function* () {
+      yield* RestoreFullVolume.run(this.playback, now)
+      yield* this.cleanupFiberToolkit.cancelCleanup
+      return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
+    }).pipe(
+      Effect.withSpan(
+        'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelShortFadeoutAndRestore',
+      ),
+    )
+  }
 
   dispose() {
     return disposeOf(this.playback)
