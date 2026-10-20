@@ -1,3 +1,4 @@
+import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Schema from 'effect/Schema'
 
@@ -68,7 +69,15 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       return PatternPatternSilenceTransitionState.makeSimple(
         incoming.asset.chord,
         incoming.asset.strength,
-        dying,
+
+        yield* Effect.flatMap(
+          dying.cancelLongFadeoutAndRestore(now),
+          playback =>
+            // WHY does it need blissfulGridTimingsMath???
+            playback.beginShortFadeoutBeforeAnotherPattern(
+              blissfulGridTimingsMath,
+            ),
+        ),
         yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
       )
     }
@@ -92,7 +101,14 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       return PatternPatternPatternTransitionState.makeSimple(
         dying.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        dying,
+        yield* Effect.flatMap(
+          dying.cancelLongFadeoutAndRestore(now),
+          playback =>
+            // WHY does it need blissfulGridTimingsMath???
+            playback.beginShortFadeoutBeforeAnotherPattern(
+              blissfulGridTimingsMath,
+            ),
+        ),
         yield* incoming.promoteToShortFadingOut(blissfulGridTimingsMath),
         yield* IncomingPatternFadingIn.init(
           desiredAsset,

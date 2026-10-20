@@ -69,7 +69,10 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
       oldest.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       oldest,
-      fading,
+      yield* Effect.flatMap(fading.cancelLongFadeoutAndRestore(now), playback =>
+        // WHY does it need blissfulGridTimingsMath???
+        playback.beginShortFadeoutBeforeAnotherPattern(blissfulGridTimingsMath),
+      ),
       yield* IncomingPatternFadingIn.init(asset, blissfulGridTimingsMath),
     )
   }
