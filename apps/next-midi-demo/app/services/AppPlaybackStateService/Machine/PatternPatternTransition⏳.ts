@@ -44,25 +44,29 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     const now = yield* GetAudioNow.run
 
     return yield* this.matchOnPressedParamButton(now, pressedParamButtonId, {
-      onSecondPlaybackIsStillSafeToCancel: {
+      whenFadingOutPlaybackIsStillSafeToRevive: {
+        /** 🤷‍♀️ ⚠️ */
         *onPressedThePatternOfTheIncomingOne(blissfulGridTimingsMath) {
-          const [current, incoming] = this.transitionQueue
+          const [fadingOut, incoming] = this.transitionQueue
 
           yield* incoming.drop()
 
           return PatternSilenceTransitionState.makeSimple(
-            current.math
+            fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-            yield* Effect.flatMap(current.cancelFadeoutAndRestore(now), e =>
-              e.beginLongFadeoutToSilence(blissfulGridTimingsMath),
+            /** 🤷‍♀️ ⚠️ */
+            yield* Effect.flatMap(
+              fadingOut.cancelFadeoutAndRestore(now),
+              playback =>
+                playback.beginLongFadeoutToSilence(blissfulGridTimingsMath),
             ),
           )
         },
         /** 🏁 */
         *onPressedThePatternOfTheOneThatIsFadingOut() {
-          const [current, incoming] = this.transitionQueue
+          const [fadingOut, incoming] = this.transitionQueue
 
-          const revived = yield* current.cancelFadeoutAndRestore(now)
+          const revived = yield* fadingOut.cancelFadeoutAndRestore(now)
           yield* incoming.drop()
           return PatternState.makeSimple(
             revived.math
@@ -71,24 +75,23 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           )
         },
         *onPressedAnyOtherPattern(desiredAsset, blissfulGridTimingsMath) {
-          const [current, incoming] = this.transitionQueue
+          const [fadingOut, incoming] = this.transitionQueue
 
           yield* incoming.drop()
           return PatternPatternTransitionState.makeSimple(
-            current.math
+            fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-            yield* current.reanchorFadeoutOnto(now, blissfulGridTimingsMath),
-            yield* current.scheduleNextPattern(
+            yield* fadingOut.reanchorFadeoutOnto(blissfulGridTimingsMath),
+            yield* fadingOut.scheduleNextPattern(
               desiredAsset,
-              now,
               blissfulGridTimingsMath,
             ),
           )
         },
       },
-      onSecondPlaybackUnsafeToCancel: {
+      whenFadingOutPlaybackIsUnsafeToRevive: {
         *onPressedThePatternOfTheIncomingOne(blissfulGridTimingsMath) {
-          const [current, incoming] = this.transitionQueue
+          const [fadingOut, incoming] = this.transitionQueue
 
           return PatternPatternSilenceTransitionState.makeSimple(
             incoming.asset.chord,
@@ -98,16 +101,15 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           )
         },
         *onPressedAnyOtherPattern(desiredAsset, blissfulGridTimingsMath) {
-          const [current, incoming] = this.transitionQueue
+          const [fadingOut, incoming] = this.transitionQueue
 
           return PatternPatternPatternTransitionState.makeSimple(
-            current.math
+            fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
             current,
             yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
-            yield* current.scheduleNextPattern(
+            yield* fadingOut.scheduleNextPattern(
               desiredAsset,
-              now,
               blissfulGridTimingsMath,
             ),
           )
@@ -131,8 +133,8 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     now: number,
     pressedParamButtonId: PressedParamButtonId,
     {
-      onSecondPlaybackIsStillSafeToCancel: onSafe,
-      onSecondPlaybackUnsafeToCancel: onUnsafe,
+      whenFadingOutPlaybackIsStillSafeToRevive: onSafe,
+      whenFadingOutPlaybackIsUnsafeToRevive: onUnsafe,
     }: OnPressedParamButtonMatchHandlers,
   ): AdvanceFnReturn {
     const [fadingOut, incoming] = this.transitionQueue
@@ -140,10 +142,10 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     if (theSameChordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
 
-    const incomingPlaybackIsStillSafeToCancel =
+    const fadingOutPlaybackIsStillSafeToRevive =
       now <=
-      incoming.math
-        .patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit -
+      fadingOut.math
+        .patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit -
         schedulingSafeBufferInSeconds
 
     const pressedThePatternOfTheIncomingOne = theSamePatternWasPressed(
@@ -157,7 +159,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
       now,
     )
 
-    if (incomingPlaybackIsStillSafeToCancel) {
+    if (fadingOutPlaybackIsStillSafeToRevive) {
       if (pressedThePatternOfTheIncomingOne)
         return yield* onSafe.onPressedThePatternOfTheIncomingOne.call(
           this,
@@ -190,34 +192,31 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
   }
 }
 
-export interface SecondPlaybackIsStillSafeToCancelHandlers {
-  onPressedThePatternOfTheIncomingOne(
-    this: PatternPatternTransitionState,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ): AdvanceFnReturn
-  onPressedThePatternOfTheOneThatIsFadingOut(
-    this: PatternPatternTransitionState,
-  ): AdvanceFnReturn
-  onPressedAnyOtherPattern(
-    this: PatternPatternTransitionState,
-    desiredAsset: TaggedPatternPointer,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ): AdvanceFnReturn
-}
-
-export interface SecondPlaybackIsUnsafeToCancelHandlers {
-  onPressedThePatternOfTheIncomingOne(
-    this: PatternPatternTransitionState,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ): AdvanceFnReturn
-  onPressedAnyOtherPattern(
-    this: PatternPatternTransitionState,
-    desiredAsset: TaggedPatternPointer,
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ): AdvanceFnReturn
-}
-
 export interface OnPressedParamButtonMatchHandlers {
-  onSecondPlaybackIsStillSafeToCancel: SecondPlaybackIsStillSafeToCancelHandlers
-  onSecondPlaybackUnsafeToCancel: SecondPlaybackIsUnsafeToCancelHandlers
+  whenFadingOutPlaybackIsStillSafeToRevive: {
+    onPressedThePatternOfTheIncomingOne(
+      this: PatternPatternTransitionState,
+      blissfulGridTimingsMath: BlissfulGridTimingsMath,
+    ): AdvanceFnReturn
+    onPressedThePatternOfTheOneThatIsFadingOut(
+      this: PatternPatternTransitionState,
+    ): AdvanceFnReturn
+    onPressedAnyOtherPattern(
+      this: PatternPatternTransitionState,
+      desiredAsset: TaggedPatternPointer,
+      blissfulGridTimingsMath: BlissfulGridTimingsMath,
+    ): AdvanceFnReturn
+  }
+
+  whenFadingOutPlaybackIsUnsafeToRevive: {
+    onPressedThePatternOfTheIncomingOne(
+      this: PatternPatternTransitionState,
+      blissfulGridTimingsMath: BlissfulGridTimingsMath,
+    ): AdvanceFnReturn
+    onPressedAnyOtherPattern(
+      this: PatternPatternTransitionState,
+      desiredAsset: TaggedPatternPointer,
+      blissfulGridTimingsMath: BlissfulGridTimingsMath,
+    ): AdvanceFnReturn
+  }
 }

@@ -51,9 +51,12 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.reanchorFadeoutOnto',
   )(
     { self: this },
-    function* (now: number, blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+    function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       yield* this.cleanupFiberToolkit.cancelCleanup
-      yield* RestoreFullVolume.run(this.playback, now)
+      yield* RestoreFullVolume.run(
+        this.playback,
+        blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit,
+      )
       yield* ScheduleFadeOut.run(this.playback, {
         fadeoutStartsAtSecond:
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
@@ -78,12 +81,12 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
     { self: this },
     function* (
       desiredAsset: TaggedPatternPointer,
-      now: number,
       blissfulGridTimingsMath: BlissfulGridTimingsMath,
     ) {
       const audioBuffer = yield* AudioBufferStore.getByAsset(desiredAsset)
       const playback = yield* ScheduleFadeIntoLoopPlayback.run(audioBuffer, {
-        startAtSecond: now,
+        startAtSecond:
+          blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit,
         skippedSecondsDuringStart:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
         fadeInStartsAtSecond:
