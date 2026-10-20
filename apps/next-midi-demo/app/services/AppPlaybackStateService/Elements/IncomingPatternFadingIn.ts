@@ -34,7 +34,9 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
     return disposeOf(this.playback)
   }
 
-  promoteToFadingOut = Effect.fn('IncomingPatternFadingIn.promoteToFadingOut')(
+  promoteToShortFadingOut = Effect.fn(
+    'IncomingPatternFadingIn.promoteToShortFadingOut',
+  )(
     { self: this },
     function* (blissfulGridTimingsMath: BlissfulGridTimingsMath) {
       yield* ScheduleFadeOut.run(this.playback, {

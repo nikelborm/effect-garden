@@ -109,7 +109,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
             fadingOut.math
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
             fadingOut,
-            yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
+            yield* incoming.promoteToShortFadingOut(blissfulGridTimingsMath),
             yield* IncomingPatternFadingIn.init(
               desiredAsset,
               blissfulGridTimingsMath,
