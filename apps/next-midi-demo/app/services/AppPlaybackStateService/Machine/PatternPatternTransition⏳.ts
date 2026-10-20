@@ -40,7 +40,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
   static models = Schema.is(this);
 
   *advance(pressedParamButtonId: PressedParamButtonId): AdvanceFnReturn {
-    const [, incoming] = this.transitionQueue
+    const incoming = this.transitionQueue[1]
 
     if (theSameChordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
@@ -96,7 +96,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
             incoming.asset.chord,
             incoming.asset.strength,
             current,
-            yield* incoming.promoteToFadingOut(blissfulGridTimingsMath),
+            yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
           )
         },
         *onPressedAnyOtherPattern(desiredAsset, now, blissfulGridTimingsMath) {
