@@ -23,18 +23,15 @@ export type Strength = Distribute<
 
 export type StrengthOption = Option.Option<Strength>
 
-export class StrengthData<
-  const TStrength extends Strength = Strength,
-> extends Data.TaggedClass('next-midi-demo/Strength')<{
-  strength: TStrength
+export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
+  strength: Strength
 }> {
-  constructor(strength: TStrength) {
+  constructor(strength: Strength) {
     super({ strength })
   }
   static makeUnsafe = (candidate: string) =>
     new this(decodeStrengthSyncFromUnknown(candidate))
-  static models = (candidate: unknown): candidate is StrengthData =>
-    candidate instanceof this
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
@@ -43,9 +40,7 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(StrengthData.makeUnsafe(candidate))
-  static make = <const TStrength extends Strength = Strength>(
-    strength: TStrength,
-  ) => new this(new StrengthData(strength))
+  static make = (strength: Strength) => new this(new StrengthData(strength))
 }
 
 export const StrengthSchema = Schema.Literals(strengthsRawBase)

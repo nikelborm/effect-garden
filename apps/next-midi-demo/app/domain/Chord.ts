@@ -23,18 +23,15 @@ export type Chord = Distribute<
 
 export type ChordOption = Option.Option<Chord>
 
-export class ChordData<
-  const TChord extends Chord = Chord,
-> extends Data.TaggedClass('next-midi-demo/Chord')<{
-  chord: TChord
+export class ChordData extends Data.TaggedClass('next-midi-demo/Chord')<{
+  chord: Chord
 }> {
-  constructor(chord: TChord) {
+  constructor(chord: Chord) {
     super({ chord })
   }
   static makeUnsafe = (candidate: string) =>
     new this(decodeChordSyncFromUnknown(candidate))
-  static models = (candidate: unknown): candidate is ChordData =>
-    candidate instanceof this
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class ChordParamButtonData extends ParamButtonIdData<ChordData> {
@@ -43,8 +40,7 @@ export class ChordParamButtonData extends ParamButtonIdData<ChordData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(ChordData.makeUnsafe(candidate))
-  static make = <const TChord extends Chord = Chord>(chord: TChord) =>
-    new this(new ChordData(chord))
+  static make = (chord: Chord) => new this(new ChordData(chord))
 }
 
 export const ChordSchema = Schema.Literals(chordsRawBase)

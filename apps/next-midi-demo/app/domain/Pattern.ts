@@ -24,18 +24,15 @@ export type Pattern = Distribute<
 
 export type PatternOption = Option.Option<Pattern>
 
-export class PatternData<
-  const TPattern extends Pattern = Pattern,
-> extends Data.TaggedClass('next-midi-demo/Pattern')<{
-  pattern: TPattern
+export class PatternData extends Data.TaggedClass('next-midi-demo/Pattern')<{
+  pattern: Pattern
 }> {
-  constructor(pattern: TPattern) {
+  constructor(pattern: Pattern) {
     super({ pattern })
   }
   static makeUnsafe = (candidate: string) =>
     new this(decodePatternSyncFromUnknown(candidate))
-  static models = (candidate: unknown): candidate is PatternData =>
-    candidate instanceof this
+  static models = (candidate: unknown) => candidate instanceof this
 }
 
 export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
@@ -44,8 +41,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(PatternData.makeUnsafe(candidate))
-  static make = <const TPattern extends Pattern = Pattern>(pattern: TPattern) =>
-    new this(new PatternData(pattern))
+  static make = (pattern: Pattern) => new this(new PatternData(pattern))
 }
 
 export const PatternSchema = Schema.Literals(patternsRawBase)

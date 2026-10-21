@@ -148,6 +148,10 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
     if (theSameChordOrStrengthWasPressed(pressedParamButtonId, incoming.asset))
       return this
 
+    // TODO: extract these things generating bools into methods. feed arbitrary
+    // inputs into it and test for mutual exclusivity of the condition branches
+    // below
+
     const fadingOutPlaybackIsStillSafeToRevive =
       now <=
       fadingOut.math
