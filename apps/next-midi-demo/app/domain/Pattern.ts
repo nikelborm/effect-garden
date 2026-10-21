@@ -62,6 +62,11 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
   static make = (pattern: Pattern) => new this(new PatternData(pattern))
 }
 
+export const PatternParamButtonDataArbitrary = Arbitrary.map(
+  PatternDataArbitrary,
+  data => new PatternParamButtonData(data),
+)
+
 // Unbranded pattern as it appears in asset file names. Used to compose
 // `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.
 export const patternFileNameRegExpSource = '[1-8]'

@@ -61,6 +61,11 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   static make = (strength: Strength) => new this(new StrengthData(strength))
 }
 
+export const StrengthParamButtonDataArbitrary = Arbitrary.map(
+  StrengthDataArbitrary,
+  data => new StrengthParamButtonData(data),
+)
+
 // Unbranded strength as it appears in asset file names. Used to compose
 // `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.
 export const strengthFileNameRegExpSource = '[smv]'

@@ -60,6 +60,11 @@ export class ChordParamButtonData extends ParamButtonIdData<ChordData> {
   static make = (chord: Chord) => new this(new ChordData(chord))
 }
 
+export const ChordParamButtonDataArbitrary = Arbitrary.map(
+  ChordDataArbitrary,
+  data => new ChordParamButtonData(data),
+)
+
 // Unbranded chord as it appears in asset file names (without padding `_`).
 // Used to compose `local*AssetFileNameRegExp` in
 // `helpers/audioAssetFileNameAndPath.ts`.
