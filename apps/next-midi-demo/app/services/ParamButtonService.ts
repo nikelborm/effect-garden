@@ -169,33 +169,38 @@ const makeParamButtonService = <
     }
   })
 
+interface ParamTakingMethod {
+  (value: ParamButtonIdData<any>): Stream.Stream<any, any, any>
+}
+
+export type FilterShapeForParamTakingMethods<TShape> = {
+  [K in keyof TShape as TShape[K] extends ParamTakingMethod
+    ? K
+    : never]: TShape[K] extends (arg: infer TArg) => infer TReturn
+    ? { Arg: TArg; ReturnType: TReturn }
+    : never
+}
+
 const help =
   <
-    Klass extends Context.Service<any, any>,
-    TShape extends Context.Service.Shape<Klass>,
-    TFilteredShape extends {
-      [K in keyof TShape]: TShape[K] extends (
-        value: ParamButtonIdData<any>,
-      ) => Stream.Stream<any, any, any>
-        ? {
-            Arg: Parameters<TShape[K]>[0]
-            ReturnType: ReturnType<TShape[K]>
-          }
-        : never
-    },
+    TContextServiceClass extends Context.Service<any, any>,
+    TServiceInstance extends Context.Service.Shape<TContextServiceClass>,
+    TFilteredShape extends FilterShapeForParamTakingMethods<TServiceInstance>,
   >(
-    klass: Klass,
+    klass: TContextServiceClass,
   ) =>
-  <const TMethodName extends keyof TFilteredShape>(methodName: TMethodName) =>
-  (value: TFilteredShape[TMethodName]['Arg']) =>
+  <const TKey extends keyof TFilteredShape, TVal extends TFilteredShape[TKey]>(
+    key: TKey,
+  ) =>
+  (value: ['Arg']) =>
     Stream.unwrap<
-      Stream.Success<TFilteredShape[TMethodName]['ReturnType']>,
-      Stream.Error<TFilteredShape[TMethodName]['ReturnType']>,
-      Stream.Services<TFilteredShape[TMethodName]['ReturnType']>,
+      Stream.Success<TVal['ReturnType']>,
+      Stream.Error<TVal['ReturnType']>,
+      Stream.Services<TVal['ReturnType']>,
       never,
-      Context.Service.Identifier<Klass>
+      Context.Service.Identifier<TContextServiceClass>
       // @effect-diagnostics-next-line anyUnknownInErrorContext:off
-    >(klass.useSync((s: TShape) => s[methodName](value)))
+    >(klass.useSync((s: TServiceInstance) => s[key](value)))
 
 export class ChordParamButtonService extends Context.Service<ChordParamButtonService>()(
   'next-midi-demo/app/services/ParamButtonService/ChordParamButtonService',

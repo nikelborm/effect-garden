@@ -60,13 +60,13 @@ export type ParamButtonIdMatchConfig<
   OnChordReturn,
   OnPatternReturn,
   OnStrengthReturn,
-> = (TId extends ChordData<any>
+> = (TId extends ChordData
   ? { onChord: (data: TId) => OnChordReturn }
   : { onChord?: never }) &
-  (TId extends PatternData<any>
+  (TId extends PatternData
     ? { onPattern: (data: TId) => OnPatternReturn }
     : { onPattern?: never }) &
-  (TId extends StrengthData<any>
+  (TId extends StrengthData
     ? { onStrength: (data: TId) => OnStrengthReturn }
     : { onStrength?: never })
 
@@ -76,9 +76,9 @@ export type ParamButtonIdMatchSuccess<
   OnPatternReturn,
   OnStrengthReturn,
 > =
-  | (TId extends ChordData<any> ? Effect.Success<OnChordReturn> : never)
-  | (TId extends PatternData<any> ? Effect.Success<OnPatternReturn> : never)
-  | (TId extends StrengthData<any> ? Effect.Success<OnStrengthReturn> : never)
+  | (TId extends ChordData ? Effect.Success<OnChordReturn> : never)
+  | (TId extends PatternData ? Effect.Success<OnPatternReturn> : never)
+  | (TId extends StrengthData ? Effect.Success<OnStrengthReturn> : never)
 
 export type ParamButtonIdMatchError<
   TId extends PressedParamButtonId,
@@ -86,9 +86,9 @@ export type ParamButtonIdMatchError<
   OnPatternReturn,
   OnStrengthReturn,
 > =
-  | (TId extends ChordData<any> ? Effect.Error<OnChordReturn> : never)
-  | (TId extends PatternData<any> ? Effect.Error<OnPatternReturn> : never)
-  | (TId extends StrengthData<any> ? Effect.Error<OnStrengthReturn> : never)
+  | (TId extends ChordData ? Effect.Error<OnChordReturn> : never)
+  | (TId extends PatternData ? Effect.Error<OnPatternReturn> : never)
+  | (TId extends StrengthData ? Effect.Error<OnStrengthReturn> : never)
 
 export type ParamButtonIdMatchServices<
   TId extends PressedParamButtonId,
@@ -96,6 +96,6 @@ export type ParamButtonIdMatchServices<
   OnPatternReturn,
   OnStrengthReturn,
 > =
-  | (TId extends ChordData<any> ? Effect.Services<OnChordReturn> : never)
-  | (TId extends PatternData<any> ? Effect.Services<OnPatternReturn> : never)
-  | (TId extends StrengthData<any> ? Effect.Services<OnStrengthReturn> : never)
+  | (TId extends ChordData ? Effect.Services<OnChordReturn> : never)
+  | (TId extends PatternData ? Effect.Services<OnPatternReturn> : never)
+  | (TId extends StrengthData ? Effect.Services<OnStrengthReturn> : never)

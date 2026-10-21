@@ -5,6 +5,7 @@ import type { EAudioBuffer } from 'effect-web-audio/EAudioBuffer'
 import * as Vitest from '@effect/vitest'
 import * as Arbitrary from 'effect/Arbitrary'
 import * as Effect from 'effect/Effect'
+import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Ref from 'effect/Ref'
 import * as Schema from 'effect/Schema'
@@ -13,24 +14,12 @@ import {
   type AssetPointer,
   TaggedPatternPointer,
 } from '../../../domain/AssetPointer.ts'
-import {
-  ChordArbitrary,
-  ChordData,
-  ChordDataArbitrary,
-  ChordSchema,
-} from '../../../domain/Chord.ts'
-import {
-  PatternArbitrary,
-  PatternData,
-  PatternDataArbitrary,
-  PatternSchema,
-} from '../../../domain/Pattern.ts'
+import { ChordData, ChordDataArbitrary } from '../../../domain/Chord.ts'
+import { PatternData, PatternDataArbitrary } from '../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import {
-  StrengthArbitrary,
   StrengthData,
   StrengthDataArbitrary,
-  StrengthSchema,
 } from '../../../domain/Strength.ts'
 import {
   theSameChordOrStrengthWasPressed,
@@ -237,19 +226,15 @@ const arbitraryAnyPressedParamButtonId = Arbitrary.flatMap(
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
  * `advance`, so the asset and the pressed id have to agree on that dimension.
  */
-const arbitraryPressOfTheSoundingChordOrStrength = Arbitrary.flatMap(
-  Arbitrary.schema(TaggedPatternPointer),
-  asset =>
-    Arbitrary.map(
-      Arbitrary.schema(Schema.Literals(['chord', 'strength'])),
-      kind => ({
-        asset,
-        pressedParamButtonId:
-          kind === 'chord'
-            ? new ChordData(asset.chord)
-            : new StrengthData(asset.strength),
-      }),
-    ),
+const arbitraryPressOfTheSoundingChordOrStrength = pipe(
+  Schema.Tuple([TaggedPatternPointer, Schema.Boolean]),
+  Arbitrary.schema,
+  Arbitrary.map(([asset, isChord]) => ({
+    asset,
+    pressedParamButtonId: isChord
+      ? new ChordData(asset.chord)
+      : new StrengthData(asset.strength),
+  })),
 )
 
 const arbitraryPressOfTheSoundingPattern = Arbitrary.map(
