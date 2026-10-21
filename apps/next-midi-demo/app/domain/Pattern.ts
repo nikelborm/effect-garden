@@ -45,6 +45,7 @@ export class PatternData extends Schema.TaggedClass<PatternData>()(
   static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
     this.make({ pattern: decodePatternSyncFromUnknown(candidate) })
+  static makeSimple = (pattern: Pattern) => this.make({ pattern })
 }
 
 export const PatternDataArbitrary = Arbitrary.schema(PatternData)

@@ -1,10 +1,15 @@
+import * as Arbitrary from 'effect/Arbitrary'
 import * as Effect from 'effect/Effect'
+import * as Schema from 'effect/Schema'
 
 import { ChordData } from './Chord.ts'
 import { PatternData } from './Pattern.ts'
 import { StrengthData } from './Strength.ts'
 
 export type PressedParamButtonId = ChordData | PatternData | StrengthData
+
+export const PressedParamButtonIdArbitrary: Arbitrary.Arbitrary<PressedParamButtonId> =
+  Arbitrary.schema(Schema.Union([ChordData, PatternData, StrengthData]))
 
 export const matchParamButtonId =
   <TId extends PressedParamButtonId>(id: TId) =>

@@ -44,6 +44,7 @@ export class StrengthData extends Schema.TaggedClass<StrengthData>()(
   static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
     this.make({ strength: decodeStrengthSyncFromUnknown(candidate) })
+  static makeSimple = (strength: Strength) => this.make({ strength })
 }
 
 export const StrengthDataArbitrary = Arbitrary.schema(StrengthData)

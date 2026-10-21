@@ -13,14 +13,12 @@ import * as Schema from 'effect/Schema'
 import {
   type AssetPointer,
   TaggedPatternPointer,
+  TaggedPatternPointerArbitrary,
 } from '../../../domain/AssetPointer.ts'
-import { ChordData, ChordDataArbitrary } from '../../../domain/Chord.ts'
-import { PatternData, PatternDataArbitrary } from '../../../domain/Pattern.ts'
-import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import {
-  StrengthData,
-  StrengthDataArbitrary,
-} from '../../../domain/Strength.ts'
+import { ChordData } from '../../../domain/Chord.ts'
+import { PatternData } from '../../../domain/Pattern.ts'
+import { PressedParamButtonIdArbitrary } from '../../../domain/PressedParamButtonId.ts'
+import { StrengthData } from '../../../domain/Strength.ts'
 import {
   theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
@@ -114,9 +112,9 @@ const makeFakeAudioPlayback = (): AudioPlayback =>
     gainNode: {},
   })
 
-const makeFakeAudioBuffer = (): EAudioBuffer => ({}) as unknown as EAudioBuffer
+const makeFakeAudioBuffer = () => ({}) as unknown as EAudioBuffer
 
-const makeFakeCleanupFiberToolkit = (): CleanupFiberToolkit =>
+const makeFakeCleanupFiberToolkit = () =>
   CleanupFiberToolkit.make({
     cancelCleanup: Effect.void,
     fiberWaitingSignalToStartGarbageCollection: alreadyCompletedFiber,
@@ -212,16 +210,6 @@ const makePatternState = (
     ),
   )
 
-const arbitraryAnyPressedParamButtonId = Arbitrary.flatMap(
-  Arbitrary.schema(Schema.Literals(['chord', 'pattern', 'strength'])),
-  (kind): Arbitrary.Arbitrary<PressedParamButtonId> =>
-    kind === 'chord'
-      ? ChordDataArbitrary
-      : kind === 'pattern'
-        ? PatternDataArbitrary
-        : StrengthDataArbitrary,
-)
-
 /**
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
  * `advance`, so the asset and the pressed id have to agree on that dimension.
@@ -232,16 +220,16 @@ const arbitraryPressOfTheSoundingChordOrStrength = pipe(
   Arbitrary.map(([asset, isChord]) => ({
     asset,
     pressedParamButtonId: isChord
-      ? ChordData.make({ chord: asset.chord })
-      : StrengthData.make({ strength: asset.strength }),
+      ? ChordData.makeSimple(asset.chord)
+      : StrengthData.makeSimple(asset.strength),
   })),
 )
 
 const arbitraryPressOfTheSoundingPattern = Arbitrary.map(
-  Arbitrary.schema(TaggedPatternPointer),
+  TaggedPatternPointerArbitrary,
   asset => ({
     asset,
-    pressedParamButtonId: PatternData.make({ pattern: asset.pattern }),
+    pressedParamButtonId: PatternData.makeSimple(asset.pattern),
   }),
 )
 
@@ -252,8 +240,8 @@ const arbitraryPressOfTheSoundingPattern = Arbitrary.map(
  */
 const arbitraryPressChangingTheSoundingAsset = Arbitrary.filter(
   Arbitrary.all({
-    asset: Arbitrary.schema(TaggedPatternPointer),
-    pressedParamButtonId: arbitraryAnyPressedParamButtonId,
+    asset: TaggedPatternPointerArbitrary,
+    pressedParamButtonId: PressedParamButtonIdArbitrary,
   }),
   ({ asset, pressedParamButtonId }) =>
     !theSameChordOrStrengthWasPressed(pressedParamButtonId, asset) &&
@@ -263,65 +251,61 @@ const arbitraryPressChangingTheSoundingAsset = Arbitrary.filter(
 Vitest.describe('PatternState', { concurrent: true }, () => {
   Vitest.it.effect.prop(
     'init anchors the grid at the current audio time and starts looping the exact requested asset',
-    {
-      asset: Arbitrary.schema(TaggedPatternPointer),
-      now: audioTimeSchema,
-    },
-    ({ asset, now }, ctx) =>
-      Effect.gen(function* () {
-        const capturedAudioEvents = yield* Ref.make<
-          ReadonlyArray<CapturedAudioEvent>
-        >([])
+    { asset: TaggedPatternPointer, now: audioTimeSchema },
+    Effect.fnUntraced(function* ({ asset, now }, ctx) {
+      const capturedAudioEvents = yield* Ref.make<
+        ReadonlyArray<CapturedAudioEvent>
+      >([])
 
-        const state = yield* PatternState.init(asset).pipe(
-          Effect.provide(
-            makeTestAudioSideEffectsLayer({ now, capturedAudioEvents }),
-          ),
+      const state = yield* PatternState.init(asset).pipe(
+        Effect.provide(
+          makeTestAudioSideEffectsLayer({ now, capturedAudioEvents }),
+        ),
+      )
+      const events = yield* Ref.get(capturedAudioEvents)
+
+      ctx
+        .expect(
+          state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         )
-        const events = yield* Ref.get(capturedAudioEvents)
+        .toBe(now)
+      ctx.expect(state.transitionQueue).toHaveLength(1)
+      const currentPlayback = state.transitionQueue[0]
+      ctx.expect(currentPlayback.asset).toEqual(asset)
+      ctx
+        .expect(currentPlayback.math)
+        .toEqual(calcBlissfulGridTimingsMath(now, now))
+      ctx
+        .expect({
+          chord: state.chord,
+          pattern: state.pattern,
+          strength: state.strength,
+        })
+        .toEqual({
+          chord: asset.chord,
+          pattern: asset.pattern,
+          strength: asset.strength,
+        })
 
-        ctx
-          .expect(
-            state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-          )
-          .toBe(now)
-        ctx.expect(state.transitionQueue).toHaveLength(1)
-        const currentPlayback = state.transitionQueue[0]
-        ctx.expect(currentPlayback.asset).toEqual(asset)
-        ctx
-          .expect(currentPlayback.math)
-          .toEqual(calcBlissfulGridTimingsMath(now, now))
-        ctx
-          .expect({
-            chord: state.chord,
-            pattern: state.pattern,
-            strength: state.strength,
-          })
-          .toEqual({
-            chord: asset.chord,
-            pattern: asset.pattern,
-            strength: asset.strength,
-          })
-
-        ctx
-          .expect(events.map(event => event._tag))
-          .toEqual([
-            'AudioNowRequested',
-            'AudioBufferRequested',
-            'FreshPlaybackStarted',
-          ])
-        ctx
-          .expect(onlyCapturedEventOfTag(events, 'AudioBufferRequested').asset)
-          .toEqual(asset)
-        const freshPlaybackStarted = onlyCapturedEventOfTag(
-          events,
+      ctx
+        .expect(events.map(event => event._tag))
+        .toEqual([
+          'AudioNowRequested',
+          'AudioBufferRequested',
           'FreshPlaybackStarted',
-        )
-        ctx
-          .expect(freshPlaybackStarted.timing)
-          .toEqual({ isLooping: true, startAtSecond: now })
-        ctx.expect(currentPlayback.playback).toBe(freshPlaybackStarted.playback)
-      }),
+        ])
+      ctx
+        .expect(onlyCapturedEventOfTag(events, 'AudioBufferRequested').asset)
+        .toEqual(asset)
+      const freshPlaybackStarted = onlyCapturedEventOfTag(
+        events,
+        'FreshPlaybackStarted',
+      )
+      ctx
+        .expect(freshPlaybackStarted.timing)
+        .toEqual({ isLooping: true, startAtSecond: now })
+      ctx.expect(currentPlayback.playback).toBe(freshPlaybackStarted.playback)
+    }),
   )
 
   Vitest.it.effect.prop(
@@ -331,24 +315,26 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
       startedAt: audioTimeSchema,
       secondsSinceGridStart: audioTimeSchema,
     },
-    ({ press, startedAt, secondsSinceGridStart }, ctx) =>
-      Effect.gen(function* () {
-        const capturedAudioEvents = yield* Ref.make<
-          ReadonlyArray<CapturedAudioEvent>
-        >([])
-        const layer = makeTestAudioSideEffectsLayer({
-          now: startedAt + secondsSinceGridStart,
-          capturedAudioEvents,
-        })
+    Effect.fnUntraced(function* (
+      { press, startedAt, secondsSinceGridStart },
+      ctx,
+    ) {
+      const capturedAudioEvents = yield* Ref.make<
+        ReadonlyArray<CapturedAudioEvent>
+      >([])
+      const layer = makeTestAudioSideEffectsLayer({
+        now: startedAt + secondsSinceGridStart,
+        capturedAudioEvents,
+      })
 
-        const state = makePatternState(startedAt, press.asset)
-        const stateAfterAdvance = yield* Effect.gen(() =>
-          state.advance(press.pressedParamButtonId),
-        ).pipe(Effect.provide(layer))
+      const state = makePatternState(startedAt, press.asset)
+      const stateAfterAdvance = yield* Effect.gen(() =>
+        state.advance(press.pressedParamButtonId),
+      ).pipe(Effect.provide(layer))
 
-        ctx.expect(stateAfterAdvance).toBe(state)
-        ctx.expect(yield* Ref.get(capturedAudioEvents)).toEqual([])
-      }),
+      ctx.expect(stateAfterAdvance).toBe(state)
+      ctx.expect(yield* Ref.get(capturedAudioEvents)).toEqual([])
+    }),
   )
 
   Vitest.it.effect.prop(
@@ -358,85 +344,87 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
       startedAt: audioTimeSchema,
       secondsSinceGridStart: audioTimeSchema,
     },
-    ({ press, startedAt, secondsSinceGridStart }, ctx) =>
-      Effect.gen(function* () {
-        const capturedAudioEvents = yield* Ref.make<
-          ReadonlyArray<CapturedAudioEvent>
-        >([])
-        const now = startedAt + secondsSinceGridStart
-        const layer = makeTestAudioSideEffectsLayer({
-          now,
-          capturedAudioEvents,
-        })
-        const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-          startedAt,
-          now,
+    Effect.fnUntraced(function* (
+      { press, startedAt, secondsSinceGridStart },
+      ctx,
+    ) {
+      const capturedAudioEvents = yield* Ref.make<
+        ReadonlyArray<CapturedAudioEvent>
+      >([])
+      const now = startedAt + secondsSinceGridStart
+      const layer = makeTestAudioSideEffectsLayer({
+        now,
+        capturedAudioEvents,
+      })
+      const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+        startedAt,
+        now,
+      )
+
+      const state = makePatternState(startedAt, press.asset)
+      const stateAfterAdvance = yield* Effect.gen(() =>
+        state.advance(press.pressedParamButtonId),
+      ).pipe(Effect.provide(layer))
+      const events = yield* Ref.get(capturedAudioEvents)
+
+      ctx.expect(stateAfterAdvance._tag).toBe('PatternSilenceTransitionState')
+      if (stateAfterAdvance._tag !== 'PatternSilenceTransitionState') return
+
+      ctx
+        .expect(
+          stateAfterAdvance.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         )
+        .toBe(startedAt)
+      ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(1)
+      const fadingOut = stateAfterAdvance.transitionQueue[0]
+      ctx
+        .expect(fadingOut._tag)
+        .toBe('PatternPlaybackAtItsLastPlayWithScheduledLongFadeout')
+      ctx.expect(fadingOut.asset).toEqual(press.asset)
+      ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
+      ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
+      ctx
+        .expect(fadingOut.cleanupFiberToolkit)
+        .toBeInstanceOf(CleanupFiberToolkit)
+      ctx
+        .expect({
+          chord: stateAfterAdvance.chord,
+          strength: stateAfterAdvance.strength,
+        })
+        .toEqual({
+          chord: press.asset.chord,
+          strength: press.asset.strength,
+        })
 
-        const state = makePatternState(startedAt, press.asset)
-        const stateAfterAdvance = yield* Effect.gen(() =>
-          state.advance(press.pressedParamButtonId),
-        ).pipe(Effect.provide(layer))
-        const events = yield* Ref.get(capturedAudioEvents)
-
-        ctx.expect(stateAfterAdvance._tag).toBe('PatternSilenceTransitionState')
-        if (stateAfterAdvance._tag !== 'PatternSilenceTransitionState') return
-
-        ctx
-          .expect(
-            stateAfterAdvance.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-          )
-          .toBe(startedAt)
-        ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(1)
-        const fadingOut = stateAfterAdvance.transitionQueue[0]
-        ctx
-          .expect(fadingOut._tag)
-          .toBe('PatternPlaybackAtItsLastPlayWithScheduledLongFadeout')
-        ctx.expect(fadingOut.asset).toEqual(press.asset)
-        ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
-        ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
-        ctx
-          .expect(fadingOut.cleanupFiberToolkit)
-          .toBeInstanceOf(CleanupFiberToolkit)
-        ctx
-          .expect({
-            chord: stateAfterAdvance.chord,
-            strength: stateAfterAdvance.strength,
-          })
-          .toEqual({
-            chord: press.asset.chord,
-            strength: press.asset.strength,
-          })
-
-        ctx
-          .expect(events.map(event => event._tag))
-          .toEqual([
-            'AudioNowRequested',
-            'FadeoutScheduled',
-            'CleanupFiberRequested',
-          ])
-        const fadeoutScheduled = onlyCapturedEventOfTag(
-          events,
+      ctx
+        .expect(events.map(event => event._tag))
+        .toEqual([
+          'AudioNowRequested',
           'FadeoutScheduled',
+          'CleanupFiberRequested',
+        ])
+      const fadeoutScheduled = onlyCapturedEventOfTag(
+        events,
+        'FadeoutScheduled',
+      )
+      ctx
+        .expect(fadeoutScheduled.playback)
+        .toBe(state.transitionQueue[0].playback)
+      ctx.expect(fadeoutScheduled.timing).toEqual({
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
+      ctx
+        .expect(
+          onlyCapturedEventOfTag(events, 'CleanupFiberRequested')
+            .delayForSeconds,
         )
-        ctx
-          .expect(fadeoutScheduled.playback)
-          .toBe(state.transitionQueue[0].playback)
-        ctx.expect(fadeoutScheduled.timing).toEqual({
-          fadeoutStartsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-          fadeoutEndsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-        })
-        ctx
-          .expect(
-            onlyCapturedEventOfTag(events, 'CleanupFiberRequested')
-              .delayForSeconds,
-          )
-          .toBe(
-            blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
-          )
-      }),
+        .toBe(
+          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+        )
+    }),
   )
 
   Vitest.it.effect.prop(
@@ -446,101 +434,101 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
       startedAt: audioTimeSchema,
       secondsSinceGridStart: audioTimeSchema,
     },
-    ({ press, startedAt, secondsSinceGridStart }, ctx) =>
-      Effect.gen(function* () {
-        const capturedAudioEvents = yield* Ref.make<
-          ReadonlyArray<CapturedAudioEvent>
-        >([])
-        const now = startedAt + secondsSinceGridStart
-        const layer = makeTestAudioSideEffectsLayer({
-          now,
-          capturedAudioEvents,
-        })
-        const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-          startedAt,
-          now,
+    Effect.fnUntraced(function* (
+      { press, startedAt, secondsSinceGridStart },
+      ctx,
+    ) {
+      const capturedAudioEvents = yield* Ref.make<
+        ReadonlyArray<CapturedAudioEvent>
+      >([])
+      const now = startedAt + secondsSinceGridStart
+      const layer = makeTestAudioSideEffectsLayer({
+        now,
+        capturedAudioEvents,
+      })
+      const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+        startedAt,
+        now,
+      )
+      const desiredAsset = press.asset.makePatchedFrom(
+        press.pressedParamButtonId,
+      )
+
+      const state = makePatternState(startedAt, press.asset)
+      const stateAfterAdvance = yield* Effect.gen(() =>
+        state.advance(press.pressedParamButtonId),
+      ).pipe(Effect.provide(layer))
+      const events = yield* Ref.get(capturedAudioEvents)
+
+      ctx.expect(stateAfterAdvance._tag).toBe('PatternPatternTransitionState')
+      if (stateAfterAdvance._tag !== 'PatternPatternTransitionState') return
+
+      ctx
+        .expect(
+          stateAfterAdvance.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         )
-        const desiredAsset = press.asset.makePatchedFrom(
-          press.pressedParamButtonId,
-        )
+        .toBe(startedAt)
+      ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(2)
+      const [fadingOut, incoming] = stateAfterAdvance.transitionQueue
+      ctx
+        .expect(fadingOut._tag)
+        .toBe('PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern')
+      ctx.expect(fadingOut.asset).toEqual(press.asset)
+      ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
+      ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
+      ctx.expect(incoming._tag).toBe('IncomingPatternFadingIn')
+      ctx.expect(incoming.asset).toEqual(desiredAsset)
+      ctx.expect(incoming.asset).not.toEqual(press.asset)
+      ctx.expect(incoming.math).toEqual(blissfulGridTimingsMath)
 
-        const state = makePatternState(startedAt, press.asset)
-        const stateAfterAdvance = yield* Effect.gen(() =>
-          state.advance(press.pressedParamButtonId),
-        ).pipe(Effect.provide(layer))
-        const events = yield* Ref.get(capturedAudioEvents)
-
-        ctx.expect(stateAfterAdvance._tag).toBe('PatternPatternTransitionState')
-        if (stateAfterAdvance._tag !== 'PatternPatternTransitionState') return
-
-        ctx
-          .expect(
-            stateAfterAdvance.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-          )
-          .toBe(startedAt)
-        ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(2)
-        const [fadingOut, incoming] = stateAfterAdvance.transitionQueue
-        ctx
-          .expect(fadingOut._tag)
-          .toBe('PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern')
-        ctx.expect(fadingOut.asset).toEqual(press.asset)
-        ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
-        ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
-        ctx.expect(incoming._tag).toBe('IncomingPatternFadingIn')
-        ctx.expect(incoming.asset).toEqual(desiredAsset)
-        ctx.expect(incoming.asset).not.toEqual(press.asset)
-        ctx.expect(incoming.math).toEqual(blissfulGridTimingsMath)
-
-        ctx
-          .expect(events.map(event => event._tag))
-          .toEqual([
-            'AudioNowRequested',
-            'FadeoutScheduled',
-            'CleanupFiberRequested',
-            'AudioBufferRequested',
-            'FadeIntoLoopPlaybackScheduled',
-          ])
-        const fadeoutScheduled = onlyCapturedEventOfTag(
-          events,
+      ctx
+        .expect(events.map(event => event._tag))
+        .toEqual([
+          'AudioNowRequested',
           'FadeoutScheduled',
-        )
-        ctx
-          .expect(fadeoutScheduled.playback)
-          .toBe(state.transitionQueue[0].playback)
-        ctx.expect(fadeoutScheduled.timing).toEqual({
-          fadeoutStartsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-          fadeoutEndsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-        })
-        ctx
-          .expect(
-            onlyCapturedEventOfTag(events, 'CleanupFiberRequested')
-              .delayForSeconds,
-          )
-          .toBe(
-            blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
-          )
-        ctx
-          .expect(onlyCapturedEventOfTag(events, 'AudioBufferRequested').asset)
-          .toEqual(desiredAsset)
-        const fadeIntoLoopPlaybackScheduled = onlyCapturedEventOfTag(
-          events,
+          'CleanupFiberRequested',
+          'AudioBufferRequested',
           'FadeIntoLoopPlaybackScheduled',
+        ])
+      const fadeoutScheduled = onlyCapturedEventOfTag(
+        events,
+        'FadeoutScheduled',
+      )
+      ctx
+        .expect(fadeoutScheduled.playback)
+        .toBe(state.transitionQueue[0].playback)
+      ctx.expect(fadeoutScheduled.timing).toEqual({
+        fadeoutStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeoutEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
+      ctx
+        .expect(
+          onlyCapturedEventOfTag(events, 'CleanupFiberRequested')
+            .delayForSeconds,
         )
-        ctx.expect(fadeIntoLoopPlaybackScheduled.timing).toEqual({
-          startAtSecond:
-            blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit,
-          skippedSecondsDuringStart:
-            blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
-          fadeInStartsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
-          fadeInEndsAtSecond:
-            blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
-        })
-        ctx
-          .expect(incoming.playback)
-          .toBe(fadeIntoLoopPlaybackScheduled.playback)
-      }),
+        .toBe(
+          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+        )
+      ctx
+        .expect(onlyCapturedEventOfTag(events, 'AudioBufferRequested').asset)
+        .toEqual(desiredAsset)
+      const fadeIntoLoopPlaybackScheduled = onlyCapturedEventOfTag(
+        events,
+        'FadeIntoLoopPlaybackScheduled',
+      )
+      ctx.expect(fadeIntoLoopPlaybackScheduled.timing).toEqual({
+        startAtSecond:
+          blissfulGridTimingsMath.secondsDecimalNowPassedSinceAudioContextInit,
+        skippedSecondsDuringStart:
+          blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
+        fadeInStartsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+        fadeInEndsAtSecond:
+          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
+      })
+      ctx.expect(incoming.playback).toBe(fadeIntoLoopPlaybackScheduled.playback)
+    }),
   )
 })

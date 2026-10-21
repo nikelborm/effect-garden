@@ -1,5 +1,6 @@
 import { AbsentProperty } from '@evadev/effect-helpers/AbsentProperty'
 
+import * as Arbitrary from 'effect/Arbitrary'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
@@ -47,6 +48,9 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
           )
   }
 }
+
+export const TaggedPatternPointerArbitrary =
+  Arbitrary.schema(TaggedPatternPointer)
 
 export type PatternPointer = Omit<TaggedPatternPointer, '_tag'>
 

@@ -43,6 +43,7 @@ export class ChordData extends Schema.TaggedClass<ChordData>()(
   static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
     this.make({ chord: decodeChordSyncFromUnknown(candidate) })
+  static makeSimple = (chord: Chord) => this.make({ chord })
 }
 
 export const ChordDataArbitrary = Arbitrary.schema(ChordData)
