@@ -1,3 +1,4 @@
+import * as Arbitrary from 'effect/Arbitrary'
 import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
@@ -23,6 +24,18 @@ export type Strength = Distribute<
 
 export type StrengthOption = Option.Option<Strength>
 
+export const StrengthSchema = Schema.Literals(strengthsRawBase)
+  .annotateKey({ title: 'Strength' })
+  .pipe(Schema.brand('Strength'))
+
+export const StrengthArbitrary = Arbitrary.schema(StrengthSchema)
+
+export const decodeStrengthSync = Schema.decodeSync(StrengthSchema)
+export const decodeStrengthOptionFromUnknown =
+  Schema.decodeUnknownOption(StrengthSchema)
+export const decodeStrengthSyncFromUnknown =
+  Schema.decodeUnknownSync(StrengthSchema)
+
 export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
   strength: Strength
 }> {
@@ -34,6 +47,11 @@ export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
   static models = (candidate: unknown) => candidate instanceof this
 }
 
+export const StrengthDataArbitrary = Arbitrary.map(
+  StrengthArbitrary,
+  strength => new StrengthData(strength),
+)
+
 export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof StrengthParamButtonData>()(StrengthData)
@@ -42,16 +60,6 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
     new this(StrengthData.makeUnsafe(candidate))
   static make = (strength: Strength) => new this(new StrengthData(strength))
 }
-
-export const StrengthSchema = Schema.Literals(strengthsRawBase)
-  .annotateKey({ title: 'Strength' })
-  .pipe(Schema.brand('Strength'))
-
-export const decodeStrengthSync = Schema.decodeSync(StrengthSchema)
-export const decodeStrengthOptionFromUnknown =
-  Schema.decodeUnknownOption(StrengthSchema)
-export const decodeStrengthSyncFromUnknown =
-  Schema.decodeUnknownSync(StrengthSchema)
 
 // Unbranded strength as it appears in asset file names. Used to compose
 // `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.

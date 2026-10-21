@@ -1,3 +1,4 @@
+import * as Arbitrary from 'effect/Arbitrary'
 import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
@@ -24,6 +25,18 @@ export type Pattern = Distribute<
 
 export type PatternOption = Option.Option<Pattern>
 
+export const PatternSchema = Schema.Literals(patternsRawBase)
+  .annotateKey({ title: 'Pattern' })
+  .pipe(Schema.brand('Pattern'))
+
+export const PatternArbitrary = Arbitrary.schema(PatternSchema)
+
+export const decodePatternSync = Schema.decodeSync(PatternSchema)
+export const decodePatternOptionFromUnknown =
+  Schema.decodeUnknownOption(PatternSchema)
+export const decodePatternSyncFromUnknown =
+  Schema.decodeUnknownSync(PatternSchema)
+
 export class PatternData extends Data.TaggedClass('next-midi-demo/Pattern')<{
   pattern: Pattern
 }> {
@@ -35,6 +48,11 @@ export class PatternData extends Data.TaggedClass('next-midi-demo/Pattern')<{
   static models = (candidate: unknown) => candidate instanceof this
 }
 
+export const PatternDataArbitrary = Arbitrary.map(
+  PatternArbitrary,
+  pattern => new PatternData(pattern),
+)
+
 export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
   static override makeUnsafeFromData =
     makeUnsafeFromData<typeof PatternParamButtonData>()(PatternData)
@@ -43,16 +61,6 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
     new this(PatternData.makeUnsafe(candidate))
   static make = (pattern: Pattern) => new this(new PatternData(pattern))
 }
-
-export const PatternSchema = Schema.Literals(patternsRawBase)
-  .annotateKey({ title: 'Pattern' })
-  .pipe(Schema.brand('Pattern'))
-
-export const decodePatternSync = Schema.decodeSync(PatternSchema)
-export const decodePatternOptionFromUnknown =
-  Schema.decodeUnknownOption(PatternSchema)
-export const decodePatternSyncFromUnknown =
-  Schema.decodeUnknownSync(PatternSchema)
 
 // Unbranded pattern as it appears in asset file names. Used to compose
 // `local*AssetFileNameRegExp` in `helpers/audioAssetFileNameAndPath.ts`.
