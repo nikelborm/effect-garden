@@ -13,10 +13,25 @@ import {
   type AssetPointer,
   TaggedPatternPointer,
 } from '../../../domain/AssetPointer.ts'
-import { ChordData, ChordSchema } from '../../../domain/Chord.ts'
-import { PatternData, PatternSchema } from '../../../domain/Pattern.ts'
+import {
+  ChordArbitrary,
+  ChordData,
+  ChordDataArbitrary,
+  ChordSchema,
+} from '../../../domain/Chord.ts'
+import {
+  PatternArbitrary,
+  PatternData,
+  PatternDataArbitrary,
+  PatternSchema,
+} from '../../../domain/Pattern.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
-import { StrengthData, StrengthSchema } from '../../../domain/Strength.ts'
+import {
+  StrengthArbitrary,
+  StrengthData,
+  StrengthDataArbitrary,
+  StrengthSchema,
+} from '../../../domain/Strength.ts'
 import {
   theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
@@ -208,29 +223,15 @@ const makePatternState = (
     ),
   )
 
-const arbitraryChord = Arbitrary.schema(ChordSchema)
-const arbitraryPattern = Arbitrary.schema(PatternSchema)
-const arbitraryStrength = Arbitrary.schema(StrengthSchema)
-
-const arbitraryAnyPressedParamButtonId: Arbitrary.Arbitrary<PressedParamButtonId> =
-  Arbitrary.flatMap(
-    Arbitrary.schema(Schema.Literals(['chord', 'pattern', 'strength'])),
-    kind =>
-      kind === 'chord'
-        ? Arbitrary.map(
-            arbitraryChord,
-            (chord): PressedParamButtonId => new ChordData(chord),
-          )
-        : kind === 'pattern'
-          ? Arbitrary.map(
-              arbitraryPattern,
-              (pattern): PressedParamButtonId => new PatternData(pattern),
-            )
-          : Arbitrary.map(
-              arbitraryStrength,
-              (strength): PressedParamButtonId => new StrengthData(strength),
-            ),
-  )
+const arbitraryAnyPressedParamButtonId = Arbitrary.flatMap(
+  Arbitrary.schema(Schema.Literals(['chord', 'pattern', 'strength'])),
+  (kind): Arbitrary.Arbitrary<PressedParamButtonId> =>
+    kind === 'chord'
+      ? ChordDataArbitrary
+      : kind === 'pattern'
+        ? PatternDataArbitrary
+        : StrengthDataArbitrary,
+)
 
 /**
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
