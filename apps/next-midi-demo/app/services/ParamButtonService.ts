@@ -192,7 +192,7 @@ const help =
   <const TKey extends keyof TFilteredShape, TVal extends TFilteredShape[TKey]>(
     key: TKey,
   ) =>
-  (value: ['Arg']) =>
+  (value: TVal['Arg']) =>
     Stream.unwrap<
       Stream.Success<TVal['ReturnType']>,
       Stream.Error<TVal['ReturnType']>,
