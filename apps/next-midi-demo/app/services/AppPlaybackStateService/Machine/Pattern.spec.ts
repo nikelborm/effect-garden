@@ -276,17 +276,9 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
       ctx
         .expect(currentPlayback.math)
         .toEqual(calcBlissfulGridTimingsMath(now, now))
-      ctx
-        .expect({
-          chord: state.chord,
-          pattern: state.pattern,
-          strength: state.strength,
-        })
-        .toEqual({
-          chord: asset.chord,
-          pattern: asset.pattern,
-          strength: asset.strength,
-        })
+      ctx.expect(state.chord).toEqual(asset.chord)
+      ctx.expect(state.pattern).toEqual(asset.pattern)
+      ctx.expect(state.strength).toEqual(asset.strength)
 
       ctx
         .expect(events.map(event => event._tag))
