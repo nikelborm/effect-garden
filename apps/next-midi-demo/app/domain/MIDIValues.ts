@@ -26,6 +26,7 @@ export class NoteIdData extends Data.TaggedClass('next-midi-demo/NoteId')<{
   constructor(note: NoteId) {
     super({ note })
   }
+  declare protected '~brand~': never
 
   static makeUnsafe = (candidate: number) => new this(NoteId(candidate))
   static models = (candidate: unknown) => candidate instanceof this

@@ -1,9 +1,9 @@
 import * as Arbitrary from 'effect/Arbitrary'
 import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
-import * as Data from 'effect/Data'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
+import * as Pipeable from 'effect/Pipeable'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -35,21 +35,17 @@ export const decodeChordOptionFromUnknown =
   Schema.decodeUnknownOption(ChordSchema)
 export const decodeChordSyncFromUnknown = Schema.decodeUnknownSync(ChordSchema)
 
-export class ChordData extends Data.TaggedClass('next-midi-demo/Chord')<{
-  chord: Chord
-}> {
-  constructor(chord: Chord) {
-    super({ chord })
-  }
+export class ChordData extends Schema.TaggedClass<ChordData>()(
+  'next-midi-demo/Chord',
+  { chord: ChordSchema },
+).pipe(Pipeable.Mixin) {
+  declare protected '~brand~': never
+  static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
-    new this(decodeChordSyncFromUnknown(candidate))
-  static models = (candidate: unknown) => candidate instanceof this
+    this.make({ chord: decodeChordSyncFromUnknown(candidate) })
 }
 
-export const ChordDataArbitrary = Arbitrary.map(
-  ChordArbitrary,
-  chord => new ChordData(chord),
-)
+export const ChordDataArbitrary = Arbitrary.schema(ChordData)
 
 export class ChordParamButtonData extends ParamButtonIdData<ChordData> {
   static override makeUnsafeFromData =
@@ -57,7 +53,7 @@ export class ChordParamButtonData extends ParamButtonIdData<ChordData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(ChordData.makeUnsafe(candidate))
-  static make = (chord: Chord) => new this(new ChordData(chord))
+  static make = (chord: Chord) => new this(ChordData.make({ chord }))
 }
 
 export const ChordParamButtonDataArbitrary = Arbitrary.map(

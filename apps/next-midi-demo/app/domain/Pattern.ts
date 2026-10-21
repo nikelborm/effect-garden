@@ -1,10 +1,10 @@
 import * as Arbitrary from 'effect/Arbitrary'
 import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
-import * as Data from 'effect/Data'
 import * as Iterable from 'effect/Iterable'
 import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
+import * as Pipeable from 'effect/Pipeable'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -37,21 +37,17 @@ export const decodePatternOptionFromUnknown =
 export const decodePatternSyncFromUnknown =
   Schema.decodeUnknownSync(PatternSchema)
 
-export class PatternData extends Data.TaggedClass('next-midi-demo/Pattern')<{
-  pattern: Pattern
-}> {
-  constructor(pattern: Pattern) {
-    super({ pattern })
-  }
+export class PatternData extends Schema.TaggedClass<PatternData>()(
+  'next-midi-demo/Pattern',
+  { pattern: PatternSchema },
+).pipe(Pipeable.Mixin) {
+  declare protected '~brand~': never
+  static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
-    new this(decodePatternSyncFromUnknown(candidate))
-  static models = (candidate: unknown) => candidate instanceof this
+    this.make({ pattern: decodePatternSyncFromUnknown(candidate) })
 }
 
-export const PatternDataArbitrary = Arbitrary.map(
-  PatternArbitrary,
-  pattern => new PatternData(pattern),
-)
+export const PatternDataArbitrary = Arbitrary.schema(PatternData)
 
 export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
   static override makeUnsafeFromData =
@@ -59,7 +55,7 @@ export class PatternParamButtonData extends ParamButtonIdData<PatternData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(PatternData.makeUnsafe(candidate))
-  static make = (pattern: Pattern) => new this(new PatternData(pattern))
+  static make = (pattern: Pattern) => new this(PatternData.make({ pattern }))
 }
 
 export const PatternParamButtonDataArbitrary = Arbitrary.map(

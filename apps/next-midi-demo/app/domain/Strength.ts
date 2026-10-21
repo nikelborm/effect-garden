@@ -1,7 +1,6 @@
 import * as Arbitrary from 'effect/Arbitrary'
 import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
-import * as Data from 'effect/Data'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
@@ -36,21 +35,18 @@ export const decodeStrengthOptionFromUnknown =
 export const decodeStrengthSyncFromUnknown =
   Schema.decodeUnknownSync(StrengthSchema)
 
-export class StrengthData extends Data.TaggedClass('next-midi-demo/Strength')<{
-  strength: Strength
-}> {
-  constructor(strength: Strength) {
-    super({ strength })
-  }
+// @effect-diagnostics-next-line schemaClassMissingBrand:off
+export class StrengthData extends Schema.TaggedClass<StrengthData>()(
+  'next-midi-demo/Strength',
+  { strength: StrengthSchema },
+) {
+  declare protected '~brand~': never
+  static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
-    new this(decodeStrengthSyncFromUnknown(candidate))
-  static models = (candidate: unknown) => candidate instanceof this
+    this.make({ strength: decodeStrengthSyncFromUnknown(candidate) })
 }
 
-export const StrengthDataArbitrary = Arbitrary.map(
-  StrengthArbitrary,
-  strength => new StrengthData(strength),
-)
+export const StrengthDataArbitrary = Arbitrary.schema(StrengthData)
 
 export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
   static override makeUnsafeFromData =
@@ -58,7 +54,8 @@ export class StrengthParamButtonData extends ParamButtonIdData<StrengthData> {
 
   static makeUnsafe = (candidate: string) =>
     new this(StrengthData.makeUnsafe(candidate))
-  static make = (strength: Strength) => new this(new StrengthData(strength))
+  static make = (strength: Strength) =>
+    new this(StrengthData.make({ strength }))
 }
 
 export const StrengthParamButtonDataArbitrary = Arbitrary.map(

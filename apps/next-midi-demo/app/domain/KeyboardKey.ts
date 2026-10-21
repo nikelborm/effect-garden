@@ -39,6 +39,7 @@ export class KeyboardKeyData extends Data.TaggedClass(
   constructor(key: KeyboardKey) {
     super({ key })
   }
+  declare protected '~brand~': never
 
   static makeUnsafe = (candidate: string) => new this(KeyboardKey(candidate))
   static models = (candidate: unknown) => candidate instanceof this

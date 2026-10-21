@@ -232,8 +232,8 @@ const arbitraryPressOfTheSoundingChordOrStrength = pipe(
   Arbitrary.map(([asset, isChord]) => ({
     asset,
     pressedParamButtonId: isChord
-      ? new ChordData(asset.chord)
-      : new StrengthData(asset.strength),
+      ? ChordData.make({ chord: asset.chord })
+      : StrengthData.make({ strength: asset.strength }),
   })),
 )
 
@@ -241,7 +241,7 @@ const arbitraryPressOfTheSoundingPattern = Arbitrary.map(
   Arbitrary.schema(TaggedPatternPointer),
   asset => ({
     asset,
-    pressedParamButtonId: new PatternData(asset.pattern),
+    pressedParamButtonId: PatternData.make({ pattern: asset.pattern }),
   }),
 )
 

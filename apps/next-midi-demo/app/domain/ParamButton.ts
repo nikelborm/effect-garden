@@ -17,6 +17,7 @@ export class ParamButtonIdData<
   constructor(id: TId) {
     super({ id })
   }
+  declare protected '~brand~': never
 
   static makeUnsafeFromData = (
     idData: TaggedReadonlyObject,

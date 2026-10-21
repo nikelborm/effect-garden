@@ -28,6 +28,7 @@ export class PhysicalButtonIdData<
   constructor(id: TId) {
     super({ id })
   }
+  declare protected '~brand~': never
 
   static makeUnsafeFromData = (
     idData: TaggedReadonlyObject,
