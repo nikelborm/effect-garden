@@ -5,7 +5,6 @@ import type { EAudioBuffer } from 'effect-web-audio/EAudioBuffer'
 import * as Vitest from '@effect/vitest'
 import * as Arbitrary from 'effect/Arbitrary'
 import * as Effect from 'effect/Effect'
-import { pipe } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import * as Ref from 'effect/Ref'
 import * as Schema from 'effect/Schema'
@@ -214,15 +213,17 @@ const makePatternState = (
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
  * `advance`, so the asset and the pressed id have to agree on that dimension.
  */
-const arbitraryPressOfTheSoundingChordOrStrength = pipe(
-  Schema.Tuple([TaggedPatternPointer, Schema.Boolean]),
-  Arbitrary.schema,
-  Arbitrary.map(([asset, isChord]) => ({
+const arbitraryPressOfTheSoundingChordOrStrength = Arbitrary.map(
+  Arbitrary.all({
+    asset: TaggedPatternPointerArbitrary,
+    isChord: Arbitrary.schema(Schema.Boolean),
+  }),
+  ({ asset, isChord }) => ({
     asset,
     pressedParamButtonId: isChord
       ? ChordData.makeSimple(asset.chord)
       : StrengthData.makeSimple(asset.strength),
-  })),
+  }),
 )
 
 const arbitraryPressOfTheSoundingPattern = Arbitrary.map(
