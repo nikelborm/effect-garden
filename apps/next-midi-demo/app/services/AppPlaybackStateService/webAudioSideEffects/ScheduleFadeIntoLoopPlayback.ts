@@ -12,6 +12,7 @@ import {
   maxLoudness,
   minLoudness,
 } from '../constants.ts'
+import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FadeIntoLoopPlaybackTiming {
   readonly startAtSecond: number
@@ -29,13 +30,7 @@ export class ScheduleFadeIntoLoopPlayback extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeIntoLoopPlayback',
 ) {
-  static run = (
-    audioBuffer: EAudioBuffer.EAudioBuffer,
-    timing: FadeIntoLoopPlaybackTiming,
-  ) =>
-    this.use(scheduleFadeIntoLoopPlayback =>
-      scheduleFadeIntoLoopPlayback(audioBuffer, timing),
-    )
+  static run = makePassthroughAccessor(this)
 }
 
 export const ScheduleFadeIntoLoopPlaybackLayer =

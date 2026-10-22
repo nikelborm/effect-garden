@@ -4,6 +4,7 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
 import { maxLoudness, minLoudness } from '../constants.ts'
+import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FadeoutTiming {
   readonly fadeoutStartsAtSecond: number
@@ -16,8 +17,7 @@ export class ScheduleFadeOut extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeOut',
 ) {
-  static run = (playback: AudioPlayback, timing: FadeoutTiming) =>
-    this.use(scheduleFadeOut => scheduleFadeOut(playback, timing))
+  static run = makePassthroughAccessor(this)
 }
 
 export const ScheduleFadeOutLayer = Layer.succeed(

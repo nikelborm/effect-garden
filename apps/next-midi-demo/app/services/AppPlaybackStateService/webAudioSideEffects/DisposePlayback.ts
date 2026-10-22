@@ -3,6 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
+import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export class DisposePlayback extends Context.Service<
   DisposePlayback,
@@ -10,8 +11,7 @@ export class DisposePlayback extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/DisposePlayback',
 ) {
-  static run = (playback: AudioPlayback) =>
-    this.use(dispose => dispose(playback))
+  static run = makePassthroughAccessor(this)
 }
 
 export const DisposePlaybackLayer = Layer.succeed(

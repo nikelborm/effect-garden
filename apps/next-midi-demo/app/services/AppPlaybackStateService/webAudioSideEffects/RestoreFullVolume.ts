@@ -4,6 +4,7 @@ import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
 import { maxLoudness } from '../constants.ts'
+import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export class RestoreFullVolume extends Context.Service<
   RestoreFullVolume,
@@ -11,8 +12,7 @@ export class RestoreFullVolume extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/RestoreFullVolume',
 ) {
-  static run = (playback: AudioPlayback, atSecond: number) =>
-    this.use(restore => restore(playback, atSecond))
+  static run = makePassthroughAccessor(this)
 }
 
 export const RestoreFullVolumeLayer = Layer.succeed(
