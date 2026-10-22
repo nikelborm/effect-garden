@@ -8,6 +8,7 @@ import { flow } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 import type * as Scope from 'effect/Scope'
 
+import { type StatusStream, toStatusStream } from '../helpers/toStatusStream.ts'
 import { AudioPlayback } from './AppPlaybackStateService/common.ts'
 
 // TODO: need to handle the path of crash (DONT FUCKING DELETE THIS COMMENT)
@@ -30,6 +31,7 @@ export interface DeferredAudioContextServiceShape {
   readonly decodeAudioData: EAudioContext.DecodeAudioDataWith<AudioContextInitError>
   readonly createPlayback: CreatePlayback
   readonly createLoopPlayback: CreatePlayback
+  readonly statusStream: StatusStream
 }
 
 export class DeferredAudioContextService extends Context.Service<
@@ -75,6 +77,8 @@ export const layer = (
       })
 
     return {
+      statusStream: toStatusStream(deferred),
+
       currentTime: Effect.flatMap(
         deferredAudioContext,
         EAudioContext.currentTime,

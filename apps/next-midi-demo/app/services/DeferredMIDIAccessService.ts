@@ -7,11 +7,14 @@ import * as Layer from 'effect/Layer'
 import * as Option from 'effect/Option'
 import type * as Scope from 'effect/Scope'
 
+import { type StatusStream, toStatusStream } from '../helpers/toStatusStream.ts'
+
 export interface DeferredMIDIAccessServiceShape {
   readonly accessOption: Effect.Effect<
     Option.Option<EMIDIAccess.Instance>,
     never
   >
+  readonly statusStream: StatusStream
 }
 
 export class DeferredMIDIAccessService extends Context.Service<
@@ -50,9 +53,10 @@ export const layer = (
       Effect.forkScoped,
     )
 
-    const awaitedAccessOption = Deferred.await(deferred)
-
-    return { accessOption: awaitedAccessOption }
+    return {
+      statusStream: toStatusStream(deferred),
+      accessOption: Deferred.await(deferred),
+    }
   }).pipe(Layer.effect(DeferredMIDIAccessService))
 
 export const DeferredMIDIAccessServiceLayer = layer()
