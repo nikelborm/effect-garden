@@ -14,14 +14,17 @@ import { ParamButtonIdData } from './ParamButton.ts'
 
 const patternsRawBase = ['1', '2', '3', '4', '5', '6', '7', '8'] as const
 
+export type PatternRawBase = (typeof patternsRawBase)[number]
 export type AllPatternTuple = BrandifyTuple<Pattern, typeof patternsRawBase>
 export const allPatterns = patternsRawBase as AllPatternTuple
 
 export const patternSet = new Set(allPatterns)
 
-export type Pattern = Distribute<
-  Brand.Branded<(typeof patternsRawBase)[number], 'Pattern'>
->
+export type Pattern = Distribute<Brand.Branded<PatternRawBase, 'Pattern'>>
+
+export type Patternify<V extends string> = V & Pattern
+export const Patternify = <const V extends PatternRawBase>(v: V) =>
+  v as Patternify<V>
 
 export type PatternOption = Option.Option<Pattern>
 

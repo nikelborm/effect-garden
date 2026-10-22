@@ -13,14 +13,16 @@ import { ParamButtonIdData } from './ParamButton.ts'
 
 const chordsRawBase = ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'D', 'E'] as const
 
+export type ChordRawBase = (typeof chordsRawBase)[number]
 export type AllChordTuple = BrandifyTuple<Chord, typeof chordsRawBase>
 export const allChords = chordsRawBase as AllChordTuple
 
 export const chordSet = new Set(allChords)
 
-export type Chord = Distribute<
-  Brand.Branded<(typeof chordsRawBase)[number], 'Chord'>
->
+export type Chord = Distribute<Brand.Branded<ChordRawBase, 'Chord'>>
+
+export type Chordify<V extends string> = V & Chord
+export const Chordify = <const V extends ChordRawBase>(v: V) => v as Chordify<V>
 
 export type ChordOption = Option.Option<Chord>
 

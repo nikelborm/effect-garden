@@ -4,15 +4,29 @@ import * as Arbitrary from 'effect/Arbitrary'
 import * as Option from 'effect/Option'
 import * as Schema from 'effect/Schema'
 
-import { type Chord, ChordData, ChordSchema } from './Chord.ts'
+import {
+  type Chord,
+  ChordData,
+  Chordify,
+  type ChordRawBase,
+  ChordSchema,
+} from './Chord.ts'
 import {
   type Pattern,
   PatternData,
+  Patternify,
   type PatternOption,
+  type PatternRawBase,
   PatternSchema,
 } from './Pattern.ts'
 import type { PressedParamButtonId } from './PressedParamButtonId.ts'
-import { type Strength, type StrengthData, StrengthSchema } from './Strength.ts'
+import {
+  type Strength,
+  type StrengthData,
+  Strengthify,
+  type StrengthRawBase,
+  StrengthSchema,
+} from './Strength.ts'
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointer>()(
@@ -27,6 +41,21 @@ export class TaggedPatternPointer extends Schema.TaggedClass<TaggedPatternPointe
   }
   static makeSimple = (pattern: Pattern, chord: Chord, strength: Strength) =>
     this.make({ chord, pattern, strength })
+
+  static makeSimpleGeneric = <
+    const TP extends PatternRawBase,
+    const TC extends ChordRawBase,
+    const TS extends StrengthRawBase,
+  >(
+    pattern: TP,
+    chord: TC,
+    strength: TS,
+  ) =>
+    this.make({
+      chord: Chordify(chord),
+      pattern: Patternify(pattern),
+      strength: Strengthify(strength),
+    }) as TaggedPatternPointer & { pattern: TP; chord: TC; strength: TS }
 
   makePatchedFrom(pressedParamButtonId: PressedParamButtonId) {
     return PatternData.models(pressedParamButtonId)
@@ -67,6 +96,18 @@ export class TaggedSlowStrumPointer extends Schema.TaggedClass<TaggedSlowStrumPo
 
   static makeSimple = (chord: Chord, strength: Strength) =>
     this.make({ chord, strength })
+
+  static makeSimpleGeneric = <
+    const TC extends ChordRawBase,
+    const TS extends StrengthRawBase,
+  >(
+    chord: TC,
+    strength: TS,
+  ) =>
+    this.make({
+      chord: Chordify(chord),
+      strength: Strengthify(strength),
+    }) as TaggedSlowStrumPointer & { chord: TC; strength: TS }
 
   patch(pressedParamButtonId: ChordData | StrengthData) {
     return ChordData.models(pressedParamButtonId)

@@ -3,6 +3,7 @@ import type * as Brand from 'effect/Brand'
 import * as Context from 'effect/Context'
 import * as Layer from 'effect/Layer'
 import type * as Option from 'effect/Option'
+import * as Pipeable from 'effect/Pipeable'
 import * as Schema from 'effect/Schema'
 
 import type { BrandifyTuple } from '../helpers/BrandifyTuple.ts'
@@ -12,14 +13,17 @@ import { ParamButtonIdData } from './ParamButton.ts'
 
 const strengthsRawBase = ['s', 'm', 'v'] as const
 
+export type StrengthRawBase = (typeof strengthsRawBase)[number]
 export type AllStrengthTuple = BrandifyTuple<Strength, typeof strengthsRawBase>
 export const allStrengths = strengthsRawBase as AllStrengthTuple
 
 export const strengthSet = new Set(allStrengths)
 
-export type Strength = Distribute<
-  Brand.Branded<(typeof strengthsRawBase)[number], 'Strength'>
->
+export type Strength = Distribute<Brand.Branded<StrengthRawBase, 'Strength'>>
+
+export type Strengthify<V extends string> = V & Strength
+export const Strengthify = <const V extends StrengthRawBase>(v: V) =>
+  v as Strengthify<V>
 
 export type StrengthOption = Option.Option<Strength>
 
@@ -35,11 +39,10 @@ export const decodeStrengthOptionFromUnknown =
 export const decodeStrengthSyncFromUnknown =
   Schema.decodeUnknownSync(StrengthSchema)
 
-// @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class StrengthData extends Schema.TaggedClass<StrengthData>()(
   'next-midi-demo/Strength',
   { strength: StrengthSchema },
-) {
+).pipe(Pipeable.Mixin) {
   declare protected '~brand~': never
   static models = Schema.is(this)
   static makeUnsafe = (candidate: string) =>
