@@ -18,12 +18,6 @@ export interface PassthroughAccessor<
   >
 }
 
-/**
- * Turns a service whose instance is a plain function into that same function,
- * so its callers don't need to `use` the service just to apply the arguments to
- * it. The returned accessor requires the service in its Effect context exactly
- * like `use` does.
- */
 export const makePassthroughAccessor =
   <TShape extends EffectReturningFunction, TServiceIdentifier>(
     klass: Context.Service<TServiceIdentifier, TShape>,

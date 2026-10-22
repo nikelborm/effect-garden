@@ -186,10 +186,10 @@ const help =
     TContextServiceClass extends Context.Service<any, any>,
     TServiceInstance extends Context.Service.Shape<TContextServiceClass>,
     TFilteredShape extends FilterShapeForParamTakingMethods<TServiceInstance>,
+    const TKey extends keyof TFilteredShape,
+    TVal extends TFilteredShape[TKey],
   >(
     klass: TContextServiceClass,
-  ) =>
-  <const TKey extends keyof TFilteredShape, TVal extends TFilteredShape[TKey]>(
     key: TKey,
   ) =>
   (value: TVal['Arg']) =>
@@ -211,10 +211,10 @@ export class ChordParamButtonService extends Context.Service<ChordParamButtonSer
     }).pipe(Effect.withSpan('ChordParamButtonService.init')),
   },
 ) {
-  static getIsSelectedStream = help(this)('getIsSelectedStream')
-  static isPressedFlagChangesStream = help(this)('isPressedFlagChangesStream')
-  static getIsPlayingStream = help(this)('getIsPlayingStream')
-  static getDownloadPercent = help(this)('getDownloadPercent')
+  static getIsSelectedStream = help(this, 'getIsSelectedStream')
+  static isPressedFlagChangesStream = help(this, 'isPressedFlagChangesStream')
+  static getIsPlayingStream = help(this, 'getIsPlayingStream')
+  static getDownloadPercent = help(this, 'getDownloadPercent')
 }
 
 export const ChordParamButtonServiceLayer = Layer.effect(
@@ -232,10 +232,10 @@ export class PatternParamButtonService extends Context.Service<PatternParamButto
     }).pipe(Effect.withSpan('PatternParamButtonService.init')),
   },
 ) {
-  static getIsSelectedStream = help(this)('getIsSelectedStream')
-  static isPressedFlagChangesStream = help(this)('isPressedFlagChangesStream')
-  static getIsPlayingStream = help(this)('getIsPlayingStream')
-  static getDownloadPercent = help(this)('getDownloadPercent')
+  static getIsSelectedStream = help(this, 'getIsSelectedStream')
+  static isPressedFlagChangesStream = help(this, 'isPressedFlagChangesStream')
+  static getIsPlayingStream = help(this, 'getIsPlayingStream')
+  static getDownloadPercent = help(this, 'getDownloadPercent')
 }
 
 export const PatternParamButtonServiceLayer = Layer.effect(
@@ -252,10 +252,10 @@ export class StrengthParamButtonService extends Context.Service<StrengthParamBut
     }).pipe(Effect.withSpan('StrengthParamButtonService.init')),
   },
 ) {
-  static getIsSelectedStream = help(this)('getIsSelectedStream')
-  static isPressedFlagChangesStream = help(this)('isPressedFlagChangesStream')
-  static getIsPlayingStream = help(this)('getIsPlayingStream')
-  static getDownloadPercent = help(this)('getDownloadPercent')
+  static getIsSelectedStream = help(this, 'getIsSelectedStream')
+  static isPressedFlagChangesStream = help(this, 'isPressedFlagChangesStream')
+  static getIsPlayingStream = help(this, 'getIsPlayingStream')
+  static getDownloadPercent = help(this, 'getDownloadPercent')
 }
 
 export const StrengthParamButtonServiceLayer = Layer.effect(
