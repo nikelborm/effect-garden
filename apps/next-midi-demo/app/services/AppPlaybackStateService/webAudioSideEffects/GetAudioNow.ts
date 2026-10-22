@@ -1,5 +1,6 @@
 import * as Context from 'effect/Context'
 import * as Effect from 'effect/Effect'
+import { identity } from 'effect/Function'
 import * as Layer from 'effect/Layer'
 
 import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
@@ -11,7 +12,7 @@ export class GetAudioNow extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/GetAudioNow',
 ) {
-  static run = this.use(getNow => getNow)
+  static run = this.use(identity)
 }
 
 export const GetAudioNowLayer =
