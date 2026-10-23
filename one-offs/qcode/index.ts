@@ -34,6 +34,10 @@ import { runProvider } from './remote-provider.ts'
 // handler, leaving the Deferred empty — so the main effect polls it and falls
 // back to 0 instead of awaiting it (await would hang forever on those paths).
 
+// TODO: reject poll, use https://github.com/Effect-TS/effect/pull/6743/changes
+// instead because you can await their completion synchronously and fulfill the
+// deferred
+
 class ExitCodeHandler extends Context.Service<ExitCodeHandler>()(
   'ExitCodeHandler',
   {
