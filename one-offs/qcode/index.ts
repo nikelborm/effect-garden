@@ -36,7 +36,9 @@ import { runProvider } from './remote-provider.ts'
 
 // TODO: reject poll, use https://github.com/Effect-TS/effect/pull/6743/changes
 // instead because you can await their completion synchronously and fulfill the
-// deferred
+// deferred. so bring back the await that was removed in
+// https://github.com/nikelborm/effect-garden/commit/1876ebc file
+// one-offs/qcode/index.ts
 
 class ExitCodeHandler extends Context.Service<ExitCodeHandler>()(
   'ExitCodeHandler',
