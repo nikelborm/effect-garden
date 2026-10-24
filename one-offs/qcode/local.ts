@@ -188,7 +188,7 @@ export const toPrettyFzfRenderedLine =
     const icon = isDir ? dirIcon : workspaceIcon
     return hyperlink(
       `file://${relativePath}`,
-      color([icon, icon_path_delimiter, relativePath, `\n`].join('')),
+      color([icon, icon_path_delimiter, relativePath].join('')),
     )
   }
 
@@ -312,7 +312,6 @@ export const localMode = Effect.fn('qcode.local')(
       fs.stream(LOCAL_FIND_CACHE_FILE),
       Stream.decodeText,
       Stream.splitLines,
-      Stream.filter(line => line.length > 0),
       Stream.catchCause(() => Stream.empty),
     )
 
@@ -327,7 +326,7 @@ export const localMode = Effect.fn('qcode.local')(
                 collectedFreshVscodeArgCandidatesFromCurrentRun,
                 Iterable.intersperse('\n'),
                 ReducerConcat.combineAll,
-              ) + '\n'
+              )
             : '',
         ),
     )
@@ -349,6 +348,7 @@ export const localMode = Effect.fn('qcode.local')(
       Stream.merge(cachedVscodeArgCandidatesFromPreviousRun),
       dedupStreamWithSet,
       Stream.map(toPrettyFzfRenderedLine(path, icons)),
+      Stream.intersperse('\n'),
       Stream.encodeText,
     )
 
