@@ -1,7 +1,7 @@
 # qcode agent notes
 
-Do not run this script (`bun index.ts`, `bun run build` output in
-`dist/minified/index.mjs`, or the `kitty ...` shortcut from the README).
+Do not run this script (`index.ts`, `dist/minified/index.mjs` (output of
+`bun run build`), or the `kitty ...` shortcut from the README).
 
 It is an interactive terminal UI: it takes over stdin/stderr to show a
 fullscreen `fzf` picker, then launches the selected project with the
