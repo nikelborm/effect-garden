@@ -27,23 +27,22 @@ const beatsPerMinute = 120
 const beatsPerBar = 4
 // comes as a size of Audio file
 const patternSizeInSeconds = 8
+// potentially configurable in UI
+const quantSizeInBeats = 2
 
 // permanent/inferred from above
 const secondsPerMinute = 60
-const beatsPerSecond = divide(beatsPerMinute, secondsPerMinute)
+const beatsPerSecond: 2 = divide(beatsPerMinute, secondsPerMinute)
+const patternSizeInBeats: 16 = multiply(patternSizeInSeconds, beatsPerSecond)
+const patternSizeInBars: 4 = divide(patternSizeInBeats, beatsPerBar)
+const quantsPerMinute: 60 = divide(beatsPerMinute, quantSizeInBeats)
+const quantsPerSecond: 1 = divide(quantsPerMinute, secondsPerMinute)
+const quantSizeInSeconds: 1 = divide(1, quantsPerSecond)
+const patternSizeInQuants: 8 = divide(patternSizeInBeats, quantSizeInBeats)
 
-const patternSizeInBeats = multiply(patternSizeInSeconds, beatsPerSecond)
-const patternSizeInBars = divide(patternSizeInBeats, beatsPerBar)
-// potentially configurable in UI
-const quantSizeInBeats = 2
-const quantsPerMinute = divide(beatsPerMinute, quantSizeInBeats)
-const quantsPerSecond = divide(quantsPerMinute, secondsPerMinute)
-const quantSizeInSeconds = divide(1, quantsPerSecond)
-const patternSizeInQuants = divide(patternSizeInBeats, quantSizeInBeats)
-
-export const trackSizeInSeconds = patternSizeInSeconds
-export const tickSizeInSeconds = quantSizeInSeconds
-export const ticksPerTrack = patternSizeInQuants
+export const trackSizeInSeconds: 8 = patternSizeInSeconds
+export const tickSizeInSeconds: 1 = quantSizeInSeconds
+export const ticksPerTrack: 8 = patternSizeInQuants
 
 // Доля -- beat
 // Такт -- bar
