@@ -7,7 +7,7 @@ import * as Layer from 'effect/Layer'
 import type { AudioContextInitError } from '../../DeferredAudioContextService.ts'
 import { DeferredAudioContextService } from '../../DeferredAudioContextService.ts'
 import type { AudioPlayback } from '../common.ts'
-import { asEarlyAsPossibleInSeconds, maxLoudness } from '../consts/constants.ts'
+import { asEarlyAsPossibleInSeconds, maxLoudness } from '../constants.ts'
 import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FreshPlaybackTiming {

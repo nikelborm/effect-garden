@@ -1,6 +1,6 @@
 // oxlint-disable no-unused-vars
 /** biome-ignore-all lint/correctness/noUnusedVariables: idc */
-import { divide, multiply } from '../../../helpers/math.ts'
+import { divide, multiply } from '../../helpers/math.ts'
 
 // The near-instant gain ramp for a pattern-pattern: just enough to
 // avoid a click while one full-volume pattern hands over to the next on the tick.
@@ -33,12 +33,16 @@ const quantSizeInBeats = 2
 // permanent/inferred from above
 const secondsPerMinute = 60
 const beatsPerSecond: 2 = divide(beatsPerMinute, secondsPerMinute)
+
 const patternSizeInBeats: 16 = multiply(patternSizeInSeconds, beatsPerSecond)
 const patternSizeInBars: 4 = divide(patternSizeInBeats, beatsPerBar)
+const patternSizeInQuants: 8 = divide(patternSizeInBeats, quantSizeInBeats)
+
 const quantsPerMinute: 60 = divide(beatsPerMinute, quantSizeInBeats)
 const quantsPerSecond: 1 = divide(quantsPerMinute, secondsPerMinute)
+
 const quantSizeInSeconds: 1 = divide(1, quantsPerSecond)
-const patternSizeInQuants: 8 = divide(patternSizeInBeats, quantSizeInBeats)
+const quantSizeInBars: 8 = multiply(beatsPerBar, quantSizeInBeats)
 
 export const trackSizeInSeconds: 8 = patternSizeInSeconds
 export const tickSizeInSeconds: 1 = quantSizeInSeconds

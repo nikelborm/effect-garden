@@ -11,7 +11,7 @@ import {
   asEarlyAsPossibleInSeconds,
   maxLoudness,
   minLoudness,
-} from '../consts/constants.ts'
+} from '../constants.ts'
 import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FadeIntoLoopPlaybackTiming {
