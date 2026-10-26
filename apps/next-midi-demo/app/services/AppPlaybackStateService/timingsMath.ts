@@ -6,7 +6,7 @@ import {
   ticksPerTrack,
   trackSizeInSeconds,
   transitionTimeInSeconds,
-} from './constants.ts'
+} from './consts/constants.ts'
 
 export const BlissfulGridTimingsMath = Schema.Struct({
   firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:

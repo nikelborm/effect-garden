@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
-import { maxLoudness, minLoudness } from '../constants.ts'
+import { maxLoudness, minLoudness } from '../consts/constants.ts'
 import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FadeoutTiming {

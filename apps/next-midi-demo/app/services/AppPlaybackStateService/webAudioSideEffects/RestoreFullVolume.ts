@@ -3,7 +3,7 @@ import * as Effect from 'effect/Effect'
 import * as Layer from 'effect/Layer'
 
 import type { AudioPlayback } from '../common.ts'
-import { maxLoudness } from '../constants.ts'
+import { maxLoudness } from '../consts/constants.ts'
 import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export class RestoreFullVolume extends Context.Service<

@@ -8,7 +8,7 @@ import {
 } from '../../../domain/AssetPointer.ts'
 import {
   type Chord,
-  type ChordData,
+  ChordData,
   ChordSchema,
   defaultChord,
 } from '../../../domain/Chord.ts'
@@ -71,23 +71,27 @@ export class SilenceState extends Schema.TaggedClass<SilenceState>()(
 
   /** 🏁 */
   getAssetToPlay<T extends PatternData | ChordData>(pressedParamButtonId: T) {
-    return (
-      PatternData.models(pressedParamButtonId)
-        ? TaggedPatternPointer.makeSimple(
-            pressedParamButtonId.pattern,
-            this.chord,
-            this.strength,
-          )
-        : TaggedSlowStrumPointer.makeSimple(
-            pressedParamButtonId.chord,
-            this.strength,
-          )
-    ) as T extends any // distrubute
+    type R = T extends any // distrubute
       ? T extends PatternData
         ? TaggedPatternPointer
         : T extends ChordData
           ? TaggedSlowStrumPointer
           : never
       : never
+
+    if (PatternData.models(pressedParamButtonId))
+      return TaggedPatternPointer.makeSimple(
+        pressedParamButtonId.pattern,
+        this.chord,
+        this.strength,
+      ) as R
+
+    if (ChordData.models(pressedParamButtonId))
+      return TaggedSlowStrumPointer.makeSimple(
+        pressedParamButtonId.chord,
+        this.strength,
+      ) as R
+
+    throw new Error('invariant')
   }
 }

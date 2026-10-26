@@ -8,7 +8,7 @@ import {
   theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
-import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { schedulingSafeBufferInSeconds } from '../consts/constants.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
 import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
