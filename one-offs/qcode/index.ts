@@ -120,7 +120,12 @@ export const cli = CliCommand.make(
   CliCommand.withDescription(
     'Fuzzy project opener for VS Code, opencode, or shell. With no subcommand, searches ~/projects on this machine.',
   ),
-  CliCommand.withSubcommands([remoteCommand, provideCommand, cachePathCommand]),
+  CliCommand.withSubcommands([
+    // TODO: for future generations
+    // remoteCommand,
+    // provideCommand,
+    cachePathCommand,
+  ]),
 )
 
 const AppLayer = BunChildProcessSpawner.layer.pipe(
