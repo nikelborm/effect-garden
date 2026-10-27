@@ -1,4 +1,8 @@
 #!/usr/bin/env bun
+
+/** biome-ignore-all lint/correctness/noUnusedVariables: tree-shaking for the win */
+// oxlint-disable no-unused-vars
+
 // if you have bun installed with mise, the above shebang might not always work
 
 // I worked around it, by assigning the keyboard shortcut to a fixed path instead
