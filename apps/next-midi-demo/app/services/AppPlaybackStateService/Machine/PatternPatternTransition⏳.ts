@@ -96,8 +96,6 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           const [fadingOut, incoming] = this.transitionQueue
 
           return PatternPatternSilenceTransitionState.makeSimple(
-            incoming.asset.chord,
-            incoming.asset.strength,
             fadingOut,
             yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
           )

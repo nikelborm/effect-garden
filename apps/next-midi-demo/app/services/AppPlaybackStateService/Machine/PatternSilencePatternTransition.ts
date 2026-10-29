@@ -67,9 +67,6 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
       }
 
       return PatternPatternSilenceTransitionState.makeSimple(
-        incoming.asset.chord,
-        incoming.asset.strength,
-
         yield* Effect.flatMap(
           dying.cancelLongFadeoutAndRestore(now),
           playback =>

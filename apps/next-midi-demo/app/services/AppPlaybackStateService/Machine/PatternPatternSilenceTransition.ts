@@ -27,8 +27,6 @@ export const PatternPatternSilenceTransitionQueue = Schema.Tuple([
 export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<PatternPatternSilenceTransitionState>()(
   'PatternPatternSilenceTransitionState',
   {
-    chord: ChordSchema,
-    strength: StrengthSchema,
     transitionQueue: PatternPatternSilenceTransitionQueue,
   },
 ) {
@@ -40,12 +38,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
     const [oldest, fading] = this.transitionQueue
 
     if (StrengthData.models(pressedParamButtonId))
-      return PatternPatternSilenceTransitionState.makeSimple(
-        chord,
-        pressedParamButtonId.strength,
-        oldest,
-        fading,
-      )
+      return PatternPatternSilenceTransitionState.makeSimple(oldest, fading)
 
     if (ChordData.models(pressedParamButtonId))
       return yield* Effect.die(
@@ -78,9 +71,22 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
   }
 
   static makeSimple = (
-    chord: Chord,
-    strength: Strength,
     oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
     fading: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
-  ) => this.make({ chord, strength, transitionQueue: [oldest, fading] })
+  ) => this.make({ transitionQueue: [oldest, fading] })
+
+  /** 🏁 */
+  get chord() {
+    return this.transitionQueue[1].asset.chord
+  }
+
+  /** 🏁 */
+  get pattern() {
+    return this.transitionQueue[1].asset.pattern
+  }
+
+  /** 🏁 */
+  get strength() {
+    return this.transitionQueue[1].asset.strength
+  }
 }

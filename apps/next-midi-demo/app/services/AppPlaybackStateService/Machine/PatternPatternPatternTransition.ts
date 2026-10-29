@@ -50,12 +50,7 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
-        return PatternPatternSilenceTransitionState.makeSimple(
-          incoming.asset.chord,
-          incoming.asset.strength,
-          oldest,
-          middle,
-        )
+        return PatternPatternSilenceTransitionState.makeSimple(oldest, middle)
       }
       yield* Effect.logError({
         oldest,
