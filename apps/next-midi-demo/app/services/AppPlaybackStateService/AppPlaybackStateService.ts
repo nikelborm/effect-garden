@@ -124,6 +124,9 @@ export const AppPlaybackStateServiceLayer = Effect.gen(function* (): Return {
         }),
       ),
     ),
+    // TODO: add timeout on transitions so that certain events don't freeze the
+    // whole app. if it did freeze, we need to flow it through the standard app
+    // reinit mechanism
 
     Effect.tapCause(Effect.logError),
     Effect.forkScoped,
