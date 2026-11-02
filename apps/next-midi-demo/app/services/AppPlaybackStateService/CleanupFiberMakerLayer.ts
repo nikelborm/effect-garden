@@ -93,10 +93,7 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
     const q = state.transitionQueue
     const [, middle, incoming] = q
     yield* q[0].dispose()
-    if (
-      middle._tag ===
-      'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
-    )
+    if (middle._tag === 'EndingPatternPlaybackWithShortFadeout')
       return PatternPatternTransitionState.makeSimple(
         state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         middle,

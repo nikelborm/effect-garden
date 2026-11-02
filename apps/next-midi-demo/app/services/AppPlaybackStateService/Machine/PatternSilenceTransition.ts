@@ -91,10 +91,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       blissfulGridTimingsMath,
     )
 
-    if (
-      current._tag ===
-      'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern'
-    )
+    if (current._tag === 'EndingPatternPlaybackWithShortFadeout')
       return PatternPatternTransitionState.makeSimple(
         current.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,

@@ -463,9 +463,7 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         .toBe(startedAt)
       ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(2)
       const [fadingOut, incoming] = stateAfterAdvance.transitionQueue
-      ctx
-        .expect(fadingOut._tag)
-        .toBe('PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern')
+      ctx.expect(fadingOut._tag).toBe('EndingPatternPlaybackWithShortFadeout')
       ctx.expect(fadingOut.asset).toEqual(press.asset)
       ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
       ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)

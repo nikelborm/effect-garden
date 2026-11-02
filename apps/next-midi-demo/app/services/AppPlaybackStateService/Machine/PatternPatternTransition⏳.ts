@@ -9,8 +9,8 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { EndingPatternPlaybackWithShortFadeout } from '../Elements/EndingPatternPlaybackWithShortFadeout.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
-import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import {
   type BlissfulGridTimingsMath,
@@ -25,7 +25,7 @@ import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 import { PatternState } from './Pattern⏳.ts'
 
 export const PatternPatternTransitionQueue = Schema.Tuple([
-  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+  EndingPatternPlaybackWithShortFadeout,
   IncomingPatternFadingIn,
 ])
 
@@ -121,7 +121,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
   /** 🏁 */
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
-    fadingOut: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    fadingOut: EndingPatternPlaybackWithShortFadeout,
     incoming: IncomingPatternFadingIn,
   ) =>
     this.make({

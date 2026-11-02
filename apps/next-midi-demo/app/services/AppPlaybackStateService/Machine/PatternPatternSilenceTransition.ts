@@ -9,9 +9,9 @@ import {
   StrengthData,
   StrengthSchema,
 } from '../../../domain/Strength.ts'
+import { EndingPatternPlaybackWithShortFadeout } from '../Elements/EndingPatternPlaybackWithShortFadeout.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
-import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
@@ -19,7 +19,7 @@ import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 
 export const PatternPatternSilenceTransitionQueue = Schema.Tuple([
-  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+  EndingPatternPlaybackWithShortFadeout,
   PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
 ])
 
@@ -71,7 +71,7 @@ export class PatternPatternSilenceTransitionState extends Schema.TaggedClass<Pat
   }
 
   static makeSimple = (
-    oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    oldest: EndingPatternPlaybackWithShortFadeout,
     fading: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
   ) => this.make({ transitionQueue: [oldest, fading] })
 

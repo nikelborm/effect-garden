@@ -9,9 +9,9 @@ import { BlissfulGridTimingsMath } from '../timingsMath.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from './PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
+import { EndingPatternPlaybackWithShortFadeout } from './EndingPatternPlaybackWithShortFadeout.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from './PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
+import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from './PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
@@ -39,7 +39,7 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
           blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
 
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
+      return EndingPatternPlaybackWithShortFadeout.makeSimple(
         this.asset,
         this.playback,
         yield* CleanupFiberMaker.make(

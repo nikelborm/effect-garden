@@ -7,8 +7,8 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
+import { EndingPatternPlaybackWithShortFadeout } from '../Elements/EndingPatternPlaybackWithShortFadeout.ts'
 import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
-import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from '../Elements/PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
@@ -16,8 +16,8 @@ import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 
 export const PatternPatternPatternTransitionQueue = Schema.Tuple([
-  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
-  PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+  EndingPatternPlaybackWithShortFadeout,
+  EndingPatternPlaybackWithShortFadeout,
   IncomingPatternFadingIn,
 ])
 
@@ -100,8 +100,8 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
 
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
-    oldest: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
-    middle: PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern,
+    oldest: EndingPatternPlaybackWithShortFadeout,
+    middle: EndingPatternPlaybackWithShortFadeout,
     incoming: IncomingPatternFadingIn,
   ) =>
     this.make({

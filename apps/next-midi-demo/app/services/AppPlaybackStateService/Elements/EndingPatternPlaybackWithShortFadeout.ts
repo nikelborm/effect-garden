@@ -11,8 +11,8 @@ import { disposeOf } from './DisposedPatternPlayback🏁.ts'
 import { PatternPlayback } from './PatternPlayback.ts'
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
-export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extends Schema.TaggedClass<PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern>()(
-  'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern',
+export class EndingPatternPlaybackWithShortFadeout extends Schema.TaggedClass<EndingPatternPlaybackWithShortFadeout>()(
+  'EndingPatternPlaybackWithShortFadeout',
   {
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
@@ -41,7 +41,7 @@ export class PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern extend
       return PatternPlayback.makeSimple(this.asset, this.playback, this.math)
     }).pipe(
       Effect.withSpan(
-        'PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.cancelShortFadeoutAndRestore',
+        'EndingPatternPlaybackWithShortFadeout.cancelShortFadeoutAndRestore',
       ),
     )
   }

@@ -10,11 +10,11 @@ import { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFad
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { disposeOf } from './DisposedPatternPlayback🏁.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
+import { EndingPatternPlaybackWithShortFadeout } from './EndingPatternPlaybackWithShortFadeout.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPlayback } from './PatternPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from './PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
-// biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern } from './PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.ts'
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternFadingIn>()(
@@ -45,7 +45,7 @@ export class IncomingPatternFadingIn extends Schema.TaggedClass<IncomingPatternF
       const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
         blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
       )
-      return PatternPlaybackScheduledWithShortFadeoutBeforeAnotherPattern.makeSimple(
+      return EndingPatternPlaybackWithShortFadeout.makeSimple(
         this.asset,
         this.playback,
         cleanupFiberToolkit,
