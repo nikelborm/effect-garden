@@ -21,7 +21,10 @@ import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts
 import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from './BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from './BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
-import type { AsBeginningPatternPlaybackWithShortFadeinTakingAsset } from './BeginningPatternPlaybackWithShortFadeinVariants.ts'
+import type {
+  AsBeginningPatternPlaybackWithShortFadeinTakingAsset,
+  BeginningPatternPlaybackWithShortFadein,
+} from './BeginningPatternPlaybackWithShortFadeinVariants.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { EndingPatternPlaybackAtLastQuantWithShortFadeout } from './EndingPatternPlaybackAtLastQuantWithShortFadeout.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -65,21 +68,20 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
 
     proto.beginAnotherPatternPlaybackWithShortFadein =
       lambdaAllArgs<AsBeginningPatternPlaybackWithShortFadeinTakingAsset>(
-        <Math extends BlissfulGridTimingsMathAtAnyQuant>(
-          desiredAsset: TaggedPatternPointer,
-          blissfulGridTimingsMath: Math,
-        ) => {
-          if (
-            blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-          )
-            return BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
-              desiredAsset,
-              blissfulGridTimingsMath,
-            )
-          return BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
-            desiredAsset,
-            blissfulGridTimingsMath,
-          )
+        function (
+          this: PatternPlayback,
+          desiredAsset,
+          blissfulGridTimingsMath,
+        ) {
+          return blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+            ? this.beginAnotherPatternPlaybackWithShortFadeinAtLastQuant(
+                desiredAsset,
+                blissfulGridTimingsMath,
+              )
+            : this.beginAnotherPatternPlaybackWithShortFadeinAtMiddleQuant(
+                desiredAsset,
+                blissfulGridTimingsMath,
+              )
         },
       )
   }
@@ -143,6 +145,42 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
         `PatternPlayback.beginShortFadeoutBeforeAnotherPatternAt${quantSpanName}Quant`,
       ),
     )
+  }
+
+  /** 🏁 */
+  beginAnotherPatternPlaybackWithShortFadeinAtLastQuant<
+    TMath extends BlissfulGridTimingsMathAtLastQuant,
+  >(desiredAsset: TaggedPatternPointer, blissfulGridTimingsMath: TMath) {
+    return this.beginAnotherPatternPlaybackWithShortFadeinGeneral(
+      desiredAsset,
+      blissfulGridTimingsMath,
+      BeginningPatternPlaybackAtInitialQuantWithShortFadein.init,
+    )
+  }
+
+  /** 🏁 */
+  beginAnotherPatternPlaybackWithShortFadeinAtMiddleQuant<
+    TMath extends BlissfulGridTimingsMathAtMiddleQuant,
+  >(desiredAsset: TaggedPatternPointer, blissfulGridTimingsMath: TMath) {
+    return this.beginAnotherPatternPlaybackWithShortFadeinGeneral(
+      desiredAsset,
+      blissfulGridTimingsMath,
+      BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init,
+    )
+  }
+
+  private beginAnotherPatternPlaybackWithShortFadeinGeneral<
+    TMath extends BlissfulGridTimingsMathAtAnyQuant,
+    R,
+  >(
+    desiredAsset: TaggedPatternPointer,
+    blissfulGridTimingsMath: TMath,
+    init: (asset: TaggedPatternPointer, math: TMath) => R,
+  ): BeginningPatternPlaybackWithShortFadein<TMath> {
+    return init(
+      desiredAsset,
+      blissfulGridTimingsMath,
+    ) as BeginningPatternPlaybackWithShortFadein<TMath>
   }
 
   /** ⚠️ */
