@@ -301,3 +301,21 @@ export const calcBlissfulGridTimingsMathAtMiddleQuant = (
     BlissfulGridTimingsMathAtMiddleQuant,
   )
 }
+
+export const calcBlissfulGridTimingsMathAtAnyQuantFromMath = (
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
+): BlissfulGridTimingsMathAtAnyQuant =>
+  blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+    ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
+    : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
+
+export const calcBlissfulGridTimingsMathAtAnyQuant = (
+  firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
+  secondsDecimalNowPassedSinceAudioContextInit: number,
+): BlissfulGridTimingsMathAtAnyQuant =>
+  calcBlissfulGridTimingsMathAtAnyQuantFromMath(
+    calcBlissfulGridTimingsMath(
+      firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+      secondsDecimalNowPassedSinceAudioContextInit,
+    ),
+  )

@@ -13,8 +13,7 @@ import { PatternPlayback } from '../Elements/PatternPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import {
   calcBlissfulGridTimingsMath,
-  calcBlissfulGridTimingsMathAtLastQuant,
-  calcBlissfulGridTimingsMathAtMiddleQuant,
+  calcBlissfulGridTimingsMathAtAnyQuant,
 } from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import type {
@@ -47,20 +46,11 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
     if (theSameChordOrStrengthWasPressed(pressedParamButtonId, current.asset))
       return this
 
-    const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+    const mathAtAnyQuant = calcBlissfulGridTimingsMathAtAnyQuant(
       this
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       yield* GetAudioNow.run,
     )
-    const blissfulGridTimingsMathAtLastQuant =
-      calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-    const blissfulGridTimingsMathAtMiddleQuant =
-      calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
-
-    const mathAtAnyQuant =
-      blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-        ? blissfulGridTimingsMathAtLastQuant
-        : blissfulGridTimingsMathAtMiddleQuant
 
     if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
       return PatternSilenceTransitionState.makeSimple(

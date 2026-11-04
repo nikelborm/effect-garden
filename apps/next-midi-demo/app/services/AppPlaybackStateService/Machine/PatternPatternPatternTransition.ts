@@ -21,6 +21,7 @@ import {
 import type { AdvanceFnReturn } from '../index.ts'
 import {
   calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtAnyQuant,
   calcBlissfulGridTimingsMathAtLastQuant,
   calcBlissfulGridTimingsMathAtMiddleQuant,
 } from '../timingsMath.ts'
@@ -113,15 +114,12 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
       if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
 
-        const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-          oldest.endingMath
-            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-          now,
-        )
         const blissfulGridTimingsMathAtQuantBoundary =
-          blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-            ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-            : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
+          calcBlissfulGridTimingsMathAtAnyQuant(
+            oldest.endingMath
+              .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+            now,
+          )
 
         const fadeToSilence = yield* middle.becomeLongFadeoutToSilence(
           now,

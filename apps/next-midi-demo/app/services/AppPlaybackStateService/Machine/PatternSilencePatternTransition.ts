@@ -13,6 +13,7 @@ import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Element
 import type { AdvanceFnReturn } from '../index.ts'
 import {
   calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtAnyQuantFromMath,
   calcBlissfulGridTimingsMathAtLastQuant,
   calcBlissfulGridTimingsMathAtMiddleQuant,
 } from '../timingsMath.ts'
@@ -86,9 +87,7 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
 
       const revived = yield* dying.cancelLongFadeoutAndRestore(now)
       const fadeToSilence = yield* incoming.promoteToFadeToSilence(
-        nextTickIsOnThePatternBoundary
-          ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-          : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+        calcBlissfulGridTimingsMathAtAnyQuantFromMath(blissfulGridTimingsMath),
       )
 
       if (nextTickIsOnThePatternBoundary) {

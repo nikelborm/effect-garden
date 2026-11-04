@@ -29,6 +29,7 @@ import {
   type BlissfulGridTimingsMath,
   type BlissfulGridTimingsMathAtAnyQuant,
   calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtAnyQuantFromMath,
   calcBlissfulGridTimingsMathAtLastQuant,
   calcBlissfulGridTimingsMathAtMiddleQuant,
 } from '../timingsMath.ts'
@@ -93,11 +94,9 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           yield* incoming.drop()
 
           const blissfulGridTimingsMathAtQuantBoundary =
-            blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-              ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-              : calcBlissfulGridTimingsMathAtMiddleQuant(
-                  blissfulGridTimingsMath,
-                )
+            calcBlissfulGridTimingsMathAtAnyQuantFromMath(
+              blissfulGridTimingsMath,
+            )
 
           return PatternSilenceTransitionState.makeSimple(
             fadingOut.endingMath
@@ -178,11 +177,9 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
           const [fadingOut, incoming] = this.transitionQueue
 
           const fadeToSilence = yield* incoming.promoteToFadeToSilence(
-            blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-              ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-              : calcBlissfulGridTimingsMathAtMiddleQuant(
-                  blissfulGridTimingsMath,
-                ),
+            calcBlissfulGridTimingsMathAtAnyQuantFromMath(
+              blissfulGridTimingsMath,
+            ),
           )
 
           if (

@@ -28,10 +28,9 @@ import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { AudioPlayback } from '../common.ts'
 import { PatternPlayback } from '../Elements/PatternPlayback.ts'
 import {
-  type BlissfulGridTimingsMath,
   calcBlissfulGridTimingsMath,
-  calcBlissfulGridTimingsMathAtLastQuant,
-  calcBlissfulGridTimingsMathAtMiddleQuant,
+  calcBlissfulGridTimingsMathAtAnyQuant,
+  calcBlissfulGridTimingsMathAtAnyQuantFromMath,
 } from '../timingsMath.ts'
 import { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
@@ -214,13 +213,6 @@ const makePatternState = (
     ),
   )
 
-const calcBlissfulGridTimingsMathAtQuantBoundary = (
-  blissfulGridTimingsMath: BlissfulGridTimingsMath,
-) =>
-  blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-    ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
-    : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
-
 /**
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
  * `advance`, so the asset and the pressed id have to agree on that dimension.
@@ -361,12 +353,8 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         now,
         capturedAudioEvents,
       })
-      const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-        startedAt,
-        now,
-      )
       const blissfulGridTimingsMathAtQuantBoundary =
-        calcBlissfulGridTimingsMathAtQuantBoundary(blissfulGridTimingsMath)
+        calcBlissfulGridTimingsMathAtAnyQuant(startedAt, now)
 
       const state = makePatternState(startedAt, press.asset)
       const stateAfterAdvance = yield* Effect.gen(() =>
@@ -458,7 +446,7 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         now,
       )
       const blissfulGridTimingsMathAtQuantBoundary =
-        calcBlissfulGridTimingsMathAtQuantBoundary(blissfulGridTimingsMath)
+        calcBlissfulGridTimingsMathAtAnyQuantFromMath(blissfulGridTimingsMath)
       const nextTickIsOnThePatternBoundary =
         blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
       const desiredAsset = press.asset.makePatchedFrom(
