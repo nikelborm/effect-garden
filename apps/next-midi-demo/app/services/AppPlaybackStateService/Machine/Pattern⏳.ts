@@ -5,7 +5,6 @@ import {
 
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
-import * as Tuple from 'effect/Tuple'
 
 import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
@@ -16,9 +15,6 @@ import {
 import { PatternPlayback } from '../Elements/PatternPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import {
-  type BlissfulGridTimingsMathAtAnyQuant,
-  type BlissfulGridTimingsMathAtLastQuant,
-  type BlissfulGridTimingsMathAtMiddleQuant,
   calcBlissfulGridTimingsMath,
   calcBlissfulGridTimingsMathAtLastQuant,
   calcBlissfulGridTimingsMathAtMiddleQuant,
@@ -26,7 +22,6 @@ import {
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import type {
   AsPatternPatternTransitionQueueMake,
-  PatternPatternTransitionQueue,
   // biome-ignore lint/suspicious/noImportCycles: expected
 } from './PatternPatternTransition⏳.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
