@@ -1,7 +1,4 @@
-import {
-  distributeMake,
-  lambdaAllArgs,
-} from '@evadev/effect-helpers/distributeMake.ts'
+import { distributeExplicit } from '@evadev/effect-helpers/distributeMake.ts'
 
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
@@ -75,8 +72,8 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
 
     const desiredAsset = current.asset.makePatchedFrom(pressedParamButtonId)
 
-    const transitionQueue = yield* distributeMake(
-      lambdaAllArgs<AsPatternPatternTransitionQueueMake>(
+    const transitionQueue =
+      yield* distributeExplicit<AsPatternPatternTransitionQueueMake>()(
         blissfulGridTimingsMath =>
           Effect.all([
             current.beginShortFadeoutBeforeAnotherPattern(
@@ -87,9 +84,9 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
               blissfulGridTimingsMath,
             ),
           ]),
-      ),
-      mathAtAnyQuant,
-    )
+
+        mathAtAnyQuant,
+      )
 
     return PatternPatternTransitionState.makeSimple(
       this

@@ -36,18 +36,27 @@ export type DistributedApply<
  * from the argument, so a lambda whose input is a union can't be applied to a
  * narrower value by accident.
  */
-export const distributeMake =
-  <TLambda extends LambdaAllArgs, TIn extends NoInfer<TLambda>['~lambda.inAllArgsTuple']>(
-    make: TLambda,
+export const distribute = <
+  TLambda extends LambdaAllArgs,
+  TIn extends NoInfer<TLambda>['~lambda.inAllArgsTuple'],
+>(
+  make: TLambda,
+  ...args: TIn
+) =>
+  // the lambda's call signature is checked against its own declaration, which
+  // is the only place the pairing of the slots is written down
+  (make as unknown as AsPlainCall<TLambda>)(...args) as DistributedApply<
+    TLambda,
+    TIn[0] extends infer A ? (A extends unknown ? [A] : never) : never
+  >
+
+export const distributeExplicit =
+  <TLambda extends LambdaAllArgs>() =>
+  <TIn extends NoInfer<TLambda>['~lambda.inAllArgsTuple']>(
+    make: AsPlainCall<TLambda>,
     ...args: TIn
   ) =>
-    // the lambda's call signature is checked against its own declaration, which
-    // is the only place the pairing of the slots is written down
-    (make as unknown as AsPlainCall<TLambda>)(...args) as DistributedApply<
-      TLambda,
-      TIn[0] extends infer A ? A extends unknown ? [A] : never : never
-    >
-
+    distribute(make as unknown as TLambda, ...args)
 
 /**
  * Wraps a plain function as a {@link LambdaAllArgs} value
@@ -86,12 +95,14 @@ export const distributeMake =
  * @category constructors
  * @since 4.0.0
  */
-export const lambdaAllArgs = <L extends {
-  (...args: any[]): any
-  readonly "~lambda.inAllArgsTuple": unknown[]
-  readonly "~lambda.out": unknown
-}>(
-  f: AsPlainCall<L>
+export const lambdaAllArgs = <
+  L extends {
+    (...args: any[]): any
+    readonly '~lambda.inAllArgsTuple': unknown[]
+    readonly '~lambda.out': unknown
+  },
+>(
+  f: AsPlainCall<L>,
 ) => f as unknown as L
 
 /**
@@ -127,8 +138,8 @@ export const lambdaAllArgs = <L extends {
  * @since 4.0.0
  */
 export interface LambdaAllArgs {
-  readonly "~lambda.inAllArgsTuple": unknown[]
-  readonly "~lambda.out": unknown
+  readonly '~lambda.inAllArgsTuple': unknown[]
+  readonly '~lambda.out': unknown
 }
 
 /**
@@ -168,5 +179,5 @@ export interface LambdaAllArgs {
  * @since 4.0.0
  */
 export type ApplyAllArgs<L extends LambdaAllArgs, V> = (L & {
-  readonly "~lambda.inAllArgsTuple": V
-})["~lambda.out"]
+  readonly '~lambda.inAllArgsTuple': V
+})['~lambda.out']
