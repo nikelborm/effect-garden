@@ -10,6 +10,26 @@ export type AsPlainCall<Lambda> = Lambda extends (
   : never
 
 /**
+ * Expands every slot of a tuple into its own union member, so a tuple of unions
+ * becomes the union of tuples that agree on one value per slot:
+ * `[A | B, C | D]` gives `[A, C] | [A, D] | [B, C] | [B, D]`. A union of input
+ * tuples is expanded too, which is what makes it usable with
+ * {@link DistributedApply}: each produced tuple is a single argument list the
+ * lambda can be applied to without collapsing the correlation between slots.
+ *
+ * The accumulator is carried explicitly because TypeScript only eliminates tail
+ * calls of the form `Head extends ... ? Recurse<Tail, [...Acc, Head]> : ...`.
+ */
+export type DistributeAllArgs<
+  TArgs extends readonly unknown[],
+  TAcc extends unknown[] = [],
+> = TArgs extends readonly [infer Head, ...infer Tail]
+  ? Head extends unknown
+    ? DistributeAllArgs<Tail, [...TAcc, Head]>
+    : never
+  : TAcc
+
+/**
  * A conditional type is the only place where TypeScript distributes over the
  * members of a union, so `ApplyAllArgs` has to be wrapped into one to get
  * `ApplyAllArgs<Lambda, A> | ApplyAllArgs<Lambda, B>` instead of
@@ -21,9 +41,12 @@ export type DistributedApply<
 > = TInput extends unknown ? ApplyAllArgs<Lambda, TInput> : never
 
 /**
- * Applies a type lambda to a value whose type is a union, so the union lands in
+ * Applies a type lambda to values whose types are unions, so the union lands in
  * the slots of the lambda's output instead of being repeated in each of them:
- * `A | B` gives `Apply<A> | Apply<B>`, never `Apply<A | B>`.
+ * `A | B` gives `Apply<A> | Apply<B>`, never `Apply<A | B>`. When several
+ * arguments are unions, {@link DistributeAllArgs} pairs one member of each
+ * before the lambda is applied, so the output stays correlated across every
+ * argument rather than only the first one.
  *
  * The lambda is the callback itself — not a separate type argument hanging next
  * to a plain function. A plain `(input: TInput) => TOutput` callback would have
@@ -32,9 +55,9 @@ export type DistributedApply<
  * its own call signature, so its parameter stays generic and its return type
  * keeps saying which slot holds which element for each member of the union.
  *
- * The input type is taken from the lambda (`'~lambda.in'`) rather than inferred
- * from the argument, so a lambda whose input is a union can't be applied to a
- * narrower value by accident.
+ * The input type is taken from the lambda (`'~lambda.inAllArgsTuple'`) rather
+ * than inferred from the argument, so a lambda whose input is a union can't be
+ * applied to a narrower value by accident.
  */
 export const distribute = <
   TLambda extends LambdaAllArgs,
@@ -47,9 +70,7 @@ export const distribute = <
   // is the only place the pairing of the slots is written down
   (make as unknown as AsPlainCall<TLambda>)(...args) as DistributedApply<
     TLambda,
-    // TODO: properly recursively distribute tuples over all args instead of
-    // just the first one and throwing away the others
-    TIn[0] extends infer A ? (A extends unknown ? [A] : never) : never
+    DistributeAllArgs<TIn>
   >
 
 export const distributeExplicit =

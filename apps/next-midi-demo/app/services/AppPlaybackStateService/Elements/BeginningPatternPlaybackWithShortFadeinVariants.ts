@@ -6,10 +6,12 @@ import * as Schema from 'effect/Schema'
 import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { AudioBufferStore } from '../../AudioBufferStore.ts'
 import type { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
-import type {
-  BlissfulGridTimingsMathAtAnyQuant,
-  BlissfulGridTimingsMathAtLastQuant,
-  BlissfulGridTimingsMathAtMiddleQuant,
+import {
+  type BlissfulGridTimingsMathAtAnyQuant,
+  type BlissfulGridTimingsMathAtLastQuant,
+  type BlissfulGridTimingsMathAtMiddleQuant,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
 } from '../timingsMath.ts'
 import type { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
 import type { ScheduleFadeIntoLoopPlayback } from '../webAudioSideEffects/ScheduleFadeIntoLoopPlayback.ts'
@@ -67,6 +69,28 @@ export interface BeginningPatternPlaybackWithShortFadein<TMath>
   > {}
 
 /**
+ * Starts the next incoming playback at the quant class of the passed math. The
+ * branch is the same one every transition state needs, and keeping it here means
+ * a union of maths can be fed through {@link distribute} instead of spelling out
+ * the two branches at every call site.
+ */
+export const beginAnotherPatternPlaybackWithShortFadein = <
+  TMath extends BlissfulGridTimingsMathAtAnyQuant,
+>(
+  desiredAsset: TaggedPatternPointer,
+  blissfulGridTimingsMath: TMath,
+): BeginningPatternPlaybackWithShortFadein<TMath> =>
+  (blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+    ? BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+        desiredAsset,
+        calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+      )
+    : BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+        desiredAsset,
+        calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+      )) as BeginningPatternPlaybackWithShortFadein<TMath>
+
+/**
  * The short-fadeout class a fadein turns into when it is promoted to fade out:
  * its `beginningMath` still says where the fadein began, its `endingMath` says
  * where the short fadeout ends. The four combined classes are matched by quant
@@ -122,5 +146,53 @@ export interface AsPromoteToShortFadingOut<TBeginningMath>
   readonly '~lambda.out': BeginningPatternPlaybackPromotedToShortFadingOut<
     TBeginningMath,
     this['~lambda.inAllArgsTuple'][0]
+  >
+}
+
+/**
+ * A whole switch away from the currently fading-in pattern: the old incoming
+ * element is promoted to a short fadeout, and a new incoming element begins at
+ * the same quant. Both depend on the math, and the promoted element also depends
+ * on the class of the old incoming one, so a caller holding either as a union
+ * has to distribute over both to keep the resulting queue element pair
+ * correlated instead of collapsing into one tuple of unions.
+ */
+export interface AsShortFadeinSwitchedToAnotherPatternMake
+  extends LambdaAllArgs {
+  <
+    TIncoming extends BeginningPatternPlaybackWithShortFadeinVariants,
+    TMath extends BlissfulGridTimingsMathAtAnyQuant,
+  >(
+    incoming: TIncoming,
+    desiredAsset: TaggedPatternPointer,
+    blissfulGridTimingsMath: TMath,
+  ): Effect.Effect<
+    [BeginningAndEndingFor<TIncoming['math'], TMath>, BeginningFor<TMath>],
+    never,
+    | CleanupFiberMaker
+    | DisposePlayback
+    | ScheduleFadeOut
+    | AudioBufferStore
+    | ScheduleFadeIntoLoopPlayback
+  >
+  readonly '~lambda.inAllArgsTuple': [
+    BeginningPatternPlaybackWithShortFadeinVariants,
+    TaggedPatternPointer,
+    BlissfulGridTimingsMathAtAnyQuant,
+  ]
+  readonly '~lambda.out': Effect.Effect<
+    [
+      BeginningAndEndingFor<
+        this['~lambda.inAllArgsTuple'][0]['math'],
+        this['~lambda.inAllArgsTuple'][2]
+      >,
+      BeginningFor<this['~lambda.inAllArgsTuple'][2]>,
+    ],
+    never,
+    | CleanupFiberMaker
+    | DisposePlayback
+    | ScheduleFadeOut
+    | AudioBufferStore
+    | ScheduleFadeIntoLoopPlayback
   >
 }

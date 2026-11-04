@@ -1,4 +1,5 @@
 import type { LambdaAllArgs } from '@evadev/effect-helpers/distributeMake.ts'
+import { distributeExplicit } from '@evadev/effect-helpers/distributeMake.ts'
 import type { Identity } from '@evadev/effect-helpers/Identity.ts'
 
 import * as Effect from 'effect/Effect'
@@ -16,7 +17,11 @@ import type { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
 import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
 import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
-import type { BeginningFor } from '../Elements/BeginningPatternPlaybackWithShortFadeinVariants.ts'
+import {
+  type AsShortFadeinSwitchedToAnotherPatternMake,
+  type BeginningFor,
+  beginAnotherPatternPlaybackWithShortFadein,
+} from '../Elements/BeginningPatternPlaybackWithShortFadeinVariants.ts'
 import { EndingPatternPlaybackAtLastQuantWithShortFadeout } from '../Elements/EndingPatternPlaybackAtLastQuantWithShortFadeout.ts'
 import { EndingPatternPlaybackAtMiddleQuantWithShortFadeout } from '../Elements/EndingPatternPlaybackAtMiddleQuantWithShortFadeout.ts'
 import type { EndingFor } from '../Elements/EndingPatternPlaybackWithShortFadeoutVariants.ts'
@@ -137,11 +142,10 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
                 ),
               )
 
-            const incoming =
-              yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
-                desiredAsset,
-                calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
-              )
+            const incoming = yield* beginAnotherPatternPlaybackWithShortFadein(
+              desiredAsset,
+              calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+            )
 
             return PatternPatternTransitionState.makeSimple(
               fadingOut.endingMath
@@ -158,11 +162,10 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
               ),
             )
 
-          const incoming =
-            yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
-              desiredAsset,
-              calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
-            )
+          const incoming = yield* beginAnotherPatternPlaybackWithShortFadein(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+          )
 
           return PatternPatternTransitionState.makeSimple(
             fadingOut.endingMath
@@ -211,60 +214,21 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
         },
         *onPressedAnyOtherPattern(desiredAsset, blissfulGridTimingsMath) {
           const [fadingOut, incoming] = this.transitionQueue
-          const nextTickIsOnThePatternBoundary =
-            blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
 
-          if (
-            incoming._tag ===
-            'BeginningPatternPlaybackAtInitialQuantWithShortFadein'
-          ) {
-            if (nextTickIsOnThePatternBoundary)
-              return PatternPatternPatternTransitionState.makeSimple(
-                fadingOut.endingMath
-                  .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-                fadingOut,
-                yield* incoming.promoteToShortFadingOut(
-                  calcBlissfulGridTimingsMathAtLastQuant(
+          const transitionQueue =
+            yield* distributeExplicit<AsShortFadeinSwitchedToAnotherPatternMake>()(
+              (incoming, desiredAsset, blissfulGridTimingsMath) =>
+                Effect.all([
+                  incoming.promoteToShortFadingOut(blissfulGridTimingsMath),
+                  beginAnotherPatternPlaybackWithShortFadein(
+                    desiredAsset,
                     blissfulGridTimingsMath,
                   ),
-                ),
-                yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
-                  desiredAsset,
-                  calcBlissfulGridTimingsMathAtLastQuant(
-                    blissfulGridTimingsMath,
-                  ),
-                ),
-              )
-
-            return PatternPatternPatternTransitionState.makeSimple(
-              fadingOut.endingMath
-                .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-              fadingOut,
-              yield* incoming.promoteToShortFadingOut(
-                calcBlissfulGridTimingsMathAtMiddleQuant(
-                  blissfulGridTimingsMath,
-                ),
-              ),
-              yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
-                desiredAsset,
-                calcBlissfulGridTimingsMathAtMiddleQuant(
-                  blissfulGridTimingsMath,
-                ),
-              ),
-            )
-          }
-
-          if (nextTickIsOnThePatternBoundary)
-            return PatternPatternPatternTransitionState.makeSimple(
-              fadingOut.endingMath
-                .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-              fadingOut,
-              yield* incoming.promoteToShortFadingOut(
-                calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
-              ),
-              yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
-                desiredAsset,
-                calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+                ]),
+              incoming,
+              desiredAsset,
+              calcBlissfulGridTimingsMathAtAnyQuantFromMath(
+                blissfulGridTimingsMath,
               ),
             )
 
@@ -272,13 +236,7 @@ export class PatternPatternTransitionState extends Schema.TaggedClass<PatternPat
             fadingOut.endingMath
               .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
             fadingOut,
-            yield* incoming.promoteToShortFadingOut(
-              calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
-            ),
-            yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
-              desiredAsset,
-              calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
-            ),
+            ...transitionQueue,
           )
         },
       },

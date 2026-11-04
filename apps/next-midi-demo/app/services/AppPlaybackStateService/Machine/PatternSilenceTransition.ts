@@ -6,8 +6,7 @@ import { ChordData } from '../../../domain/Chord.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
-import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
+import { beginAnotherPatternPlaybackWithShortFadein } from '../Elements/BeginningPatternPlaybackWithShortFadeinVariants.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import type { AdvanceFnReturn } from '../index.ts'
 import {
@@ -96,7 +95,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         current.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         current,
-        yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+        yield* beginAnotherPatternPlaybackWithShortFadein(
           asset,
           calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
         ),
@@ -106,7 +105,7 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
       current.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       current,
-      yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+      yield* beginAnotherPatternPlaybackWithShortFadein(
         asset,
         calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
       ),
