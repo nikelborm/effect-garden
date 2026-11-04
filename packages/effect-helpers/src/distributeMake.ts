@@ -47,6 +47,8 @@ export const distribute = <
   // is the only place the pairing of the slots is written down
   (make as unknown as AsPlainCall<TLambda>)(...args) as DistributedApply<
     TLambda,
+    // TODO: properly recursively distribute tuples over all args instead of
+    // just the first one and throwing away the others
     TIn[0] extends infer A ? (A extends unknown ? [A] : never) : never
   >
 
