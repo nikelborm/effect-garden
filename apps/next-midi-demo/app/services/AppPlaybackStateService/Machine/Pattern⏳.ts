@@ -84,7 +84,6 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
               blissfulGridTimingsMath,
             ),
           ]),
-
         mathAtAnyQuant,
       )
 
