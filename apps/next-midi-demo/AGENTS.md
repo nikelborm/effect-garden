@@ -24,6 +24,13 @@ const asd: TaggedPatternPointer = {
 // because we didn't use new keyword. this forces you to always go through new keyword construction
 ```
 
-Long variable names are not a problem. The time to read doesn't matter. What
-matters is the ability to restore the full semantic meaning of the code after
-not visiting it for a long time. Short names prevent that.
+Long variable names are not a problem. The time to read them doesn't matter.
+What matters is the ability to restore the full semantic meaning of the code
+after not visiting it for a long time. Short names prevent that. Comments,
+surpsrisingly do the opposite. They go stale, outdate. Unfortunately most of the
+comments are bad, because they simply describe the exact behavior of the code,
+instead of only the parts that have not been encoded or that are impossible to
+express with the var/function name: decisions tried, but rejected and why, links
+to upstream issues, etc. If you plan to write comments, please write carefully.
+
+Use Bun to install packages/ launch binaries (`bun x`)

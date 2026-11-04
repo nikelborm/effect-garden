@@ -1,4 +1,3 @@
-import * as Effect from 'effect/Effect'
 import * as Equal from 'effect/Equal'
 import * as Schema from 'effect/Schema'
 
@@ -8,10 +7,15 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { PatternPatternPatternTransitionState } from './PatternPatternPatternTransition.ts'
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
@@ -20,10 +24,22 @@ import { PatternSilenceTransitionState } from './PatternSilenceTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternState } from './Pattern⏳.ts'
 
-export const PatternSilencePatternTransitionQueue = Schema.Tuple([
-  PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
-  IncomingPatternFadingIn,
+// Naming convention: the fade-to-silence loop is not split per quant, so it does
+// not constrain the quant class the incoming fadein begins at. The two tuples
+// still spell out both possible beginning classes.
+export const PatternSilencePatternTransitionQueue = Schema.Union([
+  Schema.Tuple([
+    PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+    BeginningPatternPlaybackAtInitialQuantWithShortFadein,
+  ]),
+  Schema.Tuple([
+    PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
+    BeginningPatternPlaybackAtMiddleQuantWithShortFadein,
+  ]),
 ])
+
+export type PatternSilencePatternTransitionQueue =
+  typeof PatternSilencePatternTransitionQueue.Type
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternSilencePatternTransitionState extends Schema.TaggedClass<PatternSilencePatternTransitionState>()(
@@ -49,6 +65,8 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
+    const nextTickIsOnThePatternBoundary =
+      blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
 
     const incomingFadeInStartsAtSecond =
       incoming.math
@@ -66,16 +84,33 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
         )
       }
 
+      const revived = yield* dying.cancelLongFadeoutAndRestore(now)
+      const fadeToSilence = yield* incoming.promoteToFadeToSilence(
+        nextTickIsOnThePatternBoundary
+          ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
+          : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+      )
+
+      if (nextTickIsOnThePatternBoundary) {
+        // WHY does it need blissfulGridTimingsMath???
+        const endingPatternPlaybackWithShortFadeout =
+          yield* revived.beginShortFadeoutBeforeAnotherPattern(
+            calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+          )
+        return PatternPatternSilenceTransitionState.makeSimple(
+          endingPatternPlaybackWithShortFadeout,
+          fadeToSilence,
+        )
+      }
+
+      // WHY does it need blissfulGridTimingsMath???
+      const endingPatternPlaybackWithShortFadeout =
+        yield* revived.beginShortFadeoutBeforeAnotherPattern(
+          calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+        )
       return PatternPatternSilenceTransitionState.makeSimple(
-        yield* Effect.flatMap(
-          dying.cancelLongFadeoutAndRestore(now),
-          playback =>
-            // WHY does it need blissfulGridTimingsMath???
-            playback.beginShortFadeoutBeforeAnotherPattern(
-              blissfulGridTimingsMath,
-            ),
-        ),
-        yield* incoming.promoteToFadeToSilence(blissfulGridTimingsMath),
+        endingPatternPlaybackWithShortFadeout,
+        fadeToSilence,
       )
     }
 
@@ -95,44 +130,109 @@ export class PatternSilencePatternTransitionState extends Schema.TaggedClass<Pat
     }
 
     if (!incomingFadeInIsStillRevocable) {
+      const revived = yield* dying.cancelLongFadeoutAndRestore(now)
+
+      const endingPatternPlaybackWithShortFadeout =
+        nextTickIsOnThePatternBoundary
+          ? // WHY does it need blissfulGridTimingsMath???
+            yield* revived.beginShortFadeoutBeforeAnotherPattern(
+              calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+            )
+          : // WHY does it need blissfulGridTimingsMath???
+            yield* revived.beginShortFadeoutBeforeAnotherPattern(
+              calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+            )
+
+      if (
+        incoming._tag ===
+        'BeginningPatternPlaybackAtInitialQuantWithShortFadein'
+      ) {
+        if (nextTickIsOnThePatternBoundary)
+          return PatternPatternPatternTransitionState.makeSimple(
+            dying.math
+              .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+            endingPatternPlaybackWithShortFadeout,
+            yield* incoming.promoteToShortFadingOut(
+              calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+            ),
+            yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+              desiredAsset,
+              calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+            ),
+          )
+
+        return PatternPatternPatternTransitionState.makeSimple(
+          dying.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          endingPatternPlaybackWithShortFadeout,
+          yield* incoming.promoteToShortFadingOut(
+            calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+          ),
+          yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+          ),
+        )
+      }
+
+      if (nextTickIsOnThePatternBoundary)
+        return PatternPatternPatternTransitionState.makeSimple(
+          dying.math
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          endingPatternPlaybackWithShortFadeout,
+          yield* incoming.promoteToShortFadingOut(
+            calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+          ),
+          yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+          ),
+        )
+
       return PatternPatternPatternTransitionState.makeSimple(
         dying.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        yield* Effect.flatMap(
-          dying.cancelLongFadeoutAndRestore(now),
-          playback =>
-            // WHY does it need blissfulGridTimingsMath???
-            playback.beginShortFadeoutBeforeAnotherPattern(
-              blissfulGridTimingsMath,
-            ),
+        endingPatternPlaybackWithShortFadeout,
+        yield* incoming.promoteToShortFadingOut(
+          calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
         ),
-        yield* incoming.promoteToShortFadingOut(blissfulGridTimingsMath),
-        yield* IncomingPatternFadingIn.init(
+        yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
           desiredAsset,
-          blissfulGridTimingsMath,
+          calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
         ),
       )
     }
 
     yield* incoming.drop()
+
+    if (nextTickIsOnThePatternBoundary)
+      return PatternSilencePatternTransitionState.makeSimple(
+        dying.math
+          .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+        dying,
+        yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+          desiredAsset,
+          calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+        ),
+      )
+
     return PatternSilencePatternTransitionState.makeSimple(
       dying.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       dying,
-      yield* IncomingPatternFadingIn.init(
+      yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
         desiredAsset,
-        blissfulGridTimingsMath,
+        calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
       ),
     )
   }
 
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
-    dying: PatternPlaybackAtItsLastPlayWithScheduledLongFadeout,
-    incoming: IncomingPatternFadingIn,
+    ...transitionQueue: PatternSilencePatternTransitionQueue
   ) =>
     this.make({
       firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [dying, incoming],
+      transitionQueue,
     })
 }

@@ -1,15 +1,36 @@
+import { lambdaAllArgs } from '@evadev/effect-helpers/distributeMake.ts'
+
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
+import type * as Types from 'effect/Types'
 
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { AudioBufferStore } from '../../AudioBufferStore.ts'
 import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
+import type { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { AudioPlayback } from '../common.ts'
-import { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  BlissfulGridTimingsMath,
+  type BlissfulGridTimingsMathAtAnyQuant,
+  type BlissfulGridTimingsMathAtLastQuant,
+  type BlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { ScheduleFadeOut } from '../webAudioSideEffects/ScheduleFadeOut.ts'
 import { StartFreshPlayback } from '../webAudioSideEffects/StartFreshPlayback.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
-import { EndingPatternPlaybackWithShortFadeout } from './EndingPatternPlaybackWithShortFadeout.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from './BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from './BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
+import type { AsBeginningPatternPlaybackWithShortFadeinTakingAsset } from './BeginningPatternPlaybackWithShortFadeinVariants.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
+import { EndingPatternPlaybackAtLastQuantWithShortFadeout } from './EndingPatternPlaybackAtLastQuantWithShortFadeout.ts'
+// biome-ignore lint/suspicious/noImportCycles: expected
+import { EndingPatternPlaybackAtMiddleQuantWithShortFadeout } from './EndingPatternPlaybackAtMiddleQuantWithShortFadeout.ts'
+import type {
+  AsEndingPatternPlaybackBeforeAnotherPattern,
+  EndingFor,
+  EndingPatternPlaybackBeforeAnotherPattern,
+} from './EndingPatternPlaybackWithShortFadeoutVariants.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from './PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 
@@ -23,46 +44,116 @@ export class PatternPlayback extends Schema.TaggedClass<PatternPlayback>()(
   },
 ) {
   declare protected '~brand~': never
+  declare readonly beginShortFadeoutBeforeAnotherPattern: AsEndingPatternPlaybackBeforeAnotherPattern
+  declare readonly beginAnotherPatternPlaybackWithShortFadein: AsBeginningPatternPlaybackWithShortFadeinTakingAsset
   static {
     this.make = this.make.bind(this)
+    const proto = this.prototype as Types.Mutable<PatternPlayback>
+    proto.beginShortFadeoutBeforeAnotherPattern =
+      lambdaAllArgs<AsEndingPatternPlaybackBeforeAnotherPattern>(function (
+        this: PatternPlayback,
+        blissfulGridTimingsMath,
+      ) {
+        return blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+          ? this.beginShortFadeoutBeforeAnotherPatternAtLastQuant(
+              blissfulGridTimingsMath,
+            )
+          : this.beginShortFadeoutBeforeAnotherPatternAtMiddleQuant(
+              blissfulGridTimingsMath,
+            )
+      })
+
+    proto.beginAnotherPatternPlaybackWithShortFadein =
+      lambdaAllArgs<AsBeginningPatternPlaybackWithShortFadeinTakingAsset>(
+        <Math extends BlissfulGridTimingsMathAtAnyQuant>(
+          desiredAsset: TaggedPatternPointer,
+          blissfulGridTimingsMath: Math,
+        ) => {
+          if (
+            blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+          )
+            return BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+              desiredAsset,
+              blissfulGridTimingsMath,
+            )
+          return BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+            desiredAsset,
+            blissfulGridTimingsMath,
+          )
+        },
+      )
   }
 
   /** 🏁 */
-  beginShortFadeoutBeforeAnotherPattern(
-    blissfulGridTimingsMath: BlissfulGridTimingsMath,
-  ) {
-    return Effect.gen({ self: this }, function* () {
-      yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-      })
 
-      return EndingPatternPlaybackWithShortFadeout.makeSimple(
+  beginShortFadeoutBeforeAnotherPatternAtLastQuant<
+    TMath extends BlissfulGridTimingsMathAtLastQuant,
+  >(blissfulGridTimingsMath: TMath) {
+    return this.beginShortFadeoutBeforeAnotherPatternGeneral(
+      blissfulGridTimingsMath,
+      ScheduleFadeOut.runBoundaryQuantMath,
+      EndingPatternPlaybackAtLastQuantWithShortFadeout.makeSimple,
+      'Last',
+    )
+  }
+
+  beginShortFadeoutBeforeAnotherPatternAtMiddleQuant<
+    TMath extends BlissfulGridTimingsMathAtMiddleQuant,
+  >(blissfulGridTimingsMath: TMath) {
+    return this.beginShortFadeoutBeforeAnotherPatternGeneral(
+      blissfulGridTimingsMath,
+      ScheduleFadeOut.runMiddleQuantMath,
+      EndingPatternPlaybackAtMiddleQuantWithShortFadeout.makeSimple,
+      'Middle',
+    )
+  }
+
+  private beginShortFadeoutBeforeAnotherPatternGeneral<
+    TMath extends BlissfulGridTimingsMathAtAnyQuant,
+    R,
+  >(
+    blissfulGridTimingsMath: TMath,
+    scheduleFadeOut: (
+      playback: AudioPlayback,
+      math: TMath,
+    ) => Effect.Effect<void, never, ScheduleFadeOut>,
+    make: (
+      asset: TaggedPatternPointer,
+      playback: AudioPlayback,
+      cleanupFiberToolkit: CleanupFiberToolkit,
+      endingMath: TMath,
+    ) => R,
+    quantSpanName: string,
+  ): EndingPatternPlaybackBeforeAnotherPattern<TMath> {
+    return Effect.gen({ self: this }, function* () {
+      yield* scheduleFadeOut(this.playback, blissfulGridTimingsMath)
+
+      const cleanupFiberToolkit = yield* CleanupFiberMaker.make(
+        blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+      )
+
+      return make(
         this.asset,
         this.playback,
-        yield* CleanupFiberMaker.make(
-          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
-        ),
+        cleanupFiberToolkit,
         blissfulGridTimingsMath,
-      )
+      ) as EndingFor<TMath>
     }).pipe(
-      Effect.withSpan('PatternPlayback.beginShortFadeoutBeforeAnotherPattern'),
+      Effect.withSpan(
+        `PatternPlayback.beginShortFadeoutBeforeAnotherPatternAt${quantSpanName}Quant`,
+      ),
     )
   }
 
   /** ⚠️ */
-  beginLongFadeoutToSilence(blissfulGridTimingsMath: BlissfulGridTimingsMath) {
+  beginLongFadeoutToSilence(
+    blissfulGridTimingsMath: BlissfulGridTimingsMathAtAnyQuant,
+  ) {
     return Effect.gen({ self: this }, function* () {
       //!!!! PROBLEMATIC INCORRECT TIMINGS
+      // TODO: should use a different long fadeout instead of the antialising fadeout
       /** ⚠️ */
-      yield* ScheduleFadeOut.run(this.playback, {
-        fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-        fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-      })
+      yield* ScheduleFadeOut.runFromMath(this.playback, blissfulGridTimingsMath)
 
       return PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.makeSimple(
         this.asset,

@@ -27,7 +27,12 @@ import { CleanupFiberMaker } from '../CleanupFiberMaker.ts'
 import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { AudioPlayback } from '../common.ts'
 import { PatternPlayback } from '../Elements/PatternPlayback.ts'
-import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  type BlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { DisposePlayback } from '../webAudioSideEffects/DisposePlayback.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 import { RestoreFullVolume } from '../webAudioSideEffects/RestoreFullVolume.ts'
@@ -209,6 +214,13 @@ const makePatternState = (
     ),
   )
 
+const calcBlissfulGridTimingsMathAtQuantBoundary = (
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
+) =>
+  blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+    ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
+    : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
+
 /**
  * Re-pressing the chord/strength that is already sounding is the no-op branch of
  * `advance`, so the asset and the pressed id have to agree on that dimension.
@@ -353,6 +365,8 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         startedAt,
         now,
       )
+      const blissfulGridTimingsMathAtQuantBoundary =
+        calcBlissfulGridTimingsMathAtQuantBoundary(blissfulGridTimingsMath)
 
       const state = makePatternState(startedAt, press.asset)
       const stateAfterAdvance = yield* Effect.gen(() =>
@@ -375,7 +389,7 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         .toBe('PatternPlaybackAtItsLastPlayWithScheduledLongFadeout')
       ctx.expect(fadingOut.asset).toEqual(press.asset)
       ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
-      ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
+      ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMathAtQuantBoundary)
       ctx
         .expect(fadingOut.cleanupFiberToolkit)
         .toBeInstanceOf(CleanupFiberToolkit)
@@ -405,9 +419,9 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         .toBe(state.transitionQueue[0].playback)
       ctx.expect(fadeoutScheduled.timing).toEqual({
         fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
         fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       ctx
         .expect(
@@ -415,7 +429,7 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
             .delayForSeconds,
         )
         .toBe(
-          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+          blissfulGridTimingsMathAtQuantBoundary.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
         )
     }),
   )
@@ -443,6 +457,10 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         startedAt,
         now,
       )
+      const blissfulGridTimingsMathAtQuantBoundary =
+        calcBlissfulGridTimingsMathAtQuantBoundary(blissfulGridTimingsMath)
+      const nextTickIsOnThePatternBoundary =
+        blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
       const desiredAsset = press.asset.makePatchedFrom(
         press.pressedParamButtonId,
       )
@@ -463,14 +481,28 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         .toBe(startedAt)
       ctx.expect(stateAfterAdvance.transitionQueue).toHaveLength(2)
       const [fadingOut, incoming] = stateAfterAdvance.transitionQueue
-      ctx.expect(fadingOut._tag).toBe('EndingPatternPlaybackWithShortFadeout')
+      ctx
+        .expect(fadingOut._tag)
+        .toBe(
+          nextTickIsOnThePatternBoundary
+            ? 'EndingPatternPlaybackAtLastQuantWithShortFadeout'
+            : 'EndingPatternPlaybackAtMiddleQuantWithShortFadeout',
+        )
       ctx.expect(fadingOut.asset).toEqual(press.asset)
       ctx.expect(fadingOut.playback).toBe(state.transitionQueue[0].playback)
-      ctx.expect(fadingOut.math).toEqual(blissfulGridTimingsMath)
-      ctx.expect(incoming._tag).toBe('IncomingPatternFadingIn')
+      ctx
+        .expect(fadingOut.endingMath)
+        .toEqual(blissfulGridTimingsMathAtQuantBoundary)
+      ctx
+        .expect(incoming._tag)
+        .toBe(
+          nextTickIsOnThePatternBoundary
+            ? 'BeginningPatternPlaybackAtInitialQuantWithShortFadein'
+            : 'BeginningPatternPlaybackAtMiddleQuantWithShortFadein',
+        )
       ctx.expect(incoming.asset).toEqual(desiredAsset)
       ctx.expect(incoming.asset).not.toEqual(press.asset)
-      ctx.expect(incoming.math).toEqual(blissfulGridTimingsMath)
+      ctx.expect(incoming.math).toEqual(blissfulGridTimingsMathAtQuantBoundary)
 
       ctx
         .expect(events.map(event => event._tag))
@@ -490,9 +522,9 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         .toBe(state.transitionQueue[0].playback)
       ctx.expect(fadeoutScheduled.timing).toEqual({
         fadeoutStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
         fadeoutEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       ctx
         .expect(
@@ -500,7 +532,7 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
             .delayForSeconds,
         )
         .toBe(
-          blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+          blissfulGridTimingsMathAtQuantBoundary.secondsSinceNowUpUntilAntialiasingFadeoutEnds,
         )
       ctx
         .expect(onlyCapturedEventOfTag(events, 'AudioBufferRequested').asset)
@@ -515,9 +547,9 @@ Vitest.describe('PatternState', { concurrent: true }, () => {
         skippedSecondsDuringStart:
           blissfulGridTimingsMath.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
         fadeInStartsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
         fadeInEndsAtSecond:
-          blissfulGridTimingsMath.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
+          blissfulGridTimingsMathAtQuantBoundary.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
       })
       ctx.expect(incoming.playback).toBe(fadeIntoLoopPlaybackScheduled.playback)
     }),

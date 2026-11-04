@@ -3,7 +3,7 @@ import type * as Effect from 'effect/Effect'
 
 export type EffectReturningFunction = (
   ...args: ReadonlyArray<any>
-) => Effect.Effect<any, any, any>
+) => Effect.All.EffectAny
 
 export interface PassthroughAccessor<
   TShape extends EffectReturningFunction,

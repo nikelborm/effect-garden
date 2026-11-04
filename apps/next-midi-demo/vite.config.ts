@@ -12,7 +12,7 @@ export default defineConfig({
       '**/*{helper,types,tstyche}.spec[.][jt]s',
     ],
     coverage: {
-      enabled: true,
+      enabled: false,
       provider: 'v8',
       reportsDirectory: './gh-page/coverage',
       exclude: [

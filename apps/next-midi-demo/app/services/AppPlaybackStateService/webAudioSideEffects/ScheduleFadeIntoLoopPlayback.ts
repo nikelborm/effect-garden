@@ -12,6 +12,11 @@ import {
   maxLoudness,
   minLoudness,
 } from '../constants.ts'
+import type {
+  BlissfulGridTimingsMathAtAnyQuant,
+  BlissfulGridTimingsMathAtLastQuant,
+  BlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { makePassthroughAccessor } from './makePassthroughAccessor.ts'
 
 export interface FadeIntoLoopPlaybackTiming {
@@ -30,6 +35,42 @@ export class ScheduleFadeIntoLoopPlayback extends Context.Service<
 >()(
   'next-midi-demo/app/services/AppPlaybackStateService/webAudioSideEffects/ScheduleFadeIntoLoopPlayback',
 ) {
+  static runBoundaryQuantMath = (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+    math: BlissfulGridTimingsMathAtLastQuant,
+  ) =>
+    // To be fair it doesnt even need a scheduled fade-in at all since it just
+    // starts playing from the beginning
+    this.runFromMath(audioBuffer, math, {
+      startAtSecond:
+        math.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+      skippedSecondsDuringStart: 0,
+    })
+
+  static runMiddleQuantMath = (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+    math: BlissfulGridTimingsMathAtMiddleQuant,
+  ) =>
+    this.runFromMath(audioBuffer, math, {
+      // TODO: we can do better than immediate "now"?
+      startAtSecond: math.secondsDecimalNowPassedSinceAudioContextInit,
+      skippedSecondsDuringStart:
+        math.secondsDecimalPassedSince_LATEST_PatternPlaybackOfTheCurrentGridStarted,
+    })
+
+  static runFromMath = (
+    audioBuffer: EAudioBuffer.EAudioBuffer,
+    math: BlissfulGridTimingsMathAtAnyQuant,
+    other: { startAtSecond: number; skippedSecondsDuringStart: number },
+  ) =>
+    this.run(audioBuffer, {
+      ...other,
+      fadeInStartsAtSecond:
+        math.patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+      fadeInEndsAtSecond:
+        math.patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
+    })
+
   static run = makePassthroughAccessor(this)
 }
 

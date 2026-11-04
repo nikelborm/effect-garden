@@ -6,13 +6,16 @@ import { ChordData } from '../../../domain/Chord.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
 import { StrengthData } from '../../../domain/Strength.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
 import { PatternPlaybackAtItsLastPlayWithScheduledLongFadeout } from '../Elements/PatternPlaybackAtItsLastPlayWithScheduledLongFadeout.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
-// biome-ignore lint/suspicious/noImportCycles: expected
-import { PatternPatternTransitionState } from './PatternPatternTransition⏳.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternSilencePatternTransitionState } from './PatternSilencePatternTransition.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -86,24 +89,27 @@ export class PatternSilenceTransitionState extends Schema.TaggedClass<PatternSil
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
-    const incoming = yield* IncomingPatternFadingIn.init(
-      asset,
-      blissfulGridTimingsMath,
+    if (
+      blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
     )
-
-    if (current._tag === 'EndingPatternPlaybackWithShortFadeout')
-      return PatternPatternTransitionState.makeSimple(
+      return PatternSilencePatternTransitionState.makeSimple(
         current.math
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         current,
-        incoming,
+        yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+          asset,
+          calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+        ),
       )
 
     return PatternSilencePatternTransitionState.makeSimple(
       current.math
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       current,
-      incoming,
+      yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+        asset,
+        calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+      ),
     )
   }
 

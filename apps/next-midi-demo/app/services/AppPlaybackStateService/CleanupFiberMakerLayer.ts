@@ -90,19 +90,19 @@ const getNewCleanedUpState = Effect.fn('getNewCleanedUpState')(function* (
   }
 
   if (PatternPatternPatternTransitionState.models(state)) {
-    const q = state.transitionQueue
-    const [, middle, incoming] = q
-    yield* q[0].dispose()
-    if (middle._tag === 'EndingPatternPlaybackWithShortFadeout')
-      return PatternPatternTransitionState.makeSimple(
-        state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-        middle,
-        incoming,
-      )
-    return PatternSilencePatternTransitionState.makeSimple(
+    const [, ...transitionQueue] = state.transitionQueue
+    yield* state.transitionQueue[0].dispose()
+    // Long/short: `middle` is always a short fadeout now. The fade-to-silence
+    // branch is kept commented out until we settle whether a long element can
+    // ever sit in the middle of a 3-queue.
+    // return PatternSilencePatternTransitionState.makeSimple(
+    //   state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+    //   middle,
+    //   incoming,
+    // )
+    return PatternPatternTransitionState.makeSimple(
       state.firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      middle,
-      incoming,
+      ...transitionQueue,
     )
   }
 

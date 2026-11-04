@@ -4,7 +4,7 @@ import * as Schema from 'effect/Schema'
 import { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import { CleanupFiberToolkit } from '../CleanupFiberToolkit.ts'
 import { AudioPlayback } from '../common.ts'
-import { BlissfulGridTimingsMath } from '../timingsMath.ts'
+import { BlissfulGridTimingsMathAtAnyQuant } from '../timingsMath.ts'
 import { RestoreFullVolume } from '../webAudioSideEffects/RestoreFullVolume.ts'
 import { disposeOf } from './DisposedPatternPlayback🏁.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -17,7 +17,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    math: BlissfulGridTimingsMath,
+    math: BlissfulGridTimingsMathAtAnyQuant,
   },
 ) {
   declare protected '~brand~': never
@@ -29,7 +29,7 @@ export class PatternPlaybackAtItsLastPlayWithScheduledLongFadeout extends Schema
     asset: TaggedPatternPointer,
     playback: AudioPlayback,
     cleanupFiberToolkit: CleanupFiberToolkit,
-    math: BlissfulGridTimingsMath,
+    math: BlissfulGridTimingsMathAtAnyQuant,
   ) => this.make({ asset, playback, cleanupFiberToolkit, math })
 
   cancelLongFadeoutAndRestore(now: number) {

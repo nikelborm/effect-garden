@@ -7,19 +7,81 @@ import {
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
 import { schedulingSafeBufferInSeconds } from '../constants.ts'
-import { EndingPatternPlaybackWithShortFadeout } from '../Elements/EndingPatternPlaybackWithShortFadeout.ts'
-import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadein.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout.ts'
+import { BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout } from '../Elements/BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout.ts'
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadein } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadein.ts'
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout.ts'
+import { BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout } from '../Elements/BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout.ts'
+import {
+  EndingPatternPlaybackWithShortFadeoutVariants,
+  endsAtLastQuant,
+  endsAtMiddleQuant,
+} from '../Elements/EndingPatternPlaybackWithShortFadeoutVariants.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternSilenceTransitionState } from './PatternPatternSilenceTransition.ts'
 
-export const PatternPatternPatternTransitionQueue = Schema.Tuple([
-  EndingPatternPlaybackWithShortFadeout,
-  EndingPatternPlaybackWithShortFadeout,
-  IncomingPatternFadingIn,
+// Naming convention: a short fadeout's *ending* quant is the pair of the next
+// fadein's *beginning* quant (last ↔ initial, mid ↔ mid). `oldest` is independent:
+// it keeps the quant class of an earlier switch, and in the revived-long path it
+// was never paired with `middle`. `middle`+`incoming` are always one pair.
+export const PatternPatternPatternTransitionQueue = Schema.Union([
+  Schema.Tuple([
+    EndingPatternPlaybackWithShortFadeoutVariants,
+    BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout,
+    BeginningPatternPlaybackAtInitialQuantWithShortFadein,
+  ]),
+  Schema.Tuple([
+    EndingPatternPlaybackWithShortFadeoutVariants,
+    BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout,
+    BeginningPatternPlaybackAtMiddleQuantWithShortFadein,
+  ]),
+  Schema.Tuple([
+    EndingPatternPlaybackWithShortFadeoutVariants,
+    BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout,
+    BeginningPatternPlaybackAtInitialQuantWithShortFadein,
+  ]),
+  Schema.Tuple([
+    EndingPatternPlaybackWithShortFadeoutVariants,
+    BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout,
+    BeginningPatternPlaybackAtMiddleQuantWithShortFadein,
+  ]),
 ])
+
+export type PatternPatternPatternTransitionQueue =
+  typeof PatternPatternPatternTransitionQueue.Type
+
+// The correlated tail of a 3-queue: the middle's ending quant fixes the incoming's
+// beginning quant.
+export const PatternPatternPatternTransitionMiddleAndIncomingQueue =
+  Schema.Union([
+    Schema.Tuple([
+      BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout,
+      BeginningPatternPlaybackAtInitialQuantWithShortFadein,
+    ]),
+    Schema.Tuple([
+      BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout,
+      BeginningPatternPlaybackAtMiddleQuantWithShortFadein,
+    ]),
+    Schema.Tuple([
+      BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout,
+      BeginningPatternPlaybackAtInitialQuantWithShortFadein,
+    ]),
+    Schema.Tuple([
+      BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout,
+      BeginningPatternPlaybackAtMiddleQuantWithShortFadein,
+    ]),
+  ])
+
+export type PatternPatternPatternTransitionMiddleAndIncomingQueue =
+  typeof PatternPatternPatternTransitionMiddleAndIncomingQueue.Type
 
 // @effect-diagnostics-next-line schemaClassMissingBrand:off
 export class PatternPatternPatternTransitionState extends Schema.TaggedClass<PatternPatternPatternTransitionState>()(
@@ -50,7 +112,39 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     if (theSamePatternWasPressed(pressedParamButtonId, incoming.asset)) {
       if (incomingFadeInIsStillRevocable) {
         yield* incoming.drop()
-        return PatternPatternSilenceTransitionState.makeSimple(oldest, middle)
+
+        const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
+          oldest.endingMath
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          now,
+        )
+        const blissfulGridTimingsMathAtQuantBoundary =
+          blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+            ? calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
+            : calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
+
+        const fadeToSilence = yield* middle.becomeLongFadeoutToSilence(
+          now,
+          blissfulGridTimingsMathAtQuantBoundary,
+        )
+
+        if (endsAtLastQuant(oldest))
+          return PatternPatternSilenceTransitionState.makeSimple(
+            oldest,
+            fadeToSilence,
+          )
+
+        if (endsAtMiddleQuant(oldest))
+          return PatternPatternSilenceTransitionState.makeSimple(
+            oldest,
+            fadeToSilence,
+          )
+
+        return yield* Effect.die(
+          new Error(
+            'invariant: oldest must end at a known quant when it starts fading to silence',
+          ),
+        )
       }
       yield* Effect.logError({
         oldest,
@@ -82,30 +176,129 @@ export class PatternPatternPatternTransitionState extends Schema.TaggedClass<Pat
     const desiredAsset = incoming.asset.makePatchedFrom(pressedParamButtonId)
     yield* incoming.drop()
     const blissfulGridTimingsMath = calcBlissfulGridTimingsMath(
-      oldest.math
+      oldest.endingMath
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       now,
     )
-    return PatternPatternPatternTransitionState.makeSimple(
-      oldest.math
-        .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      oldest,
-      middle,
-      yield* IncomingPatternFadingIn.init(
-        desiredAsset,
-        blissfulGridTimingsMath,
-      ),
-    )
+    const nextTickIsOnThePatternBoundary =
+      blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+
+    // The new incoming must begin where `middle` ends, and `oldest` must end
+    // where `middle` began. Each case therefore fixes the whole triple.
+    switch (middle._tag) {
+      case 'BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout': {
+        if (!endsAtLastQuant(oldest))
+          return yield* Effect.die(
+            new Error(
+              'invariant: oldest must end at the last quant when middle began at the initial quant',
+            ),
+          )
+        if (!nextTickIsOnThePatternBoundary)
+          return yield* Effect.die(
+            new Error(
+              'invariant: middle ends at the last quant, so the next switch must also be at the last quant',
+            ),
+          )
+
+        return PatternPatternPatternTransitionState.makeSimple(
+          oldest.endingMath
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          oldest,
+          middle,
+          yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+          ),
+        )
+      }
+      case 'BeginningPatternPlaybackAtInitialQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout': {
+        if (!endsAtLastQuant(oldest))
+          return yield* Effect.die(
+            new Error(
+              'invariant: oldest must end at the last quant when middle began at the initial quant',
+            ),
+          )
+        if (nextTickIsOnThePatternBoundary)
+          return yield* Effect.die(
+            new Error(
+              'invariant: middle ends mid-pattern, so the next switch must also be mid-pattern',
+            ),
+          )
+
+        return PatternPatternPatternTransitionState.makeSimple(
+          oldest.endingMath
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          oldest,
+          middle,
+          yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+          ),
+        )
+      }
+      case 'BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtLastQuantWithShortFadeout': {
+        if (!endsAtMiddleQuant(oldest))
+          return yield* Effect.die(
+            new Error(
+              'invariant: oldest must end mid-pattern when middle began mid-pattern',
+            ),
+          )
+        if (!nextTickIsOnThePatternBoundary)
+          return yield* Effect.die(
+            new Error(
+              'invariant: middle ends at the last quant, so the next switch must also be at the last quant',
+            ),
+          )
+
+        return PatternPatternPatternTransitionState.makeSimple(
+          oldest.endingMath
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          oldest,
+          middle,
+          yield* BeginningPatternPlaybackAtInitialQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath),
+          ),
+        )
+      }
+      case 'BeginningPatternPlaybackAtMiddleQuantWithShortFadeinAndEndingAtMiddleQuantWithShortFadeout': {
+        if (!endsAtMiddleQuant(oldest))
+          return yield* Effect.die(
+            new Error(
+              'invariant: oldest must end mid-pattern when middle began mid-pattern',
+            ),
+          )
+        if (nextTickIsOnThePatternBoundary)
+          return yield* Effect.die(
+            new Error(
+              'invariant: middle ends mid-pattern, so the next switch must also be mid-pattern',
+            ),
+          )
+
+        return PatternPatternPatternTransitionState.makeSimple(
+          oldest.endingMath
+            .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
+          oldest,
+          middle,
+          yield* BeginningPatternPlaybackAtMiddleQuantWithShortFadein.init(
+            desiredAsset,
+            calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath),
+          ),
+        )
+      }
+      default:
+        return yield* Effect.die(
+          new Error('invariant: unknown middle element class'),
+        )
+    }
   }
 
   static makeSimple = (
     firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
-    oldest: EndingPatternPlaybackWithShortFadeout,
-    middle: EndingPatternPlaybackWithShortFadeout,
-    incoming: IncomingPatternFadingIn,
+    ...transitionQueue: PatternPatternPatternTransitionQueue
   ) =>
     this.make({
       firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      transitionQueue: [oldest, middle, incoming],
+      transitionQueue,
     })
 }

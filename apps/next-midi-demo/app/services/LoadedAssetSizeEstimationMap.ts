@@ -1,3 +1,5 @@
+import type { Identity } from '@evadev/effect-helpers/Identity.ts'
+
 import * as Context from 'effect/Context'
 import * as Data from 'effect/Data'
 import * as Effect from 'effect/Effect'
@@ -236,7 +238,7 @@ export const LoadedAssetSizeEstimationMapLayer = Layer.effect(
 export const AlmostFinished = {
   status: 'almost finished: fetched, but not written',
 } as const
-export type AlmostFinished = typeof AlmostFinished
+export interface AlmostFinished extends Identity<typeof AlmostFinished> {}
 
 export class NotFinished extends Data.Class<{
   status: 'not finished'
@@ -248,7 +250,7 @@ export class NotFinished extends Data.Class<{
 }
 
 export const Finished = { status: 'finished' } as const
-export type Finished = typeof Finished
+export interface Finished extends Identity<typeof Finished> {}
 
 export type AssetCompletionStatus = NotFinished | AlmostFinished | Finished
 
@@ -259,13 +261,14 @@ export type AssetToSizeHashMapEntry = [AssetPointer, AssetSizeEstimation]
 export const VerifiedAbsentOnDiskEstimation = {
   status: 'verifiedAbsentOnDisk',
 } as const
-export type VerifiedAbsentOnDiskEstimation =
-  typeof VerifiedAbsentOnDiskEstimation
+export interface VerifiedAbsentOnDiskEstimation
+  extends Identity<typeof VerifiedAbsentOnDiskEstimation> {}
 
 export const UndeterminedEstimation = {
   status: 'unknownWhileFetchingInitial',
 } as const
-export type UndeterminedEstimation = typeof UndeterminedEstimation
+export interface UndeterminedEstimation
+  extends Identity<typeof UndeterminedEstimation> {}
 
 export class InProgressWriteEstimation extends Data.Class<{
   status: 'inProgressWriter'

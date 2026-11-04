@@ -14,9 +14,9 @@ export const PressedParamButtonIdArbitrary: Arbitrary.Arbitrary<PressedParamButt
 export const matchParamButtonId =
   <TId extends PressedParamButtonId>(id: TId) =>
   <
-    OnChordReturn extends Effect.Effect<any, any, any>,
-    OnPatternReturn extends Effect.Effect<any, any, any>,
-    OnStrengthReturn extends Effect.Effect<any, any, any>,
+    OnChordReturn extends Effect.All.EffectAny,
+    OnPatternReturn extends Effect.All.EffectAny,
+    OnStrengthReturn extends Effect.All.EffectAny,
   >({
     onChord,
     onPattern,

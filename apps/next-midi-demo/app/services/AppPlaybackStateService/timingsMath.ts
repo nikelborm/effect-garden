@@ -1,3 +1,5 @@
+import type { Identity } from '@evadev/effect-helpers/Identity.ts'
+
 import * as Schema from 'effect/Schema'
 
 import {
@@ -8,6 +10,9 @@ import {
   transitionTimeInSeconds,
 } from './constants.ts'
 
+// Everything that is identical no matter whether the switch happens on the last
+// quant of the outgoing pattern (a complete transition) or in the middle of it.
+// The two follow-up calculations add the shifted fade windows on top.
 export const BlissfulGridTimingsMath = Schema.Struct({
   firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit:
     Schema.Finite,
@@ -27,15 +32,7 @@ export const BlissfulGridTimingsMath = Schema.Struct({
     Schema.Finite,
   nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit:
     Schema.Finite,
-  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
-    Schema.Finite,
-  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
-    Schema.Finite,
-  patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit:
-    Schema.Finite,
-  patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit:
-    Schema.Finite,
-  secondsSinceNowUpUntilAntialiasingFadeoutEnds: Schema.Finite,
+  nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary: Schema.Boolean,
   secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart:
     Schema.Finite,
 
@@ -54,7 +51,59 @@ export const BlissfulGridTimingsMath = Schema.Struct({
     Schema.Finite,
 })
 
-export type BlissfulGridTimingsMath = typeof BlissfulGridTimingsMath.Type
+export interface BlissfulGridTimingsMath
+  // @effect-diagnostics-next-line unnecessaryTypeofType:off
+  extends Identity<typeof BlissfulGridTimingsMath.Type> {}
+
+const CommonNewFields = {
+  // recommended to use because they're adjusted
+  patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit:
+    Schema.Finite,
+  secondsSinceNowUpUntilAntialiasingFadeoutEnds: Schema.Finite,
+}
+
+// The tick is the last quant of the outgoing pattern and the initial quant of the
+// incoming one. The flag is narrowed to a literal so the routing choice is
+// visible in the type of the value itself.
+export const BlissfulGridTimingsMathAtLastQuant = Schema.Struct({
+  ...BlissfulGridTimingsMath.fields,
+  ...CommonNewFields,
+  nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary:
+    Schema.Literal(true),
+})
+
+export interface BlissfulGridTimingsMathAtLastQuant
+  // @effect-diagnostics-next-line unnecessaryTypeofType:off
+  extends Identity<typeof BlissfulGridTimingsMathAtLastQuant.Type> {}
+
+// The tick is somewhere in the middle of the pattern, so both fade windows are
+// centered on it instead of ending/starting on it.
+export const BlissfulGridTimingsMathAtMiddleQuant = Schema.Struct({
+  ...BlissfulGridTimingsMath.fields,
+  ...CommonNewFields,
+  nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary:
+    Schema.Literal(false),
+})
+export interface BlissfulGridTimingsMathAtMiddleQuant
+  // @effect-diagnostics-next-line unnecessaryTypeofType:off
+  extends Identity<typeof BlissfulGridTimingsMathAtMiddleQuant.Type> {}
+
+// For elements that keep a fade window but do not themselves decide which class
+// of switch they belong to (the fade-to-silence loop is not split per quant).
+export const BlissfulGridTimingsMathAtAnyQuant = Schema.Union([
+  BlissfulGridTimingsMathAtLastQuant,
+  BlissfulGridTimingsMathAtMiddleQuant,
+])
+
+export type BlissfulGridTimingsMathAtAnyQuant =
+  | BlissfulGridTimingsMathAtLastQuant
+  | BlissfulGridTimingsMathAtMiddleQuant
 
 export const calcBlissfulGridTimingsMath = (
   firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit: number,
@@ -131,44 +180,6 @@ export const calcBlissfulGridTimingsMath = (
       ticksPerTrack ===
     0
 
-  // On a pattern boundary the outgoing fadeout ends exactly on the tick and the
-  // incoming fadein starts there. Between ticks both windows are centered on the
-  // tick, so half of the transition happens at the end of the outgoing pattern
-  // and half at the start of the incoming one.
-  const patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds =
-    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-      ? transitionTimeInSeconds
-      : transitionTimeInSeconds / 2
-
-  const patternPlaybackAntialiasingFadeinShiftEarlierBySeconds =
-    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
-      ? 0
-      : transitionTimeInSeconds / 2
-
-  const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit =
-    patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    postponeSeconds -
-    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
-
-  const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit =
-    patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
-    postponeSeconds -
-    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
-
-  const patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit =
-    nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit -
-    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
-
-  const patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit =
-    nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit +
-    transitionTimeInSeconds -
-    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
-
-  const secondsSinceNowUpUntilAntialiasingFadeoutEnds =
-    secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder +
-    postponeSeconds -
-    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
-
   const secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart =
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart +
     postponeSeconds
@@ -186,11 +197,7 @@ export const calcBlissfulGridTimingsMath = (
     // recommended to use because they're adjusted
     nextTickIndexAdjustedUpwardsSafeToScheduleSince_FIRST_PatternPlaybackOfTheCurrentGridStarted,
     nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit,
-    patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
-    patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
-    patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
-    patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
-    secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary,
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsSafeToScheduleStart,
 
     // NOT recommended to use because they're NOT adjusted
@@ -201,4 +208,96 @@ export const calcBlissfulGridTimingsMath = (
     secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder,
     secondsDiffBetweenFirstPatternPlaybackOfTheCurrentGridStartAndNextTickAdjustedUpwardsWhenDecimalStart,
   })
+}
+
+const common = <
+  T extends boolean,
+  TArg extends BlissfulGridTimingsMathAtAnyQuant & {
+    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary: T
+  },
+  TR,
+>(
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
+  patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds: number,
+  patternPlaybackAntialiasingFadeinShiftEarlierBySeconds: number,
+  nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary: T,
+  maker: { make: (arg: TArg) => TR },
+) => {
+  const postponeSeconds =
+    Number(blissfulGridTimingsMath.doesntFitIntoBufferOfClosestTransition) *
+    tickSizeInSeconds
+
+  const patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit =
+    blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
+
+  const patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit =
+    blissfulGridTimingsMath.patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInitIfWeArentAtTheTickBorder +
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
+
+  const patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit =
+    blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit -
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
+
+  const patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit =
+    blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleStarts_AT_SECONDS_SinceAudioContextInit +
+    transitionTimeInSeconds -
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds
+
+  const secondsSinceNowUpUntilAntialiasingFadeoutEnds =
+    blissfulGridTimingsMath.secondsSinceNowUpUntilAntialiasingFadeoutEndsIfWeArentAtTheTickBorder +
+    postponeSeconds -
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds
+
+  return maker.make({
+    ...blissfulGridTimingsMath,
+    nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary,
+
+    // recommended to use because they're adjusted
+    patternPlaybackAntialiasingFadeout_STARTS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadeout_ENDS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadein_STARTS_AT_SECONDS_SinceAudioContextInit,
+    patternPlaybackAntialiasingFadein_ENDS_AT_SECONDS_SinceAudioContextInit,
+    secondsSinceNowUpUntilAntialiasingFadeoutEnds,
+  } as TArg)
+}
+
+export const calcBlissfulGridTimingsMathAtLastQuant = (
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
+): BlissfulGridTimingsMathAtLastQuant => {
+  // On a pattern boundary the outgoing fadeout ends exactly on the tick and the
+  // incoming fadein starts there.
+  const patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds =
+    transitionTimeInSeconds
+  const patternPlaybackAntialiasingFadeinShiftEarlierBySeconds = 0
+
+  return common(
+    blissfulGridTimingsMath,
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds,
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds,
+    true,
+    BlissfulGridTimingsMathAtLastQuant,
+  )
+}
+
+export const calcBlissfulGridTimingsMathAtMiddleQuant = (
+  blissfulGridTimingsMath: BlissfulGridTimingsMath,
+): BlissfulGridTimingsMathAtMiddleQuant => {
+  // Between ticks both windows are centered on the tick, so half of the
+  // transition happens at the end of the outgoing pattern and half at the start
+  // of the incoming one.
+  const patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds =
+    transitionTimeInSeconds / 2
+  const patternPlaybackAntialiasingFadeinShiftEarlierBySeconds =
+    transitionTimeInSeconds / 2
+
+  return common(
+    blissfulGridTimingsMath,
+    patternPlaybackAntialiasingFadeoutShiftEarlierBySeconds,
+    patternPlaybackAntialiasingFadeinShiftEarlierBySeconds,
+    false,
+    BlissfulGridTimingsMathAtMiddleQuant,
+  )
 }

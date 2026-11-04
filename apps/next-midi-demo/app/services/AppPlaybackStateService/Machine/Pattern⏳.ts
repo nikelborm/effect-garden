@@ -1,5 +1,11 @@
+import {
+  distributeMake,
+  lambdaAllArgs,
+} from '@evadev/effect-helpers/distributeMake.ts'
+
 import * as Effect from 'effect/Effect'
 import * as Schema from 'effect/Schema'
+import * as Tuple from 'effect/Tuple'
 
 import type { TaggedPatternPointer } from '../../../domain/AssetPointer.ts'
 import type { PressedParamButtonId } from '../../../domain/PressedParamButtonId.ts'
@@ -7,11 +13,22 @@ import {
   theSameChordOrStrengthWasPressed,
   theSamePatternWasPressed,
 } from '../../../helpers/theSameWasPressed.ts'
-import { IncomingPatternFadingIn } from '../Elements/IncomingPatternFadingIn.ts'
 import { PatternPlayback } from '../Elements/PatternPlayback.ts'
 import type { AdvanceFnReturn } from '../index.ts'
-import { calcBlissfulGridTimingsMath } from '../timingsMath.ts'
+import {
+  type BlissfulGridTimingsMathAtAnyQuant,
+  type BlissfulGridTimingsMathAtLastQuant,
+  type BlissfulGridTimingsMathAtMiddleQuant,
+  calcBlissfulGridTimingsMath,
+  calcBlissfulGridTimingsMathAtLastQuant,
+  calcBlissfulGridTimingsMathAtMiddleQuant,
+} from '../timingsMath.ts'
 import { GetAudioNow } from '../webAudioSideEffects/GetAudioNow.ts'
+import type {
+  AsPatternPatternTransitionQueueMake,
+  PatternPatternTransitionQueue,
+  // biome-ignore lint/suspicious/noImportCycles: expected
+} from './PatternPatternTransition⏳.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
 import { PatternPatternTransitionState } from './PatternPatternTransition⏳.ts'
 // biome-ignore lint/suspicious/noImportCycles: expected
@@ -43,25 +60,46 @@ export class PatternState extends Schema.TaggedClass<PatternState>()(
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
       yield* GetAudioNow.run,
     )
+    const blissfulGridTimingsMathAtLastQuant =
+      calcBlissfulGridTimingsMathAtLastQuant(blissfulGridTimingsMath)
+    const blissfulGridTimingsMathAtMiddleQuant =
+      calcBlissfulGridTimingsMathAtMiddleQuant(blissfulGridTimingsMath)
+
+    const mathAtAnyQuant =
+      blissfulGridTimingsMath.nextTickAdjustedUpwardsSafeToScheduleIsOnThePatternBoundary
+        ? blissfulGridTimingsMathAtLastQuant
+        : blissfulGridTimingsMathAtMiddleQuant
 
     if (theSamePatternWasPressed(pressedParamButtonId, current.asset))
       return PatternSilenceTransitionState.makeSimple(
         this
           .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
         /** ⚠️ */
-        yield* current.beginLongFadeoutToSilence(blissfulGridTimingsMath),
+        yield* current.beginLongFadeoutToSilence(mathAtAnyQuant),
       )
+
+    const desiredAsset = current.asset.makePatchedFrom(pressedParamButtonId)
+
+    const transitionQueue = yield* distributeMake(
+      lambdaAllArgs<AsPatternPatternTransitionQueueMake>(
+        blissfulGridTimingsMath =>
+          Effect.all([
+            current.beginShortFadeoutBeforeAnotherPattern(
+              blissfulGridTimingsMath,
+            ),
+            current.beginAnotherPatternPlaybackWithShortFadein(
+              desiredAsset,
+              blissfulGridTimingsMath,
+            ),
+          ]),
+      ),
+      mathAtAnyQuant,
+    )
 
     return PatternPatternTransitionState.makeSimple(
       this
         .firstPatternPlaybackOfTheCurrentGridStartedAtDecimalSecondSinceAudioContextInit,
-      yield* current.beginShortFadeoutBeforeAnotherPattern(
-        blissfulGridTimingsMath,
-      ),
-      yield* IncomingPatternFadingIn.init(
-        current.asset.makePatchedFrom(pressedParamButtonId),
-        blissfulGridTimingsMath,
-      ),
+      ...transitionQueue,
     )
   }
 
