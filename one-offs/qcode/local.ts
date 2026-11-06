@@ -192,7 +192,7 @@ export const toPrettyFzfRenderedLine =
     )
   }
 
-export const openers = ['vscode', 'shell', 'opencode'] as const
+export const openers = ['vscode', 'shell', 'opencode', 'commandcode'] as const
 export type Opener = (typeof openers)[number]
 
 const runLauncher = Effect.fn('qcode.runLauncher')(
@@ -409,7 +409,15 @@ export const localMode = Effect.fn('qcode.local')(
           'opencode',
           [launcherCwd],
           launcherCwd,
-          'OpenCode (`opencode` binary) is not found. See https://opencode.ai.',
+          'OpenCode (`opencode` binary) is not found. See https://opencode.ai/',
+          { resumeParkedApp: true },
+        )
+      case 'commandcode':
+        return yield* runLauncher(
+          'commandcode',
+          [launcherCwd],
+          launcherCwd,
+          'Command Code (`commandcode` binary) is not found. See https://commandcode.ai/',
           { resumeParkedApp: true },
         )
       case 'vscode':
