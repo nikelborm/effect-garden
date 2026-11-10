@@ -46,6 +46,7 @@ export class BeginningPatternPlaybackAtInitialQuantWithShortFadein extends Schem
     this.make = this.make.bind(this)
     const proto = this
       .prototype as Types.Mutable<BeginningPatternPlaybackAtInitialQuantWithShortFadein>
+
     proto.promoteToShortFadingOut = lambdaAllArgs<
       AsPromoteToShortFadingOut<BlissfulGridTimingsMathAtLastQuant>
     >(function (
