@@ -1,0 +1,4 @@
+{
+  "$schema": "https://tstyche.org/schemas/config-3.0.json",
+  "testFileMatch": ["**/*.tstyche.spec.ts"]
+}
