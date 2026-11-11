@@ -7,6 +7,7 @@
 - `BadExitCodeError`
 - `buildEntityParts`
 - `changeEncodedTypeToString`
+- `Context.Mixin`
 - `ensureReturningOneId`
 - `FiniteNonNegativeIntegerFromString`
 - `holdLatestValue`

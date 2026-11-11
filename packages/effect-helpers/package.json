@@ -6,11 +6,14 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@effect/tsgo": "catalog:",
+    "@effect/vitest": "catalog:",
     "@evadev/tsconfig": "workspace:^",
     "oxlint": "catalog:",
     "ts-namespace-import": "catalog:",
     "ts-patch": "catalog:",
-    "typescript": "catalog:"
+    "tstyche": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@effect/platform-node-shared": "catalog:",
@@ -31,7 +34,10 @@
     "b": "bun run build",
     "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput false",
-    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc"
+    "prepack": "rm -rf dist dist-types && ./node_modules/.bin/tsc",
+    "test": "vitest --typecheck --watch",
+    "test-once": "vitest --run",
+    "test-types": "tstyche"
   },
   "author": {
     "name": "nikelborm",
