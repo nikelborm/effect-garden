@@ -207,7 +207,12 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
     // parked on a blank screen instead of resumed. Enable this only for
     // openers that leave no shell behind; a shell has real job control, where
     // Ctrl+Z must stay a real suspend. See suspend-guard.ts.
-    { resumeParkedApp = false } = {},
+    //
+    // `exit` without arguments reuses the last command's status, so leaving a
+    // shell right after Ctrl+C (say, on a long-running build) exits 130 — a
+    // normal way out, not a failure. Enable this only for openers where 130
+    // means the user canceled out of them.
+    { resumeParkedApp = false, canceledExitCodeIsSuccess = false } = {},
   ) {
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner
 
@@ -228,10 +233,15 @@ const runLauncher = Effect.fn('qcode.runLauncher')(
       ),
     )
 
-    if (code !== 0)
+    const isExpectedCancelation = canceledExitCodeIsSuccess && code === 130
+    const isUnexpectedNonZeroExit = code !== 0 && !isExpectedCancelation
+
+    if (isExpectedCancelation) yield* Effect.log(`${binary} canceled by user`)
+
+    if (isUnexpectedNonZeroExit)
       yield* Effect.logError(`${binary} exited with non-zero exit code: `, code)
 
-    return ChildProcessSpawner.ExitCode(code === 0 ? 0 : 1)
+    return ChildProcessSpawner.ExitCode(isUnexpectedNonZeroExit ? 1 : 0)
   },
   Effect.orElseSucceed(() => ChildProcessSpawner.ExitCode(1)),
 )
@@ -402,6 +412,7 @@ export const localMode = Effect.fn('qcode.local')(
           [],
           launcherCwd,
           `Shell (\`${shell}\` binary) is not found. Check your $SHELL.`,
+          { canceledExitCodeIsSuccess: true },
         )
       }
       case 'opencode':
