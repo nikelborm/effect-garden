@@ -7,6 +7,7 @@
 
 // TODO: compare with https://github.com/poteat/scopey since it uses merging by overriding fields
 // https://github.com/voodoocreation/ts-deepmerge
+// TODO: Compare with https://github.com/TetroGem/optel
 
 // import type { Merge as MagicGeneric } from 'type-fest';
 import type { At as GetNthCharacter } from 'ts-toolbelt/out/String/At.d.ts'
