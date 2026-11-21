@@ -11,3 +11,4 @@ parts easily
   presence of some fields or properties. maybe make it accepts the effect
   schema, or just some generic type
 - reference examples
+- try to test with [geoffreytools/type-lenses](https://github.com/geoffreytools/type-lenses)

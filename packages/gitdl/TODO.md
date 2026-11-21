@@ -287,7 +287,7 @@ if I'm successful, report it here: [`jsr publish --fix` | issue jsr-io/jsr#15](h
 - [phenomnomnominal/tsquery](https://github.com/phenomnomnominal/tsquery)
 - [samchon/typia/factories](https://github.com/samchon/typia/blob/master/src/factories/ExpressionFactory.ts) and [programmers](https://github.com/samchon/typia/blob/master/src/programmers/functional/FunctionalAssertFunctionProgrammer.ts) paterns
 - [typescript-language-server](https://github.com/typescript-language-server/typescript-language-server)
-- [GoogleFeud/ts-macros](https://github.com/GoogleFeud/ts-macros)
+- [volenslavchev/ts-macros](https://github.com/volenslavchev/ts-macros)
 - [clayrisser/react-ast](https://github.com/clayrisser/react-ast)
 - [saiashirwad/ts-macros](https://github.com/saiashirwad/ts-macros)
 - [saiashirwad/safemods](https://github.com/saiashirwad/safemods)
